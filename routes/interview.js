@@ -2,6 +2,7 @@
 // All AI calls go through polsia-ai.js which routes through Polsia proxy.
 
 const { chat, chatJSON } = require('../lib/polsia-ai');
+const router = require('./waitlist');
 
 // ── v0.5 Persona definitions ─────────────────────────────────────────────────
 // Six interviewer archetypes, each with full bias parameters per the v0.5 spec.
@@ -441,10 +442,4 @@ ${(result.priorities || []).slice(0, 3).map((p, i) => `${i + 1}. **${p.theme}:**
   };
 }
 
-module.exports = {
-  PERSONAS,
-  PERSONA_LIST,
-  generateNextQuestion,
-  scoreAnswer,
-  generateReport,
-};
+module.exports = router;

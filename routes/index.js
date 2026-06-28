@@ -1,5 +1,6 @@
 // Database connection pool — single instance, shared across all db/ modules.
 const { Pool } = require('pg');
+const router = require('./waitlist');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -13,4 +14,4 @@ pool.on('error', (err) => {
   console.error('[pg pool] idle client error (non-fatal):', err && err.message);
 });
 
-module.exports = { pool };
+module.exports = router;
