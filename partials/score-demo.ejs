@@ -1,0 +1,284 @@
+<!-- Section 5: AI Career Score Demo -->
+<section class="mh-score reveal" id="score">
+  <div class="mh-score-inner">
+    <div class="mh-section-center">
+      <div class="mh-eyebrow">Live Diagnostic</div>
+      <h2 class="mh-section-title">Discover Your Career Intelligence Score</h2>
+      <p class="mh-section-sub">Don't guess your market trajectory. Run a live sample diagnostic across elite enterprise rubrics.</p>
+    </div>
+
+    <div class="mh-score-layout">
+      <!-- Left: context + CTA -->
+      <div>
+        <div class="mh-drop-zones">
+          <!-- CV upload drop zone -->
+          <div class="mh-drop-zone mh-upload-zone" id="mh-upload-zone">
+            <div class="mh-drop-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div style="width:100%">
+              <div class="mh-drop-label">Upload Your CV</div>
+              <div class="mh-drop-hint mh-upload-hint">Drag &amp; drop or click to browse</div>
+              <div class="mh-upload-extracting" id="mh-upload-extracting">AI Extracting Skills&hellip;</div>
+              <div class="mh-upload-filename" id="mh-upload-filename"></div>
+            </div>
+            <input type="file" id="mh-cv-file" accept=".pdf,.doc,.docx" style="display:none">
+          </div>
+
+          <!-- Role selector -->
+          <div class="mh-drop-zone" style="cursor:default">
+            <div class="mh-drop-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div style="width:100%">
+              <div class="mh-drop-label">Choose Target Role & Level</div>
+              <select class="mh-drop-select" id="mh-role-select">
+                <option value="">Select a role...</option>
+                <option>Software Engineer</option>
+                <option>Product Manager</option>
+                <option>Management Consultant</option>
+                <option>Director</option>
+                <option>VP</option>
+                <option>C-Suite</option>
+                <option>Custom</option>
+              </select>
+              <input type="text" id="mh-custom-role" class="mh-drop-select" placeholder="Describe your target role…" style="display:none">
+            </div>
+          </div>
+
+          <!-- Org scale -->
+          <div class="mh-drop-zone" style="cursor:default">
+            <div class="mh-drop-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <div style="width:100%">
+              <div class="mh-drop-label">Target Organisation Scale</div>
+              <select class="mh-drop-select" id="mh-scale-select">
+                <option value="">Select org type...</option>
+                <option>Startup (1–50)</option>
+                <option>SME (51–500)</option>
+                <option>Enterprise (500–5,000)</option>
+                <option>Fortune 500 / Global MNC</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="mh-score-cta-wrap">
+          <button id="mh-run-btn" type="button" class="mh-score-run-btn">Run Free Analysis</button>
+        </div>
+      </div>
+
+      <!-- Right: score output -->
+      <div class="mh-score-output">
+        <!-- Loading state -->
+        <div class="mh-score-loading" id="mh-score-loading">
+          <div class="mh-shimmer" style="width:60%"></div>
+          <div class="mh-shimmer" style="width:80%"></div>
+          <div class="mh-shimmer" style="width:40%"></div>
+          <div class="mh-shimmer" style="width:70%"></div>
+          <div class="mh-shimmer" style="width:55%"></div>
+        </div>
+
+        <!-- Score card -->
+        <div class="mh-score-card" id="mh-score-card">
+          <div class="mh-score-centre">
+            <div class="mh-score-overall-ring">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="var(--navy-border)" stroke-width="8"/>
+                <circle cx="60" cy="60" r="52" fill="none" stroke="var(--gold)" stroke-width="8"
+                  stroke-dasharray="327" stroke-dashoffset="56"
+                  id="mh-overall-circle" style="transition: stroke-dashoffset 1.5s ease"/>
+              </svg>
+              <div class="mh-score-overall-val">
+                <span class="mh-score-overall-num" id="mh-overall-num">83</span>
+                <span class="mh-score-overall-label">Overall</span>
+              </div>
+              <div class="mh-score-overall-pulse"></div>
+            </div>
+          </div>
+
+          <div class="mh-score-metrics">
+            <div class="mh-metric-dial">
+              <div class="mh-metric-ring-wrap">
+                <svg width="72" height="72" viewBox="0 0 72 72">
+                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
+                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--emerald)" stroke-width="5"
+                    stroke-dasharray="188" stroke-dashoffset="18"
+                    class="mh-metric-circle" data-target="83"/>
+                </svg>
+                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="83">83</span>%</div>
+              </div>
+              <div class="mh-metric-label">STAR Method Structure</div>
+            </div>
+
+            <div class="mh-metric-dial">
+              <div class="mh-metric-ring-wrap">
+                <svg width="72" height="72" viewBox="0 0 72 72">
+                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
+                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--emerald)" stroke-width="5"
+                    stroke-dasharray="188" stroke-dashoffset="17"
+                    class="mh-metric-circle" data-target="91"/>
+                </svg>
+                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="91">91</span>%</div>
+              </div>
+              <div class="mh-metric-label">Executive Tone</div>
+            </div>
+
+            <div class="mh-metric-dial">
+              <div class="mh-metric-ring-wrap">
+                <svg width="72" height="72" viewBox="0 0 72 72">
+                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
+                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--emerald)" stroke-width="5"
+                    stroke-dasharray="188" stroke-dashoffset="21"
+                    class="mh-metric-circle" data-target="89"/>
+                </svg>
+                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="89">89</span>%</div>
+              </div>
+              <div class="mh-metric-label">Coherence Score</div>
+            </div>
+
+            <div class="mh-metric-dial">
+              <div class="mh-metric-ring-wrap">
+                <svg width="72" height="72" viewBox="0 0 72 72">
+                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
+                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--gold)" stroke-width="5"
+                    stroke-dasharray="188" stroke-dashoffset="42"
+                    class="mh-metric-circle" data-target="78"/>
+                </svg>
+                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="78">78</span>%</div>
+              </div>
+              <div class="mh-metric-label">Confidence Index</div>
+            </div>
+
+            <div class="mh-metric-dial">
+              <div class="mh-metric-ring-wrap">
+                <svg width="72" height="72" viewBox="0 0 72 72">
+                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
+                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--gold)" stroke-width="5"
+                    stroke-dasharray="188" stroke-dashoffset="45"
+                    class="mh-metric-circle" data-target="76"/>
+                </svg>
+                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="76">76</span>%</div>
+              </div>
+              <div class="mh-metric-label">Promotion Readiness Index</div>
+            </div>
+          </div>
+
+          <p class="mh-score-disclaimer"><em>Instant diagnostic preview generated under MedhaIQ Sandbox Parameters. Start your free trial to unlock your full unredacted enterprise report.</em></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var btn = document.getElementById('mh-run-btn');
+  var loading = document.getElementById('mh-score-loading');
+  var card = document.getElementById('mh-score-card');
+  if (!btn || !loading || !card) return;
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    loading.classList.add('mh-score-loading-visible');
+    setTimeout(function () {
+      loading.classList.remove('mh-score-loading-visible');
+      card.classList.add('mh-score-visible');
+      card.querySelectorAll('.mh-metric-circle').forEach(function (c) {
+        var rawFull = c.getAttribute('stroke-dasharray');
+        if (!rawFull) return;
+        var full = parseFloat(rawFull);
+        if (isNaN(full)) return;
+        c.style.strokeDashoffset = full;
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            var target = parseInt(c.getAttribute('data-target'), 10);
+            c.style.transition = 'stroke-dashoffset 1.5s ease-in-out';
+            c.style.strokeDashoffset = full - (full * target / 100);
+          });
+        });
+      });
+      var overall = document.getElementById('mh-overall-circle');
+      if (overall) {
+        overall.style.strokeDashoffset = 327;
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            overall.style.strokeDashoffset = 56;
+          });
+        });
+      }
+    }, 1500);
+  });
+
+  var uploadZone = document.getElementById('mh-upload-zone');
+  var cvFile = document.getElementById('mh-cv-file');
+  var extracting = document.getElementById('mh-upload-extracting');
+  var fileNameEl = document.getElementById('mh-upload-filename');
+  if (uploadZone && extracting) {
+    function showExtracting(filename) {
+      uploadZone.classList.remove('uploaded');
+      uploadZone.classList.add('extracting');
+      setTimeout(function () {
+        uploadZone.classList.remove('extracting');
+        uploadZone.classList.add('uploaded');
+        if (fileNameEl) fileNameEl.textContent = '📄 ' + filename + ' ✓';
+      }, 2200);
+    }
+    uploadZone.addEventListener('click', function () {
+      if (cvFile) cvFile.click();
+    });
+    if (cvFile) {
+      cvFile.addEventListener('change', function () {
+        if (cvFile.files && cvFile.files.length) showExtracting(cvFile.files[0].name);
+      });
+    }
+    uploadZone.addEventListener('dragover', function (e) { e.preventDefault(); });
+    uploadZone.addEventListener('drop', function (e) {
+      e.preventDefault();
+      var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file) showExtracting(file.name);
+    });
+  }
+
+  var roleSelect = document.getElementById('mh-role-select');
+  var customRoleInput = document.getElementById('mh-custom-role');
+  if (roleSelect && customRoleInput) {
+    roleSelect.addEventListener('change', function () {
+      if (roleSelect.value === 'Custom') {
+        roleSelect.style.display = 'none';
+        customRoleInput.style.display = 'block';
+        customRoleInput.value = '';
+        customRoleInput.focus();
+      } else {
+        customRoleInput.style.display = 'none';
+      }
+    });
+    function commitCustomRole() {
+      var val = customRoleInput.value.trim();
+      customRoleInput.style.display = 'none';
+      roleSelect.style.display = '';
+      if (val) {
+        var opt = document.getElementById('mh-custom-role-opt');
+        if (!opt) {
+          opt = document.createElement('option');
+          opt.id = 'mh-custom-role-opt';
+          roleSelect.appendChild(opt);
+        }
+        opt.value = val;
+        opt.textContent = val;
+        roleSelect.value = val;
+      } else {
+        roleSelect.value = '';
+      }
+    }
+    customRoleInput.addEventListener('blur', commitCustomRole);
+    customRoleInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); commitCustomRole(); }
+    });
+  }
+})();
+</script>

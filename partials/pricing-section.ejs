@@ -1,0 +1,485 @@
+<!-- ============================================
+     SECTION 16 — Pricing Matrix
+     ============================================ -->
+<section class="mh-pricing reveal" id="pricing">
+  <div class="mh-pricing-inner">
+
+    <div class="mh-section-center">
+      <div class="mh-eyebrow">Pricing</div>
+      <h2 class="mh-section-title">Transparent, Value-Driven Investment Tiers</h2>
+      <p class="mh-section-sub">Start free. Upgrade when you're ready. Cancel anytime.</p>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="mh-pricing-toggle reveal">
+      <button class="mh-toggle-btn mh-toggle-active" id="toggle-individual" data-tab="individual">Individual</button>
+      <button class="mh-toggle-btn" id="toggle-institutional" data-tab="institutional">Team and Enterprise</button>
+    </div>
+
+    <!-- Control Bar: Billing Toggle + Currency Selector -->
+    <div class="mh-pricing-control-bar reveal">
+      <div class="mh-billing-toggle">
+        <span class="mh-billing-label" id="label-monthly">Monthly</span>
+        <button class="mh-annual-switch" id="billing-toggle" aria-label="Toggle annual billing">
+          <span class="mh-annual-switch-thumb" id="billing-thumb"></span>
+        </button>
+        <span class="mh-billing-label mh-billing-label-annual" id="label-annual">Annual <span class="mh-save-badge" id="save-badge">Save 20%</span></span>
+      </div>
+      <div class="mh-currency-selector">
+        <select id="currency-select" aria-label="Select currency">
+          <option value="INR" selected>&#8377; INR</option>
+          <option value="USD">$ USD</option>
+          <option value="EUR">&euro; EUR</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Individual Tab -->
+    <div class="mh-pricing-tab" id="tab-individual">
+      <div class="mh-pricing-cards">
+
+        <!-- Tier 1: Free -->
+        <div class="mh-pricing-card reveal reveal-item">
+          <div class="mh-pricing-badge">Start Here</div>
+          <div class="mh-pricing-tier">Free</div>
+          <div class="mh-pricing-price">
+            <span class="mh-price-sym">&#8377;</span><span class="mh-price-val" data-base="0">0</span>
+            <span class="mh-pricing-period">/ month</span>
+          </div>
+          <div class="mh-pricing-subtitle">The Evaluation Tier</div>
+          <ul class="mh-pricing-features">
+            <li>3 mock interview sessions/month</li>
+            <li>Basic AI feedback (communication score)</li>
+            <li>1 company preset</li>
+            <li>Shareable performance scorecard</li>
+          </ul>
+          <a href="/login" class="mh-pricing-cta mh-pricing-cta-outline">Start Free</a>
+        </div>
+
+        <!-- Tier 2: Professional -->
+        <div class="mh-pricing-card mh-pricing-card-featured reveal reveal-item">
+          <div class="mh-pricing-popular-badge">Most Popular</div>
+          <div class="mh-pricing-tier">Professional</div>
+          <div class="mh-pricing-price">
+            <span class="mh-price-sym">&#8377;</span><span class="mh-price-val" data-base="999">999</span>
+            <span class="mh-pricing-period">/ month</span>
+          </div>
+          <div class="mh-annual-note" id="note-professional" style="display:none"></div>
+          <div class="mh-pricing-subtitle">Early Career &amp; Lateral Movers</div>
+          <ul class="mh-pricing-features">
+            <li>25 high-fidelity mock interview sessions/month</li>
+            <li>Full 5-vector AI scoring</li>
+            <li>50+ global company/org presets</li>
+            <li>Progress dashboard + trend graph</li>
+            <li>Post-session Markdown report</li>
+            <li>LinkedIn & direct scorecard sharing</li>
+          </ul>
+          <a href="/login" class="mh-pricing-cta mh-pricing-cta-filled">Get Professional</a>
+        </div>
+
+        <!-- Tier 3: Leadership -->
+        <div class="mh-pricing-card reveal reveal-item">
+          <div class="mh-pricing-tier">Leadership</div>
+          <div class="mh-pricing-price">
+            <span class="mh-price-sym">&#8377;</span><span class="mh-price-val" data-base="2999">2,999</span>
+            <span class="mh-pricing-period">/ month</span>
+          </div>
+          <div class="mh-annual-note" id="note-leadership" style="display:none"></div>
+          <div class="mh-pricing-subtitle">Mid-Career &amp; Senior Professionals</div>
+          <ul class="mh-pricing-features">
+            <li>Everything in Professional</li>
+            <li>Executive Presence coaching layer</li>
+            <li>GCC &amp; Global Leadership personas</li>
+            <li>Corporate communication analysis</li>
+            <li>Custom company presets</li>
+            <li>Priority AI processing</li>
+          </ul>
+          <a href="/login" class="mh-pricing-cta mh-pricing-cta-outline">Get Leadership</a>
+        </div>
+
+        <!-- Tier 4: Executive -->
+        <div class="mh-pricing-card mh-pricing-card-executive reveal reveal-item">
+          <div class="mh-pricing-tier">Executive</div>
+          <div class="mh-pricing-price">
+            <span class="mh-price-sym">&#8377;</span><span class="mh-price-val" data-base="7999">7,999</span>
+            <span class="mh-pricing-period">/ month</span>
+          </div>
+          <div class="mh-annual-note" id="note-executive" style="display:none"></div>
+          <div class="mh-pricing-subtitle">C-Suite &amp; GCC Leaders</div>
+          <ul class="mh-pricing-features">
+            <li>Everything in Leadership</li>
+            <li>White-glove onboarding session</li>
+            <li>Dedicated account manager</li>
+            <li>Custom AI persona creation</li>
+            <li>Unlimited team seats</li>
+            <li>API access (beta)</li>
+          </ul>
+          <a href="/login" class="mh-pricing-cta mh-pricing-cta-outline">Get Executive</a>
+        </div>
+
+      </div>
+      <p class="mh-pricing-note">All paid plans include a 7-day free trial. No credit card required to start.</p>
+    </div>
+
+    <!-- Team and Enterprise Tab -->
+    <div class="mh-pricing-tab mh-pricing-tab-institutional" id="tab-institutional" style="display:none">
+      <div class="mh-institutional-grid">
+
+        <!-- Team -->
+        <div class="mh-inst-card reveal reveal-item">
+          <div class="mh-inst-tier">Team</div>
+          <div class="mh-inst-price">
+            <span class="mh-price-sym">&#8377;</span><span class="mh-price-val" id="inst-team-price">33,333</span>
+            <span class="mh-pricing-period">/ month</span>
+          </div>
+          <div class="mh-inst-annual-note">Billed annually (Up to 500 students)</div>
+          <ul class="mh-inst-features">
+            <li>Placement cell dashboard</li>
+            <li>Bulk practice sessions</li>
+            <li>Recruiter scorecard access</li>
+            <li>Progress tracking by cohort</li>
+          </ul>
+          <a href="/login" class="mh-pricing-cta mh-pricing-cta-outline">Get Team</a>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="mh-inst-card reveal reveal-item">
+          <div class="mh-inst-tier">Enterprise</div>
+          <div class="mh-inst-price">
+            <span class="mh-price-sym">&#8377;</span><span class="mh-price-val" id="inst-ent-price">1,04,166</span>
+            <span class="mh-pricing-period">/ month</span>
+          </div>
+          <div class="mh-inst-annual-note">Billed annually (Up to 500 employees)</div>
+          <ul class="mh-inst-features">
+            <li>HRIS integration roadmap</li>
+            <li>HR admin analytics panel</li>
+            <li>White-label option (add-on)</li>
+            <li>Candidate benchmarking</li>
+          </ul>
+          <a href="/login" class="mh-pricing-cta mh-pricing-cta-outline">Get Enterprise</a>
+        </div>
+
+        <!-- Custom Volume -->
+        <div class="mh-inst-card mh-inst-card-enterprise reveal reveal-item">
+          <div class="mh-inst-tier">Custom Volume</div>
+          <div class="mh-inst-custom">Custom Volume Pricing</div>
+          <div class="mh-inst-capacity">Unlimited seats</div>
+          <ul class="mh-inst-features">
+            <li>Dedicated implementation manager</li>
+            <li>SLA-backed support</li>
+            <li>Full API access</li>
+            <li>Custom personas</li>
+            <li>White-label portals</li>
+            <li>Global multi-region deployment</li>
+          </ul>
+          <a href="mailto:hello@medhaiq.ai?subject=Enterprise%20Inquiry&body=Please%20describe%20your%20organization%20and%20team%20size." class="mh-pricing-cta mh-pricing-cta-filled">Request Custom Pricing <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:6px"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+          <p class="mh-inst-note">Our team typically responds within 1 business day. Global institutional inquiries welcome.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Pricing Footer Disclosure -->
+    <p class="mh-pricing-disclosure">Usage limits apply. Prices and plans are subject to change at MedhaIQ's discretion.</p>
+
+  </div>
+</section>
+
+<!-- Email Capture Modal -->
+<div class="mh-modal-overlay" id="mh-email-modal" style="display:none">
+  <div class="mh-modal">
+    <button class="mh-modal-close" id="mh-modal-close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="mh-modal-title">You're early — and that's a good thing.</div>
+    <div class="mh-modal-sub">MedhaIQ is in beta. Enter your email to secure priority access when we launch.</div>
+
+    <div class="mh-modal-success" id="mh-modal-success" style="display:none">
+      <div class="mh-modal-success-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="mh-modal-success-title">You're on the list.</div>
+      <p class="mh-modal-success-msg">We'll reach out to <span id="mh-modal-email-confirm"></span> the moment access opens.</p>
+    </div>
+
+    <form class="mh-modal-form" id="mh-modal-form">
+      <div class="mh-modal-field">
+        <label>Email Address <span>*</span></label>
+        <input type="email" id="mh-modal-email" placeholder="you@company.com" required autocomplete="email">
+      </div>
+      <div class="mh-modal-field">
+        <label>Name <span style="color:var(--text-faint)">(optional)</span></label>
+        <input type="text" id="mh-modal-name" placeholder="Your name" autocomplete="name">
+      </div>
+      <div class="mh-modal-field">
+        <label>I am a:</label>
+        <select id="mh-modal-role" required>
+          <option value="" disabled selected>Select your role</option>
+          <option value="student">Student</option>
+          <option value="professional">Working Professional</option>
+          <option value="hr_manager">HR Manager</option>
+          <option value="recruiter">Recruiter</option>
+          <option value="founder">Founder</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <input type="hidden" id="mh-modal-plan" value="">
+      <button type="submit" class="mh-modal-submit" id="mh-modal-submit">Claim My Priority Spot</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ── State ─────────────────────────────────────────────
+  var isAnnual = false;
+  var currency = 'INR';
+
+  // Base monthly prices (INR)
+  var BASE_PRICES = { free: 0, professional: 999, leadership: 2999, executive: 7999 };
+
+  // Annual equivalents (20% discount applied — shown as monthly breakdown)
+  var ANNUAL_PRICES = { free: 0, professional: 799, leadership: 2399, executive: 6399 };
+  var ANNUAL_TOTAL  = { professional: 9588, leadership: 28788, executive: 76788 };
+
+  // Team / Enterprise — always annual, show monthly breakdown
+  var TEAM_ANNUAL_INR   = 399999;
+  var ENTERPRISE_ANNUAL_INR = 1249999;
+  var TEAM_MONTHLY_INR   = Math.round(TEAM_ANNUAL_INR / 12);
+  var ENTERPRISE_MONTHLY_INR = Math.round(ENTERPRISE_ANNUAL_INR / 12);
+
+  // Currency conversion rates
+  // USD base monthly prices
+  var USD_PRICES_MONTHLY = { free: 0, professional: 12, leadership: 39, executive: 99 };
+  var USD_TEAM_MONTHLY = Math.round(4999 / 12);   // ~416
+  var USD_ENTERPRISE_MONTHLY = Math.round(14999 / 12); // ~1249
+
+  // EUR equivalents (~0.92x USD)
+  var EUR_PRICES_MONTHLY = { free: 0, professional: 11, leadership: 36, executive: 91 };
+  var EUR_TEAM_MONTHLY = Math.round(4999 * 0.92 / 12);   // ~383
+  var EUR_ENTERPRISE_MONTHLY = Math.round(14999 * 0.92 / 12); // ~1150
+
+  // Currency symbols
+  var CURRENCY_SYMBOLS = { INR: '\u20B9', USD: '$', EUR: '\u20AC' };
+
+  // ── Helpers ─────────────────────────────────────────────
+  function fmt(n) {
+    if (currency === 'INR') {
+      return n.toLocaleString('en-IN');
+    }
+    return n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  function getPrice(tier) {
+    var monthly = BASE_PRICES[tier] || 0;
+    var price = isAnnual ? (ANNUAL_PRICES[tier] || 0) : monthly;
+    if (currency === 'USD') {
+      price = USD_PRICES_MONTHLY[tier] || 0;
+      if (isAnnual) price = Math.round(price * 0.8);
+    } else if (currency === 'EUR') {
+      price = EUR_PRICES_MONTHLY[tier] || 0;
+      if (isAnnual) price = Math.round(price * 0.8);
+    }
+    return price;
+  }
+
+  function getInstPrice(type) {
+    if (currency === 'INR') {
+      return type === 'team' ? TEAM_MONTHLY_INR : ENTERPRISE_MONTHLY_INR;
+    }
+    if (currency === 'USD') {
+      return type === 'team' ? USD_TEAM_MONTHLY : USD_ENTERPRISE_MONTHLY;
+    }
+    return type === 'team' ? EUR_TEAM_MONTHLY : EUR_ENTERPRISE_MONTHLY;
+  }
+
+  // ── Update Individual Prices ──────────────────────────────
+  function updateIndividualPrices() {
+    var sym = CURRENCY_SYMBOLS[currency];
+
+    // Free — always 0
+    var freeVal = document.querySelector('[data-base="0"]');
+    if (freeVal) freeVal.textContent = fmt(0);
+
+    ['professional', 'leadership', 'executive'].forEach(function(tier) {
+      var priceEl = document.querySelector('[data-base="' + BASE_PRICES[tier] + '"]');
+      if (!priceEl) return;
+      var price = getPrice(tier);
+      priceEl.textContent = fmt(price);
+
+      // Update currency symbol
+      var symEl = priceEl.parentElement.querySelector('.mh-price-sym');
+      if (symEl) symEl.innerHTML = sym;
+
+      // Annual note
+      var noteEl = document.getElementById('note-' + tier);
+      if (noteEl) {
+        if (isAnnual) {
+          var annualTotal = ANNUAL_TOTAL[tier];
+          if (currency === 'USD') annualTotal = Math.round(USD_PRICES_MONTHLY[tier] * 12 * 0.8);
+          if (currency === 'EUR') annualTotal = Math.round(EUR_PRICES_MONTHLY[tier] * 12 * 0.8);
+          noteEl.textContent = 'Billed \u20B9' + fmt(annualTotal) + '/year';
+          noteEl.style.display = 'block';
+        } else {
+          noteEl.style.display = 'none';
+        }
+      }
+    });
+
+    // Update period label
+    var periods = document.querySelectorAll('.mh-pricing-period');
+    periods.forEach(function(el) {
+      var card = el.closest('.mh-pricing-card');
+      if (card && card.querySelector('[data-base="0"]')) return; // Free — no annual note
+    });
+  }
+
+  // ── Update Institutional Prices ──────────────────────────
+  function updateInstPrices() {
+    var sym = CURRENCY_SYMBOLS[currency];
+    var teamPrice = getInstPrice('team');
+    var entPrice  = getInstPrice('enterprise');
+
+    var teamEl = document.getElementById('inst-team-price');
+    var entEl  = document.getElementById('inst-ent-price');
+
+    if (teamEl) teamEl.textContent = fmt(teamPrice);
+    if (entEl)  entEl.textContent  = fmt(entPrice);
+
+    // Update symbols in inst cards
+    document.querySelectorAll('.mh-inst-card .mh-price-sym').forEach(function(el) {
+      el.innerHTML = sym;
+    });
+  }
+
+  // ── Billing Toggle ───────────────────────────────────────
+  var billingToggle = document.getElementById('billing-toggle');
+  var billingThumb  = document.getElementById('billing-thumb');
+  var saveBadge    = document.getElementById('save-badge');
+
+  if (billingToggle) {
+    billingToggle.addEventListener('click', function() {
+      isAnnual = !isAnnual;
+      if (isAnnual) {
+        billingThumb.classList.add('mh-annual');
+        saveBadge.style.display = 'inline';
+      } else {
+        billingThumb.classList.remove('mh-annual');
+        saveBadge.style.display = 'none';
+      }
+      updateIndividualPrices();
+    });
+  }
+
+  // ── Currency Selector ────────────────────────────────────
+  var currencySelect = document.getElementById('currency-select');
+  if (currencySelect) {
+    currencySelect.addEventListener('change', function() {
+      currency = currencySelect.value;
+      updateIndividualPrices();
+      updateInstPrices();
+    });
+  }
+
+  // ── Tab Toggle ───────────────────────────────────────────
+  var toggleInd = document.getElementById('toggle-individual');
+  var toggleInst = document.getElementById('toggle-institutional');
+  var tabInd = document.getElementById('tab-individual');
+  var tabInst = document.getElementById('tab-institutional');
+
+  if (toggleInd && toggleInst) {
+    toggleInd.addEventListener('click', function() {
+      toggleInd.classList.add('mh-toggle-active');
+      toggleInst.classList.remove('mh-toggle-active');
+      tabInd.style.display = 'block';
+      tabInst.style.display = 'none';
+    });
+    toggleInst.addEventListener('click', function() {
+      toggleInst.classList.add('mh-toggle-active');
+      toggleInd.classList.remove('mh-toggle-active');
+      tabInst.style.display = 'block';
+      tabInd.style.display = 'none';
+      updateInstPrices();
+    });
+  }
+
+  // ── Modal logic (unchanged) ───────────────────────────────
+  var ctas = document.querySelectorAll('[data-plan]');
+  var modal = document.getElementById('mh-email-modal');
+  var form = document.getElementById('mh-modal-form');
+  var successDiv = document.getElementById('mh-modal-success');
+  var planField = document.getElementById('mh-modal-plan');
+  var submitBtn = document.getElementById('mh-modal-submit');
+  var closeBtn = document.getElementById('mh-modal-close');
+  var emailConfirm = document.getElementById('mh-modal-email-confirm');
+
+  function openModal(plan) {
+    modal.style.display = 'flex';
+    planField.value = plan || '';
+    form.style.display = 'flex';
+    successDiv.style.display = 'none';
+  }
+
+  ctas.forEach(function(cta) {
+    cta.addEventListener('click', function() {
+      var plan = cta.getAttribute('data-plan');
+      openModal(plan);
+    });
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function() { modal.style.display = 'none'; });
+  }
+  if (modal) {
+    modal.addEventListener('click', function(e) { if (e.target === modal) modal.style.display = 'none'; });
+  }
+
+  if (form) {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+      var email = document.getElementById('mh-modal-email').value.trim();
+      var name  = document.getElementById('mh-modal-name').value.trim();
+      var role  = document.getElementById('mh-modal-role').value;
+      var plan  = planField.value;
+      if (!email || !/^[^\u0040@\u002E]+@[^\u0040@\u002E]+\u002E[^\u0040@\u002E]+$/.test(email)) {
+        alert('Please enter a valid email address.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Claim My Priority Spot';
+        return;
+      }
+      var data = { email: email, name: name || null, role: role || null, user_type: role || 'other', plan_interest: plan };
+      try {
+        var res  = await fetch('/api/waitlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        var json = await res.json();
+        if (json.success) {
+          form.style.display = 'none';
+          successDiv.style.display = 'block';
+          if (emailConfirm) emailConfirm.textContent = email;
+        } else {
+          alert(json.error || 'Something went wrong. Please try again.');
+        }
+      } catch(err) {
+        alert('Network error. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Claim My Priority Spot';
+      }
+    });
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && modal && modal.style.display === 'flex') {
+      modal.style.display = 'none';
+    }
+  });
+
+  // Initial render
+  updateIndividualPrices();
+})();
+</script>
