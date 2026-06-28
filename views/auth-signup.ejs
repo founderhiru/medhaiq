@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — MedhaIQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/interview.css">
+</head>
+<body>
+
+<div class="auth-page">
+  <h1>Create Your Account</h1>
+  <p class="subtitle">Start practicing interviews with AI-powered feedback.</p>
+
+  <div class="auth-card">
+    <label for="emailInput">Email address</label>
+    <input type="email" id="emailInput" placeholder="you@company.com" autocomplete="email" />
+    <label for="nameInput" style="margin-top:8px;">Your name (optional)</label>
+    <input type="text" id="nameInput" placeholder="Firstname Lastname" autocomplete="name" />
+    <label for="passwordInput" style="margin-top:8px;">Password</label>
+    <input type="password" id="passwordInput" placeholder="Minimum 8 characters" />
+    <label for="confirmPasswordInput" style="margin-top:8px;">Confirm password</label>
+    <input type="password" id="confirmPasswordInput" placeholder="Re-enter your password" />
+    <button class="auth-btn" id="signupBtn">Create Account</button>
+    <div class="auth-msg" id="authMsg"></div>
+  </div>
+
+  <div style="text-align:center;margin-top:24px;color:#94A3B8;font-size:14px;">
+    Already have an account? <a href="/auth/login" style="color:#3B82F6;text-decoration:none;">Sign in</a>
+  </div>
+</div>
+
+<script>
+(function() {
+  const emailInput = document.getElementById('emailInput');
+  const nameInput = document.getElementById('nameInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+  const signupBtn = document.getElementById('signupBtn');
+  const msg = document.getElementById('authMsg');
+
+  signupBtn.addEventListener('click', async function() {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+
+    // Validation
+    if (!email || !email.includes('@')) {
+      msg.className = 'auth-msg error';
+      msg.textContent = 'Please enter a valid email address.';
+      return;
+    }
+    if (!password || password.length < 8) {
+      msg.className = 'auth-msg error';
+      msg.textContent = 'Password must be at least 8 characters.';
+      return;
+    }
+    if (password !== confirmPassword) {
+      msg.className = 'auth-msg error';
+      msg.textContent = 'Passwords do not match.';
+      return;
+    }
+
+    signupBtn.disabled = true;
+    signupBtn.textContent = 'Creating account...';
+    msg.className = 'auth-msg';
+    msg.textContent = '';
+
+    try {
+      const resp = await fetch('/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          name: nameInput.value.trim()
+        }),
+      });
+      const data = await resp.json();
+
+      if (data.success) {
+        window.location.href = '/interview';
+      } else {
+        throw new Error(data.error || 'Failed to create account');
+      }
+    } catch (err) {
+      msg.className = 'auth-msg error';
+      msg.textContent = err.message || 'Something went wrong. Please try again.';
+      signupBtn.disabled = false;
+      signupBtn.textContent = 'Create Account';
+    }
+  });
+})();
+</script>
+</body>
+</html>
