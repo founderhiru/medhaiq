@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Session — MedhaIQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/interview.css">
+</head>
+<body>
+
+<div class="session-page">
+  <!-- Top bar -->
+  <div class="session-topbar">
+    <div class="topbar-left">
+      <div class="avatar <%= persona.styleColor %>" id="personaAvatar"></div>
+      <div>
+        <div class="topbar-name" id="personaName"></div>
+        <div class="topbar-title" id="personaTitle"></div>
+      </div>
+    </div>
+    <div class="topbar-center" id="questionCounter">Question 1 of 5</div>
+    <div class="topbar-right">
+      <span class="timer" id="timer">00:00</span>
+      <button class="end-btn" id="endBtn">End Session</button>
+    </div>
+  </div>
+
+  <!-- Question Stage -->
+  <div class="question-stage" id="stage">
+    <div class="question-card" id="questionCard">
+      <div class="question-text" id="questionText">Loading...</div>
+    </div>
+
+    <div class="answer-area" id="answerArea">
+      <textarea
+        class="answer-textarea"
+        id="answerInput"
+        placeholder="Type your answer here..."
+        maxlength="4000"
+      ></textarea>
+      <div class="char-count" id="charCount">0 / 4000</div>
+      <div class="answer-actions">
+        <button class="submit-btn" id="submitBtn" disabled>Submit Answer</button>
+        <button class="skip-btn" id="skipBtn">Skip →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" id="loadingState" style="display:none;">
+    <div class="loading-dots"><span></span><span></span><span></span></div>
+    <div class="loading-text" id="loadingText">Reviewing your answer...</div>
+  </div>
+
+  <!-- Score Badge -->
+  <div class="score-badge" id="scoreBadge">
+    <div class="badge-label">Answer Score</div>
+    <div class="badge-score" id="badgeScore">--</div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const sessionId = '<%= sessionId %>';
+  let currentQuestionId = '<%= questionId %>';
+  let questionCount = <%= questionNumber %>;
+  const maxQuestions = 5;
+  let startTime = Date.now();
+  let timerInterval;
+  let personaInitials = '<%= personaInitials %>';
+  let personaName = '<%= personaName %>';
+  let personaTitle = '<%= personaTitle %>';
+  let personaStyleColor = '<%= personaStyleColor %>';
+  let questionType = '<%= questionType %>';
+
+  // Init topbar
+  document.getElementById('personaAvatar').textContent = personaInitials;
+  document.getElementById('personaName').textContent = personaName;
+  document.getElementById('personaTitle').textContent = personaTitle;
+  document.getElementById('personaAvatar').className = 'avatar ' + personaStyleColor;
+
+  // Timer
+  function tick() {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const secs = String(elapsed % 60).padStart(2, '0');
+    document.getElementById('timer').textContent = mins + ':' + secs;
+  }
+  timerInterval = setInterval(tick, 1000);
+
+  // Question counter
+  function updateCounter() {
+    document.getElementById('questionCounter').textContent = 'Question ' + questionCount + ' of ' + maxQuestions;
+  }
+
+  // Char count
+  const answerInput = document.getElementById('answerInput');
+  answerInput.addEventListener('input', function() {
+    document.getElementById('charCount').textContent = this.value.length + ' / 4000';
+    document.getElementById('submitBtn').disabled = !this.value.trim();
+  });
+
+  // Show loading
+  function showLoading(text) {
+    document.getElementById('stage').style.display = 'none';
+    document.getElementById('loadingState').style.display = 'block';
+    document.getElementById('loadingText').textContent = text;
+  }
+
+  // Show question
+  function showQuestion(q, type) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('stage').style.display = 'flex';
+    document.getElementById('questionText').textContent = q.text;
+
+    // Show STAR tip for behavioral questions
+    const card = document.getElementById('questionCard');
+    if (type !== 'drill_down') {
+      const tip = card.querySelector('.question-tip');
+      if (tip) tip.remove();
+      card.insertAdjacentHTML('beforeend', '<div class="question-tip">Tip: Use the STAR framework — Situation, Task, Action, Result.</div>');
+    }
+
+    answerInput.value = '';
+    document.getElementById('charCount').textContent = '0 / 4000';
+    document.getElementById('submitBtn').disabled = true;
+    answerInput.focus();
+  }
+
+  // Show score badge
+  function showScore(score) {
+    const badge = document.getElementById('scoreBadge');
+    const scoreEl = document.getElementById('badgeScore');
+    scoreEl.textContent = score;
+    scoreEl.className = 'badge-score ' + (score >= 80 ? 'high' : score >= 60 ? 'mid' : 'low');
+    badge.classList.add('show');
+    setTimeout(() => badge.classList.remove('show'), 3000);
+  }
+
+  // Submit answer
+  document.getElementById('submitBtn').addEventListener('click', submitAnswer);
+  document.getElementById('skipBtn').addEventListener('click', function() { submitAnswer(true); });
+
+  async function submitAnswer(skip) {
+    const answerText = skip ? '' : answerInput.value.trim();
+    if (!skip && !answerText) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+
+    showLoading(personaName + ' is reviewing your answer...');
+
+    try {
+      const resp = await fetch('/api/interview/sessions/' + sessionId + '/answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionId: currentQuestionId,
+          answerText: answerText,
+          skip: skip,
+        }),
+      });
+
+      const data = await resp.json();
+
+      if (data.sessionEnded) {
+        clearInterval(timerInterval);
+        window.location.href = '/interview/report/' + data.reportId;
+        return;
+      }
+
+      // Show score if we had one
+      if (data.scores && !skip) {
+        showScore(data.scores.weighted.toFixed(0));
+      }
+
+      // Advance to next question
+      currentQuestionId = data.question.id;
+      questionCount++;
+      updateCounter();
+      showQuestion(data.question, data.question.type);
+
+    } catch (err) {
+      alert('Failed to submit. Please try again.');
+      document.getElementById('stage').style.display = 'flex';
+      document.getElementById('loadingState').style.display = 'none';
+      btn.disabled = false;
+    }
+  }
+
+  // End session
+  document.getElementById('endBtn').addEventListener('click', async function() {
+    if (!confirm('End this interview session? You won&apos;t be able to continue.')) return;
+    clearInterval(timerInterval);
+    try {
+      await fetch('/api/interview/sessions/' + sessionId, { method: 'DELETE' });
+    } catch (e) {}
+    window.location.href = '/dashboard/history';
+  });
+
+  // Init
+  updateCounter();
+  answerInput.focus();
+})();
+</script>
+</body>
+</html>

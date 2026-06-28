@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Report — MedhaIQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/interview.css">
+</head>
+<body>
+
+<div class="report-page">
+  <!-- Header -->
+  <div class="report-header">
+    <div class="report-date"><%= formattedDate %></div>
+    <div class="persona-info">
+      Interviewed by <strong><%= personaName %></strong> · <%= personaTitle %> · <%= roleTitle %> · <%= experienceLevel %>
+    </div>
+    <div class="score-ring">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle class="bg" cx="70" cy="70" r="60" />
+        <circle class="fill" cx="70" cy="70" r="60"
+          stroke-dasharray="<%= circumference %>"
+          stroke-dashoffset="<%= circumferenceOffset %>" />
+      </svg>
+      <div class="score-num"><%= Math.round(report.overall_score) %></div>
+    </div>
+    <div class="score-label">Overall Career Intelligence Score</div>
+  </div>
+
+  <!-- v0.5 MEDHAIQ CAREER INTELLIGENCE SCOREBOARD -->
+  <div class="report-section scoreboard-section">
+    <h3 class="scoreboard-title">📊 MEDHAIQ CAREER INTELLIGENCE SCOREBOARD</h3>
+    <div class="scoreboard-grid">
+      <% const scoreboardRows = [
+        { label: 'Career Intelligence', score: starAvg },
+        { label: 'Leadership Readiness', score: technicalAvg },
+        { label: 'Executive Presence', score: executiveAvg },
+        { label: 'GCC Readiness', score: gccAvg },
+        { label: 'Promotion Readiness', score: frictionAvg },
+      ]; %>
+      <% scoreboardRows.forEach(function(row) { %>
+        <% const cls = row.score >= 80 ? 'high' : row.score >= 60 ? 'mid' : 'low'; %>
+        <div class="scoreboard-row">
+          <span class="scoreboard-label"><%= row.label %></span>
+          <div class="scoreboard-track">
+            <div class="scoreboard-fill <%= cls %>" style="width: <%= row.score %>%"></div>
+          </div>
+          <span class="scoreboard-val <%= cls %>"><%= Math.round(row.score) %>/100</span>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+
+  <div class="report-divider"></div>
+
+  <!-- Recommendation Badge -->
+  <% const rec = report.recommendation || 'Lean Hire'; %>
+  <% const recClass = rec.startsWith('Strong') ? 'rec-strong' : (rec === 'Hire') ? 'rec-hire' : (rec === 'Lean Hire') ? 'rec-lean-hire' : (rec === 'Lean No Hire') ? 'rec-lean-no' : 'rec-no'; %>
+  <div class="recommendation-badge <%= recClass %>">
+    <span class="rec-label">Recommendation</span>
+    <span class="rec-value"><%= rec %></span>
+  </div>
+
+  <!-- Section 1: Executive Summary -->
+  <% if (report.executive_summary) { %>
+  <div class="report-section">
+    <h3>1. Executive Summary</h3>
+    <p class="exec-summary"><%= report.executive_summary %></p>
+  </div>
+  <% } %>
+
+  <!-- Section 2: Hiring Recommendation -->
+  <div class="report-section">
+    <h3>2. Hiring Recommendation</h3>
+    <p class="hiring-justification"><%= report.persona_verdict || 'Based on aggregate performance across all five evaluation vectors.' %></p>
+  </div>
+
+  <!-- Section 3: Technical & Behavioral Evidence Summary -->
+  <div class="report-section">
+    <h3>3. Technical &amp; Behavioral Evidence Summary</h3>
+    <% if (report.strongest_response) { %>
+    <div class="evidence-block evidence-strong">
+      <div class="evidence-label">Strongest Response Capture</div>
+      <div class="evidence-meta">Context: <%= report.strongest_response.context %></div>
+      <div class="evidence-quote">"<%= report.strongest_response.evidence %>"</div>
+    </div>
+    <% } %>
+    <% if (report.weakest_response) { %>
+    <div class="evidence-block evidence-weak">
+      <div class="evidence-label">Weakest Response / Friction Point Capture</div>
+      <div class="evidence-meta">Context: <%= report.weakest_response.context %></div>
+      <div class="evidence-quote">"<%= report.weakest_response.evidence %>"</div>
+    </div>
+    <% } %>
+  </div>
+
+  <!-- Section 4: Communication & Delivery Diagnostics -->
+  <div class="report-section">
+    <h3>4. Communication &amp; Delivery Diagnostics</h3>
+    <div class="diagnostics-grid">
+      <div class="diag-item">
+        <div class="diag-label">Structural Layout &amp; Flow</div>
+        <div class="diag-value"><%= report.structural_flow || 'Moderate — logical structure present but could be tightened.' %></div>
+      </div>
+      <div class="diag-item">
+        <div class="diag-label">Linguistic Nuances &amp; Fillers</div>
+        <div class="diag-value"><%= report.linguistic_nuances || 'Developing executive vocabulary and filler frequency.' %></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: Top 3 Development Priorities -->
+  <div class="report-section">
+    <h3>5. Top 3 Development Priorities</h3>
+    <ol class="priority-list">
+      <% const priorities = report.improvements_json || []; %>
+      <% if (priorities.length === 0) { %>
+      <li><strong>STAR Outcome Framing:</strong> Anchor every answer with a specific quantified result: %, $, headcount, latency ms.</li>
+      <li><strong>Technical Accuracy:</strong> Validate technical claims with trade-off acknowledgment before stating conclusions.</li>
+      <li><strong>Personal Ownership:</strong> Replace collective pronouns with specific personal contributions in every response.</li>
+      <% } else { %>
+        <% priorities.slice(0, 3).forEach(function(p, i) { %>
+        <li><strong><%= p.issue || 'Priority ' + (i+1) %>:</strong> <%= p.fix || '' %></li>
+        <% }); %>
+      <% } %>
+    </ol>
+  </div>
+
+  <!-- CTAs -->
+  <div class="report-ctas">
+    <a href="/interview" class="cta-btn primary">Practice Again</a>
+    <a href="/interview" class="cta-btn outline">Try a Different Persona</a>
+    <a href="/dashboard/history" class="cta-btn emerald">View History</a>
+    <a href="/" class="cta-btn text-link">Return Home</a>
+  </div>
+</div>
+
+</body>
+</html>

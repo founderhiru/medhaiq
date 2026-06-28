@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Something went wrong — MedhaIQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/interview.css">
+</head>
+<body>
+<div class="auth-page" style="align-items: center; justify-content: center; min-height: 100vh;">
+  <div class="auth-card" style="text-align: center; max-width: 480px;">
+    <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+    <h1 style="font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 12px; font-family: 'Plus Jakarta Sans', sans-serif;">Something went wrong</h1>
+    <p style="color: #8b949e; font-size: 15px; margin-bottom: 32px; line-height: 1.6;">
+      Please try again. If this persists, contact our support team.
+    </p>
+    <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+      <p style="color: #f85149; font-size: 12px; margin-top: -20px; margin-bottom: 24px; font-family: monospace;"><%= errorMessage %></p>
+    <% } %>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <a href="<%= url || '/' %>" style="display: inline-block; padding: 12px 24px; background: #3b82f6; color: #fff; border-radius: 8px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; text-decoration: none; font-size: 14px;">Try Again</a>
+      <a href="/" style="display: inline-block; padding: 12px 24px; background: #21262d; color: #8b949e; border-radius: 8px; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif; text-decoration: none; font-size: 14px; border: 1px solid #30363d;">Go Home</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

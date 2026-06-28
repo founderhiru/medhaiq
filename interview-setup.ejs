@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Start Your Interview — MedhaIQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/interview.css">
+</head>
+<body>
+
+<%- include('partials/interview-header') %>
+
+<div class="interview-page">
+  <h1>Start Your Interview Session</h1>
+  <p class="subtitle">Select your role, experience level, and the interviewer persona you want to practice with.</p>
+
+  <!-- Step 1: Role Configuration -->
+  <div class="step-label">Step 1 of 2</div>
+  <h2 class="step-title">Configure Your Role</h2>
+  <div class="role-config">
+    <div class="field-group">
+      <label for="roleTitle">Job Title</label>
+      <select id="roleTitle">
+        <option value="">Select a role...</option>
+        <option value="Software Engineer">Software Engineer</option>
+        <option value="Product Manager">Product Manager</option>
+        <option value="Data Scientist">Data Scientist</option>
+        <option value="Management Consultant">Management Consultant</option>
+        <option value="Finance / Investment Analyst">Finance / Investment Analyst</option>
+        <option value="Marketing Manager">Marketing Manager</option>
+        <option value="HR / Talent Leader">HR / Talent Leader</option>
+        <option value="Healthcare Professional">Healthcare Professional</option>
+        <option value="Academic / Educator">Academic / Educator</option>
+        <option value="custom">Custom...</option>
+      </select>
+      <input type="text" id="roleCustom" placeholder="Enter your role..." style="display:none;margin-top:8px;" />
+    </div>
+
+    <div class="field-group">
+      <label>Experience Level</label>
+      <div class="exp-toggle" id="expToggle">
+        <button type="button" data-value="fresher">Fresher (0–2 yrs)</button>
+        <button type="button" class="active" data-value="mid">Mid-Career (3–8 yrs)</button>
+        <button type="button" data-value="senior">Senior (8–15 yrs)</button>
+        <button type="button" data-value="executive">Executive (15+ yrs)</button>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label for="orgPreset">Organisation Preset (optional)</label>
+      <select id="orgPreset">
+        <option value="">Generic Global Enterprise</option>
+        <option value="Google">Google</option>
+        <option value="Amazon">Amazon</option>
+        <option value="Microsoft">Microsoft</option>
+        <option value="McKinsey & Co">McKinsey & Co</option>
+        <option value="BCG">BCG</option>
+        <option value="Deloitte">Deloitte</option>
+        <option value="Goldman Sachs">Goldman Sachs</option>
+        <option value="Custom">Custom...</option>
+      </select>
+      <input type="text" id="orgCustom" placeholder="Enter organisation..." style="display:none;margin-top:8px;" />
+    </div>
+  </div>
+
+  <!-- Step 2: Persona Selection -->
+  <div class="step-label">Step 2 of 2</div>
+  <h2 class="step-title">Choose Your Interviewer</h2>
+  <div class="persona-grid" id="personaGrid">
+    <div class="persona-card" data-persona="alex_chen">
+      <div class="check">✓</div>
+      <div class="p-name">Alex Chen</div>
+      <div class="p-title">Senior Principal Engineer · AWS</div>
+      <span class="p-style royal-blue">Structured Technical</span>
+      <div class="p-focus">Leadership principles, system design, technical depth. LP-driven, bar-raiser standard.</div>
+    </div>
+    <div class="persona-card" data-persona="priya_ramesh">
+      <div class="check">✓</div>
+      <div class="p-name">Priya Ramesh</div>
+      <div class="p-title">Partner · McKinsey Consulting</div>
+      <span class="p-style emerald">Case-Led Communication</span>
+      <div class="p-focus">Problem structuring, MECE frameworks, executive presence, fast-paced articulation.</div>
+    </div>
+    <div class="persona-card" data-persona="marcus_webb">
+      <div class="check">✓</div>
+      <div class="p-name">Marcus Webb</div>
+      <div class="p-title">VP Product · Series B SaaS</div>
+      <span class="p-style gold">Product Thinking</span>
+      <div class="p-focus">Product sense, prioritisation, metrics, user empathy, cross-functional leadership.</div>
+    </div>
+    <div class="persona-card" data-persona="sanjeev_nair">
+      <div class="check">✓</div>
+      <div class="p-name">Sanjeev Nair</div>
+      <div class="p-title">Engineering Director · Global Tech Firm</div>
+      <span class="p-style royal-blue">Core Engineering + Team</span>
+      <div class="p-focus">Architecture decisions, agile delivery, team mentoring, enterprise execution.</div>
+    </div>
+    <div class="persona-card" data-persona="sarah_kim">
+      <div class="check">✓</div>
+      <div class="p-name">Sarah Kim</div>
+      <div class="p-title">CEO · Pre-Series A Startup</div>
+      <span class="p-style emerald">Generalist High-Bar</span>
+      <div class="p-focus">First-principles thinking, resilience, bias for action, growth mindset under ambiguity.</div>
+    </div>
+    <div class="persona-card" data-persona="raj_mehta">
+      <div class="check">✓</div>
+      <div class="p-name">Raj Mehta</div>
+      <div class="p-title">Global Director · GCC Enterprise Network</div>
+      <span class="p-style gold">Executive Presence</span>
+      <div class="p-focus">Stakeholder management, global team leadership, cross-border strategy, board communication.</div>
+    </div>
+  </div>
+
+  <div class="begin-wrap">
+    <button class="begin-btn" id="beginBtn" disabled>Begin Interview</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  // State
+  let selectedPersona = null;
+  let experienceLevel = 'mid';
+  let roleTitle = '';
+  let orgPreset = '';
+
+  // Role title custom handling
+  document.getElementById('roleTitle').addEventListener('change', function() {
+    const custom = document.getElementById('roleCustom');
+    custom.style.display = this.value === 'custom' ? 'block' : 'none';
+    if (this.value !== 'custom') roleTitle = this.value;
+  });
+  document.getElementById('roleCustom').addEventListener('input', function() {
+    roleTitle = this.value;
+  });
+
+  // Org preset custom handling
+  document.getElementById('orgPreset').addEventListener('change', function() {
+    const custom = document.getElementById('orgCustom');
+    custom.style.display = this.value === 'Custom' ? 'block' : 'none';
+    if (this.value !== 'Custom') orgPreset = this.value;
+  });
+  document.getElementById('orgCustom').addEventListener('input', function() {
+    orgPreset = this.value;
+  });
+
+  // Experience level toggle
+  document.querySelectorAll('#expToggle button').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('#expToggle button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      experienceLevel = btn.dataset.value;
+    });
+  });
+
+  // Persona selection
+  document.querySelectorAll('.persona-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedPersona = card.dataset.persona;
+      checkBegin();
+    });
+  });
+
+  function checkBegin() {
+    const canBegin = selectedPersona && roleTitle;
+    document.getElementById('beginBtn').disabled = !canBegin;
+  }
+
+  // Check role on select change
+  document.getElementById('roleTitle').addEventListener('change', function() {
+    if (this.value !== 'custom') {
+      roleTitle = this.value;
+      checkBegin();
+    }
+  });
+
+  // Begin interview
+  document.getElementById('beginBtn').addEventListener('click', async function() {
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Starting session...';
+
+    try {
+      const finalRole = roleTitle || document.getElementById('roleTitle').value;
+
+      const resp = await fetch('/api/interview/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          personaId: selectedPersona,
+          roleTitle: finalRole,
+          experienceLevel: experienceLevel,
+          orgPreset: orgPreset || document.getElementById('orgPreset').value,
+        }),
+      });
+
+      if (!resp.ok) throw new Error('Session creation failed');
+      const data = await resp.json();
+      window.location.href = '/interview/session/' + data.sessionId;
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Begin Interview';
+      alert('Failed to start session. Please try again.');
+    }
+  });
+})();
+</script>
+</body>
+</html>

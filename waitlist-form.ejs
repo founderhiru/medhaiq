@@ -1,0 +1,118 @@
+<section class="mh-waitlist" id="waitlist">
+  <div class="mh-waitlist-inner">
+    <div class="mh-section-eyebrow">Early Access</div>
+    <h2 class="mh-waitlist-headline">Get interview-ready before the world catches up.</h2>
+    <p class="mh-waitlist-sub">
+      Join the waitlist for early access, founding member pricing, and your first free mock interview when we launch.
+    </p>
+
+    <div class="mh-form-success" id="waitlist-success">
+      <div class="mh-success-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="mh-success-title">You're in!</div>
+      <p class="mh-success-msg">
+        We'll send your first practice session the moment we launch.<br>
+        Practice. Polish. Place.
+      </p>
+    </div>
+
+    <form class="mh-form" id="waitlist-form" novalidate>
+      <div class="mh-form-error" id="form-error"></div>
+
+      <div class="mh-form-row">
+        <div class="mh-form-group">
+          <label class="mh-form-label" for="wl-name">Full Name</label>
+          <input class="mh-form-input" type="text" id="wl-name" name="name" placeholder="Jordan Smith" required autocomplete="name">
+        </div>
+        <div class="mh-form-group">
+          <label class="mh-form-label" for="wl-email">Email Address</label>
+          <input class="mh-form-input" type="email" id="wl-email" name="email" placeholder="jordan@company.com" required autocomplete="email">
+        </div>
+      </div>
+
+      <div class="mh-form-group">
+        <label class="mh-form-label" for="wl-city">City / Country</label>
+        <input class="mh-form-input" type="text" id="wl-city" name="city" placeholder="San Francisco, USA" autocomplete="address-level2">
+      </div>
+
+      <div class="mh-form-group">
+        <label class="mh-form-label" for="wl-type">I am a</label>
+        <select class="mh-form-select mh-form-full" id="wl-type" name="user_type" required>
+          <option value="" disabled selected>Select your role</option>
+          <option value="student">Student</option>
+          <option value="professional">Working Professional</option>
+          <option value="doctor">Doctor / Clinician</option>
+          <option value="teacher">Teacher / Educator</option>
+          <option value="engineer">Engineer / Technical</option>
+          <option value="hr_manager">HR Manager / Corporate Team</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <button type="submit" class="mh-form-submit" id="wl-submit">
+        Start Free Practice
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:8px"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+
+      <p class="mh-form-note">No spam. No selling your data. Just launch updates.</p>
+    </form>
+  </div>
+</section>
+
+<script>
+(function() {
+  var form = document.getElementById('waitlist-form');
+  var success = document.getElementById('waitlist-success');
+  var errorEl = document.getElementById('form-error');
+  var submitBtn = document.getElementById('wl-submit');
+  if (!form) return;
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    errorEl.classList.remove('show');
+
+    var data = {
+      name: form.name.value.trim(),
+      email: form.email.value.trim(),
+      phone: form.phone ? form.phone.value.trim() : null,
+      city: form.city.value.trim() || null,
+      user_type: form.user_type.value
+    };
+
+    if (!data.name) { showError('Please enter your name.'); return; }
+    if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { showError('Please enter a valid email.'); return; }
+    if (!data.user_type) { showError('Please select your role.'); return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    try {
+      var res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      var json = await res.json();
+      if (json.success) {
+        form.style.display = 'none';
+        success.classList.add('show');
+      } else {
+        showError(json.error || 'Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      showError('Network error. Please check your connection and try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Start Free Practice <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:8px"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    }
+  });
+
+  function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.classList.add('show');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = 'Start Free Practice <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:8px"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+  }
+})();
+</script>

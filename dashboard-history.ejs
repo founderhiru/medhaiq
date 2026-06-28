@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session History — MedhaIQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/interview.css">
+</head>
+<body>
+
+<%- include('partials/interview-header') %>
+
+<div class="dashboard-page">
+  <h1>Your Interview History</h1>
+  <p class="subtitle">Review past sessions, track your progress, and identify areas to improve.</p>
+
+  <% if (trend && trend.length > 1) { %>
+  <div class="trend-section">
+    <h3>Score Trend</h3>
+    <svg class="score-trend-svg" viewBox="0 0 <%= trendWidth %> 80" preserveAspectRatio="none" id="trendSvg">
+      <defs>
+        <linearGradient id="trendGrad" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="rgba(59,130,246,0.25)"/>
+          <stop offset="100%" stop-color="rgba(59,130,246,0)"/>
+        </linearGradient>
+      </defs>
+      <!-- Area fill -->
+      <polygon class="trend-fill" points="<%= trendPointsFill %>"/>
+      <!-- Line -->
+      <polyline class="trend-line" points="<%= trendPoints %>"/>
+      <!-- Dots -->
+      <% trend.forEach(function(score, i) { %>
+        <% const x = trendX(i); const y = trendY(score); %>
+        <circle class="trend-dot" cx="<%= x %>" cy="<%= y %>" r="4"/>
+      <% }); %>
+    </svg>
+    <% if (trend.length > 0) { %>
+    <p style="font-size:12px;color:var(--dim);margin-top:8px;">Latest: <strong style="color:var(--bright)"><%= trend[trend.length-1] %></strong> · Average: <strong style="color:var(--muted)"><%= (trend.reduce((a,b)=>a+b,0)/trend.length).toFixed(1) %></strong></p>
+    <% } %>
+  </div>
+  <% } %>
+
+  <% if (history && history.length > 0) { %>
+  <div class="report-section" style="padding:0;">
+    <table class="session-table" style="padding:24px;">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Interviewer</th>
+          <th>Role</th>
+          <th>Score</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% history.forEach(function(s) { %>
+          <% const scoreClass = s.overallScore >= 80 ? 'high' : s.overallScore >= 60 ? 'mid' : 'low'; %>
+          <% const personaNames = {alex_chen:'Alex Chen',priya_ramesh:'Priya Ramesh',marcus_webb:'Marcus Webb',sanjeev_nair:'Sanjeev Nair',sarah_kim:'Sarah Kim',raj_mehta:'Raj Mehta'}; %>
+          <tr>
+            <td style="color:var(--muted);font-size:13px;"><%= new Date(s.startedAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) %></td>
+            <td><strong style="font-size:14px;"><%= personaNames[s.personaId] || s.personaId %></strong></td>
+            <td style="color:var(--muted);font-size:13px;"><%= s.roleTitle || '—' %></td>
+            <td class="score-cell <%= scoreClass %>"><%= s.overallScore !== null ? s.overallScore : '—' %></td>
+            <td><span class="status-badge <%= s.status %>"><%= s.status.replace('_',' ') %></span></td>
+            <td>
+              <% if (s.status === 'completed' && s.overallScore !== null) { %>
+                <a href="/interview/report/<%= s.id %>" class="view-link">View Report →</a>
+              <% } else { %>
+                <span style="color:var(--dim);font-size:13px;">—</span>
+              <% } %>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } else { %>
+  <div class="empty-state">
+    <h3>No sessions yet</h3>
+    <p>Complete your first mock interview to see your history here.</p>
+    <a href="/interview" class="cta-btn primary" style="display:inline-block;margin-top:24px;">Start Your First Interview</a>
+  </div>
+  <% } %>
+</div>
+
+</body>
+</html>
