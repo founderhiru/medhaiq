@@ -3,19 +3,12 @@
 const express = require('express');
 const path = require('path');
 const { buildLandingContext } = require('./lib/landing-context');
-const passport = require('./config/passport');
+
 
 // Fail fast if DATABASE_URL is missing
 if (!process.env.DATABASE_URL) {
   console.error('ERROR: DATABASE_URL environment variable is required');
   process.exit(1);
-}
-
-// Google OAuth credentials check
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  console.log('Google OAuth configured');
-} else {
-  console.log('Google OAuth credentials not configured — sign-in with Google unavailable');
 }
 
 // Catch unhandled promise rejections to prevent silent crashes
@@ -28,7 +21,7 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(passport.initialize());
+
 
 // Minimal cookie parser — no extra dependencies
 app.use((req, _res, next) => {
