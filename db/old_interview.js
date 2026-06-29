@@ -51,15 +51,14 @@ async function abandonSession(sessionId) {
 
 async function getSessionQuestions(sessionId) {
   const result = await pool.query(
-    `SELECT DISTINCT ON (q.id) q.*, a.answer_text, a.submitted_at as answer_time
+    `SELECT q.*, a.answer_text, a.submitted_at as answer_time
      FROM interview_questions q
      LEFT JOIN interview_answers a ON a.question_id = q.id
      WHERE q.session_id = $1
-     ORDER BY q.id, a.submitted_at DESC`,
+     ORDER BY COALESCE(q.question_order, q.id)`,
     [sessionId]
   );
-  // Re-sort by question_order after DISTINCT ON
-  return result.rows.sort((a, b) => (a.question_order || a.id) - (b.question_order || b.id));
+  return result.rows;
 }
 
 async function getSessionScores(sessionId) {
@@ -100,30 +99,14 @@ async function addScore({ sessionId, questionId, star, technical, executive, gcc
   return result.rows[0];
 }
 
-async function saveReport({ sessionId, overallScore, strengthsJson, improvementsJson, personaVerdict, nextStepsJson, reportMarkdown, executiveSummary, recommendation, strongestResponse, weakestResponse, structuralFlow, linguisticNuances, scoreboard }) {
+async function saveReport({ sessionId, overallScore, strengthsJson, improvementsJson, personaVerdict, nextStepsJson, reportMarkdown }) {
   const result = await pool.query(
-    `INSERT INTO interview_reports (
-       session_id, overall_score, strengths_json, improvements_json, persona_verdict,
-       next_steps_json, report_markdown, executive_summary, recommendation,
-       strongest_response, weakest_response, structural_flow, linguistic_nuances, scoreboard
-     )
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
-     ON CONFLICT (session_id) DO UPDATE SET
-       overall_score = $2, strengths_json = $3, improvements_json = $4, persona_verdict = $5,
-       next_steps_json = $6, report_markdown = $7, executive_summary = $8, recommendation = $9,
-       strongest_response = $10, weakest_response = $11, structural_flow = $12,
-       linguistic_nuances = $13, scoreboard = $14
+    `INSERT INTO interview_reports (session_id, overall_score, strengths_json, improvements_json, persona_verdict, next_steps_json, report_markdown)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     ON CONFLICT (session_id) DO UPDATE
+     SET overall_score = $2, strengths_json = $3, improvements_json = $4, persona_verdict = $5, next_steps_json = $6, report_markdown = $7
      RETURNING *`,
-    [
-      sessionId, overallScore,
-      JSON.stringify(strengthsJson), JSON.stringify(improvementsJson),
-      personaVerdict, JSON.stringify(nextStepsJson), reportMarkdown,
-      executiveSummary || null, recommendation || null,
-      strongestResponse ? JSON.stringify(strongestResponse) : null,
-      weakestResponse ? JSON.stringify(weakestResponse) : null,
-      structuralFlow || null, linguisticNuances || null,
-      scoreboard ? JSON.stringify(scoreboard) : null,
-    ]
+    [sessionId, overallScore, JSON.stringify(strengthsJson), JSON.stringify(improvementsJson), personaVerdict, JSON.stringify(nextStepsJson), reportMarkdown]
   );
   return result.rows[0];
 }

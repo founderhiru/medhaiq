@@ -199,13 +199,17 @@
         }),
       });
 
-      if (!resp.ok) throw new Error('Session creation failed');
       const data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data.error || 'Session creation failed (' + resp.status + ')');
+      }
+      if (!data.sessionId) throw new Error('No session ID returned from server');
       window.location.href = '/interview/session/' + data.sessionId;
     } catch (err) {
       btn.disabled = false;
       btn.textContent = 'Begin Interview';
-      alert('Failed to start session. Please try again.');
+      console.error('[MedhaIQ] Start session error:', err);
+      alert('Failed to start: ' + (err.message || 'Unknown error') + '\n\nCheck browser DevTools Console for details.');
     }
   });
 })();

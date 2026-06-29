@@ -1,18 +1,16 @@
-// Entry point — wires middleware and mounts routes only.
-// Business logic lives in db/, routes/, services/.
+// Entry point — wires middleware, runs migrations, mounts routes.
 const express = require('express');
 const path = require('path');
 const { buildLandingContext } = require('./lib/landing-context');
 
-
 // Fail fast if DATABASE_URL is missing
 if (!process.env.DATABASE_URL) {
-  console.error('ERROR: DATABASE_URL environment variable is required');
+  console.error('FATAL: DATABASE_URL environment variable is required');
   process.exit(1);
 }
 
-// Catch unhandled promise rejections to prevent silent crashes
-process.on('unhandledRejection', (reason, _promise) => {
+// Catch unhandled promise rejections
+process.on('unhandledRejection', (reason) => {
   console.error('[unhandled rejection]', reason);
 });
 
@@ -21,7 +19,6 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 // Minimal cookie parser — no extra dependencies
 app.use((req, _res, next) => {
@@ -34,44 +31,31 @@ app.use((req, _res, next) => {
   next();
 });
 
-// EJS view engine. Templates live in ./views/ (entry point: layout.ejs).
+// EJS view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Health check endpoint (required for Render)
-// Does NOT query database to allow Neon auto-suspend
-app.get('/health', (_req, res) => {
-  res.json({ status: 'healthy' });
-});
+// Health check (no DB — allows Neon auto-suspend)
+app.get('/health', (_req, res) => res.json({ status: 'healthy' }));
 
-// Serve static files from public folder.
+// Static files
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
-// ── API Routes ─────────────────────────────────────────────────────────────
-app.use('/api/waitlist',      require('./routes/waitlist'));
-app.use('/api/contact',       require('./routes/contact'));
-app.use('/auth',              require('./routes/auth'));
-app.use('/api/interview',     require('./routes/interview'));
-app.use('/api/dashboard',     require('./routes/dashboard'));
+// ── API Routes ──────────────────────────────────────────────────────────────
+app.use('/api/waitlist',   require('./routes/waitlist'));
+app.use('/api/contact',    require('./routes/contact'));
+app.use('/auth',           require('./routes/auth'));
+app.use('/api/interview',  require('./routes/interview'));
+app.use('/api/dashboard',  require('./routes/dashboard'));
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
-
-// Landing page
-app.get('/', (_req, res) => {
-  res.render('layout', buildLandingContext());
-});
-
+app.get('/', (_req, res) => res.render('layout', buildLandingContext()));
 app.get('/privacy', (_req, res) => res.redirect('/#waitlist'));
 app.get('/terms',   (_req, res) => res.redirect('/#waitlist'));
 
-// Auth pages
-app.get('/auth/login', (_req, res) => {
-  res.render('auth-login');
-});
-app.get('/auth/signup', (_req, res) => {
-  res.render('auth-signup');
-});
-app.get('/login', (_req, res) => res.redirect('/auth/login'));
+app.get('/auth/login',  (_req, res) => res.render('auth-login'));
+app.get('/auth/signup', (_req, res) => res.render('auth-signup'));
+app.get('/login',       (_req, res) => res.redirect('/auth/login'));
 
 // Interview setup
 app.get('/interview', (_req, res) => {
@@ -81,34 +65,33 @@ app.get('/interview', (_req, res) => {
 });
 
 // Interview session
-app.get('/interview/session/:id', async (req, res, next) => {
+app.get('/interview/session/:id', async (req, res) => {
   try {
     const userId = req.cookies?.user_id;
     if (!userId) return res.redirect('/auth/login');
 
-    const { getSession } = require('./db/interview');
+    const { getSession, getSessionQuestions } = require('./db/interview');
     const session = await getSession(req.params.id);
     if (!session) return res.status(404).send('Session not found');
-    if (session.user_id !== userId) return res.status(403).send('Forbidden');
+    if (String(session.user_id) !== String(userId)) return res.status(403).send('Forbidden');
 
-    const { getSessionQuestions } = require('./db/interview');
     const questions = await getSessionQuestions(req.params.id);
-    // Get current question (latest unanswered or first)
-    const currentQ = questions.find(q => !q.answer_text) || questions[questions.length - 1];
+    const currentQ = questions.find(q => q.answer_text === null || q.answer_text === undefined)
+      || questions[questions.length - 1];
     if (!currentQ) return res.redirect('/interview/report/' + req.params.id);
 
-    // Build persona info for template
     const { PERSONAS } = require('./services/interview');
     const persona = PERSONAS[session.persona_id] || PERSONAS.alex_chen;
     const initials = persona.name.split(' ').map(n => n[0]).join('');
+    const answeredCount = questions.filter(q => q.answer_text !== null && q.answer_text !== undefined).length;
 
     res.render('interview-session', {
       sessionId: req.params.id,
       questionId: currentQ.id,
       questionText: currentQ.question_text || '',
       questionType: currentQ.question_type || 'opening',
-      questionNumber: questions.filter(q => q.answer_text === null || q.answer_text === undefined).length || 1,
-      answeredCount: questions.filter(q => q.answer_text !== null && q.answer_text !== undefined).length,
+      questionNumber: answeredCount + 1,
+      answeredCount,
       personaName: persona.name,
       personaTitle: persona.title + ' @ ' + persona.org,
       personaInitials: initials,
@@ -121,29 +104,20 @@ app.get('/interview/session/:id', async (req, res, next) => {
 });
 
 // Interview report
-app.get('/interview/report/:id', async (req, res, next) => {
+app.get('/interview/report/:id', async (req, res) => {
   try {
-    const { getReport, getSession } = require('./db/interview');
+    const { getReport, getSession, getSessionScores } = require('./db/interview');
     const report = await getReport(req.params.id);
     if (!report) return res.status(404).send('Report not found');
 
-    const session = await getSession(req.params.id);
     const { PERSONAS } = require('./services/interview');
     const persona = PERSONAS[report.persona_id] || PERSONAS.alex_chen;
+    const scoresData = await getSessionScores(req.params.id);
 
-    // Calculate averages for score bars
-    const scores = require('./db/interview');
-    const scoresData = await scores.getSessionScores(req.params.id);
+    const avg = (key) => scoresData.length
+      ? scoresData.reduce((s, x) => s + parseFloat(x[key] || 0), 0) / scoresData.length : 0;
 
-    const starAvg = scoresData.length ? scoresData.reduce((s, x) => s + parseFloat(x.star_score), 0) / scoresData.length : 0;
-    const technicalAvg = scoresData.length ? scoresData.reduce((s, x) => s + parseFloat(x.technical_depth), 0) / scoresData.length : 0;
-    const executiveAvg = scoresData.length ? scoresData.reduce((s, x) => s + parseFloat(x.executive_presence), 0) / scoresData.length : 0;
-    const gccAvg = scoresData.length ? scoresData.reduce((s, x) => s + parseFloat(x.gcc_readiness), 0) / scoresData.length : 0;
-    const frictionAvg = scoresData.length ? scoresData.reduce((s, x) => s + parseFloat(x.core_friction), 0) / scoresData.length : 0;
-
-    // Score ring calculations
-    const maxCircumference = 2 * Math.PI * 60;
-    const circumference = maxCircumference;
+    const circumference = 2 * Math.PI * 60;
     const circumferenceOffset = circumference - ((report.overall_score || 0) / 100) * circumference;
 
     res.render('interview-report', {
@@ -152,12 +126,14 @@ app.get('/interview/report/:id', async (req, res, next) => {
       personaTitle: persona.title + ' @ ' + persona.org,
       roleTitle: report.role_title || 'General Professional',
       experienceLevel: report.experience_level || 'Mid-Career',
-      formattedDate: new Date(report.created_at || report.started_at).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-      starAvg,
-      technicalAvg,
-      executiveAvg,
-      gccAvg,
-      frictionAvg,
+      formattedDate: new Date(report.created_at || report.started_at).toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      }),
+      starAvg: avg('star_score'),
+      technicalAvg: avg('technical_depth'),
+      executiveAvg: avg('executive_presence'),
+      gccAvg: avg('gcc_readiness'),
+      frictionAvg: avg('core_friction'),
       circumference,
       circumferenceOffset,
     });
@@ -168,7 +144,7 @@ app.get('/interview/report/:id', async (req, res, next) => {
 });
 
 // Dashboard history
-app.get('/dashboard/history', async (req, res, next) => {
+app.get('/dashboard/history', async (req, res) => {
   try {
     const userId = req.cookies?.user_id;
     if (!userId) return res.redirect('/auth/login');
@@ -190,52 +166,42 @@ app.get('/dashboard/history', async (req, res, next) => {
       status: s.status,
     }));
 
-    // Score trend
-    const trend = history
-      .filter(s => s.overallScore !== null)
-      .slice(0, 10)
-      .reverse()
-      .map(s => s.overallScore);
-
-    // SVG trend points
-    let trendPoints = '';
-    let trendPointsFill = '';
-    const trendWidth = 600;
-    const trendHeight = 80;
-    function trendX(i) { return trend.length > 1 ? (i / (trend.length - 1)) * trendWidth : trendWidth / 2; }
-    function trendY(score) { return trendHeight - (score / 100) * trendHeight; }
-
+    const trend = history.filter(s => s.overallScore !== null).slice(0, 10).reverse().map(s => s.overallScore);
+    const trendWidth = 600, trendHeight = 80;
+    const trendX = (i) => trend.length > 1 ? (i / (trend.length - 1)) * trendWidth : trendWidth / 2;
+    const trendY = (score) => trendHeight - (score / 100) * trendHeight;
+    let trendPoints = '', trendPointsFill = '';
     if (trend.length > 0) {
       const pts = trend.map((score, i) => `${trendX(i)},${trendY(score)}`);
       trendPoints = pts.join(' ');
-      const minX = trendX(0);
-      const maxX = trendX(trend.length - 1);
-      const minY = trendHeight;
-      trendPointsFill = pts.join(' ') + ` ${maxX},${trendHeight} ${minX},${trendHeight}`;
+      trendPointsFill = pts.join(' ') + ` ${trendX(trend.length - 1)},${trendHeight} ${trendX(0)},${trendHeight}`;
     }
 
-    res.render('dashboard-history', {
-      history,
-      trend,
-      trendPoints,
-      trendPointsFill,
-      trendWidth,
-      trendX,
-      trendY,
-    });
+    res.render('dashboard-history', { history, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY });
   } catch (err) {
     console.error('[dashboard/history]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });
 
-// Global error handler — catches any remaining synchronous errors and async
-// exceptions that propagated past individual route handlers.
+// Global error handler
 app.use((err, req, res, _next) => {
   console.error('[error handler]', err);
-  res.status(500).render('error-boundary', { url: req.url });
+  res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+// ── Start server — run migrations first ─────────────────────────────────────
+const { runMigrations } = require('./db/migrate');
+
+runMigrations()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`[server] Running on port ${port}`);
+      console.log(`[server] NODE_ENV=${process.env.NODE_ENV || 'development'}`);
+      console.log(`[server] ANTHROPIC_API_KEY=${process.env.ANTHROPIC_API_KEY ? 'SET ✓' : 'MISSING ✗'}`);
+    });
+  })
+  .catch(err => {
+    console.error('[server] Migration failed — aborting startup:', err.message);
+    process.exit(1);
+  });

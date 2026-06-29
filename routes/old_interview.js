@@ -100,7 +100,7 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
     // Verify session ownership
     const session = await getSession(sessionId);
     if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (String(session.user_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' });
+    if (session.user_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
     if (session.status !== 'active') return res.status(400).json({ error: 'Session is not active' });
 
     // 1. Save the answer
@@ -140,7 +140,7 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
       // Generate report
       const allScores = await getSessionScores(sessionId);
       const qaPairs = allQuestions
-        .filter(q => q.answer_text !== null && q.answer_text !== undefined)
+        .filter(q => q.answer_text)
         .map(q => ({ question: q.question_text, answer: q.answer_text }));
 
       const reportData = await generateReport({
@@ -161,13 +161,6 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
         personaVerdict: reportData.persona_verdict,
         nextStepsJson: reportData.next_steps_json,
         reportMarkdown: reportData.report_markdown,
-        executiveSummary: reportData.executive_summary,
-        recommendation: reportData.recommendation,
-        strongestResponse: reportData.strongest_response,
-        weakestResponse: reportData.weakest_response,
-        structuralFlow: reportData.structural_flow,
-        linguisticNuances: reportData.linguistic_nuances,
-        scoreboard: reportData.scoreboard,
       });
 
       await completeSession(sessionId, reportData.overall_score);
@@ -224,7 +217,7 @@ router.delete('/sessions/:id', requireAuth, async (req, res) => {
     const sessionId = parseInt(req.params.id, 10);
     const session = await getSession(sessionId);
     if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (String(session.user_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' });
+    if (session.user_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
 
     await abandonSession(sessionId);
     return res.json({ success: true });
@@ -240,7 +233,7 @@ router.get('/sessions/:id', requireAuth, async (req, res) => {
     const sessionId = parseInt(req.params.id, 10);
     const session = await getSession(sessionId);
     if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (String(session.user_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' });
+    if (session.user_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
 
     const questions = await getSessionQuestions(sessionId);
     const currentQ = questions.find(q => !q.answer_text) || null;
