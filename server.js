@@ -105,8 +105,10 @@ app.get('/interview/session/:id', async (req, res, next) => {
     res.render('interview-session', {
       sessionId: req.params.id,
       questionId: currentQ.id,
+      questionText: currentQ.question_text || '',
       questionType: currentQ.question_type || 'opening',
-      questionNumber: questions.filter(q => !q.answer_text).length || 1,
+      questionNumber: questions.filter(q => q.answer_text === null || q.answer_text === undefined).length || 1,
+      answeredCount: questions.filter(q => q.answer_text !== null && q.answer_text !== undefined).length,
       personaName: persona.name,
       personaTitle: persona.title + ' @ ' + persona.org,
       personaInitials: initials,

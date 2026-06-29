@@ -15,7 +15,7 @@
   <!-- Top bar -->
   <div class="session-topbar">
     <div class="topbar-left">
-      <div class="avatar <%= persona.styleColor %>" id="personaAvatar"></div>
+      <div class="avatar <%= personaStyleColor %>" id="personaAvatar"></div>
       <div>
         <div class="topbar-name" id="personaName"></div>
         <div class="topbar-title" id="personaTitle"></div>
@@ -66,7 +66,7 @@
 (function() {
   const sessionId = '<%= sessionId %>';
   let currentQuestionId = '<%= questionId %>';
-  let questionCount = <%= questionNumber %>;
+  let questionCount = <%= answeredCount %> + 1;
   const maxQuestions = 5;
   let startTime = Date.now();
   let timerInterval;
@@ -75,6 +75,7 @@
   let personaTitle = '<%= personaTitle %>';
   let personaStyleColor = '<%= personaStyleColor %>';
   let questionType = '<%= questionType %>';
+  const initialQuestionText = `<%- questionText.replace(/`/g, '\\`') %>`;
 
   // Init topbar
   document.getElementById('personaAvatar').textContent = personaInitials;
@@ -203,6 +204,10 @@
 
   // Init
   updateCounter();
+  // Show the initial question from server (avoids extra fetch)
+  if (initialQuestionText) {
+    showQuestion({ text: initialQuestionText }, questionType);
+  }
   answerInput.focus();
 })();
 </script>
