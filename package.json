@@ -9,7 +9,7 @@
     "migrate": "node migrate.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
+    "@anthropic-ai/sdk": "^0.65.0",
     "bcryptjs": "^2.4.3",
     "ejs": "^3.1.10",
     "express": "^4.18.2",
