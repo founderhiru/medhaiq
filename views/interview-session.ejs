@@ -22,9 +22,17 @@
       </div>
     </div>
     <div class="topbar-center" id="questionCounter">Question 1 of 5</div>
-    <div class="topbar-right">
-      <span class="timer" id="timer">00:00</span>
-      <button class="end-btn" id="endBtn">End Session</button>
+   <div class="topbar-right" style="display: flex; align-items: center; gap: 15px;">
+        <!-- Hidden webcam mirror that displays your face as a small 40px dashboard profile bubble once active -->
+        <video id="webcamPreview" autoplay playsinline muted style="width: 40px; height: 40px; border-radius: 50%; background: #2a2a40; object-fit: cover; transform: scaleX(-1); display: none; border: 2px solid var(--personaStyleColor, #4f46e5);"></video>
+        
+        <!-- Media Activator & Record buttons -->
+        <button id="startMediaBtn" class="end-btn" style="background: #2563eb;">Enable Audio/Video</button>
+        <button id="recordBtn" class="end-btn" style="background: #dc2626; display: none;">Hold to Speak</button>
+        <span id="recordingStatus" style="font-size: 11px; color: #9ca3af; display: none;">Ready</span>
+
+        <span class="timer" id="timer">00:00</span>
+        <button class="end-btn" id="endBtn">End Session</button>
     </div>
   </div>
 
@@ -210,6 +218,91 @@
   }
   answerInput.focus();
 })();
+</script>
+<script>
+let mediaRecorder;
+let audioChunks = [];
+let localStream;
+
+const startMediaBtn = document.getElementById('startMediaBtn');
+const recordBtn = document.getElementById('recordBtn');
+const recordingStatus = document.getElementById('recordingStatus');
+const webcamPreview = document.getElementById('webcamPreview');
+
+// 1. Request access permissions for user hardware
+startMediaBtn.addEventListener('click', async () => {
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    webcamPreview.srcObject = localStream;
+    
+    // Unhide media preview feeds smoothly
+    webcamPreview.style.display = 'block';
+    recordBtn.style.display = 'inline-block';
+    recordingStatus.style.display = 'inline-block';
+    startMediaBtn.style.display = 'none';
+    
+    recordingStatus.innerText = "Mic Ready";
+  } catch (err) {
+    console.error("Media permission denied:", err);
+    alert("Please grant camera and microphone access to use voice response options.");
+  }
+});
+
+// 2. Control Audio Capture & Recording States
+recordBtn.addEventListener('click', () => {
+  if (!mediaRecorder || mediaRecorder.state === "inactive") {
+    audioChunks = [];
+    const audioStream = new MediaStream(localStream.getAudioTracks());
+    mediaRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm' });
+    
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+    
+    mediaRecorder.onstop = async () => {
+      recordingStatus.innerText = "Transcribing voice...";
+      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      await sendAudioToBackend(audioBlob);
+    };
+
+    mediaRecorder.start();
+    recordBtn.innerText = "Recording... Click to Stop";
+    recordBtn.style.background = "#991b1b";
+    recordingStatus.innerText = "Listening...";
+  } else {
+    mediaRecorder.stop();
+    recordBtn.innerText = "Hold to Speak";
+    recordBtn.style.background = "#dc2626";
+  }
+});
+
+// 3. Post audio binary stream up to your backend express controllers
+async function sendAudioToBackend(blob) {
+  const formData = new FormData();
+  formData.append('audio', blob, 'interview-audio.webm');
+  
+  // Scrape your global variable configurations or URL strings to pass the session ID context
+  const pathSegments = window.location.pathname.split('/');
+  const sessionId = pathSegments[pathSegments.length - 1]; // Pulls UUID from address window parameter
+  formData.append('sessionId', sessionId); 
+
+  try {
+    const response = await fetch('/api/interview/voice-respond', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await response.json();
+    
+    if (data.success) {
+       recordingStatus.innerText = "Mic Ready";
+       // Trigger dynamic content append or state update reloads here
+       window.location.reload(); 
+    } else {
+       recordingStatus.innerText = "Error. Retry.";
+    }
+  } catch (err) {
+    console.error("Communication failure across voice pipeline link:", err);
+    recordingStatus.innerText = "Network Error.";
+  }
+}
 </script>
 </body>
 </html>
