@@ -266,4 +266,26 @@ router.post('/start', async (req, res) => {
   res.status(410).json({ error: 'This endpoint is deprecated. Use POST /api/interview/sessions instead.' });
 });
 
+// Lightweight utility route to convert any standalone text to the soft female accent
+router.post('/api/interview/tts', async (req, res) => {
+  try {
+    const { text } = req.body;
+    const { OpenAI } = require('openai');
+    const openai = new OpenAI();
+
+    const mp3 = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "shimmer", // Matches your soft female profile configuration
+      input: text,
+    });
+
+    const buffer = Buffer.from(await mp3.arrayBuffer());
+    return res.status(200).json({
+      success: true,
+      aiVoice: `data:audio/mp3;base64,${buffer.toString('base64')}`
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
 module.exports = router;
