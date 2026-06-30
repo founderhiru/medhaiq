@@ -246,11 +246,24 @@
 
         audioButton.addEventListener('click', async () => {
             if (!vapiInstance) {
-                // Securely fallback through the unpkg bundle global exports hierarchy
-                const VapiSDK = window.Vapi?.default || window.Vapi;
-                const FinalConstructor = typeof VapiSDK === 'function' ? VapiSDK : (VapiSDK?.Vapi || window.VapiClient);
+                // Dynamically extract whichever constructor is exposed by the SDK script
+                let VapiConstructor = window.VapiClient || window.Vapi;
                 
-                vapiInstance = new FinalConstructor(VAPI_PUBLIC_KEY);
+                if (VapiConstructor && VapiConstructor.default) {
+                    VapiConstructor = VapiConstructor.default;
+                }
+                if (typeof VapiConstructor !== 'function' && window.Vapi && typeof window.Vapi.Vapi === 'function') {
+                    VapiConstructor = window.Vapi.Vapi;
+                }
+                
+                // Absolute fallback check
+                if (typeof VapiConstructor !== 'function') {
+                    console.error("Vapi SDK constructor could not be found globally. Checking keys:", Object.keys(window.Vapi || {}));
+                    statusIndicator.innerText = "SDK Initialization Error.";
+                    return;
+                }
+
+                vapiInstance = new VapiConstructor(VAPI_PUBLIC_KEY);
                 setupVoiceListeners();
             }
 
