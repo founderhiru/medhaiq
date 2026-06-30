@@ -291,10 +291,26 @@ async function sendAudioToBackend(blob) {
     });
     const data = await response.json();
     
-    if (data.success) {
-       recordingStatus.innerText = "Mic Ready";
-       // Trigger dynamic content append or state update reloads here
-       window.location.reload(); 
+ if (data.success) {
+       recordingStatus.innerText = "Interviewer speaking...";
+
+       // 1. Create the audio object using the base64 string from the backend
+       const audioPlayer = new Audio(data.aiVoice);
+       
+       // 2. Reveal the upcoming question immediately on screen
+       const questionTextElement = document.getElementById('questionText');
+       if (questionTextElement && data.nextQuestion) {
+           questionTextElement.innerText = data.nextQuestion;
+       }
+
+       // 3. Play the voice out loud
+       await audioPlayer.play();
+
+       // 4. WAIT until the audio completely finishes before reloading the page session
+       audioPlayer.onended = () => {
+          recordingStatus.innerText = "Mic Ready";
+          window.location.reload(); 
+       };
     } else {
        recordingStatus.innerText = "Error. Retry.";
     }
