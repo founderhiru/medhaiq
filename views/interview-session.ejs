@@ -252,7 +252,15 @@ if (audioButton) {
             audioButton.disabled = true;
 
             // Fire up the call line!
-            vapiInstance.start(VAPI_ASSISTANT_ID);
+            vapiInstance.start(VAPI_ASSISTANT_ID, {
+    variableValues: {
+        jobRole: currentJobRole,
+        experienceLevel: currentExperience,
+        persona: currentPersona
+    }
+});
+});
+});
         } else {
             statusIndicator.innerText = "Hanging up session...";
             vapiInstance.stop();
