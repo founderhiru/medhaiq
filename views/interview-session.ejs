@@ -219,10 +219,10 @@
   
 })();
 </script>
-<!-- Load the official Browser Standalone Bundle globally -->
-<script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.1/dist/index.js"></script>
+<script type="module">
+    // 1. Safely import the ES module package directly into the browser context
+    import { Vapi } from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.1/+esm';
 
-<script>
     // 2. Put the credentials you grabbed from Step 1 here
     const VAPI_PUBLIC_KEY = 'd2d1f8a1-9c06-45fd-9ee2-0e0a9b292c3d';
     const VAPI_ASSISTANT_ID = 'cdf72c47-a494-456a-b66a-3101bcab8621';
@@ -237,7 +237,7 @@
     let vapiInstance = null;
     let isCallLive = false;
 
-    // Grab the elements explicitly
+    // Grab the elements explicitly inside this module scope
     const audioButton = document.querySelector('.btn-primary') || document.getElementById('enableAudioBtn') || document.querySelector('button[class*="Audio"]') || document.querySelector('.nav-btn') || document.querySelector('button');
     const statusIndicator = document.getElementById('recordingStatus') || document.getElementById('statusIndicator') || { innerText: '' };
 
@@ -246,17 +246,15 @@
 
         audioButton.addEventListener('click', async () => {
             if (!vapiInstance) {
-                // The official jsdelivr bundle exposes VapiClient directly on window
-                const VapiConstructor = window.VapiClient || window.Vapi;
-
-                if (typeof VapiConstructor !== 'function') {
-                    console.error("Vapi SDK constructor could not be found globally.");
-                    statusIndicator.innerText = "SDK Initialization Error.";
+                try {
+                    // Instantiating the explicitly destructured named ES class
+                    vapiInstance = new Vapi(VAPI_PUBLIC_KEY);
+                    setupVoiceListeners();
+                } catch (err) {
+                    console.error("Vapi instantiation error:", err);
+                    statusIndicator.innerText = "Error initializing audio components.";
                     return;
                 }
-
-                vapiInstance = new VapiConstructor(VAPI_PUBLIC_KEY);
-                setupVoiceListeners();
             }
 
             if (!isCallLive) {
