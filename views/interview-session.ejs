@@ -221,51 +221,57 @@
 </script>
 
 <script type="module">
-// 1. We import Vapi's safe web wrapper link straight into your frontend browser
-import Vapi from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.0/+esm';
+    // 1. We import Vapi's safe wrapper link straight into your frontend browser
+    import Vapi from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.0/+esm';
 
-// 2. Put the credentials you grabbed from Step 1 here
-const VAPI_PUBLIC_KEY = 'd2d1f8a1-9c06-45fd-9ee2-0e0a9b292c3d';
-const VAPI_ASSISTANT_ID = 'cdf72c47-a494-456a-b66a-3101bcab8621';
+    // 2. Put the credentials you grabbed from Step 1 here
+    const VAPI_PUBLIC_KEY = 'd2d1f8a1-9c06-45fd-9ee2-0e0a9b292c3d';
+    const VAPI_ASSISTANT_ID = 'cdf72c47-a494-456a-b66a-3101bcab8621';
 
-// --- DYNAMICALLY CAPTURE ALL 4 PROPERTIES ---
-const currentJobRole = "<%= typeof session !== 'undefined' && session.jobRole ? session.jobRole : 'Product Manager' %>";
-const currentExperience = "<%= typeof session !== 'undefined' && session.experienceLevel ? session.experienceLevel : 'Mid-Career' %>";
-const currentTargetOrg = "<%= typeof session !== 'undefined' && (session.company || session.targetOrg || session.targetCompany) ? (session.company || session.targetOrg || session.targetCompany) : 'AWS' %>";
-const currentPersona = "<%= typeof session !== 'undefined' && session.interviewerName ? session.interviewerName : (typeof session !== 'undefined' && session.persona ? session.persona : 'Alex Chen') %>";
-// -------------------------------------
-let vapiInstance = null;
-let isCallLive = false;
+    // --- DYNAMICALLY CAPTURE ALL 4 PROPERTIES ---
+    const currentJobRole = "<%= typeof session !== 'undefined' && session.jobRole ? session.jobRole : 'Product Manager' %>";
+    const currentExperience = "<%= typeof session !== 'undefined' && session.experienceLevel ? session.experienceLevel : 'Mid-Career' %>";
+    const currentTargetOrg = "<%= typeof session !== 'undefined' && (session.company || session.targetOrg || session.targetCompany) ? (session.company || session.targetOrg || session.targetCompany) : 'AWS' %>";
+    const currentPersona = "<%= typeof session !== 'undefined' && session.interviewerName ? session.interviewerName : (typeof session !== 'undefined' && session.persona ? session.persona : 'Priya Ramesh') %>";
+    // --------------------------------------------
 
-if (audioButton) {
-    // Tweak the button text so users know it's a real-time call
-    audioButton.innerText = "Start Live Interview Voice";
-    
-    audioButton.addEventListener('click', async () => {
-        if (!vapiInstance) {
-            vapiInstance = new Vapi(VAPI_PUBLIC_KEY);
-            setupVoiceListeners();
-        }
+    let vapiInstance = null;
+    let isCallLive = false;
 
-        if (!isCallLive) {
-            statusIndicator.innerText = "Connecting to Voice Bridge...";
-            audioButton.innerText = "Connecting...";
-            audioButton.disabled = true;
-            // Fire up the call line!
- vapiInstance.start(VAPI_ASSISTANT_ID, {
-                variableValues: {
-                    jobRole: currentJobRole,
-                    experienceLevel: currentExperience,
-                    targetOrganization: currentTargetOrg,
-                    persona: currentPersona
-                }
-            });
-        } else {
-            statusIndicator.innerText = "Hanging up session...";
-            vapiInstance.stop();
-        }
-    });
-}
+    // Grab the elements explicitly inside this module context
+    const audioButton = document.querySelector('.btn-primary') || document.getElementById('enableAudioBtn') || document.querySelector('button[class*="Audio"]') || document.querySelector('.nav-btn') || document.querySelector('button');
+    const statusIndicator = document.getElementById('recordingStatus') || document.getElementById('statusIndicator') || { innerText: '' };
+
+    if (audioButton) {
+        // Tweak the button text so users know it's a real-time call
+        audioButton.innerText = "Start Live Interview Voice";
+
+        audioButton.addEventListener('click', async () => {
+            if (!vapiInstance) {
+                vapiInstance = new Vapi(VAPI_PUBLIC_KEY);
+                setupVoiceListeners();
+            }
+
+            if (!isCallLive) {
+                statusIndicator.innerText = "Connecting to Voice Bridge...";
+                audioButton.innerText = "Connecting...";
+                audioButton.disabled = true;
+
+                // Fire up the call line!
+                vapiInstance.start(VAPI_ASSISTANT_ID, {
+                    variableValues: {
+                        jobRole: currentJobRole,
+                        experienceLevel: currentExperience,
+                        targetOrganization: currentTargetOrg,
+                        persona: currentPersona
+                    }
+                });
+            } else {
+                statusIndicator.innerText = "Hanging up session...";
+                vapiInstance.stop();
+            }
+        });
+    }
 
 function setupVoiceListeners() {
     // When the connection completes safely
