@@ -219,8 +219,8 @@
   
 })();
 </script>
-<!-- Load the official Browser-ready global bundle -->
-<script src="https://unpkg.com/@vapi-ai/web/dist/index.js"></script>
+<!-- Load the official Browser Standalone Bundle globally -->
+<script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.1/dist/index.js"></script>
 
 <script>
     // 2. Put the credentials you grabbed from Step 1 here
@@ -246,19 +246,11 @@
 
         audioButton.addEventListener('click', async () => {
             if (!vapiInstance) {
-                // Dynamically extract whichever constructor is exposed by the SDK script
-                let VapiConstructor = window.VapiClient || window.Vapi;
-                
-                if (VapiConstructor && VapiConstructor.default) {
-                    VapiConstructor = VapiConstructor.default;
-                }
-                if (typeof VapiConstructor !== 'function' && window.Vapi && typeof window.Vapi.Vapi === 'function') {
-                    VapiConstructor = window.Vapi.Vapi;
-                }
-                
-                // Absolute fallback check
+                // The official jsdelivr bundle exposes VapiClient directly on window
+                const VapiConstructor = window.VapiClient || window.Vapi;
+
                 if (typeof VapiConstructor !== 'function') {
-                    console.error("Vapi SDK constructor could not be found globally. Checking keys:", Object.keys(window.Vapi || {}));
+                    console.error("Vapi SDK constructor could not be found globally.");
                     statusIndicator.innerText = "SDK Initialization Error.";
                     return;
                 }
