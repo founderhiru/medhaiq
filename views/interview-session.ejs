@@ -216,10 +216,10 @@
   if (initialQuestionText) {
     showQuestion({ text: initialQuestionText }, questionType);
   }
-  answerInput.focus();
+  
 })();
 </script>
-<!-- Place this script block at the absolute bottom of views/interview-session.ejs, replacing the old reload logic -->
+
 <script type="module">
 // 1. We import Vapi's safe web wrapper link straight into your frontend browser
 import Vapi from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.0/+esm';
@@ -253,13 +253,13 @@ if (audioButton) {
             audioButton.disabled = true;
             // Fire up the call line!
  vapiInstance.start(VAPI_ASSISTANT_ID, {
-  variableValues: {
-  jobRole: currentJobRole,
-  experienceLevel: currentExperience,
-  targetOrganization: currentTargetOrg,
-  persona: currentPersona
-}
-});
+                variableValues: {
+                    jobRole: currentJobRole,
+                    experienceLevel: currentExperience,
+                    targetOrganization: currentTargetOrg,
+                    persona: currentPersona
+                }
+            });
         } else {
             statusIndicator.innerText = "Hanging up session...";
             vapiInstance.stop();
