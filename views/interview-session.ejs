@@ -219,135 +219,78 @@
   answerInput.focus();
 })();
 </script>
-<script>
-let mediaRecorder;
-let audioChunks = [];
-let localStream;
+<!-- Place this script block at the absolute bottom of views/interview-session.ejs, replacing the old reload logic -->
+<script type="module">
+// 1. We import Vapi's safe web wrapper link straight into your frontend browser
+import Vapi from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.0/+esm';
 
-const startMediaBtn = document.getElementById('startMediaBtn');
-const recordBtn = document.getElementById('recordBtn');
-const recordingStatus = document.getElementById('recordingStatus');
-const webcamPreview = document.getElementById('webcamPreview');
+// 2. Put the credentials you grabbed from Step 1 here
+const VAPI_PUBLIC_KEY = 'PASTE_YOUR_VAPI_PUBLIC_KEY_HERE';
+const VAPI_ASSISTANT_ID = 'PASTE_YOUR_VAPI_ASSISTANT_ID_HERE';
 
-// 1. Request access permissions for user hardware
-startMediaBtn.addEventListener('click', async () => {
-  try {
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    webcamPreview.srcObject = localStream;
+// 3. Find your existing blue "Enable Audio/Video" button from your header
+const audioButton = document.querySelector('.nav-btn') || document.getElementById('enableAudioBtn'); 
+const statusIndicator = document.getElementById('recordingStatus') || document.getElementById('systemLiveStatus');
+const visualBox = document.getElementById('questionText');
+
+let vapiInstance = null;
+let isCallLive = false;
+
+if (audioButton) {
+    // Tweak the button text so users know it's a real-time call
+    audioButton.innerText = "Start Live Interview Voice";
     
-    // Unhide media preview feeds smoothly
-    webcamPreview.style.display = 'block';
-    recordBtn.style.display = 'inline-block';
-    recordingStatus.style.display = 'inline-block';
-    startMediaBtn.style.display = 'none';
-    
-    recordingStatus.innerText = "Mic Ready";
-  } catch (err) {
-    console.error("Media permission denied:", err);
-    alert("Please grant camera and microphone access to use voice response options.");
-  }
-});
+    audioButton.addEventListener('click', async () => {
+        if (!vapiInstance) {
+            vapiInstance = new Vapi(VAPI_PUBLIC_KEY);
+            setupVoiceListeners();
+        }
 
-// 2. Control Audio Capture & Recording States
-recordBtn.addEventListener('click', () => {
-  if (!mediaRecorder || mediaRecorder.state === "inactive") {
-    audioChunks = [];
-    const audioStream = new MediaStream(localStream.getAudioTracks());
-    mediaRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm' });
-    
-    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-    
-    mediaRecorder.onstop = async () => {
-      recordingStatus.innerText = "Transcribing voice...";
-      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-      await sendAudioToBackend(audioBlob);
-    };
+        if (!isCallLive) {
+            statusIndicator.innerText = "Connecting to Voice Bridge...";
+            audioButton.innerText = "Connecting...";
+            audioButton.disabled = true;
 
-    mediaRecorder.start();
-    recordBtn.innerText = "Recording... Click to Stop";
-    recordBtn.style.background = "#991b1b";
-    recordingStatus.innerText = "Listening...";
-  } else {
-    mediaRecorder.stop();
-    recordBtn.innerText = "Hold to Speak";
-    recordBtn.style.background = "#dc2626";
-  }
-});
-
-// 3. Post audio binary stream up to your backend express controllers
-async function sendAudioToBackend(blob) {
-  const formData = new FormData();
-  formData.append('audio', blob, 'interview-audio.webm');
-  
-  // Scrape your global variable configurations or URL strings to pass the session ID context
-  const pathSegments = window.location.pathname.split('/');
-  const sessionId = pathSegments[pathSegments.length - 1]; // Pulls UUID from address window parameter
-  formData.append('sessionId', sessionId); 
-
-  try {
-    const response = await fetch('/api/interview/voice-respond', {
-      method: 'POST',
-      body: formData
+            // Fire up the call line!
+            vapiInstance.start(VAPI_ASSISTANT_ID);
+        } else {
+            statusIndicator.innerText = "Hanging up session...";
+            vapiInstance.stop();
+        }
     });
-    const data = await response.json();
-    
- if (data.success) {
-       recordingStatus.innerText = "Interviewer speaking...";
-
-       // 1. Create the audio object using the base64 string from the backend
-       const audioPlayer = new Audio(data.aiVoice);
-       
-       // 2. Reveal the upcoming question immediately on screen
-       const questionTextElement = document.getElementById('questionText');
-       if (questionTextElement && data.nextQuestion) {
-           questionTextElement.innerText = data.nextQuestion;
-       }
-
-       // 3. Play the voice out loud
-       await audioPlayer.play();
-
-       // 4. WAIT until the audio completely finishes before reloading the page session
-       audioPlayer.onended = () => {
-          recordingStatus.innerText = "Mic Ready";
-          window.location.reload(); 
-       };
-    } else {
-       recordingStatus.innerText = "Error. Retry.";
-    }
-  } catch (err) {
-    console.error("Communication failure across voice pipeline link:", err);
-    recordingStatus.innerText = "Network Error.";
-  }
 }
-document.addEventListener('DOMContentLoaded', async () => {
-  const questionTextElement = document.getElementById('questionText');
-  const recordingStatus = document.getElementById('recordingStatus');
 
-  if (questionTextElement) {
-    const initialQuestionText = questionTextElement.innerText.trim();
-    if (!initialQuestionText || initialQuestionText.toLowerCase() === "loading...") return;
+function setupVoiceListeners() {
+    // When the connection completes safely
+    vapiInstance.on('call-start', () => {
+        isCallLive = true;
+        audioButton.disabled = false;
+        audioButton.innerText = "End Call & Exit";
+        audioButton.style.background = "#ef4444"; // Changes button red to signal an active line
+        statusIndicator.innerText = "Interviewer is listening...";
+    });
 
-    try {
-      if (recordingStatus) recordingStatus.innerText = "Interviewer speaking...";
-      const response = await fetch('/api/interview/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: initialQuestionText })
-      });
-      const data = await response.json();
+    // When the AI starts speaking, display a message or live subtitles
+    vapiInstance.on('speech-start', () => {
+        statusIndicator.innerText = "Interviewer speaking...";
+    });
 
-      if (data.success) {
-        const audioPlayer = new Audio(data.aiVoice);
-        await audioPlayer.play();
-        audioPlayer.onended = () => {
-          if (recordingStatus) recordingStatus.innerText = "Mic Ready";
-        };
-      }
-    } catch (err) {
-      console.error("Auto-play engine failed:", err);
-    }
-  }
-});
+    vapiInstance.on('speech-end', () => {
+        statusIndicator.innerText = "Your turn! Speak naturally.";
+    });
+
+    // When the interview ends or the user hangs up
+    vapiInstance.on('call-end', () => {
+        isCallLive = false;
+        audioButton.disabled = false;
+        audioButton.innerText = "Start Live Interview Voice";
+        audioButton.style.background = "#4f46e5"; // Revert to standard branding color
+        statusIndicator.innerText = "Session complete. Generating your scorecard...";
+        
+        // Gracefully forward them to your existing scorecard or history tab after 2 seconds
+        setTimeout(() => {
+            window.location.href = "/dashboard"; 
+        }, 2000);
+    });
+}
 </script>
-</body>
-</html>
