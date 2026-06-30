@@ -234,8 +234,8 @@ const currentExperience = "<%= typeof session !== 'undefined' && session.experie
 const currentTargetOrg = "<%= typeof session !== 'undefined' && (session.company || session.targetOrg || session.targetCompany) ? (session.company || session.targetOrg || session.targetCompany) : 'AWS' %>";
 const currentPersona = "<%= typeof session !== 'undefined' && session.interviewerName ? session.interviewerName : (typeof session !== 'undefined' && session.persona ? session.persona : 'Alex Chen') %>";
 // -------------------------------------
-237 let vapiInstance = null;
-238 let isCallLive = false;
+let vapiInstance = null;
+let isCallLive = false;
 
 if (audioButton) {
     // Tweak the button text so users know it's a real-time call
