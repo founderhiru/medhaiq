@@ -219,11 +219,10 @@
   
 })();
 </script>
+<!-- Load the official Vapi bundle globally -->
+<script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.0/dist/vapi.min.js"></script>
 
-<script type="module">
-    // 1. We import Vapi's safe wrapper link straight into your frontend browser
-    import Vapi from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.0/+esm';
-
+<script>
     // 2. Put the credentials you grabbed from Step 1 here
     const VAPI_PUBLIC_KEY = 'd2d1f8a1-9c06-45fd-9ee2-0e0a9b292c3d';
     const VAPI_ASSISTANT_ID = 'cdf72c47-a494-456a-b66a-3101bcab8621';
@@ -238,17 +237,17 @@
     let vapiInstance = null;
     let isCallLive = false;
 
-    // Grab the elements explicitly inside this module context
+    // Grab the elements explicitly
     const audioButton = document.querySelector('.btn-primary') || document.getElementById('enableAudioBtn') || document.querySelector('button[class*="Audio"]') || document.querySelector('.nav-btn') || document.querySelector('button');
     const statusIndicator = document.getElementById('recordingStatus') || document.getElementById('statusIndicator') || { innerText: '' };
 
     if (audioButton) {
-        // Tweak the button text so users know it's a real-time call
         audioButton.innerText = "Start Live Interview Voice";
 
         audioButton.addEventListener('click', async () => {
             if (!vapiInstance) {
-                vapiInstance = new Vapi(VAPI_PUBLIC_KEY);
+                // Instantiates perfectly using the global window variable context
+                vapiInstance = new window.Vapi(VAPI_PUBLIC_KEY);
                 setupVoiceListeners();
             }
 
@@ -273,37 +272,33 @@
         });
     }
 
-function setupVoiceListeners() {
-    // When the connection completes safely
-    vapiInstance.on('call-start', () => {
-        isCallLive = true;
-        audioButton.disabled = false;
-        audioButton.innerText = "End Call & Exit";
-        audioButton.style.background = "#ef4444"; // Changes button red to signal an active line
-        statusIndicator.innerText = "Interviewer is listening...";
-    });
+    function setupVoiceListeners() {
+        if (!vapiInstance) return;
 
-    // When the AI starts speaking, display a message or live subtitles
-    vapiInstance.on('speech-start', () => {
-        statusIndicator.innerText = "Interviewer speaking...";
-    });
+        vapiInstance.on('call-start', () => {
+            isCallLive = true;
+            audioButton.innerText = "End Session Voice";
+            audioButton.disabled = false;
+            audioButton.classList.remove('btn-primary');
+            audioButton.classList.add('btn-danger');
+            statusIndicator.innerText = "Voice Connection Active";
+        });
 
-    vapiInstance.on('speech-end', () => {
-        statusIndicator.innerText = "Your turn! Speak naturally.";
-    });
+        vapiInstance.on('call-end', () => {
+            isCallLive = false;
+            audioButton.innerText = "Start Live Interview Voice";
+            audioButton.disabled = false;
+            audioButton.classList.remove('btn-danger');
+            audioButton.classList.add('btn-primary');
+            statusIndicator.innerText = "Session Ended Safely";
+        });
 
-    // When the interview ends or the user hangs up
-    vapiInstance.on('call-end', () => {
-        isCallLive = false;
-        audioButton.disabled = false;
-        audioButton.innerText = "Start Live Interview Voice";
-        audioButton.style.background = "#4f46e5"; // Revert to standard branding color
-        statusIndicator.innerText = "Session complete. Generating your scorecard...";
-        
-        // Gracefully forward them to your existing scorecard or history tab after 2 seconds
-        setTimeout(() => {
-            window.location.href = "/dashboard"; 
-        }, 2000);
-    });
-}
+        vapiInstance.on('error', (error) => {
+            console.error('Vapi Error Context:', error);
+            isCallLive = false;
+            audioButton.innerText = "Retry Voice Connection";
+            audioButton.disabled = false;
+            statusIndicator.innerText = "Connection Dropped. Try Again.";
+        });
+    }
 </script>
