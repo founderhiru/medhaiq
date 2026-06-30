@@ -228,13 +228,14 @@ import Vapi from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.0/+esm';
 const VAPI_PUBLIC_KEY = 'd2d1f8a1-9c06-45fd-9ee2-0e0a9b292c3d';
 const VAPI_ASSISTANT_ID = 'cdf72c47-a494-456a-b66a-3101bcab8621';
 
-// 3. Find your existing blue "Enable Audio/Video" button from your header
-const audioButton = document.querySelector('.nav-btn') || document.getElementById('enableAudioBtn'); 
-const statusIndicator = document.getElementById('recordingStatus') || document.getElementById('systemLiveStatus');
-const visualBox = document.getElementById('questionText');
-
-let vapiInstance = null;
-let isCallLive = false;
+// --- DYNAMICALLY CAPTURE ALL 4 PROPERTIES ---
+const currentJobRole = "<%= typeof session !== 'undefined' && session.jobRole ? session.jobRole : 'Product Manager' %>";
+const currentExperience = "<%= typeof session !== 'undefined' && session.experienceLevel ? session.experienceLevel : 'Mid-Career' %>";
+const currentTargetOrg = "<%= typeof session !== 'undefined' && (session.company || session.targetOrg || session.targetCompany) ? (session.company || session.targetOrg || session.targetCompany) : 'AWS' %>";
+const currentPersona = "<%= typeof session !== 'undefined' && session.interviewerName ? session.interviewerName : (typeof session !== 'undefined' && session.persona ? session.persona : 'Alex Chen') %>";
+// -------------------------------------
+237 let vapiInstance = null;
+238 let isCallLive = false;
 
 if (audioButton) {
     // Tweak the button text so users know it's a real-time call
@@ -250,16 +251,14 @@ if (audioButton) {
             statusIndicator.innerText = "Connecting to Voice Bridge...";
             audioButton.innerText = "Connecting...";
             audioButton.disabled = true;
-
             // Fire up the call line!
-            vapiInstance.start(VAPI_ASSISTANT_ID, {
-    variableValues: {
-        jobRole: currentJobRole,
-        experienceLevel: currentExperience,
-        persona: currentPersona
-    }
-});
-});
+ vapiInstance.start(VAPI_ASSISTANT_ID, {
+  variableValues: {
+  jobRole: currentJobRole,
+  experienceLevel: currentExperience,
+  targetOrganization: currentTargetOrg,
+  persona: currentPersona
+}
 });
         } else {
             statusIndicator.innerText = "Hanging up session...";
