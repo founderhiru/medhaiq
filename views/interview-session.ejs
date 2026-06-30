@@ -246,9 +246,11 @@
 
         audioButton.addEventListener('click', async () => {
             if (!vapiInstance) {
-                // Safely extract the constructor from the UMD/global wrapper
-                const VapiConstructor = window.Vapi?.default || window.Vapi;
-                vapiInstance = new VapiConstructor(VAPI_PUBLIC_KEY);
+                // Securely fallback through the unpkg bundle global exports hierarchy
+                const VapiSDK = window.Vapi?.default || window.Vapi;
+                const FinalConstructor = typeof VapiSDK === 'function' ? VapiSDK : (VapiSDK?.Vapi || window.VapiClient);
+                
+                vapiInstance = new FinalConstructor(VAPI_PUBLIC_KEY);
                 setupVoiceListeners();
             }
 
