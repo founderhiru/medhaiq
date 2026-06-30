@@ -219,42 +219,42 @@
   
 })();
 </script>
-<script type="module">
-    // 1. Safely import the ES module package directly into the browser context
-    import { Vapi } from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.1/+esm';
+<!-- Load the production UMD build directly (Bypasses all module/namespace issues) -->
+<script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.5.2/dist/vapi.min.js"></script>
 
-    // 2. Put the credentials you grabbed from Step 1 here
+<script>
+    // 1. Target credentials
     const VAPI_PUBLIC_KEY = 'd2d1f8a1-9c06-45fd-9ee2-0e0a9b292c3d';
     const VAPI_ASSISTANT_ID = 'cdf72c47-a494-456a-b66a-3101bcab8621';
 
-    // --- DYNAMICALLY CAPTURE ALL 4 PROPERTIES ---
+    // 2. Safely capture server-side EJS variables 
     const currentJobRole = "<%= typeof session !== 'undefined' && session.jobRole ? session.jobRole : 'Product Manager' %>";
     const currentExperience = "<%= typeof session !== 'undefined' && session.experienceLevel ? session.experienceLevel : 'Mid-Career' %>";
     const currentTargetOrg = "<%= typeof session !== 'undefined' && (session.company || session.targetOrg || session.targetCompany) ? (session.company || session.targetOrg || session.targetCompany) : 'AWS' %>";
-    const currentPersona = "<%= typeof session !== 'undefined' && session.interviewerName ? session.interviewerName : (typeof session !== 'undefined' && session.persona ? session.persona : 'Priya Ramesh') %>";
-    // --------------------------------------------
+    const currentPersona = "<%= typeof session !== 'undefined' && session.interviewerName ? session.interviewerName : 'Priya Ramesh' %>";
 
     let vapiInstance = null;
     let isCallLive = false;
 
-    // Grab the elements explicitly inside this module scope
-    const audioButton = document.querySelector('.btn-primary') || document.getElementById('enableAudioBtn') || document.querySelector('button[class*="Audio"]') || document.querySelector('.nav-btn') || document.querySelector('button');
+    // Grab elements
+    const audioButton = document.querySelector('.btn-primary') || document.getElementById('enableAudioBtn') || document.querySelector('button');
     const statusIndicator = document.getElementById('recordingStatus') || document.getElementById('statusIndicator') || { innerText: '' };
 
     if (audioButton) {
         audioButton.innerText = "Start Live Interview Voice";
 
-        audioButton.addEventListener('click', async () => {
+        audioButton.addEventListener('click', function() {
             if (!vapiInstance) {
-                try {
-                    // Instantiating the explicitly destructured named ES class
-                    vapiInstance = new Vapi(VAPI_PUBLIC_KEY);
-                    setupVoiceListeners();
-                } catch (err) {
-                    console.error("Vapi instantiation error:", err);
-                    statusIndicator.innerText = "Error initializing audio components.";
+                // The global minified bundle explicitly exposes a global 'Vapi' constructor function on window
+                const Constructor = window.Vapi;
+                
+                if (typeof Constructor !== 'function') {
+                    console.error("Vapi script bundle failed to append constructor globally.");
                     return;
                 }
+                
+                vapiInstance = new Constructor(VAPI_PUBLIC_KEY);
+                setupVoiceListeners();
             }
 
             if (!isCallLive) {
@@ -262,7 +262,7 @@
                 audioButton.innerText = "Connecting...";
                 audioButton.disabled = true;
 
-                // Fire up the call line!
+                // Start call and inject variables
                 vapiInstance.start(VAPI_ASSISTANT_ID, {
                     variableValues: {
                         jobRole: currentJobRole,
@@ -281,7 +281,7 @@
     function setupVoiceListeners() {
         if (!vapiInstance) return;
 
-        vapiInstance.on('call-start', () => {
+        vapiInstance.on('call-start', function() {
             isCallLive = true;
             audioButton.innerText = "End Session Voice";
             audioButton.disabled = false;
@@ -290,7 +290,7 @@
             statusIndicator.innerText = "Voice Connection Active";
         });
 
-        vapiInstance.on('call-end', () => {
+        vapiInstance.on('call-end', function() {
             isCallLive = false;
             audioButton.innerText = "Start Live Interview Voice";
             audioButton.disabled = false;
@@ -299,7 +299,7 @@
             statusIndicator.innerText = "Session Ended Safely";
         });
 
-        vapiInstance.on('error', (error) => {
+        vapiInstance.on('error', function(error) {
             console.error('Vapi Error Context:', error);
             isCallLive = false;
             audioButton.innerText = "Retry Voice Connection";
