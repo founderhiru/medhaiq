@@ -319,6 +319,35 @@ async function sendAudioToBackend(blob) {
     recordingStatus.innerText = "Network Error.";
   }
 }
+document.addEventListener('DOMContentLoaded', async () => {
+  const questionTextElement = document.getElementById('questionText');
+  const recordingStatus = document.getElementById('recordingStatus');
+
+  if (questionTextElement) {
+    const initialQuestionText = questionTextElement.innerText.trim();
+    if (!initialQuestionText || initialQuestionText.toLowerCase() === "loading...") return;
+
+    try {
+      if (recordingStatus) recordingStatus.innerText = "Interviewer speaking...";
+      const response = await fetch('/api/interview/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: initialQuestionText })
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        const audioPlayer = new Audio(data.aiVoice);
+        await audioPlayer.play();
+        audioPlayer.onended = () => {
+          if (recordingStatus) recordingStatus.innerText = "Mic Ready";
+        };
+      }
+    } catch (err) {
+      console.error("Auto-play engine failed:", err);
+    }
+  }
+});
 </script>
 </body>
 </html>
