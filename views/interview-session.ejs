@@ -17,7 +17,7 @@ window.__vapiReady = false;
 })(document,'script');
 </script>
   <link rel="stylesheet" href="/css/interview.css">
-  <script src="[https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.x/dist/vapi.min.js](https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.x/dist/vapi.min.js)"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.x/dist/vapi.min.js"></script>
 </head>
 <body>
 
@@ -279,43 +279,25 @@ window.__vapiReady = false;
   }
 
   btn.addEventListener('click', function() {
-    if (!window.vapiSDK) {
-      btn.textContent = 'Connecting...';
-      btn.disabled = true;
-      var waited = 0;
-      var wait = setInterval(function() {
-        waited += 100;
-        if (window.vapiSDK) {
-          clearInterval(wait);
-          initVapi();
-          vapi.start();
-          startWebcam();
-        }
-        if (waited > 5000) {
-          clearInterval(wait);
-          btn.textContent = 'Enable Audio/Video';
-          btn.disabled = false;
-          status.textContent = 'SDK load timeout — refresh page';
-          status.style.color = '#ef4444';
-        }
-      }, 100);
-      return;
-    }
+  // 1. Initialize Vapi if it doesn't exist
+  if (!vapi && window.vapiSDK) {
+    vapi = window.vapiSDK.run({
+      apiKey: '<%= vapiPublicKey %>',
+      assistant: '<%= vapiAssistantId %>'
+    });
+  }
 
-    if (!vapi) {
-      initVapi();
-    }
-
-    if (!isLive) {
-      vapi.start();
-      startWebcam();
-      btn.textContent = 'Connecting...';
-      btn.disabled = true;
-    } else {
-      vapi.stop();
-      stopWebcam();
-    }
-  });
+  // 2. Handle Start/Stop logic
+  if (!isLive && vapi) {
+    vapi.start();
+    startWebcam();
+    btn.textContent = 'Connecting...';
+    btn.disabled = true;
+  } else if (isLive) {
+    vapi.stop();
+    stopWebcam();
+  }
+});
 })();
 </script>
 
