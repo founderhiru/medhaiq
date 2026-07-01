@@ -8,11 +8,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/interview.css">
+  <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/vapi.umd.cjs" crossorigin="anonymous"></script>
 </head>
 <body>
 
 <div class="session-page">
-  <!-- Top bar -->
   <div class="session-topbar">
     <div class="topbar-left">
       <div class="avatar <%= personaStyleColor %>" id="personaAvatar"></div>
@@ -22,26 +22,21 @@
       </div>
     </div>
     <div class="topbar-center" id="questionCounter">Question 1 of 5</div>
-   <div class="topbar-right" style="display: flex; align-items: center; gap: 15px;">
-        <!-- Hidden webcam mirror that displays your face as a small 40px dashboard profile bubble once active -->
-        <video id="webcamPreview" autoplay playsinline muted style="width: 40px; height: 40px; border-radius: 50%; background: #2a2a40; object-fit: cover; transform: scaleX(-1); display: none; border: 2px solid var(--personaStyleColor, #4f46e5);"></video>
-        
-        <!-- Media Activator & Record buttons -->
-        <button id="startMediaBtn" class="end-btn" style="background: #2563eb;">Enable Audio/Video</button>
-        <button id="recordBtn" class="end-btn" style="background: #dc2626; display: none;">Hold to Speak</button>
-        <span id="recordingStatus" style="font-size: 11px; color: #9ca3af; display: none;">Ready</span>
-
-        <span class="timer" id="timer">00:00</span>
-        <button class="end-btn" id="endBtn">End Session</button>
+    <div class="topbar-right" style="display:flex;align-items:center;gap:15px;">
+      <video id="webcamPreview" autoplay playsinline muted
+        style="width:40px;height:40px;border-radius:50%;background:#2a2a40;object-fit:cover;transform:scaleX(-1);display:none;border:2px solid #4f46e5;">
+      </video>
+      <button id="vapiBtn" class="end-btn" style="background:#2563eb;">Enable Audio/Video</button>
+      <span id="vapiStatus" style="font-size:11px;color:#9ca3af;"></span>
+      <span class="timer" id="timer">00:00</span>
+      <button class="end-btn" id="endBtn">End Session</button>
     </div>
   </div>
 
-  <!-- Question Stage -->
   <div class="question-stage" id="stage">
     <div class="question-card" id="questionCard">
       <div class="question-text" id="questionText">Loading...</div>
     </div>
-
     <div class="answer-area" id="answerArea">
       <textarea
         class="answer-textarea"
@@ -57,13 +52,11 @@
     </div>
   </div>
 
-  <!-- Loading State -->
   <div class="loading-state" id="loadingState" style="display:none;">
     <div class="loading-dots"><span></span><span></span><span></span></div>
     <div class="loading-text" id="loadingText">Reviewing your answer...</div>
   </div>
 
-  <!-- Score Badge -->
   <div class="score-badge" id="scoreBadge">
     <div class="badge-label">Answer Score</div>
     <div class="badge-score" id="badgeScore">--</div>
@@ -85,13 +78,11 @@
   let questionType = '<%= questionType %>';
   const initialQuestionText = `<%- questionText.replace(/`/g, '\\`') %>`;
 
-  // Init topbar
   document.getElementById('personaAvatar').textContent = personaInitials;
   document.getElementById('personaName').textContent = personaName;
   document.getElementById('personaTitle').textContent = personaTitle;
   document.getElementById('personaAvatar').className = 'avatar ' + personaStyleColor;
 
-  // Timer
   function tick() {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
     const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
@@ -100,46 +91,40 @@
   }
   timerInterval = setInterval(tick, 1000);
 
-  // Question counter
   function updateCounter() {
-    document.getElementById('questionCounter').textContent = 'Question ' + questionCount + ' of ' + maxQuestions;
+    document.getElementById('questionCounter').textContent =
+      'Question ' + questionCount + ' of ' + maxQuestions;
   }
 
-  // Char count
   const answerInput = document.getElementById('answerInput');
   answerInput.addEventListener('input', function() {
     document.getElementById('charCount').textContent = this.value.length + ' / 4000';
     document.getElementById('submitBtn').disabled = !this.value.trim();
   });
 
-  // Show loading
   function showLoading(text) {
     document.getElementById('stage').style.display = 'none';
     document.getElementById('loadingState').style.display = 'block';
     document.getElementById('loadingText').textContent = text;
   }
 
-  // Show question
   function showQuestion(q, type) {
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('stage').style.display = 'flex';
     document.getElementById('questionText').textContent = q.text;
-
-    // Show STAR tip for behavioral questions
     const card = document.getElementById('questionCard');
+    const existingTip = card.querySelector('.question-tip');
+    if (existingTip) existingTip.remove();
     if (type !== 'drill_down') {
-      const tip = card.querySelector('.question-tip');
-      if (tip) tip.remove();
-      card.insertAdjacentHTML('beforeend', '<div class="question-tip">Tip: Use the STAR framework — Situation, Task, Action, Result.</div>');
+      card.insertAdjacentHTML('beforeend',
+        '<div class="question-tip">Tip: Use the STAR framework — Situation, Task, Action, Result.</div>');
     }
-
     answerInput.value = '';
     document.getElementById('charCount').textContent = '0 / 4000';
     document.getElementById('submitBtn').disabled = true;
     answerInput.focus();
   }
 
-  // Show score badge
   function showScore(score) {
     const badge = document.getElementById('scoreBadge');
     const scoreEl = document.getElementById('badgeScore');
@@ -149,49 +134,34 @@
     setTimeout(() => badge.classList.remove('show'), 3000);
   }
 
-  // Submit answer
   document.getElementById('submitBtn').addEventListener('click', submitAnswer);
   document.getElementById('skipBtn').addEventListener('click', function() { submitAnswer(true); });
 
   async function submitAnswer(skip) {
     const answerText = skip ? '' : answerInput.value.trim();
     if (!skip && !answerText) return;
-
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
-
     showLoading(personaName + ' is reviewing your answer...');
-
     try {
       const resp = await fetch('/api/interview/sessions/' + sessionId + '/answer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          questionId: currentQuestionId,
-          answerText: answerText,
-          skip: skip,
-        }),
+        body: JSON.stringify({ questionId: currentQuestionId, answerText, skip }),
       });
-
       const data = await resp.json();
-
       if (data.sessionEnded) {
         clearInterval(timerInterval);
         window.location.href = '/interview/report/' + data.reportId;
         return;
       }
-
-      // Show score if we had one
       if (data.scores && !skip) {
         showScore(data.scores.weighted.toFixed(0));
       }
-
-      // Advance to next question
       currentQuestionId = data.question.id;
       questionCount++;
       updateCounter();
       showQuestion(data.question, data.question.type);
-
     } catch (err) {
       alert('Failed to submit. Please try again.');
       document.getElementById('stage').style.display = 'flex';
@@ -200,9 +170,8 @@
     }
   }
 
-  // End session
   document.getElementById('endBtn').addEventListener('click', async function() {
-    if (!confirm('End this interview session? You won&apos;t be able to continue.')) return;
+    if (!confirm('End this interview session? You won\'t be able to continue.')) return;
     clearInterval(timerInterval);
     try {
       await fetch('/api/interview/sessions/' + sessionId, { method: 'DELETE' });
@@ -210,64 +179,110 @@
     window.location.href = '/dashboard/history';
   });
 
-  // Init
   updateCounter();
-  // Show the initial question from server (avoids extra fetch)
   if (initialQuestionText) {
     showQuestion({ text: initialQuestionText }, questionType);
   }
-  
 })();
 </script>
-<!-- Load the Vapi Browser SDK directly from the official CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.x/dist/vapi.min.js"></script>
 
 <script>
-    // 1. Your Credentials
-    const VAPI_PUBLIC_KEY = 'd2d1f8a1-9c06-45fd-9ee2-0e0a9b292c3d';
-    const VAPI_ASSISTANT_ID = 'cdf72c47-a494-456a-b66a-3101bcab8621';
+(function() {
+  const VAPI_PUBLIC_KEY   = '<%= vapiPublicKey %>';
+  const VAPI_ASSISTANT_ID = '<%= vapiAssistantId %>';
 
-    // 2. Initialize Vapi using the global object exposed by the CDN script
-    const vapi = new Vapi(VAPI_PUBLIC_KEY);
-    let isCallLive = false;
+  const btn    = document.getElementById('vapiBtn');
+  const status = document.getElementById('vapiStatus');
+  const webcam = document.getElementById('webcamPreview');
 
-    // 3. UI References
-    const audioButton = document.querySelector('.btn-primary') || document.querySelector('button');
-    const statusIndicator = document.getElementById('recordingStatus') || { innerText: '' };
+  if (!VAPI_PUBLIC_KEY || !VAPI_ASSISTANT_ID || typeof window.Vapi === 'undefined') {
+    btn.style.display = 'none';
+    return;
+  }
 
-    audioButton.addEventListener('click', async () => {
-        if (!isCallLive) {
-            // Start the call
-            vapi.start(VAPI_ASSISTANT_ID, {
-                variableValues: {
-                    jobRole: "<%= typeof session !== 'undefined' && session.jobRole ? session.jobRole : 'Product Manager' %>",
-                    experienceLevel: "<%= typeof session !== 'undefined' && session.experienceLevel ? session.experienceLevel : 'Mid-Career' %>",
-                    targetOrganization: "<%= typeof session !== 'undefined' && (session.company || session.targetOrg) ? (session.company || session.targetOrg) : 'AWS' %>",
-                    persona: "<%= typeof session !== 'undefined' && session.interviewerName ? session.interviewerName : 'Priya Ramesh' %>"
-                }
-            });
-            audioButton.innerText = "Ending...";
-        } else {
-            vapi.stop();
+  const vapi = new window.Vapi(VAPI_PUBLIC_KEY);
+  let isLive = false;
+  let webcamStream = null;
+
+  async function startWebcam() {
+    try {
+      webcamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      webcam.srcObject = webcamStream;
+      webcam.style.display = 'block';
+    } catch (e) {
+      console.warn('[MedhaIQ] Webcam not available:', e.message);
+    }
+  }
+
+  function stopWebcam() {
+    if (webcamStream) {
+      webcamStream.getTracks().forEach(t => t.stop());
+      webcamStream = null;
+    }
+    webcam.style.display = 'none';
+  }
+
+  btn.addEventListener('click', function() {
+    if (!isLive) {
+      btn.textContent = 'Connecting...';
+      btn.disabled = true;
+      vapi.start(VAPI_ASSISTANT_ID, {
+        variableValues: {
+          personaName:     '<%= personaName %>',
+          personaTitle:    '<%= personaTitle %>',
+          roleTitle:       '<%= roleTitle || "" %>',
+          experienceLevel: '<%= experienceLevel || "" %>',
+          orgPreset:       '<%= orgPreset || "" %>',
         }
-    });
+      });
+      startWebcam();
+    } else {
+      vapi.stop();
+      stopWebcam();
+    }
+  });
 
-    // 4. Lifecycle Listeners
-    vapi.on('call-start', () => {
-        isCallLive = true;
-        audioButton.innerText = "End Session";
-        statusIndicator.innerText = "Voice Active";
-    });
+  vapi.on('call-start', function() {
+    isLive = true;
+    btn.textContent = 'End Voice Session';
+    btn.style.background = '#dc2626';
+    btn.disabled = false;
+    status.textContent = '● Voice active';
+    status.style.color = '#22c55e';
+  });
 
-    vapi.on('call-end', () => {
-        isCallLive = false;
-        audioButton.innerText = "Start Live Interview Voice";
-        statusIndicator.innerText = "Session Ended";
-    });
+  vapi.on('call-end', function() {
+    isLive = false;
+    btn.textContent = 'Enable Audio/Video';
+    btn.style.background = '#2563eb';
+    btn.disabled = false;
+    status.textContent = 'Session ended';
+    status.style.color = '#9ca3af';
+    stopWebcam();
+  });
 
-    vapi.on('error', (e) => {
-        console.error("Vapi Error:", e);
-        isCallLive = false;
-        audioButton.innerText = "Retry Voice";
-    });
+  vapi.on('speech-start', function() {
+    status.textContent = '● AI speaking';
+    status.style.color = '#a78bfa';
+  });
+
+  vapi.on('speech-end', function() {
+    status.textContent = '● Voice active';
+    status.style.color = '#22c55e';
+  });
+
+  vapi.on('error', function(e) {
+    console.error('[Vapi]', e);
+    isLive = false;
+    btn.textContent = 'Retry Voice';
+    btn.style.background = '#2563eb';
+    btn.disabled = false;
+    status.textContent = 'Error — check console';
+    status.style.color = '#ef4444';
+    stopWebcam();
+  });
+})();
 </script>
+
+</body>
+</html>
