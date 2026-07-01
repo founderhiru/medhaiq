@@ -6,7 +6,7 @@
   <title>Interview Session — MedhaIQ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/vapi.umd.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/css/interview.css">
   <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/vapi.umd.cjs" crossorigin="anonymous"></script>
 </head>
