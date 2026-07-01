@@ -6,7 +6,16 @@
   <title>Interview Session — MedhaIQ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/vapi.umd.js" crossorigin="anonymous"></script>
+  <script>
+window.__vapiReady = false;
+(function(d,t){
+  var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+  g.src="https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
+  g.defer=true; g.async=true;
+  g.onload=function(){ window.__vapiReady=true; };
+  s.parentNode.insertBefore(g,s);
+})(document,'script');
+</script>
   <link rel="stylesheet" href="/css/interview.css">
   <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/vapi.umd.cjs" crossorigin="anonymous"></script>
 </head>
@@ -195,91 +204,117 @@
   const status = document.getElementById('vapiStatus');
   const webcam = document.getElementById('webcamPreview');
 
-  if (!VAPI_PUBLIC_KEY || !VAPI_ASSISTANT_ID || typeof window.Vapi === 'undefined') {
+  if (!VAPI_PUBLIC_KEY || !VAPI_ASSISTANT_ID) {
     btn.style.display = 'none';
     return;
   }
 
-  const vapi = new window.Vapi(VAPI_PUBLIC_KEY);
+  let vapi = null;
   let isLive = false;
   let webcamStream = null;
+
+  function initVapi() {
+    if (vapi) return;
+    vapi = window.vapiSDK.run({
+      apiKey: VAPI_PUBLIC_KEY,
+      assistant: VAPI_ASSISTANT_ID,
+      config: { position: 'hidden' }
+    });
+
+    vapi.on('call-start', function() {
+      isLive = true;
+      btn.textContent = 'End Voice Session';
+      btn.style.background = '#dc2626';
+      btn.disabled = false;
+      status.textContent = '● Voice active';
+      status.style.color = '#22c55e';
+    });
+
+    vapi.on('call-end', function() {
+      isLive = false;
+      btn.textContent = 'Enable Audio/Video';
+      btn.style.background = '#2563eb';
+      btn.disabled = false;
+      status.textContent = '';
+      stopWebcam();
+    });
+
+    vapi.on('speech-start', function() {
+      status.textContent = '● AI speaking';
+      status.style.color = '#a78bfa';
+    });
+
+    vapi.on('speech-end', function() {
+      status.textContent = '● Voice active';
+      status.style.color = '#22c55e';
+    });
+
+    vapi.on('error', function(e) {
+      console.error('[Vapi]', e);
+      isLive = false;
+      btn.textContent = 'Retry Voice';
+      btn.disabled = false;
+      status.textContent = 'Error — check console';
+      status.style.color = '#ef4444';
+      stopWebcam();
+    });
+  }
 
   async function startWebcam() {
     try {
       webcamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       webcam.srcObject = webcamStream;
       webcam.style.display = 'block';
-    } catch (e) {
-      console.warn('[MedhaIQ] Webcam not available:', e.message);
+    } catch(e) {
+      console.warn('[Webcam]', e.message);
     }
   }
 
   function stopWebcam() {
     if (webcamStream) {
-      webcamStream.getTracks().forEach(t => t.stop());
+      webcamStream.getTracks().forEach(function(t){ t.stop(); });
       webcamStream = null;
     }
     webcam.style.display = 'none';
   }
 
   btn.addEventListener('click', function() {
-    if (!isLive) {
+    if (!window.vapiSDK) {
       btn.textContent = 'Connecting...';
       btn.disabled = true;
-      vapi.start(VAPI_ASSISTANT_ID, {
-        variableValues: {
-          personaName:     '<%= personaName %>',
-          personaTitle:    '<%= personaTitle %>',
-          roleTitle:       '<%= roleTitle || "" %>',
-          experienceLevel: '<%= experienceLevel || "" %>',
-          orgPreset:       '<%= orgPreset || "" %>',
+      var waited = 0;
+      var wait = setInterval(function() {
+        waited += 100;
+        if (window.vapiSDK) {
+          clearInterval(wait);
+          initVapi();
+          vapi.start();
+          startWebcam();
         }
-      });
+        if (waited > 5000) {
+          clearInterval(wait);
+          btn.textContent = 'Enable Audio/Video';
+          btn.disabled = false;
+          status.textContent = 'SDK load timeout — refresh page';
+          status.style.color = '#ef4444';
+        }
+      }, 100);
+      return;
+    }
+
+    if (!vapi) {
+      initVapi();
+    }
+
+    if (!isLive) {
+      vapi.start();
       startWebcam();
+      btn.textContent = 'Connecting...';
+      btn.disabled = true;
     } else {
       vapi.stop();
       stopWebcam();
     }
-  });
-
-  vapi.on('call-start', function() {
-    isLive = true;
-    btn.textContent = 'End Voice Session';
-    btn.style.background = '#dc2626';
-    btn.disabled = false;
-    status.textContent = '● Voice active';
-    status.style.color = '#22c55e';
-  });
-
-  vapi.on('call-end', function() {
-    isLive = false;
-    btn.textContent = 'Enable Audio/Video';
-    btn.style.background = '#2563eb';
-    btn.disabled = false;
-    status.textContent = 'Session ended';
-    status.style.color = '#9ca3af';
-    stopWebcam();
-  });
-
-  vapi.on('speech-start', function() {
-    status.textContent = '● AI speaking';
-    status.style.color = '#a78bfa';
-  });
-
-  vapi.on('speech-end', function() {
-    status.textContent = '● Voice active';
-    status.style.color = '#22c55e';
-  });
-
-  vapi.on('error', function(e) {
-    console.error('[Vapi]', e);
-    isLive = false;
-    btn.textContent = 'Retry Voice';
-    btn.style.background = '#2563eb';
-    btn.disabled = false;
-    status.textContent = 'Error — check console';
-    status.style.color = '#ef4444';
-    stopWebcam();
   });
 })();
 </script>
