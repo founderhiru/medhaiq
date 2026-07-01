@@ -96,6 +96,11 @@ app.get('/interview/session/:id', async (req, res) => {
       personaTitle: persona.title + ' @ ' + persona.org,
       personaInitials: initials,
       personaStyleColor: persona.styleColor,
+      roleTitle: session.role_title || '',
+      experienceLevel: session.experience_level || '',
+      orgPreset: session.org_preset || '',
+      vapiPublicKey: process.env.VAPI_PUBLIC_KEY || '',
+      vapiAssistantId: process.env.VAPI_ASSISTANT_ID || '',
     });
   } catch (err) {
     console.error('[interview/session]', err);
