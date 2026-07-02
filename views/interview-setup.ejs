@@ -110,17 +110,17 @@
       margin-bottom: 36px;
     }
     @media (max-width: 640px) { .persona-grid { grid-template-columns: 1fr; } }
-    .persona-card {
-      display: flex; align-items: flex-start; gap: 14px;
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      cursor: pointer;
-      transition: all 0.18s;
-      position: relative;
-    }
-    .persona-card:hover {
+ .persona-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+    .persona-card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); transition: 0.3s; cursor: pointer; }
+    .persona-card:hover { border-color: var(--blue-hi); }
+    .persona-card.selected { border-color: var(--blue-hi); background: rgba(59, 130, 246, 0.05); }
+    .persona-card .p-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 16px; font-weight: 700; color: #fff; }
+    .persona-card .p-name { font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 2px; }
+    .persona-card .p-title { font-size: 13px; color: var(--muted); opacity: 0.7; margin-bottom: 16px; display: block; }
+    .persona-card .p-traits { list-style: none; padding: 0; margin: 0; }
+    .persona-card .p-traits li { font-size: 13px; color: var(--muted); margin-bottom: 6px; padding-left: 18px; position: relative; line-height: 1.4; }
+    .persona-card .p-traits li::before { content: "—"; position: absolute; left: 0; color: var(--blue-hi); }
+  .persona-card:hover {
       border-color: var(--blue-hi);
       background: rgba(31,89,180,0.08);
       transform: translateY(-1px);
