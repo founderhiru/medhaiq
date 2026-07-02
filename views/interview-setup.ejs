@@ -113,19 +113,16 @@
  /* Refined Elite Persona Card CSS */
 /* Container & Micro-interaction */
 .persona-card {
-    background: #0d1117;
-    border: 1px solid #1f2937;
+    background: linear-gradient(135deg, #11161d 0%, #0a0e14 100%); /* Subtle gradient */
+    border: 1px solid rgba(56, 189, 248, 0.2); /* Soft blue border */
     border-radius: 12px;
     padding: 16px;
-    transition: transform 0.2s ease, border-color 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    cursor: pointer;
+    transition: 0.3s;
 }
 
 .persona-card:hover {
-    transform: translateY(-2px);
-    border-color: #3b82f6; /* Elite blue focus */
+    border-color: #38bdf8; /* Blue highlight on hover */
+    box-shadow: 0 4px 20px rgba(56, 189, 248, 0.1);
 }
 
 /* Uniform Avatar Sizing */
