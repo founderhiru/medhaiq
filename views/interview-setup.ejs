@@ -190,20 +190,24 @@
     }
     .status-pill.filled { border-color: var(--blue-hi); color: var(--blue-hi); }
     .cta-bar { display: flex; align-items: center; gap: 16px; }
-    .init-btn {
-      padding: 13px 36px;
-      background: var(--blue); border: none; border-radius: 10px;
-      color: #fff; font-size: 14px; font-weight: 600;
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      cursor: pointer; transition: all 0.18s; letter-spacing: -0.2px;
-    }
-    .init-btn:not(:disabled):hover {
-      background: var(--blue-hi);
-      box-shadow: 0 0 0 1px var(--blue-hi), 0 4px 20px rgba(59,130,246,0.25);
-      transform: translateY(-1px);
-    }
-    .init-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-    .cta-hint { font-size: 12px; color: var(--dim); }
+  .sticky-cta {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(17, 24, 39, 0.98);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+}
+.sticky-inner { display: flex; align-items: center; gap: 24px; width: 100%; max-width: 900px; }
+.cta-status { display: flex; gap: 12px; flex: 1; }
+.cta-tag { font-size: 12px; color: var(--muted); padding: 4px 10px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+.cta-tag.filled { color: var(--blue-hi); border: 1px solid var(--blue-hi); }
+.begin-btn {
+  padding: 12px 24px; background: var(--blue); border: none; border-radius: 8px;
+  color: white; font-weight: 600; cursor: pointer; transition: 0.2s;
+}
+.begin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -226,10 +230,10 @@
   </div>
 
   <div class="sec-label">Target Role</div>
-  <div class="role-tabs">
-    <button class="role-tab active" data-tab="core" onclick="switchTab('core')">Core Roles</button>
-    <button class="role-tab" data-tab="ai" onclick="switchTab('ai')">AI &amp; Data Roles</button>
-  </div>
+ <div class="role-toggle" style="margin-bottom: 20px; display: flex; gap: 10px;">
+  <button class="toggle-btn active" onclick="switchTab('core')">Core Roles</button>
+  <button class="toggle-btn" onclick="switchTab('ai')">AI & Data</button>
+</div>
 <!-- Core Roles Section -->
  <div class="role-panel visible" id="tab-core">
     <div class="chips">
@@ -396,53 +400,58 @@
 </div>
 
 <script>
+function switchTab(tab) {
+    document.querySelectorAll('.role-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    document.querySelectorAll('.role-panel').forEach(p => p.classList.toggle('visible', p.id === 'tab-' + tab));
+}
+
 (function () {
-  var selectedRole = '';
-  var selectedExp = 'Mid-Career'; // Matches your current default
-  var selectedPersona = null;
-  var selectedVoiceId = null;
+  let state = { role: '', exp: 'Mid-Career', persona: null, voice: null };
 
-  // 1. Role Selection
-  document.querySelectorAll('.chip[data-role]').forEach(function(chip) {
-    chip.addEventListener('click', function() {
-      document.querySelectorAll('.chip[data-role]').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      selectedRole = chip.dataset.role;
-      sync(); // Tells the footer to update
+  document.querySelectorAll('.chip, .persona-card').forEach(el => {
+    el.addEventListener('click', () => {
+      if(el.classList.contains('chip')) {
+        el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        if(el.closest('#chips-exp')) state.exp = el.textContent.trim().split('(')[0];
+        else state.role = el.dataset.role;
+      } else {
+        document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        state.persona = el.querySelector('.p-name').textContent;
+        state.voice = el.dataset.voice;
+      }
+      sync();
     });
   });
 
-  // 2. Experience Selection
-  document.querySelectorAll('#chips-exp .chip').forEach(function(chip) {
-    chip.addEventListener('click', function() {
-      document.querySelectorAll('#chips-exp .chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      selectedExp = chip.textContent.trim().split('(')[0];
-      sync(); // Tells the footer to update
-    });
-  });
-
-  // 3. Persona Selection
-  document.querySelectorAll('.persona-card').forEach(function(card) {
-    card.addEventListener('click', function() {
-      document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      selectedPersona = card.querySelector('.p-name').textContent;
-      selectedVoiceId = card.dataset.voice;
-      sync(); // Tells the footer to update
-    });
-  });
-
-  // The Master Update Function
   function sync() {
-    document.getElementById('cta-role').textContent = 'Role: ' + (selectedRole || 'not selected');
-    document.getElementById('cta-exp').textContent = 'Level: ' + selectedExp;
-    document.getElementById('cta-persona').textContent = 'Interviewer: ' + (selectedPersona || 'not selected');
+    const roleEl = document.getElementById('cta-role');
+    const expEl = document.getElementById('cta-exp');
+    const perEl = document.getElementById('cta-persona');
+    const btn = document.getElementById('beginBtn');
+
+    roleEl.textContent = state.role || 'Role: not selected';
+    roleEl.classList.toggle('filled', !!state.role);
+    expEl.textContent = 'Level: ' + state.exp;
+    expEl.classList.add('filled');
+    perEl.textContent = state.persona || 'Interviewer: not selected';
+    perEl.classList.toggle('filled', !!state.persona);
     
-    // Check if everything is filled to enable the button
-    var isReady = (selectedRole && selectedPersona);
-    document.getElementById('beginBtn').disabled = !isReady;
+    btn.disabled = !(state.role && state.persona);
   }
+
+  document.getElementById('beginBtn').onclick = async () => {
+    const btn = document.getElementById('beginBtn');
+    btn.textContent = 'Initializing...';
+    const res = await fetch('/api/interview/sessions', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ personaId: state.persona, roleTitle: state.role, experienceLevel: state.exp, vapiVoiceId: state.voice })
+    });
+    const data = await res.json();
+    window.location.href = '/interview/session/' + data.sessionId;
+  };
 })();
 </script>
 </body>
