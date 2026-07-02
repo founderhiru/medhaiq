@@ -3,215 +3,504 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Start Your Interview — MedhaIQ</title>
+  <title>Start Your Session — MedhaIQ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/interview.css">
+  <style>
+    :root {
+      --bg:       #0b1120;
+      --surface:  #111827;
+      --card:     #151f32;
+      --border:   rgba(255,255,255,0.07);
+      --blue:     #1f59b4;
+      --blue-hi:  #3b82f6;
+      --muted:    #94a3b8;
+      --dim:      #475569;
+      --white:    #ffffff;
+      --emerald:  #059669;
+      --gold:     #d97706;
+      --red:      #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    h1,h2,h3 { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 700; }
+    .nav {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(11,17,32,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      height: 52px;
+      display: flex; align-items: center;
+      padding: 0 28px;
+      justify-content: space-between;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .nav-logo span { font-family:'Plus Jakarta Sans',system-ui,sans-serif; font-size:15px; font-weight:700; color:#fff; }
+    .nav-logo span em { color: var(--blue-hi); font-style: normal; }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .nav-link { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; padding: 5px 10px; border-radius: 6px; transition: color 0.15s; }
+    .nav-link:hover { color: var(--white); }
+    .nav-cta { background: var(--blue); color: #fff; text-decoration: none; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 7px; transition: background 0.15s; }
+    .nav-cta:hover { background: var(--blue-hi); }
+    .page { max-width: 900px; margin: 0 auto; padding: 44px 24px 80px; }
+    .page-header { margin-bottom: 36px; }
+    .page-header h1 { font-size: 26px; letter-spacing: -0.4px; margin-bottom: 5px; }
+    .page-header p { color: var(--muted); font-size: 13px; }
+    .sec-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 1.4px;
+      text-transform: uppercase; color: var(--blue-hi);
+      margin-bottom: 10px;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 28px; }
+    .chip {
+      padding: 5px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 12px; font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .chip:hover { border-color: var(--blue-hi); color: var(--white); }
+    .chip.active {
+      background: rgba(31,89,180,0.25);
+      border-color: var(--blue-hi);
+      color: var(--white);
+    }
+    .role-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .role-tab {
+      padding: 5px 14px; border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      font-size: 12px; font-weight: 500;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .role-tab.active { background: var(--surface); border-color: var(--blue-hi); color: var(--white); }
+    .role-panel { display: none; }
+    .role-panel.visible { display: block; }
+    .custom-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: var(--white);
+      font-size: 13px;
+      font-family: 'Inter', system-ui, sans-serif;
+      width: 100%; margin-top: 8px;
+      display: none;
+      transition: border-color 0.15s;
+    }
+    .custom-input:focus { outline: none; border-color: var(--blue-hi); }
+    .divider { height: 1px; background: var(--border); margin: 28px 0; }
+    .persona-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+    @media (max-width: 640px) { .persona-grid { grid-template-columns: 1fr; } }
+    .persona-card {
+      display: flex; align-items: flex-start; gap: 14px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.18s;
+      position: relative;
+    }
+    .persona-card:hover {
+      border-color: var(--blue-hi);
+      background: rgba(31,89,180,0.08);
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 1px var(--blue-hi), 0 4px 20px rgba(31,89,180,0.15);
+    }
+    .persona-card.selected {
+      border-color: var(--blue-hi);
+      background: rgba(31,89,180,0.15);
+      box-shadow: 0 0 0 1px var(--blue-hi);
+    }
+    .persona-card .check-dot {
+      display: none;
+      position: absolute; top: 10px; right: 10px;
+      width: 20px; height: 20px;
+      background: var(--blue);
+      border-radius: 50%;
+      align-items: center; justify-content: center;
+      font-size: 11px; color: #fff;
+    }
+    .persona-card.selected .check-dot { display: flex; }
+    .p-avatar {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      color: #fff;
+      background: var(--blue);
+    }
+    .p-avatar.emerald { background: var(--emerald); }
+    .p-avatar.gold    { background: var(--gold); }
+    .p-body { flex: 1; min-width: 0; }
+    .p-top { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; flex-wrap: wrap; }
+    .p-name { font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+    .difficulty {
+      font-size: 10px; font-weight: 600; padding: 2px 7px;
+      border-radius: 999px; white-space: nowrap;
+    }
+    .diff-hard   { background: rgba(220,38,38,0.2);  color: #fca5a5; }
+    .diff-medium { background: rgba(217,119,6,0.2);  color: #fcd34d; }
+    .diff-elite  { background: rgba(109,40,217,0.2); color: #c4b5fd; }
+    .p-title { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+    .p-style {
+      display: inline-block; font-size: 10px; font-weight: 600;
+      padding: 2px 8px; border-radius: 999px; margin-bottom: 8px;
+      letter-spacing: 0.2px;
+    }
+    .p-style.royal-blue { background: rgba(30,64,175,0.3); color: #93c5fd; }
+    .p-style.emerald    { background: rgba(5,150,105,0.3);  color: #6ee7b7; }
+    .p-style.gold       { background: rgba(217,119,6,0.3);  color: #fcd34d; }
+    .p-traits { list-style: none; padding: 0; }
+    .p-traits li {
+      font-size: 11px; color: var(--muted);
+      padding: 2px 0 2px 12px;
+      position: relative; line-height: 1.4;
+    }
+    .p-traits li::before {
+      content: '·'; position: absolute; left: 0;
+      color: var(--blue-hi); font-size: 14px; line-height: 1.1;
+    }
+    .status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; min-height: 22px; }
+    .status-pill {
+      font-size: 11px; font-weight: 500; padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+    }
+    .status-pill.filled { border-color: var(--blue-hi); color: var(--blue-hi); }
+    .cta-bar { display: flex; align-items: center; gap: 16px; }
+    .init-btn {
+      padding: 13px 36px;
+      background: var(--blue); border: none; border-radius: 10px;
+      color: #fff; font-size: 14px; font-weight: 600;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      cursor: pointer; transition: all 0.18s; letter-spacing: -0.2px;
+    }
+    .init-btn:not(:disabled):hover {
+      background: var(--blue-hi);
+      box-shadow: 0 0 0 1px var(--blue-hi), 0 4px 20px rgba(59,130,246,0.25);
+      transform: translateY(-1px);
+    }
+    .init-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .cta-hint { font-size: 12px; color: var(--dim); }
+  </style>
 </head>
 <body>
 
-<%- include('partials/interview-header') %>
+<nav class="nav">
+  <a href="/" class="nav-logo">
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 3 L10 3 L10 10 L17 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="10" r="1.5" fill="white"/><circle cx="3" cy="3" r="1.5" fill="white"/><circle cx="17" cy="10" r="1.5" fill="white"/><path d="M10 10 L17 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M7 14 L7 17 L10 17" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Medha<em>IQ</em></span>
+  </a>
+  <div class="nav-actions">
+    <a href="/dashboard/history" class="nav-link">History</a>
+    <a href="/interview" class="nav-cta">New Interview</a>
+  </div>
+</nav>
 
-<div class="interview-page">
-  <h1>Start Your Interview Session</h1>
-  <p class="subtitle">Select your role, experience level, and the interviewer persona you want to practice with.</p>
+<div class="page">
+  <div class="page-header">
+    <h1>Start your session</h1>
+    <p>Choose your target role, experience level, and interviewer persona.</p>
+  </div>
 
-  <!-- Step 1: Role Configuration -->
-  <div class="step-label">Step 1 of 2</div>
-  <h2 class="step-title">Configure Your Role</h2>
-  <div class="role-config">
-    <div class="field-group">
-      <label for="roleTitle">Job Title</label>
-      <select id="roleTitle">
-        <option value="">Select a role...</option>
-        <option value="Software Engineer">Software Engineer</option>
-        <option value="Product Manager">Product Manager</option>
-        <option value="Data Scientist">Data Scientist</option>
-        <option value="Management Consultant">Management Consultant</option>
-        <option value="Finance / Investment Analyst">Finance / Investment Analyst</option>
-        <option value="Marketing Manager">Marketing Manager</option>
-        <option value="HR / Talent Leader">HR / Talent Leader</option>
-        <option value="Healthcare Professional">Healthcare Professional</option>
-        <option value="Academic / Educator">Academic / Educator</option>
-        <option value="custom">Custom...</option>
-      </select>
-      <input type="text" id="roleCustom" placeholder="Enter your role..." style="display:none;margin-top:8px;" />
+  <div class="sec-label">Target Role</div>
+  <div class="role-tabs">
+    <button class="role-tab active" data-tab="core" onclick="switchTab('core')">Core Roles</button>
+    <button class="role-tab" data-tab="ai" onclick="switchTab('ai')">AI &amp; Specialised Roles</button>
+  </div>
+
+  <div class="role-panel visible" id="tab-core">
+    <div class="chips">
+      <div class="chip" data-role="Software Engineer">Software Engineer</div>
+      <div class="chip" data-role="Product Manager">Product Manager</div>
+      <div class="chip" data-role="Data Scientist">Data Scientist</div>
+      <div class="chip" data-role="Management Consultant">Management Consultant</div>
+      <div class="chip" data-role="Finance / Investment Analyst">Finance / Investment Analyst</div>
+      <div class="chip" data-role="Marketing Manager">Marketing Manager</div>
+      <div class="chip" data-role="HR / Talent Leader">HR / Talent Leader</div>
+      <div class="chip" data-role="Business Analyst">Business Analyst</div>
+      <div class="chip" data-role="Operations Manager">Operations Manager</div>
+      <div class="chip" data-role="Custom..." data-custom="true">&#9998; Custom...</div>
     </div>
+  </div>
 
-    <div class="field-group">
-      <label>Experience Level</label>
-      <div class="exp-toggle" id="expToggle">
-        <button type="button" data-value="fresher">Fresher (0–2 yrs)</button>
-        <button type="button" class="active" data-value="mid">Mid-Career (3–8 yrs)</button>
-        <button type="button" data-value="senior">Senior (8–15 yrs)</button>
-        <button type="button" data-value="executive">Executive (15+ yrs)</button>
+  <div class="role-panel" id="tab-ai">
+    <div class="chips">
+      <div class="chip" data-role="AI / ML Engineer">AI / ML Engineer</div>
+      <div class="chip" data-role="AI Product Manager">AI Product Manager</div>
+      <div class="chip" data-role="Data Engineer">Data Engineer</div>
+      <div class="chip" data-role="MLOps Engineer">MLOps Engineer</div>
+      <div class="chip" data-role="AI Research Scientist">AI Research Scientist</div>
+      <div class="chip" data-role="Prompt Engineer">Prompt Engineer</div>
+      <div class="chip" data-role="LLM Applications Engineer">LLM Applications Engineer</div>
+      <div class="chip" data-role="Healthcare Professional">Healthcare Professional</div>
+      <div class="chip" data-role="Academic / Educator">Academic / Educator</div>
+      <div class="chip" data-role="Custom..." data-custom="true">&#9998; Custom...</div>
+    </div>
+  </div>
+  <input type="text" class="custom-input" id="roleCustom" placeholder="Type your role and press Enter...">
+
+  <div class="divider"></div>
+
+  <div class="sec-label">Experience Level</div>
+  <div class="chips" id="chips-exp">
+    <div class="chip" data-exp="fresher">&#127807; Fresher (0&#8211;2 yrs)</div>
+    <div class="chip active" data-exp="mid">&#9889; Mid-Career (3&#8211;8 yrs)</div>
+    <div class="chip" data-exp="senior">&#128293; Senior (8&#8211;15 yrs)</div>
+    <div class="chip" data-exp="executive">&#128081; Executive (15+ yrs)</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="sec-label">Choose Your Interviewer</div>
+
+  <div class="persona-grid">
+
+    <div class="persona-card" data-persona="alex_chen" data-voice="voice-alex">
+      <div class="check-dot">&#10003;</div>
+      <div class="p-avatar">AC</div>
+      <div class="p-body">
+        <div class="p-top">
+          <span class="p-name">Alex Chen</span>
+          <span class="difficulty diff-hard">&#128293; Hard</span>
+        </div>
+        <div class="p-title">Senior Principal Engineer &middot; AWS</div>
+        <span class="p-style royal-blue">Structured Technical</span>
+        <ul class="p-traits">
+          <li>LP-driven, bar-raiser standard — no hand-holding</li>
+          <li>Demands explicit trade-offs and measurable outcomes</li>
+          <li>Deep dives into system design &amp; ownership moments</li>
+        </ul>
       </div>
     </div>
 
-    <div class="field-group">
-      <label for="orgPreset">Organisation Preset (optional)</label>
-      <select id="orgPreset">
-        <option value="">Generic Global Enterprise</option>
-        <option value="Google">Google</option>
-        <option value="Amazon">Amazon</option>
-        <option value="Microsoft">Microsoft</option>
-        <option value="McKinsey & Co">McKinsey & Co</option>
-        <option value="BCG">BCG</option>
-        <option value="Deloitte">Deloitte</option>
-        <option value="Goldman Sachs">Goldman Sachs</option>
-        <option value="Custom">Custom...</option>
-      </select>
-      <input type="text" id="orgCustom" placeholder="Enter organisation..." style="display:none;margin-top:8px;" />
+    <div class="persona-card" data-persona="priya_ramesh" data-voice="voice-priya">
+      <div class="check-dot">&#10003;</div>
+      <div class="p-avatar emerald">PR</div>
+      <div class="p-body">
+        <div class="p-top">
+          <span class="p-name">Priya Ramesh</span>
+          <span class="difficulty diff-elite">&#128142; Elite</span>
+        </div>
+        <div class="p-title">Partner &middot; McKinsey Consulting</div>
+        <span class="p-style emerald">Case-Led Communication</span>
+        <ul class="p-traits">
+          <li>MECE frameworks, fast-paced articulation under pressure</li>
+          <li>Executive presence &amp; structured problem decomposition</li>
+          <li>Punishes waffle — rewards clarity and synthesis</li>
+        </ul>
+      </div>
     </div>
+
+    <div class="persona-card" data-persona="marcus_webb" data-voice="voice-marcus">
+      <div class="check-dot">&#10003;</div>
+      <div class="p-avatar gold">MW</div>
+      <div class="p-body">
+        <div class="p-top">
+          <span class="p-name">Marcus Webb</span>
+          <span class="difficulty diff-medium">&#9889; Medium</span>
+        </div>
+        <div class="p-title">VP Product &middot; Series B SaaS</div>
+        <span class="p-style gold">Product Thinking</span>
+        <ul class="p-traits">
+          <li>Product sense, prioritisation frameworks, north-star metrics</li>
+          <li>User empathy balanced with hard commercial judgement</li>
+          <li>Cross-functional leadership &amp; go-to-market thinking</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="persona-card" data-persona="sanjeev_nair" data-voice="voice-sanjeev">
+      <div class="check-dot">&#10003;</div>
+      <div class="p-avatar">SN</div>
+      <div class="p-body">
+        <div class="p-top">
+          <span class="p-name">Sanjeev Nair</span>
+          <span class="difficulty diff-hard">&#128293; Hard</span>
+        </div>
+        <div class="p-title">Engineering Director &middot; Global Tech Firm</div>
+        <span class="p-style royal-blue">Core Engineering + Team</span>
+        <ul class="p-traits">
+          <li>Architecture decisions at scale, agile delivery under pressure</li>
+          <li>Team mentoring, org design, engineering culture</li>
+          <li>Enterprise execution — timelines, stakeholders, delivery</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="persona-card" data-persona="sarah_kim" data-voice="voice-sarah">
+      <div class="check-dot">&#10003;</div>
+      <div class="p-avatar emerald">SK</div>
+      <div class="p-body">
+        <div class="p-top">
+          <span class="p-name">Sarah Kim</span>
+          <span class="difficulty diff-hard">&#128293; Hard</span>
+        </div>
+        <div class="p-title">CEO &middot; Pre-Series A Startup</div>
+        <span class="p-style emerald">Generalist High-Bar</span>
+        <ul class="p-traits">
+          <li>First-principles thinking, resilience under extreme ambiguity</li>
+          <li>Bias for action, growth mindset, founder-level hustle</li>
+          <li>Tests resourcefulness — right answer matters less than how</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="persona-card" data-persona="raj_mehta" data-voice="voice-raj">
+      <div class="check-dot">&#10003;</div>
+      <div class="p-avatar gold">RM</div>
+      <div class="p-body">
+        <div class="p-top">
+          <span class="p-name">Raj Mehta</span>
+          <span class="difficulty diff-elite">&#128142; Elite</span>
+        </div>
+        <div class="p-title">Global Director &middot; GCC Enterprise Network</div>
+        <span class="p-style gold">Executive Presence</span>
+        <ul class="p-traits">
+          <li>Stakeholder management across cultures and geographies</li>
+          <li>Board-level communication, cross-border strategy</li>
+          <li>Tests gravitas, composure, and enterprise political acuity</li>
+        </ul>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Step 2: Persona Selection -->
-  <div class="step-label">Step 2 of 2</div>
-  <h2 class="step-title">Choose Your Interviewer</h2>
-  <div class="persona-grid" id="personaGrid">
-    <div class="persona-card" data-persona="alex_chen">
-      <div class="check">✓</div>
-      <div class="p-name">Alex Chen</div>
-      <div class="p-title">Senior Principal Engineer · AWS</div>
-      <span class="p-style royal-blue">Structured Technical</span>
-      <div class="p-focus">Leadership principles, system design, technical depth. LP-driven, bar-raiser standard.</div>
-    </div>
-    <div class="persona-card" data-persona="priya_ramesh">
-      <div class="check">✓</div>
-      <div class="p-name">Priya Ramesh</div>
-      <div class="p-title">Partner · McKinsey Consulting</div>
-      <span class="p-style emerald">Case-Led Communication</span>
-      <div class="p-focus">Problem structuring, MECE frameworks, executive presence, fast-paced articulation.</div>
-    </div>
-    <div class="persona-card" data-persona="marcus_webb">
-      <div class="check">✓</div>
-      <div class="p-name">Marcus Webb</div>
-      <div class="p-title">VP Product · Series B SaaS</div>
-      <span class="p-style gold">Product Thinking</span>
-      <div class="p-focus">Product sense, prioritisation, metrics, user empathy, cross-functional leadership.</div>
-    </div>
-    <div class="persona-card" data-persona="sanjeev_nair">
-      <div class="check">✓</div>
-      <div class="p-name">Sanjeev Nair</div>
-      <div class="p-title">Engineering Director · Global Tech Firm</div>
-      <span class="p-style royal-blue">Core Engineering + Team</span>
-      <div class="p-focus">Architecture decisions, agile delivery, team mentoring, enterprise execution.</div>
-    </div>
-    <div class="persona-card" data-persona="sarah_kim">
-      <div class="check">✓</div>
-      <div class="p-name">Sarah Kim</div>
-      <div class="p-title">CEO · Pre-Series A Startup</div>
-      <span class="p-style emerald">Generalist High-Bar</span>
-      <div class="p-focus">First-principles thinking, resilience, bias for action, growth mindset under ambiguity.</div>
-    </div>
-    <div class="persona-card" data-persona="raj_mehta">
-      <div class="check">✓</div>
-      <div class="p-name">Raj Mehta</div>
-      <div class="p-title">Global Director · GCC Enterprise Network</div>
-      <span class="p-style gold">Executive Presence</span>
-      <div class="p-focus">Stakeholder management, global team leadership, cross-border strategy, board communication.</div>
-    </div>
+  <div class="status-row">
+    <span class="status-pill" id="pill-role">Role: none</span>
+    <span class="status-pill" id="pill-persona">Persona: none</span>
   </div>
 
-  <div class="begin-wrap">
-    <button class="begin-btn" id="beginBtn" disabled>Begin Interview</button>
+  <div class="cta-bar">
+    <button class="init-btn" id="beginBtn" disabled>Initialize Session &#8594;</button>
+    <span class="cta-hint" id="ctaHint">Select a role and persona to begin</span>
   </div>
 </div>
 
 <script>
-(function() {
-  // State
-  let selectedPersona = null;
-  let experienceLevel = 'mid';
-  let roleTitle = '';
-  let orgPreset = '';
+(function () {
+  var selectedRole    = '';
+  var selectedExp     = 'mid';
+  var selectedPersona = null;
+  var selectedVoiceId = null;
 
-  // Role title custom handling
-  document.getElementById('roleTitle').addEventListener('change', function() {
-    const custom = document.getElementById('roleCustom');
-    custom.style.display = this.value === 'custom' ? 'block' : 'none';
-    if (this.value !== 'custom') roleTitle = this.value;
-  });
-  document.getElementById('roleCustom').addEventListener('input', function() {
-    roleTitle = this.value;
-  });
+  window.switchTab = function(tab) {
+    document.querySelectorAll('.role-tab').forEach(function(t) {
+      t.classList.toggle('active', t.dataset.tab === tab);
+    });
+    document.querySelectorAll('.role-panel').forEach(function(p) {
+      p.classList.toggle('visible', p.id === 'tab-' + tab);
+    });
+  };
 
-  // Org preset custom handling
-  document.getElementById('orgPreset').addEventListener('change', function() {
-    const custom = document.getElementById('orgCustom');
-    custom.style.display = this.value === 'Custom' ? 'block' : 'none';
-    if (this.value !== 'Custom') orgPreset = this.value;
-  });
-  document.getElementById('orgCustom').addEventListener('input', function() {
-    orgPreset = this.value;
-  });
-
-  // Experience level toggle
-  document.querySelectorAll('#expToggle button').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('#expToggle button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      experienceLevel = btn.dataset.value;
+  document.querySelectorAll('.chip[data-role]').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      if (chip.dataset.custom === 'true') {
+        document.querySelectorAll('.chip[data-role]').forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        var inp = document.getElementById('roleCustom');
+        inp.style.display = 'block';
+        inp.focus();
+        selectedRole = '';
+        sync();
+        return;
+      }
+      document.querySelectorAll('.chip[data-role]').forEach(function(c) { c.classList.remove('active'); });
+      document.getElementById('roleCustom').style.display = 'none';
+      chip.classList.add('active');
+      selectedRole = chip.dataset.role;
+      sync();
     });
   });
 
-  // Persona selection
+  document.getElementById('roleCustom').addEventListener('input', function() {
+    selectedRole = this.value.trim();
+    sync();
+  });
+
+  document.querySelectorAll('#chips-exp .chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('#chips-exp .chip').forEach(function(c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      selectedExp = chip.dataset.exp;
+    });
+  });
+
   document.querySelectorAll('.persona-card').forEach(function(card) {
     card.addEventListener('click', function() {
-      document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('.persona-card').forEach(function(c) { c.classList.remove('selected'); });
       card.classList.add('selected');
       selectedPersona = card.dataset.persona;
-      checkBegin();
+      selectedVoiceId = card.dataset.voice;
+      sync();
     });
   });
 
-  function checkBegin() {
-    const canBegin = selectedPersona && roleTitle;
-    document.getElementById('beginBtn').disabled = !canBegin;
+  function sync() {
+    var pr = document.getElementById('pill-role');
+    var pp = document.getElementById('pill-persona');
+    var btn = document.getElementById('beginBtn');
+    var hint = document.getElementById('ctaHint');
+    pr.textContent = selectedRole ? ('&#10003; ' + selectedRole) : 'Role: none';
+    pp.textContent = selectedPersona ? ('&#10003; ' + selectedPersona.replace('_',' ')) : 'Persona: none';
+    pr.classList.toggle('filled', !!selectedRole);
+    pp.classList.toggle('filled', !!selectedPersona);
+    var ready = !!(selectedRole && selectedPersona);
+    btn.disabled = !ready;
+    hint.textContent = ready ? 'Ready — click to begin your session'
+      : (!selectedRole ? 'Select a target role first' : 'Now choose your interviewer');
   }
 
-  // Check role on select change
-  document.getElementById('roleTitle').addEventListener('change', function() {
-    if (this.value !== 'custom') {
-      roleTitle = this.value;
-      checkBegin();
-    }
-  });
-
-  // Begin interview
   document.getElementById('beginBtn').addEventListener('click', async function() {
-    const btn = this;
+    var btn = this;
     btn.disabled = true;
-    btn.textContent = 'Starting session...';
-
+    btn.textContent = 'Initializing...';
     try {
-      const finalRole = roleTitle || document.getElementById('roleTitle').value;
-
-      const resp = await fetch('/api/interview/sessions', {
+      var resp = await fetch('/api/interview/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          personaId: selectedPersona,
-          roleTitle: finalRole,
-          experienceLevel: experienceLevel,
-          orgPreset: orgPreset || document.getElementById('orgPreset').value,
+          personaId:       selectedPersona,
+          roleTitle:       selectedRole,
+          experienceLevel: selectedExp,
+          orgPreset:       '',
+          vapiVoiceId:     selectedVoiceId,
         }),
       });
-
-      const data = await resp.json();
-      if (!resp.ok) {
-        throw new Error(data.error || 'Session creation failed (' + resp.status + ')');
-      }
+      var data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Session creation failed (' + resp.status + ')');
       if (!data.sessionId) throw new Error('No session ID returned from server');
       window.location.href = '/interview/session/' + data.sessionId;
     } catch (err) {
       btn.disabled = false;
-      btn.textContent = 'Begin Interview';
-      console.error('[MedhaIQ] Start session error:', err);
-      alert('Failed to start: ' + (err.message || 'Unknown error') + '\n\nCheck browser DevTools Console for details.');
+      btn.textContent = 'Initialize Session \u2192';
+      alert('Failed to start: ' + (err.message || 'Unknown error'));
     }
   });
+
+  sync();
 })();
 </script>
 </body>
