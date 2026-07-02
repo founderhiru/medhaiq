@@ -189,6 +189,15 @@
     border-radius: 4px;
     border: 1px solid rgba(59, 130, 246, 0.2);
 
+    /* Header: Avatar, Name, and Badge Alignment */
+.p-header { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.p-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+.p-info { flex: 1; }
+.p-name-row { display: flex; justify-content: space-between; align-items: center; }
+.p-name { font-size: 16px; font-weight: 700; color: #f8fafc; }
+.p-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: #991b1b; color: #fecaca; }
+.p-role { font-size: 12px; color: #cbd5e1; margin-top: 2px; }
+
     /* Subheading & Traits (Chips) */
 .p-specialty { font-size: 13px; font-weight: 600; color: #38bdf8; margin-bottom: 12px; }
 .p-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; }
