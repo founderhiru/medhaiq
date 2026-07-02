@@ -406,19 +406,19 @@ function switchTab(tab) {
 }
 
 (function () {
-let state = { role: '', exp: 'Mid-Career', persona: null, voice: null };
+  let state = { role: '', exp: null, persona: null, voice: null };
 
   document.querySelectorAll('.chip, .persona-card').forEach(el => {
     el.addEventListener('click', () => {
       if(el.classList.contains('chip')) {
         el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
-        if(el.closest('#chips-exp')) state.exp = el.textContent.trim().split('(')[0];
+        if(el.parentElement.id === 'chips-exp') state.exp = el.textContent.trim().split('(')[0];
         else state.role = el.dataset.role;
       } else {
         document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
         el.classList.add('selected');
-        state.persona = el.querySelector('.p-name').textContent;
+        state.persona = el.dataset.persona; // Ensure persona ID is captured
         state.voice = el.dataset.voice;
       }
       sync();
@@ -431,27 +431,42 @@ let state = { role: '', exp: 'Mid-Career', persona: null, voice: null };
     const perEl = document.getElementById('cta-persona');
     const btn = document.getElementById('beginBtn');
 
-    roleEl.textContent = state.role || 'Role: not selected';
+    roleEl.textContent = state.role ? 'Role: ' + state.role : 'Role: not selected';
     roleEl.classList.toggle('filled', !!state.role);
-    expEl.textContent = 'Level: ' + state.exp;
-    expEl.classList.add('filled');
-    perEl.textContent = state.persona || 'Interviewer: not selected';
+    expEl.textContent = state.exp ? 'Level: ' + state.exp : 'Level: not selected';
+    expEl.classList.toggle('filled', !!state.exp);
+    perEl.textContent = state.persona ? 'Interviewer: ' + state.persona : 'Interviewer: not selected';
     perEl.classList.toggle('filled', !!state.persona);
     
-    btn.disabled = !(state.role && state.persona);
+    btn.disabled = !(state.role && state.persona && state.exp);
   }
 
-  document.getElementById('beginBtn').onclick = async () => {
+  document.getElementById('beginBtn').addEventListener('click', async () => {
     const btn = document.getElementById('beginBtn');
     btn.textContent = 'Initializing...';
-    const res = await fetch('/api/interview/sessions', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ personaId: state.persona, roleTitle: state.role, experienceLevel: state.exp, vapiVoiceId: state.voice })
-    });
-    const data = await res.json();
-    window.location.href = '/interview/session/' + data.sessionId;
-  };
+    try {
+      const res = await fetch('/api/interview/sessions', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ 
+            personaId: state.persona, 
+            roleTitle: state.role, 
+            experienceLevel: state.exp, 
+            vapiVoiceId: state.voice 
+        })
+      });
+      const data = await res.json();
+      if (data.sessionId) {
+        window.location.href = '/interview/session/' + data.sessionId;
+      } else {
+        alert('Failed to launch. Please check console.');
+        btn.textContent = 'Initialize Session →';
+      }
+    } catch (e) {
+      console.error(e);
+      btn.textContent = 'Initialize Session →';
+    }
+  });
 })();
 </script>
 </body>
