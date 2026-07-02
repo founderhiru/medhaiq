@@ -331,24 +331,30 @@
   <div class="sec-label">Choose Your Interviewer</div>
 
   <div class="persona-grid">
-  <div class="persona-card" data-persona="alex_chen" data-voice="voice-alex">
-    <div class="check-dot">&#10003;</div>
-    <div class="p-avatar">AC</div>
-    <div class="p-body">
-      <div class="p-top">
+<div class="persona-card" onclick="selectCard(this)">
+  <!-- Header: Avatar, Name, Role, Badge -->
+  <div class="p-header">
+    <img src="/assets/alex.jpg" class="p-avatar" alt="Avatar">
+    <div class="p-info">
+      <div class="p-name-row">
         <span class="p-name">Alex Chen</span>
-        <span class="difficulty diff-hard">&#128293; Hard</span>
+        <!-- Difficulty badge restored here -->
+        <span class="p-badge">Hard</span> 
       </div>
-      <div class="p-title">Senior Principal Engineer &middot; AWS</div>
-      <span class="p-style royal-blue">Technical Excellence</span>
-      <ul class="p-traits">
-        <li>System Design</li>
-        <li>Scalability</li>
-        <li>Technical Judgment</li>
-        <li>Ownership</li>
-      </ul>
+      <div class="p-role">Senior Principal Engineer · AWS</div>
     </div>
   </div>
+
+  <!-- Specialty -->
+  <div class="p-specialty">Technical Excellence</div>
+
+  <!-- Horizontal Traits (Chips) -->
+  <div class="p-chips">
+    <span class="p-chip">System Design</span>
+    <span class="p-chip">Scalability</span>
+    <span class="p-chip">Ownership</span>
+  </div>
+</div>
 
   <div class="persona-card" data-persona="priya_ramesh" data-voice="voice-priya">
     <div class="check-dot">&#10003;</div>
