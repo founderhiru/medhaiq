@@ -397,105 +397,52 @@
 
 <script>
 (function () {
-  var selectedRole    = '';
-  var selectedExp     = 'mid';
+  var selectedRole = '';
+  var selectedExp = 'Mid-Career'; // Matches your current default
   var selectedPersona = null;
+  var selectedVoiceId = null;
 
-  window.switchTab = function(tab) {
-    document.querySelectorAll('.role-tab').forEach(function(t) {
-      t.classList.toggle('active', t.dataset.tab === tab);
-    });
-    document.querySelectorAll('.role-panel').forEach(function(p) {
-      p.classList.toggle('visible', p.id === 'tab-' + tab);
-    });
-  };
-
+  // 1. Role Selection
   document.querySelectorAll('.chip[data-role]').forEach(function(chip) {
     chip.addEventListener('click', function() {
-      if (chip.dataset.custom === 'true') {
-        document.querySelectorAll('.chip[data-role]').forEach(function(c) { c.classList.remove('active'); });
-        chip.classList.add('active');
-        var inp = document.getElementById('roleCustom');
-        inp.style.display = 'block';
-        inp.focus();
-        selectedRole = '';
-        sync();
-        return;
-      }
-      document.querySelectorAll('.chip[data-role]').forEach(function(c) { c.classList.remove('active'); });
-      document.getElementById('roleCustom').style.display = 'none';
+      document.querySelectorAll('.chip[data-role]').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       selectedRole = chip.dataset.role;
-      sync();
+      sync(); // Tells the footer to update
     });
   });
 
-  document.getElementById('roleCustom').addEventListener('input', function() {
-    selectedRole = this.value.trim();
-    sync();
-  });
-
+  // 2. Experience Selection
   document.querySelectorAll('#chips-exp .chip').forEach(function(chip) {
     chip.addEventListener('click', function() {
-      document.querySelectorAll('#chips-exp .chip').forEach(function(c) { c.classList.remove('active'); });
+      document.querySelectorAll('#chips-exp .chip').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
-      selectedExp = chip.dataset.exp;
+      selectedExp = chip.textContent.trim().split('(')[0];
+      sync(); // Tells the footer to update
     });
   });
 
+  // 3. Persona Selection
   document.querySelectorAll('.persona-card').forEach(function(card) {
     card.addEventListener('click', function() {
-      document.querySelectorAll('.persona-card').forEach(function(c) { c.classList.remove('selected'); });
+      document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
-      selectedPersona = card.dataset.persona;
+      selectedPersona = card.querySelector('.p-name').textContent;
       selectedVoiceId = card.dataset.voice;
-      sync();
+      sync(); // Tells the footer to update
     });
   });
 
+  // The Master Update Function
   function sync() {
-    var pr = document.getElementById('pill-role');
-    var pp = document.getElementById('pill-persona');
-    var btn = document.getElementById('beginBtn');
-    var hint = document.getElementById('ctaHint');
-    pr.textContent = selectedRole ? ('&#10003; ' + selectedRole) : 'Role: none';
-    pp.textContent = selectedPersona ? ('&#10003; ' + selectedPersona.replace('_',' ')) : 'Persona: none';
-    pr.classList.toggle('filled', !!selectedRole);
-    pp.classList.toggle('filled', !!selectedPersona);
-    var ready = !!(selectedRole && selectedPersona);
-    btn.disabled = !ready;
-    hint.textContent = ready ? 'Ready — click to begin your session'
-      : (!selectedRole ? 'Select a target role first' : 'Now choose your interviewer');
+    document.getElementById('cta-role').textContent = 'Role: ' + (selectedRole || 'not selected');
+    document.getElementById('cta-exp').textContent = 'Level: ' + selectedExp;
+    document.getElementById('cta-persona').textContent = 'Interviewer: ' + (selectedPersona || 'not selected');
+    
+    // Check if everything is filled to enable the button
+    var isReady = (selectedRole && selectedPersona);
+    document.getElementById('beginBtn').disabled = !isReady;
   }
-
-  document.getElementById('beginBtn').addEventListener('click', async function() {
-    var btn = this;
-    btn.disabled = true;
-    btn.textContent = 'Initializing...';
-    try {
-      var resp = await fetch('/api/interview/sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          personaId:       selectedPersona,
-          roleTitle:       selectedRole,
-          experienceLevel: selectedExp,
-          orgPreset:       '',
-          vapiVoiceId:     selectedVoiceId,
-        }),
-      });
-      var data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'Session creation failed (' + resp.status + ')');
-      if (!data.sessionId) throw new Error('No session ID returned from server');
-      window.location.href = '/interview/session/' + data.sessionId;
-    } catch (err) {
-      btn.disabled = false;
-      btn.textContent = 'Initialize Session \u2192';
-      alert('Failed to start: ' + (err.message || 'Unknown error'));
-    }
-  });
-
-  sync();
 })();
 </script>
 </body>
