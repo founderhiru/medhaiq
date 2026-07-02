@@ -110,16 +110,20 @@
       margin-bottom: 36px;
     }
     @media (max-width: 640px) { .persona-grid { grid-template-columns: 1fr; } }
- .persona-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
-    .persona-card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); transition: 0.3s; cursor: pointer; }
-    .persona-card:hover { border-color: var(--blue-hi); }
-    .persona-card.selected { border-color: var(--blue-hi); background: rgba(59, 130, 246, 0.05); }
-    .persona-card .p-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 16px; font-weight: 700; color: #fff; }
-    .persona-card .p-name { font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 2px; }
-    .persona-card .p-title { font-size: 13px; color: var(--muted); opacity: 0.7; margin-bottom: 16px; display: block; }
-    .persona-card .p-traits { list-style: none; padding: 0; margin: 0; }
-    .persona-card .p-traits li { font-size: 13px; color: var(--muted); margin-bottom: 6px; padding-left: 18px; position: relative; line-height: 1.4; }
-    .persona-card .p-traits li::before { content: "—"; position: absolute; left: 0; color: var(--blue-hi); }
+ /* Refined Elite Persona Card CSS */
+.persona-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+.persona-card { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; cursor: pointer; transition: 0.2s; }
+.persona-card:hover { border-color: var(--blue-hi); }
+.persona-card.selected { border: 1px solid var(--blue-hi); background: rgba(59, 130, 246, 0.04); }
+
+/* The Headshot Frame */
+.p-headshot { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; background: var(--surface); border: 1px solid var(--border); }
+
+.p-body { flex: 1; overflow: hidden; }
+.p-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+.p-title { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 6px; }
+.p-traits { list-style: none; padding: 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.p-traits li { font-size: 10px; color: var(--blue-hi); background: rgba(59,130,246,0.1); padding: 2px 6px; border-radius: 4px; }
   .persona-card:hover {
       border-color: var(--blue-hi);
       background: rgba(31,89,180,0.08);
