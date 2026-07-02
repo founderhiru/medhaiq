@@ -112,17 +112,23 @@
     @media (max-width: 640px) { .persona-grid { grid-template-columns: 1fr; } }
  /* Refined Elite Persona Card CSS */
 /* Container & Micro-interaction */
+/* Container: High-end spacing and subtle hover interaction */
 .persona-card {
-    background: linear-gradient(135deg, #11161d 0%, #0a0e14 100%); /* Subtle gradient */
-    border: 1px solid rgba(56, 189, 248, 0.2); /* Soft blue border */
-    border-radius: 12px;
-    padding: 16px;
-    transition: 0.3s;
+    background: #0d1117;
+    border: 1px solid #1f2937;
+    border-radius: 16px;
+    padding: 28px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    height: 260px;
 }
 
 .persona-card:hover {
-    border-color: #38bdf8; /* Blue highlight on hover */
-    box-shadow: 0 4px 20px rgba(56, 189, 248, 0.1);
+    border-color: #38bdf8;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px -10px rgba(56, 189, 248, 0.2);
 }
 
 /* Uniform Avatar Sizing */
@@ -139,6 +145,15 @@
     background: #1e3a8a;
     color: #ffffff;
 }
+
+/* Header: Avatar, Name, and Badge Alignment */
+.p-header { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.p-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+.p-info { flex: 1; }
+.p-name-row { display: flex; justify-content: space-between; align-items: center; }
+.p-name { font-size: 16px; font-weight: 700; color: #f8fafc; }
+.p-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: #991b1b; color: #fecaca; }
+.p-role { font-size: 12px; color: #cbd5e1; margin-top: 2px; }
 
 /* Typography Contrast & Spacing */
 .p-name {
@@ -173,6 +188,15 @@
     padding: 4px 8px;
     border-radius: 4px;
     border: 1px solid rgba(59, 130, 246, 0.2);
+
+    /* Subheading & Traits (Chips) */
+.p-specialty { font-size: 13px; font-weight: 600; color: #38bdf8; margin-bottom: 12px; }
+.p-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; }
+.p-chip { 
+    font-size: 11px; padding: 8px 14px; border-radius: 999px; 
+    background: rgba(255, 255, 255, 0.05); color: #94a3b8; 
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
 }
   .persona-card:hover {
       border-color: var(--blue-hi);
