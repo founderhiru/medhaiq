@@ -229,7 +229,7 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
       questionType: scores && scores.star < 60 ? 'drill_down' : 'behavioral',
       questionOrder: answeredCount,
       competency: nextResult.competency,
-    });
+    }); 
 
     return res.json({
       sessionEnded: false,
