@@ -780,10 +780,13 @@ const InterviewApp = {
     document.getElementById('loadingText').textContent=text||'Analysing...';
     startViz();
   }
-  function showQuestion(q, type, competency) {
+ function showQuestion(q, type, competency) {
     document.getElementById('loadingOverlay').classList.remove('show');
     document.getElementById('answerArea').style.display='flex';
-    document.getElementById('questionText').textContent=q.text;
+    
+    // SYNC: Call the Observer to update the UI
+    InterviewApp.displayQuestion(q.text); 
+    
     var p=document.getElementById('qPrompt');
     p.textContent='> question_0'+QN+'.'+(type||'behavioral');
     /* Competency tag — shows which skill is being tested */
