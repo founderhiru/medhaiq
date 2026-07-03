@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build Your Interview Experience — MedhaIQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #0b1120;
+      --surface:   #0f1929;
+      --card:      #111e33;
+      --card-hi:   #14213d;
+      --border:    rgba(255,255,255,0.07);
+      --border-hi: rgba(59,130,246,0.45);
+      --blue:      #1d4ed8;
+      --blue-hi:   #3b82f6;
+      --blue-glow: rgba(59,130,246,0.22);
+      --muted:     #64748b;
+      --soft:      #94a3b8;
+      --white:     #f1f5f9;
+      --emerald:   #059669;
+      --gold:      #b45309;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding-bottom: 90px;
+    }
+    h1,h2,h3 { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+
+    /* ── NAV ── */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(11,17,32,0.94);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 52px;
+      display: flex; align-items: center;
+      padding: 0 28px;
+      justify-content: space-between;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .nav-brand-icon {
+      width: 26px; height: 26px; border-radius: 7px;
+      background: linear-gradient(135deg, #1d4ed8, #6366f1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .nav-brand-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 700; color: #fff; }
+    .nav-brand-name em { color: var(--blue-hi); font-style: normal; }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .nav-link { color: var(--soft); text-decoration: none; font-size: 13px; font-weight: 500; padding: 5px 10px; border-radius: 6px; }
+    .nav-link:hover { color: #fff; }
+    .nav-pill { background: var(--surface); border: 1px solid var(--border); color: var(--soft); text-decoration: none; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 20px; transition: all 0.15s; }
+    .nav-pill:hover { border-color: var(--blue-hi); color: #fff; }
+
+    /* ── PAGE ── */
+    .page { max-width: 940px; margin: 0 auto; padding: 44px 24px 80px; }
+    .page-hero { margin-bottom: 44px; }
+    .page-hero h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .page-hero h1 span { color: var(--blue-hi); }
+    .page-hero p { color: var(--soft); font-size: 13px; max-width: 500px; }
+
+    /* ── SECTION LABEL ── */
+    .sec { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .sec-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(59,130,246,0.12); border: 1px solid var(--border-hi); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--blue-hi); flex-shrink: 0; }
+    .sec-label { font-size: 10px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--blue-hi); }
+    .sec-line { flex: 1; height: 1px; background: var(--border); }
+    .divider { height: 1px; background: var(--border); margin: 32px 0; }
+
+    /* ── ROLE TABS ── */
+    .role-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .role-tab { padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--soft); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+    .role-tab.active { background: var(--surface); border-color: var(--blue-hi); color: #fff; }
+    .role-panel { display: none; }
+    .role-panel.visible { display: block; }
+
+    /* ── CHIPS ── */
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 4px; }
+    .chip { padding: 5px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--soft); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; white-space: nowrap; user-select: none; }
+    .chip:hover { border-color: var(--blue-hi); color: #fff; }
+    .chip.active { background: rgba(29,78,216,0.2); border-color: var(--blue-hi); color: #fff; }
+    .custom-input { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; color: #fff; font-size: 13px; font-family: 'Inter', sans-serif; width: 100%; margin-top: 8px; display: none; }
+    .custom-input.show { display: block; }
+    .custom-input:focus { outline: none; border-color: var(--blue-hi); }
+
+    /* ── PERSONA GRID (3 columns) ── */
+    .persona-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 720px) { .persona-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .persona-grid { grid-template-columns: 1fr; } }
+
+    /* ── PERSONA CARD — HS.png style ── */
+    .persona-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .persona-card:hover {
+      border-color: rgba(59,130,246,0.5);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 32px rgba(0,0,0,0.35);
+    }
+    .persona-card.selected {
+      border: 2px solid var(--blue-hi);
+      box-shadow: 0 0 0 1px var(--blue-hi), 0 10px 32px var(--blue-glow);
+      transform: translateY(-3px);
+    }
+
+    /* Checkmark badge */
+    .card-check {
+      display: none;
+      position: absolute; top: 10px; right: 10px; z-index: 10;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--blue-hi);
+      align-items: center; justify-content: center;
+      font-size: 11px; color: #fff; font-weight: 700;
+    }
+    .persona-card.selected .card-check { display: flex; }
+
+    /* Headshot section — top of card */
+    .card-headshot {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(135deg, #0f1d35, #1a2f50);
+      flex-shrink: 0;
+    }
+    .card-headshot img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top center;
+      display: block;
+      filter: grayscale(15%) contrast(1.05);
+      transition: filter 0.3s, transform 0.3s;
+    }
+    .persona-card:hover .card-headshot img,
+    .persona-card.selected .card-headshot img {
+      filter: grayscale(0%) contrast(1.08);
+      transform: scale(1.03);
+    }
+    /* Gradient overlay on headshot bottom */
+    .card-headshot::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 50%;
+      background: linear-gradient(to top, var(--card) 0%, transparent 100%);
+    }
+    /* Initials fallback — shown when no real photo */
+    .card-initials {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; font-weight: 800;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: -1px;
+    }
+
+    /* Card body — below headshot */
+    .card-body { padding: 16px 18px 18px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+    .card-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .card-name { font-size: 15px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; color: #fff; }
+    .card-diff { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+    .diff-hard   { background: rgba(220,38,38,0.18); color: #fca5a5; }
+    .diff-medium { background: rgba(217,119,6,0.18); color: #fcd34d; }
+    .diff-elite  { background: rgba(124,58,237,0.2); color: #c4b5fd; }
+
+    .card-role { font-size: 11px; color: var(--soft); margin-bottom: 4px; }
+
+    .card-style { display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+    .style-blue   { background: rgba(59,130,246,0.14); color: #93c5fd; }
+    .style-green  { background: rgba(16,185,129,0.14); color: #6ee7b7; }
+    .style-amber  { background: rgba(245,158,11,0.14); color: #fcd34d; }
+    .style-purple { background: rgba(139,92,246,0.14); color: #c4b5fd; }
+    .style-orange { background: rgba(251,146,60,0.14); color: #fdba74; }
+
+    /* Quote / hook */
+    .card-quote {
+      font-size: 11px; color: var(--muted);
+      font-style: italic; line-height: 1.55;
+      margin-top: 4px;
+      flex: 1;
+    }
+
+    /* ── STICKY FOOTER ── */
+    .sticky-cta {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+      background: rgba(11,17,32,0.97);
+      backdrop-filter: blur(18px);
+      border-top: 1px solid var(--border);
+      padding: 13px 24px;
+    }
+    .sticky-inner { max-width: 940px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .cta-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cta-tag { font-size: 11px; font-weight: 500; padding: 4px 11px; border-radius: 20px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); transition: all 0.18s; }
+    .cta-tag.set { border-color: var(--blue-hi); color: var(--blue-hi); }
+    .begin-btn {
+      padding: 12px 36px; background: var(--blue); border: none; border-radius: 9px;
+      color: #fff; font-size: 14px; font-weight: 700;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      cursor: pointer; white-space: nowrap; transition: all 0.18s;
+    }
+    .begin-btn:not(:disabled):hover { background: var(--blue-hi); box-shadow: 0 0 20px var(--blue-glow); transform: translateY(-1px); }
+    .begin-btn.ready { animation: glow 2.4s ease-in-out infinite; }
+    .begin-btn:disabled { opacity: 0.32; cursor: not-allowed; animation: none; }
+    @keyframes glow { 0%,100% { box-shadow: 0 0 8px rgba(59,130,246,0.2); } 50% { box-shadow: 0 0 22px rgba(59,130,246,0.5); } }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-brand">
+    <div class="nav-brand-icon">M</div>
+    <span class="nav-brand-name">Medha<em>IQ</em></span>
+  </a>
+  <div class="nav-right">
+    <a href="/dashboard/history" class="nav-link">History</a>
+    <a href="/interview" class="nav-pill">New Session</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="page-hero">
+    <h1>Build Your <span>Interview Experience</span></h1>
+    <p>Select the role, experience level, and interview style that best matches your target opportunity.</p>
+  </div>
+
+  <!-- SECTION 1: ROLE -->
+  <div class="sec"><div class="sec-num">1</div><div class="sec-label">Target Role</div><div class="sec-line"></div></div>
+  <div class="role-tabs">
+    <button class="role-tab active" data-tab="core" onclick="switchTab('core')">Core Roles</button>
+    <button class="role-tab" data-tab="ai" onclick="switchTab('ai')">AI &amp; Data Roles</button>
+  </div>
+  <div class="role-panel visible" id="tab-core">
+    <div class="chips">
+      <div class="chip" data-role="Software Engineer">Software Engineer</div>
+      <div class="chip" data-role="Engineering Manager">Engineering Manager</div>
+      <div class="chip" data-role="Product Manager">Product Manager</div>
+      <div class="chip" data-role="Technical Program Manager">Technical Program Manager</div>
+      <div class="chip" data-role="Solutions Architect">Solutions Architect</div>
+      <div class="chip" data-role="Management Consultant">Management Consultant</div>
+      <div class="chip" data-role="Executive Leadership">Executive Leadership</div>
+      <div class="chip" data-role="custom-core" data-custom="true">&#9998; Custom...</div>
+    </div>
+  </div>
+  <div class="role-panel" id="tab-ai">
+    <div class="chips">
+      <div class="chip" data-role="AI Engineer">AI Engineer</div>
+      <div class="chip" data-role="AI Product Manager">AI Product Manager</div>
+      <div class="chip" data-role="Data Engineer">Data Engineer</div>
+      <div class="chip" data-role="ML Engineer">ML Engineer</div>
+      <div class="chip" data-role="MLOps Engineer">MLOps Engineer</div>
+      <div class="chip" data-role="Research Scientist">Research Scientist</div>
+      <div class="chip" data-role="LLM Engineer">LLM Engineer</div>
+      <div class="chip" data-role="custom-ai" data-custom="true">&#9998; Custom...</div>
+    </div>
+  </div>
+  <input type="text" class="custom-input" id="roleCustom" placeholder="Enter your role...">
+
+  <div class="divider"></div>
+
+  <!-- SECTION 2: EXPERIENCE -->
+  <div class="sec"><div class="sec-num">2</div><div class="sec-label">Experience Level</div><div class="sec-line"></div></div>
+  <div class="chips" id="chips-exp">
+    <div class="chip" data-exp="fresher">&#127807; Fresher &nbsp;0&#8211;2 yrs</div>
+    <div class="chip active" data-exp="mid">&#9889; Mid-Career &nbsp;3&#8211;8 yrs</div>
+    <div class="chip" data-exp="senior">&#128293; Senior &nbsp;8&#8211;15 yrs</div>
+    <div class="chip" data-exp="executive">&#128081; Executive &nbsp;15+ yrs</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 3: PERSONA -->
+  <div class="sec"><div class="sec-num">3</div><div class="sec-label">Choose Your Interviewer</div><div class="sec-line"></div></div>
+
+  <div class="persona-grid">
+
+    <!-- Alex Chen -->
+    <div class="persona-card" data-persona="alex_chen">
+      <div class="card-check">&#10003;</div>
+      <div class="card-headshot">
+        <div class="card-initials" style="background:linear-gradient(135deg,#1e3a8a,#2563eb);">AC</div>
+      </div>
+      <div class="card-body">
+        <div class="card-name-row">
+          <span class="card-name">Alex Chen</span>
+          <span class="card-diff diff-hard">&#128293; Hard</span>
+        </div>
+        <div class="card-role">Senior Principal Engineer &bull; AWS</div>
+        <span class="card-style style-blue">Structured Technical</span>
+        <div class="card-quote">"System design, scalability focus, and deep-dive technical reasoning. Expect thorough probing of your architectural choices."</div>
+      </div>
+    </div>
+
+    <!-- Priya Ramesh -->
+    <div class="persona-card" data-persona="priya_ramesh">
+      <div class="card-check">&#10003;</div>
+      <div class="card-headshot">
+        <div class="card-initials" style="background:linear-gradient(135deg,#065f46,#059669);">PR</div>
+      </div>
+      <div class="card-body">
+        <div class="card-name-row">
+          <span class="card-name">Priya Ramesh</span>
+          <span class="card-diff diff-elite">&#128142; Elite</span>
+        </div>
+        <div class="card-role">Partner &bull; McKinsey Consulting</div>
+        <span class="card-style style-green">Case-Led Communication</span>
+        <div class="card-quote">"Highly structured, top-down communication style. Focused on business impact, market sizing, and strategic clarity."</div>
+      </div>
+    </div>
+
+    <!-- Marcus Webb -->
+    <div class="persona-card" data-persona="marcus_webb">
+      <div class="card-check">&#10003;</div>
+      <div class="card-headshot">
+        <div class="card-initials" style="background:linear-gradient(135deg,#78350f,#d97706);">MW</div>
+      </div>
+      <div class="card-body">
+        <div class="card-name-row">
+          <span class="card-name">Marcus Webb</span>
+          <span class="card-diff diff-medium">&#9889; Medium</span>
+        </div>
+        <div class="card-role">VP Product &bull; Series B SaaS</div>
+        <span class="card-style style-amber">User-Centric Growth</span>
+        <div class="card-quote">"Focuses on user empathy, prioritization frameworks, and cross-functional leadership metrics."</div>
+      </div>
+    </div>
+
+    <!-- Sanjeev Nair -->
+    <div class="persona-card" data-persona="sanjeev_nair">
+      <div class="card-check">&#10003;</div>
+      <div class="card-headshot">
+        <div class="card-initials" style="background:linear-gradient(135deg,#3730a3,#6366f1);">SN</div>
+      </div>
+      <div class="card-body">
+        <div class="card-name-row">
+          <span class="card-name">Sanjeev Nair</span>
+          <span class="card-diff diff-hard">&#128293; Hard</span>
+        </div>
+        <div class="card-role">Engineering Director &bull; Global Tech Firm</div>
+        <span class="card-style style-purple">Leadership &amp; Execution</span>
+        <div class="card-quote">"Leader principles, agile delivery, team health, and enterprise-scale project execution mastery."</div>
+      </div>
+    </div>
+
+    <!-- Sarah Kim -->
+    <div class="persona-card" data-persona="sarah_kim">
+      <div class="card-check">&#10003;</div>
+      <div class="card-headshot">
+        <div class="card-initials" style="background:linear-gradient(135deg,#064e3b,#10b981);">SK</div>
+      </div>
+      <div class="card-body">
+        <div class="card-name-row">
+          <span class="card-name">Sarah Kim</span>
+          <span class="card-diff diff-hard">&#128293; Hard</span>
+        </div>
+        <div class="card-role">CEO &bull; Pre-Series A Startup</div>
+        <span class="card-style style-green">Grit &amp; Vision</span>
+        <div class="card-quote">"Bias-principle thinking, resilience, and team mindset under ambiguity. Looking for culture fit and high-growth potential."</div>
+      </div>
+    </div>
+
+    <!-- Raj Mehta -->
+    <div class="persona-card" data-persona="raj_mehta">
+      <div class="card-check">&#10003;</div>
+      <div class="card-headshot">
+        <div class="card-initials" style="background:linear-gradient(135deg,#7c2d12,#ea580c);">RM</div>
+      </div>
+      <div class="card-body">
+        <div class="card-name-row">
+          <span class="card-name">Raj Mehta</span>
+          <span class="card-diff diff-elite">&#128142; Elite</span>
+        </div>
+        <div class="card-role">Global Director &bull; GCC Enterprise</div>
+        <span class="card-style style-orange">Stakeholder Influence</span>
+        <div class="card-quote">"Expertise in navigating complex corporate environments, global team management, and board communication."</div>
+      </div>
+    </div>
+
+  </div><!-- /persona-grid -->
+
+</div><!-- /page -->
+
+<!-- STICKY FOOTER -->
+<div class="sticky-cta">
+  <div class="sticky-inner">
+    <div class="cta-tags">
+      <span class="cta-tag" id="cta-role">Role: not selected</span>
+      <span class="cta-tag set" id="cta-exp">Level: Mid-Career</span>
+      <span class="cta-tag" id="cta-persona">Interviewer: not selected</span>
+    </div>
+    <button class="begin-btn" id="beginBtn" disabled>Initialize Session &#8594;</button>
+  </div>
+</div>
+
+<script>
+/* ── Tab switch ── */
+function switchTab(tab) {
+  document.querySelectorAll('.role-tab').forEach(function(t) { t.classList.toggle('active', t.dataset.tab === tab); });
+  document.querySelectorAll('.role-panel').forEach(function(p) { p.classList.toggle('visible', p.id === 'tab-' + tab); });
+}
+
+(function() {
+  var state = { role: '', exp: 'mid', persona: null };
+  var expLabels = { fresher:'Fresher', mid:'Mid-Career', senior:'Senior', executive:'Executive' };
+
+  /* Role chips */
+  document.querySelectorAll('.chip[data-role]').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      if (chip.dataset.custom === 'true') {
+        document.querySelectorAll('.chip[data-role]').forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        var inp = document.getElementById('roleCustom');
+        inp.classList.add('show'); inp.focus();
+        state.role = ''; sync(); return;
+      }
+      document.querySelectorAll('.chip[data-role]').forEach(function(c) { c.classList.remove('active'); });
+      document.getElementById('roleCustom').classList.remove('show');
+      chip.classList.add('active');
+      state.role = chip.dataset.role;
+      sync();
+    });
+  });
+  document.getElementById('roleCustom').addEventListener('input', function() { state.role = this.value.trim(); sync(); });
+
+  /* Exp chips */
+  document.querySelectorAll('#chips-exp .chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('#chips-exp .chip').forEach(function(c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      state.exp = chip.dataset.exp;
+      sync();
+    });
+  });
+
+  /* Persona cards */
+  document.querySelectorAll('.persona-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      document.querySelectorAll('.persona-card').forEach(function(c) { c.classList.remove('selected'); });
+      card.classList.add('selected');
+      state.persona = card.dataset.persona;
+      sync();
+    });
+  });
+
+  function sync() {
+    var roleTag    = document.getElementById('cta-role');
+    var expTag     = document.getElementById('cta-exp');
+    var personaTag = document.getElementById('cta-persona');
+    var btn        = document.getElementById('beginBtn');
+
+    roleTag.textContent    = state.role    ? '\u2713 ' + state.role    : 'Role: not selected';
+    expTag.textContent     = 'Level: ' + (expLabels[state.exp] || 'Mid-Career');
+    personaTag.textContent = state.persona ? '\u2713 ' + state.persona.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}) : 'Interviewer: not selected';
+
+    roleTag.classList.toggle('set', !!state.role);
+    expTag.classList.add('set');
+    personaTag.classList.toggle('set', !!state.persona);
+
+    var ready = !!(state.role && state.persona);
+    btn.disabled = !ready;
+    btn.classList.toggle('ready', ready);
+  }
+
+  /* Begin */
+  document.getElementById('beginBtn').addEventListener('click', async function() {
+    var btn = this;
+    btn.disabled = true; btn.textContent = 'Initializing...';
+    try {
+      var resp = await fetch('/api/interview/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          personaId:       state.persona,
+          roleTitle:       state.role,
+          experienceLevel: state.exp,
+          orgPreset:       '',
+        }),
+      });
+      var data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Server error ' + resp.status);
+      if (!data.sessionId) throw new Error('No session ID returned');
+      window.location.href = '/interview/session/' + data.sessionId;
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Initialize Session \u2192';
+      btn.classList.add('ready');
+      alert('Failed to start: ' + (err.message || 'Unknown error'));
+    }
+  });
+
+  sync();
+})();
+</script>
+</body>
+</html>
