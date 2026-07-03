@@ -54,7 +54,7 @@ router.post('/sessions', requireAuth, async (req, res) => {
     });
 
     // 2. Generate opening question from AI
-    const questionText = await generateNextQuestion({
+    const openingResult = await generateNextQuestion({
       sessionId: session.id,
       personaId,
       roleTitle,
@@ -67,10 +67,11 @@ router.post('/sessions', requireAuth, async (req, res) => {
     // 3. Save question to DB
     const question = await addQuestion({
       sessionId: session.id,
-      questionText,
+      questionText: openingResult.text,
       personaId,
       questionType: 'opening',
       questionOrder: 0,
+      competency: openingResult.competency,
     });
 
     return res.json({
@@ -81,6 +82,7 @@ router.post('/sessions', requireAuth, async (req, res) => {
         text: question.question_text,
         type: question.question_type,
         order: question.question_order,
+        competency: question.competency || openingResult.competency,
       },
     });
   } catch (err) {
