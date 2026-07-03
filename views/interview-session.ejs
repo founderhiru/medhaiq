@@ -950,16 +950,26 @@
     if(vapi||!window.vapiSDK)return;
     vapi=window.vapiSDK.run({apiKey:VKEY,assistant:VAST,config:{position:'hidden'}});
 
-    vapi.on('call-start',function(){
-      setState(STATES.LIVE,'Voice active — speak your answer');
-      vizEl.querySelectorAll('.vbar').forEach(function(b){b.classList.add('lit');}); animVizLive();
-    });
-    vapi.on('call-end',function(){
-      setState(STATES.IDLE,'Voice session ended');
-      vizEl.querySelectorAll('.vbar').forEach(function(b){b.classList.remove('lit');b.style.height=(Math.random()*16+4)+'px';});
-    });
-    vapi.on('speech-start',function(){ sub.textContent='● AI is speaking…'; voiceInd.textContent='Voice: ● AI speaking'; });
-    vapi.on('speech-end',  function(){ sub.textContent='Your turn — speak clearly'; voiceInd.textContent='Voice: ● listening'; });
+    /* ── UPDATED: VAPI EVENT SYNC (Lines ~485-520) ── */
+vapi.on('call-start', function() {
+    setState(STATES.LIVE, 'Voice active — speak your answer');
+    vizEl.querySelectorAll('.vbar').forEach(function(b){ b.classList.add('lit'); });
+    animVizLive();
+});
+
+vapi.on('speech-start', function(speech) {
+    // SYNC: Force the screen text to match the AI speech start
+    if (speech && speech.text) {
+        document.getElementById('questionText').textContent = speech.text;
+    }
+    sub.textContent = '● AI is speaking…';
+    voiceInd.textContent = 'Voice: ● AI speaking';
+});
+
+vapi.on('speech-end', function() {
+    sub.textContent = 'Your turn — speak clearly';
+    voiceInd.textContent = 'Voice: ● listening';
+});
     vapi.on('error',function(e){
       console.error('[Vapi]',e);
       var msg='Connection error — retry';
