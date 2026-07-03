@@ -85,23 +85,23 @@ app.get('/interview/session/:id', async (req, res) => {
     const initials = persona.name.split(' ').map(n => n[0]).join('');
     const answeredCount = questions.filter(q => q.answer_text !== null && q.answer_text !== undefined).length;
 
-    res.render('interview-session', {
-      sessionId: req.params.id,
-      questionId: currentQ.id,
-      questionText: currentQ.question_text || '',
-      questionType: currentQ.question_type || 'opening',
-      questionNumber: answeredCount + 1,
-      answeredCount,
-      personaName: persona.name,
-      personaTitle: persona.title + ' @ ' + persona.org,
-      personaInitials: initials,
-      personaStyleColor: persona.styleColor,
-      roleTitle: session.role_title || '',
-      experienceLevel: session.experience_level || '',
-      orgPreset: session.org_preset || '',
-      vapiPublicKey: process.env.VAPI_PUBLIC_KEY || '',
-      vapiAssistantId: process.env.VAPI_ASSISTANT_ID || '',
-    });
+   res.render('interview-session', {
+  sessionId:        req.params.id,
+  questionId:       currentQ.id,
+  questionText:     currentQ.question_text || '',
+  questionType:     currentQ.question_type || 'opening',
+  questionNumber:   answeredCount + 1,
+  answeredCount,
+  personaName:      persona.name,
+  personaTitle:     persona.title + ' @ ' + persona.org,
+  personaInitials:  initials,
+  personaStyleColor:persona.styleColor,
+  roleTitle:        session.role_title || '',
+  experienceLevel:  session.experience_level || '',
+  orgPreset:        session.org_preset || '',
+  vapiPublicKey:    process.env.VAPI_PUBLIC_KEY   || '',
+  vapiAssistantId:  process.env.VAPI_ASSISTANT_ID || '',
+});
   } catch (err) {
     console.error('[interview/session]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
