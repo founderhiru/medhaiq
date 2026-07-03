@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Interview — MedhaIQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Vapi SDK: html-script-tag exposes window.vapiSDK -->
+  <script>
+  (function(d,t){
+    var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+    g.src='https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
+    g.defer=true; g.async=true;
+    s.parentNode.insertBefore(g,s);
+  })(document,'script');
+  </script>
+  <style>
+    :root {
+      --bg:       #070d1a;
+      --navy:     #0b1120;
+      --panel:    #0e1628;
+      --card:     #111e33;
+      --border:   rgba(59,130,246,0.1);
+      --border-hi:rgba(59,130,246,0.45);
+      --blue:     #1d4ed8;
+      --blue-hi:  #3b82f6;
+      --blue-glow:rgba(59,130,246,0.18);
+      --green:    #22c55e;
+      --purple:   #a78bfa;
+      --amber:    #f59e0b;
+      --red:      #ef4444;
+      --muted:    #475569;
+      --soft:     #94a3b8;
+      --white:    #f1f5f9;
+      --mono:     'JetBrains Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      /* grid dot background */
+      background-image:
+        radial-gradient(circle, rgba(59,130,246,0.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      height: 50px;
+      background: rgba(7,13,26,0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 18px; gap: 14px;
+    }
+    .tb-brand { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 800; color: #fff; }
+    .tb-brand em { color: var(--blue-hi); font-style: normal; }
+    .tb-sep { width: 1px; height: 18px; background: var(--border); }
+    .tb-persona { display: flex; align-items: center; gap: 8px; }
+    .tb-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: #fff;
+    }
+    .tb-avatar.royal-blue { background: linear-gradient(135deg,#1e40af,#3b82f6); }
+    .tb-avatar.emerald    { background: linear-gradient(135deg,#065f46,#10b981); }
+    .tb-avatar.gold       { background: linear-gradient(135deg,#78350f,#f59e0b); }
+    .tb-name { font-size: 13px; font-weight: 600; }
+    .tb-role { font-size: 10px; color: var(--soft); }
+    .tb-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .tb-q { font-size: 10px; font-weight: 700; color: var(--blue-hi); font-family: var(--mono); background: rgba(59,130,246,0.1); border: 1px solid var(--border); padding: 3px 9px; border-radius: 5px; }
+    .tb-timer { font-size: 13px; font-weight: 600; color: var(--soft); font-family: var(--mono); }
+    .tb-end { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 6px; cursor: pointer; }
+    .tb-end:hover { background: rgba(239,68,68,0.22); }
+
+    /* ── LAYOUT ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      height: 100vh;
+      padding-top: 50px;
+    }
+
+    /* ── LEFT: INTERVIEW AREA ── */
+    .interview-area {
+      display: flex; flex-direction: column;
+      padding: 20px;
+      gap: 14px;
+      overflow-y: auto;
+    }
+
+    /* Live bar */
+    .live-bar {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 9px 14px;
+      flex-shrink: 0;
+    }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: livepulse 1.8s ease-in-out infinite; }
+    @keyframes livepulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+    .live-text { font-size: 10px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); }
+    .live-role { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-left: 4px; }
+    .live-gap { flex: 1; }
+    .voice-ind { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+    .voice-ind.on { color: var(--purple); }
+
+    /* Question terminal */
+    .q-terminal { background: var(--panel); border: 1px solid var(--border); border-radius: 11px; overflow: hidden; flex-shrink: 0; }
+    .q-term-header { display: flex; align-items: center; gap: 7px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.18); }
+    .tdot { width: 9px; height: 9px; border-radius: 50%; }
+    .tdot-r{background:#ef4444;} .tdot-y{background:#f59e0b;} .tdot-g{background:#22c55e;}
+    .q-term-path { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-left: 4px; }
+    .q-term-body { padding: 18px 20px; }
+    .q-prompt { font-size: 10px; color: var(--blue-hi); font-family: var(--mono); margin-bottom: 7px; }
+    .q-text { font-size: 16px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; color: #fff; line-height: 1.55; }
+    .q-tip { font-size: 10px; color: var(--muted); font-style: italic; margin-top: 8px; font-family: var(--mono); }
+
+    /* Voice visualiser */
+    .viz-bar-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: 9px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .viz-lbl { font-size: 9px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+    .viz-bars { display: flex; align-items: flex-end; gap: 3px; height: 28px; flex: 1; }
+    .vbar { width: 4px; border-radius: 2px; background: var(--blue-hi); opacity: 0.25; transition: height 0.07s ease; }
+    .vbar.lit { opacity: 1; }
+    .viz-mic-btn { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--border-hi); background: rgba(59,130,246,0.06); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+    .viz-mic-btn:hover { background: rgba(59,130,246,0.15); }
+    .viz-mic-btn.rec { border-color: var(--red); background: rgba(239,68,68,0.1); animation: recring 1.2s infinite; }
+    @keyframes recring { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.3);} 50%{box-shadow:0 0 0 7px rgba(239,68,68,0);} }
+
+    /* Answer */
+    .answer-area { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 140px; }
+    .answer-textarea { width: 100%; min-height: 130px; flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; line-height: 1.6; resize: none; }
+    .answer-textarea:focus { outline: none; border-color: var(--blue-hi); box-shadow: 0 0 0 3px rgba(59,130,246,0.07); }
+    .answer-textarea::placeholder { color: var(--muted); }
+    .answer-actions { display: flex; align-items: center; gap: 10px; }
+    .char-count { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-right: auto; }
+    .btn-skip { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 12px; font-weight: 500; padding: 7px 14px; border-radius: 6px; cursor: pointer; }
+    .btn-skip:hover { border-color: var(--border-hi); color: #fff; }
+    .btn-submit { background: var(--blue); border: none; border-radius: 7px; color: #fff; font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; padding: 9px 26px; cursor: pointer; transition: all 0.16s; }
+    .btn-submit:not(:disabled):hover { background: var(--blue-hi); box-shadow: 0 0 12px var(--blue-glow); }
+    .btn-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* Loading */
+    .loading-overlay { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 44px; text-align: center; flex: 1; }
+    .loading-overlay.show { display: flex; }
+    .ldots { display: flex; gap: 6px; }
+    .ldots span { width: 7px; height: 7px; border-radius: 50%; background: var(--blue-hi); animation: lbounce 1s ease-in-out infinite; }
+    .ldots span:nth-child(2){animation-delay:.15s;} .ldots span:nth-child(3){animation-delay:.3s;}
+    @keyframes lbounce { 0%,60%,100%{transform:translateY(0);} 30%{transform:translateY(-7px);} }
+    .ltext { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+    /* ── RIGHT: TERMINAL PANEL ── */
+    .terminal-panel { background: var(--panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    .tpanel-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+    .tpanel-title { font-size: 10px; font-weight: 700; color: var(--blue-hi); letter-spacing: 1.4px; text-transform: uppercase; font-family: var(--mono); }
+    .tpanel-ver { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: rgba(59,130,246,0.1); color: var(--blue-hi); border: 1px solid var(--border); margin-left: auto; }
+
+    /* Webcam */
+    .webcam-block { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .blabel { font-size: 9px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 7px; }
+    .cam-wrap { position: relative; width: 100%; padding-top: 62%; background: #060c19; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .cam-wrap video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .cam-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--muted); }
+    .cam-status { position: absolute; bottom: 7px; left: 8px; font-size: 9px; font-weight: 700; color: #fff; background: rgba(0,0,0,0.65); padding: 2px 7px; border-radius: 4px; font-family: var(--mono); }
+
+    /* Vapi button */
+    .vapi-block { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .vapi-btn { width: 100%; padding: 9px; background: rgba(59,130,246,0.08); border: 1px solid var(--border-hi); border-radius: 7px; color: var(--blue-hi); font-size: 12px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: all 0.16s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+    .vapi-btn:hover { background: rgba(59,130,246,0.18); }
+    .vapi-btn.live { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+    .vapi-sub { font-size: 9px; color: var(--muted); text-align: center; margin-top: 5px; font-family: var(--mono); }
+
+    /* Metrics */
+    .metrics-block { flex: 1; overflow-y: auto; padding: 12px 14px; }
+    .metric-row { display: flex; align-items: center; gap: 9px; margin-bottom: 13px; }
+    .metric-icon { font-size: 13px; flex-shrink: 0; }
+    .metric-body { flex: 1; }
+    .metric-lbl { font-size: 9px; color: var(--muted); font-family: var(--mono); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-track { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+    .metric-fill { height: 100%; border-radius: 2px; transition: width 0.7s ease; }
+    .metric-val { font-size: 11px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; min-width: 24px; text-align: right; }
+
+    /* Session log */
+    .slog { padding: 10px 14px; border-top: 1px solid var(--border); max-height: 120px; overflow-y: auto; }
+    .slog-entry { font-family: var(--mono); font-size: 9px; color: var(--muted); line-height: 1.9; }
+
+    /* Score toast */
+    .score-toast {
+      position: fixed; top: 62px; right: 16px; z-index: 100;
+      background: var(--card); border: 1px solid var(--border-hi); border-radius: 11px;
+      padding: 11px 16px; display: flex; align-items: center; gap: 12px;
+      transform: translateX(110%); transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+    }
+    .score-toast.show { transform: translateX(0); }
+    .toast-score { font-size: 22px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .toast-score.high{color:var(--green);} .toast-score.mid{color:var(--amber);} .toast-score.low{color:var(--red);}
+    .toast-lbl { font-size: 10px; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <span class="tb-brand">Medha<em>IQ</em></span>
+  <div class="tb-sep"></div>
+  <div class="tb-persona">
+    <div class="tb-avatar <%= personaStyleColor %>" id="tbAvatar"></div>
+    <div>
+      <div class="tb-name" id="tbName"></div>
+      <div class="tb-role" id="tbRole"></div>
+    </div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-q" id="qCounter">Q1 / 5</div>
+    <div class="tb-timer" id="timer">00:00</div>
+    <button class="tb-end" id="endBtn">End Session</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT: INTERVIEW -->
+  <div class="interview-area" id="interviewArea">
+
+    <!-- Live bar -->
+    <div class="live-bar">
+      <div class="live-dot"></div>
+      <span class="live-text">Live Interview</span>
+      <span class="live-role" id="liveRole"></span>
+      <div class="live-gap"></div>
+      <span class="voice-ind" id="voiceInd">Voice: standby</span>
+    </div>
+
+    <!-- Question terminal -->
+    <div class="q-terminal">
+      <div class="q-term-header">
+        <div class="tdot tdot-r"></div><div class="tdot tdot-y"></div><div class="tdot tdot-g"></div>
+        <span class="q-term-path">medhaiq://session/<%= sessionId %>/question</span>
+      </div>
+      <div class="q-term-body">
+        <div class="q-prompt" id="qPrompt">&gt; question_01.opening</div>
+        <div class="q-text" id="questionText">Loading your first question...</div>
+        <div class="q-tip" id="qTip">// Tip: Use the STAR framework — Situation, Task, Action, Result.</div>
+      </div>
+    </div>
+
+    <!-- Voice visualiser -->
+    <div class="viz-bar-wrap">
+      <span class="viz-lbl">Signal</span>
+      <div class="viz-bars" id="vizBars"></div>
+      <div class="viz-mic-btn" id="vizMic" title="Enable webcam">&#127909;</div>
+    </div>
+
+    <!-- Answer area -->
+    <div class="answer-area" id="answerArea">
+      <textarea class="answer-textarea" id="answerInput" placeholder="Type your answer here, or enable Voice Mode in the right panel..." maxlength="4000"></textarea>
+      <div class="answer-actions">
+        <span class="char-count" id="charCount">0 / 4000</span>
+        <button class="btn-skip" id="skipBtn">Skip &rarr;</button>
+        <button class="btn-submit" id="submitBtn" disabled>Submit Answer</button>
+      </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="ldots"><span></span><span></span><span></span></div>
+      <div class="ltext" id="loadingText">Reviewing your answer...</div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: TERMINAL PANEL -->
+  <div class="terminal-panel">
+
+    <div class="tpanel-header">
+      <span class="tpanel-title">Live Terminal</span>
+      <span class="tpanel-ver">v0.5</span>
+    </div>
+
+    <!-- Webcam -->
+    <div class="webcam-block">
+      <div class="blabel">// Candidate Feed</div>
+      <div class="cam-wrap">
+        <video id="camVideo" autoplay playsinline muted style="display:none;"></video>
+        <div class="cam-placeholder" id="camPlaceholder">&#128247;</div>
+        <div class="cam-status" id="camStatus">CAM OFF</div>
+      </div>
+    </div>
+
+    <!-- Vapi voice button -->
+    <div class="vapi-block">
+      <button class="vapi-btn" id="vapiBtn">&#127897; Enable Voice Mode</button>
+      <div class="vapi-sub" id="vapiSub">Connect to speak with your interviewer</div>
+    </div>
+
+    <!-- Live metrics -->
+    <div class="metrics-block">
+      <div class="blabel" style="margin-bottom:12px;">// Performance Metrics</div>
+
+      <div class="metric-row">
+        <span class="metric-icon">&#9889;</span>
+        <div class="metric-body">
+          <div class="metric-lbl">Structure (STAR)</div>
+          <div class="metric-track"><div class="metric-fill" id="mStar" style="width:0%;background:#3b82f6;"></div></div>
+        </div>
+        <span class="metric-val" id="mStarV" style="color:#3b82f6;">&#8212;</span>
+      </div>
+
+      <div class="metric-row">
+        <span class="metric-icon">&#129504;</span>
+        <div class="metric-body">
+          <div class="metric-lbl">Technical Depth</div>
+          <div class="metric-track"><div class="metric-fill" id="mTech" style="width:0%;background:#a78bfa;"></div></div>
+        </div>
+        <span class="metric-val" id="mTechV" style="color:#a78bfa;">&#8212;</span>
+      </div>
+
+      <div class="metric-row">
+        <span class="metric-icon">&#128084;</span>
+        <div class="metric-body">
+          <div class="metric-lbl">Executive Presence</div>
+          <div class="metric-track"><div class="metric-fill" id="mExec" style="width:0%;background:#22c55e;"></div></div>
+        </div>
+        <span class="metric-val" id="mExecV" style="color:#22c55e;">&#8212;</span>
+      </div>
+
+      <div class="metric-row">
+        <span class="metric-icon">&#127758;</span>
+        <div class="metric-body">
+          <div class="metric-lbl">GCC Readiness</div>
+          <div class="metric-track"><div class="metric-fill" id="mGcc" style="width:0%;background:#f59e0b;"></div></div>
+        </div>
+        <span class="metric-val" id="mGccV" style="color:#f59e0b;">&#8212;</span>
+      </div>
+
+      <div class="metric-row">
+        <span class="metric-icon">&#128172;</span>
+        <div class="metric-body">
+          <div class="metric-lbl">Communication Clarity</div>
+          <div class="metric-track"><div class="metric-fill" id="mFric" style="width:0%;background:#fb923c;"></div></div>
+        </div>
+        <span class="metric-val" id="mFricV" style="color:#fb923c;">&#8212;</span>
+      </div>
+    </div>
+
+    <!-- Session log -->
+    <div class="slog">
+      <div class="blabel" style="margin-bottom:6px;">// Session Log</div>
+      <div id="slogBody"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Score toast -->
+<div class="score-toast" id="scoreToast">
+  <div>
+    <div class="toast-score" id="toastScore">&#8212;</div>
+    <div class="toast-lbl">Answer Score</div>
+  </div>
+</div>
+
+<!-- ── INTERVIEW ENGINE ── -->
+<script>
+(function() {
+  var SID   = '<%= sessionId %>';
+  var QID   = '<%= questionId %>';
+  var QN    = <%= answeredCount %> + 1;
+  var MAXQ  = 5;
+  var PNAME = '<%= personaName %>';
+  var PTITLE= '<%= personaTitle %>';
+  var PINIT = '<%= personaInitials %>';
+  var PCOL  = '<%= personaStyleColor %>';
+  var QTYPE = '<%= questionType %>';
+  var ROLE  = '<%= roleTitle %>';
+  var INITQ = `<%- questionText.replace(/`/g, '\\`') %>`;
+
+  /* Topbar init */
+  document.getElementById('tbAvatar').textContent = PINIT;
+  document.getElementById('tbAvatar').className   = 'tb-avatar ' + PCOL;
+  document.getElementById('tbName').textContent   = PNAME;
+  document.getElementById('tbRole').textContent   = PTITLE;
+  document.getElementById('liveRole').textContent = ROLE ? '· ' + ROLE : '';
+
+  /* Timer */
+  var t0 = Date.now(), timerInt;
+  function tick() {
+    var e = Math.floor((Date.now()-t0)/1000);
+    document.getElementById('timer').textContent =
+      String(Math.floor(e/60)).padStart(2,'0') + ':' + String(e%60).padStart(2,'0');
+  }
+  timerInt = setInterval(tick, 1000);
+
+  /* Counter */
+  function updateCounter() { document.getElementById('qCounter').textContent = 'Q' + QN + ' / ' + MAXQ; }
+
+  /* Log */
+  function slog(msg) {
+    var el = document.getElementById('slogBody');
+    var ts = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    el.insertAdjacentHTML('afterbegin', '<div class="slog-entry">[' + ts + '] ' + msg + '</div>');
+  }
+
+  /* Metrics */
+  function updateMetrics(s) {
+    if (!s) return;
+    var map = [['mStar','mStarV',s.star],['mTech','mTechV',s.technical],['mExec','mExecV',s.executive],['mGcc','mGccV',s.gcc],['mFric','mFricV',s.friction]];
+    map.forEach(function(r) {
+      var v = Math.round(r[2]||0);
+      var bar = document.getElementById(r[0]); if (bar) bar.style.width = v + '%';
+      var val = document.getElementById(r[1]); if (val) val.textContent = v;
+    });
+  }
+
+  /* Toast */
+  function showToast(w) {
+    var s = Math.round(w||0);
+    var el = document.getElementById('toastScore');
+    el.textContent = s;
+    el.className = 'toast-score ' + (s>=75?'high':s>=55?'mid':'low');
+    var t = document.getElementById('scoreToast');
+    t.classList.add('show');
+    setTimeout(function(){t.classList.remove('show');}, 3000);
+  }
+
+  /* Voice visualiser */
+  var vizBars = document.getElementById('vizBars');
+  for (var i=0;i<24;i++) {
+    var b = document.createElement('div'); b.className='vbar';
+    b.style.height = (Math.random()*18+4)+'px'; vizBars.appendChild(b);
+  }
+  var vizOn = false;
+  function startViz() { vizOn=true; vizBars.querySelectorAll('.vbar').forEach(function(b){b.classList.add('lit');}); animViz(); }
+  function stopViz()  { vizOn=false; vizBars.querySelectorAll('.vbar').forEach(function(b){b.classList.remove('lit');b.style.height=(Math.random()*18+4)+'px';}); }
+  function animViz() { if(!vizOn)return; vizBars.querySelectorAll('.vbar').forEach(function(b){b.style.height=(Math.random()*24+4)+'px';}); setTimeout(animViz,90); }
+
+  /* Show/hide states */
+  function showLoading(text) {
+    document.getElementById('answerArea').style.display='none';
+    document.getElementById('loadingOverlay').classList.add('show');
+    document.getElementById('loadingText').textContent=text||'Reviewing...';
+    startViz();
+  }
+  function showQuestion(q, type) {
+    document.getElementById('loadingOverlay').classList.remove('show');
+    document.getElementById('answerArea').style.display='flex';
+    document.getElementById('questionText').textContent=q.text;
+    var p=document.getElementById('qPrompt'); p.textContent='> question_0'+QN+'.'+(type||'behavioral');
+    var tip=document.getElementById('qTip'); tip.style.display=(type==='drill_down'?'none':'block');
+    document.getElementById('answerInput').value='';
+    document.getElementById('charCount').textContent='0 / 4000';
+    document.getElementById('submitBtn').disabled=true;
+    document.getElementById('answerInput').focus();
+    stopViz();
+  }
+
+  /* Textarea */
+  document.getElementById('answerInput').addEventListener('input', function() {
+    document.getElementById('charCount').textContent=this.value.length+' / 4000';
+    document.getElementById('submitBtn').disabled=!this.value.trim();
+  });
+
+  /* Submit */
+  document.getElementById('submitBtn').addEventListener('click',function(){submitAnswer(false);});
+  document.getElementById('skipBtn').addEventListener('click',function(){submitAnswer(true);});
+
+  async function submitAnswer(skip) {
+    var ans = skip?'':document.getElementById('answerInput').value.trim();
+    if(!skip&&!ans)return;
+    document.getElementById('submitBtn').disabled=true;
+    showLoading(PNAME+' is analysing your answer...');
+    slog('Submitting Q'+QN+' — scoring...');
+    try {
+      var resp = await fetch('/api/interview/sessions/'+SID+'/answer',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({questionId:QID,answerText:ans,skip}),
+      });
+      var data = await resp.json();
+      if(!resp.ok) throw new Error(data.error||'Server error '+resp.status);
+      if(data.scores&&!skip){ updateMetrics(data.scores); showToast(data.scores.weighted); slog('Scored: '+Math.round(data.scores.weighted)+'/100'); }
+      if(data.sessionEnded){
+        clearInterval(timerInt);
+        slog('Session complete — generating report...');
+        showLoading('Generating your Career Intelligence Report...');
+        setTimeout(function(){window.location.href='/interview/report/'+data.reportId;},1800);
+        return;
+      }
+      QID=data.question.id; QN++; updateCounter();
+      showQuestion(data.question,data.question.type);
+      slog('Q'+QN+' loaded ('+data.question.type+')');
+    } catch(err) {
+      console.error('[MedhaIQ]',err);
+      slog('ERROR: '+err.message);
+      document.getElementById('loadingOverlay').classList.remove('show');
+      document.getElementById('answerArea').style.display='flex';
+      document.getElementById('submitBtn').disabled=false;
+      stopViz();
+      alert('Error: '+err.message);
+    }
+  }
+
+  /* End session */
+  document.getElementById('endBtn').addEventListener('click',async function(){
+    if(!confirm('End this session? Progress cannot be resumed.'))return;
+    clearInterval(timerInt);
+    try{await fetch('/api/interview/sessions/'+SID,{method:'DELETE'});}catch(e){}
+    window.location.href='/dashboard/history';
+  });
+
+  /* Init */
+  updateCounter();
+  if(INITQ) showQuestion({text:INITQ},QTYPE);
+  slog('Session '+SID+' initialised — '+PNAME);
+  slog('Role: '+ROLE+' | Level: '+'<%= experienceLevel %>');
+})();
+</script>
+
+<!-- ── WEBCAM ── -->
+<script>
+(function(){
+  var video=document.getElementById('camVideo');
+  var placeholder=document.getElementById('camPlaceholder');
+  var status=document.getElementById('camStatus');
+  var stream=null;
+
+  async function startCam(){
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+      video.srcObject=stream; video.style.display='block';
+      placeholder.style.display='none';
+      status.textContent='● LIVE'; status.style.color='#22c55e';
+    }catch(e){status.textContent='BLOCKED';console.warn('[cam]',e.message);}
+  }
+
+  document.getElementById('vizMic').addEventListener('click',function(){if(!stream)startCam();});
+  setTimeout(startCam,1500);
+})();
+</script>
+
+<!-- ── VAPI VOICE ENGINE ── -->
+<script>
+(function(){
+  var VKEY = '<%= vapiPublicKey %>';
+  var VAST = '<%= vapiAssistantId %>';
+  var btn  = document.getElementById('vapiBtn');
+  var sub  = document.getElementById('vapiSub');
+  var vind = document.getElementById('voiceInd');
+  var mic  = document.getElementById('vizMic');
+
+  if(!VKEY||!VAST){btn.style.display='none';sub.textContent='Voice mode not configured';return;}
+
+  var vapi=null, live=false;
+
+  function initVapi(){
+    if(vapi||!window.vapiSDK)return;
+    vapi=window.vapiSDK.run({apiKey:VKEY,assistant:VAST,config:{position:'hidden'}});
+
+    vapi.on('call-start',function(){
+      live=true; btn.textContent='🔴 End Voice Mode'; btn.classList.add('live'); btn.disabled=false;
+      sub.textContent='Voice active — speak clearly';
+      vind.textContent='Voice: ● active'; vind.className='voice-ind on';
+      mic.classList.add('rec');
+    });
+    vapi.on('call-end',function(){
+      live=false; btn.textContent='🎙 Enable Voice Mode'; btn.classList.remove('live'); btn.disabled=false;
+      sub.textContent='Voice session ended';
+      vind.textContent='Voice: standby'; vind.className='voice-ind';
+      mic.classList.remove('rec');
+    });
+    vapi.on('speech-start',function(){ sub.textContent='● AI speaking...'; vind.textContent='Voice: ● AI speaking'; });
+    vapi.on('speech-end',function()  { sub.textContent='Your turn — speak'; vind.textContent='Voice: ● listening'; });
+    vapi.on('error',function(e){
+      console.error('[Vapi]',e); live=false;
+      btn.textContent='🎙 Retry Voice Mode'; btn.classList.remove('live'); btn.disabled=false;
+      sub.textContent='Connection error — retry'; vind.textContent='Voice: error'; vind.className='voice-ind';
+      mic.classList.remove('rec');
+    });
+  }
+
+  btn.addEventListener('click',function(){
+    if(!window.vapiSDK){
+      btn.textContent='Loading SDK...'; btn.disabled=true;
+      var w=0,t=setInterval(function(){
+        w+=100;
+        if(window.vapiSDK){clearInterval(t);btn.disabled=false;initVapi();vapi.start();}
+        if(w>7000){clearInterval(t);btn.disabled=false;btn.textContent='🎙 Enable Voice Mode';sub.textContent='SDK timeout — check connection';}
+      },100);
+      return;
+    }
+    if(!vapi)initVapi();
+    if(!live){vapi.start();btn.textContent='Connecting...';btn.disabled=true;}
+    else{vapi.stop();}
+    // re-enable if stuck
+    setTimeout(function(){if(!live){btn.disabled=false;}},9000);
+  });
+})();
+</script>
+
+</body>
+</html>
