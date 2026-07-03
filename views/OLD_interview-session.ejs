@@ -358,73 +358,6 @@
     .toast-score.high{color:var(--green);} .toast-score.mid{color:var(--amber);} .toast-score.low{color:var(--red);}
     .toast-lbl { font-size: 10px; color: var(--muted); }
     .toast-vec { font-size: 9px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
-
-    /* ══════════════════════════════════════════════════════════════
-       TERMINAL TOGGLE + AI INTERVIEW STATUS
-       "Collapsed by default" — the deep audio terminal stays hidden
-       until the candidate explicitly asks for it. This is the single
-       biggest lever for the "psychological calm" design principle:
-       nothing technical is forced onto the candidate's screen.
-    ══════════════════════════════════════════════════════════════ */
-    .tp-toggle-row { display: flex; align-items: center; gap: 7px; margin-left: auto; }
-    .tp-toggle-lbl { font-size: 9px; color: var(--muted); font-family: var(--mono); }
-    .tp-switch { position: relative; width: 30px; height: 16px; flex-shrink: 0; }
-    .tp-switch input { opacity: 0; width: 0; height: 0; }
-    .tp-switch-track {
-      position: absolute; inset: 0; background: rgba(255,255,255,0.08);
-      border: 1px solid var(--border); border-radius: 20px; cursor: pointer; transition: all .2s;
-    }
-    .tp-switch-track::before {
-      content: ''; position: absolute; width: 12px; height: 12px; left: 2px; top: 1px;
-      background: var(--soft); border-radius: 50%; transition: all .2s;
-    }
-    .tp-switch input:checked + .tp-switch-track { background: rgba(59,130,246,0.25); border-color: var(--border-hi); }
-    .tp-switch input:checked + .tp-switch-track::before { transform: translateX(14px); background: var(--blue-hi); }
-
-    /* AI Interview Status — the calm, always-visible summary block */
-    .ai-status-block { padding: 14px; border-bottom: 1px solid var(--border); text-align: center; }
-    .ai-status-ring-wrap { width: 64px; height: 64px; margin: 0 auto 8px; position: relative; }
-    .ai-status-ring-wrap svg { transform: rotate(-90deg); width: 100%; height: 100%; }
-    .ai-status-ring-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 4; }
-    .ai-status-ring-fill { fill: none; stroke: var(--blue-hi); stroke-width: 4; stroke-linecap: round;
-      stroke-dasharray: 176; stroke-dashoffset: 176; transition: stroke-dashoffset 0.6s ease; }
-    .ai-status-ring-fill.pulsing { animation: statusPulse 1.6s ease-in-out infinite; }
-    @keyframes statusPulse { 0%,100%{ opacity:1; } 50%{ opacity:0.45; } }
-    .ai-status-title { font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .ai-status-sub   { font-size: 9px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
-
-    .status-checklist { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
-    .status-item { display: flex; align-items: center; gap: 9px; font-size: 11px; color: var(--muted); transition: color .2s; }
-    .status-item .si-dot {
-      width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
-      border: 1.5px solid var(--muted); display: flex; align-items: center; justify-content: center;
-      font-size: 9px; transition: all .2s;
-    }
-    .status-item.done  { color: var(--white); }
-    .status-item.done .si-dot { background: var(--blue); border-color: var(--blue); color: #fff; }
-    .status-item.active { color: var(--blue-hi); font-weight: 600; }
-    .status-item.active .si-dot { border-color: var(--blue-hi); box-shadow: 0 0 8px var(--blue-glow); animation: lp 1s ease-in-out infinite; }
-
-    /* Advanced audio terminal — the part that's collapsed by default */
-    .adv-terminal { display: none; border-bottom: 1px solid var(--border); }
-    .adv-terminal.expanded { display: block; }
-    .adv-hdr { display: flex; align-items: center; gap: 8px; padding: 9px 14px; background: rgba(0,0,0,0.25); }
-    .adv-hdr .tdot { width: 8px; height: 8px; }
-    .adv-hdr-title { font-size: 9px; color: var(--soft); font-family: var(--mono); }
-    .adv-hdr-live { margin-left: auto; font-size: 8px; color: var(--green); font-family: var(--mono); }
-    .adv-body { padding: 12px 14px; }
-    .adv-wave-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .adv-wave-bars { display: flex; align-items: center; gap: 2px; height: 30px; flex: 1; }
-    .adv-vbar { width: 3px; border-radius: 2px; background: var(--blue-hi); opacity: 0.85; }
-    .adv-star-ring { width: 46px; height: 46px; position: relative; flex-shrink: 0; margin-left: 12px; }
-    .adv-star-ring svg { transform: rotate(-90deg); width: 100%; height: 100%; }
-    .adv-star-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; font-family: var(--mono); color: var(--white); }
-    .adv-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; margin-top: 10px; }
-    .adv-meta-cell { text-align: left; }
-    .adv-meta-lbl { font-size: 8px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; }
-    .adv-meta-val { font-size: 12px; font-weight: 700; font-family: var(--mono); color: var(--white); }
-    .adv-meta-val.good { color: var(--green); }
-    .adv-debug-line { font-size: 8px; color: var(--muted); font-family: var(--mono); padding: 8px 14px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; }
   </style>
 </head>
 <body>
@@ -606,70 +539,8 @@
   <div class="terminal-panel">
 
     <div class="tp-header">
-      <span class="tp-title">AI Interview Status</span>
-      <div class="tp-toggle-row">
-        <span class="tp-toggle-lbl" id="tpToggleLbl">Hide terminal</span>
-        <label class="tp-switch">
-          <input type="checkbox" id="terminalToggle">
-          <span class="tp-switch-track"></span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Always-visible, calm status summary — this is what satisfies
-         "minimal cognitive load": a candidate never NEEDS to expand
-         the terminal to know the AI is working with them. -->
-    <div class="ai-status-block">
-      <div class="ai-status-ring-wrap">
-        <svg viewBox="0 0 64 64">
-          <circle class="ai-status-ring-bg" cx="32" cy="32" r="28"/>
-          <circle class="ai-status-ring-fill" id="aiStatusRing" cx="32" cy="32" r="28"/>
-        </svg>
-      </div>
-      <div class="ai-status-title" id="aiStatusTitle">Listening…</div>
-      <div class="ai-status-sub" id="aiStatusSub">Capturing your answer</div>
-    </div>
-
-    <div class="status-checklist" id="statusChecklist">
-      <div class="status-item" data-step="captured"><span class="si-dot"></span>Answer captured</div>
-      <div class="status-item" data-step="analyzing"><span class="si-dot"></span>Analyzing response</div>
-      <div class="status-item" data-step="preparing"><span class="si-dot"></span>Preparing next question</div>
-    </div>
-
-    <!-- ══ ADVANCED AUDIO TERMINAL — collapsed by default ══
-         Mirrors the landing-page "Live Terminal" preview 1:1: same
-         CSS tokens, same IntelligenceMetrics schema, same waveform
-         treatment. Toggled on by the candidate only if they want to
-         see the AI's raw working — never forced on them. ── -->
-    <div class="adv-terminal" id="advTerminal">
-      <div class="adv-hdr">
-        <div class="tdot td-r"></div><div class="tdot td-y"></div><div class="tdot td-g"></div>
-        <span class="adv-hdr-title">Live Interview Audio Terminal</span>
-        <span class="adv-hdr-live">● LIVE</span>
-      </div>
-      <div class="adv-body">
-        <div class="adv-wave-row">
-          <div class="adv-wave-bars" id="advWaveBars"></div>
-          <div class="adv-star-ring">
-            <svg viewBox="0 0 46 46">
-              <circle cx="23" cy="23" r="19" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/>
-              <circle id="advStarRing" cx="23" cy="23" r="19" fill="none" stroke="#3b82f6" stroke-width="4"
-                stroke-linecap="round" stroke-dasharray="119" stroke-dashoffset="119"
-                style="transition:stroke-dashoffset .6s ease; transform:rotate(-90deg); transform-origin:50% 50%;"/>
-            </svg>
-            <div class="adv-star-num" id="advStarNum">—</div>
-          </div>
-        </div>
-        <div class="adv-meta-grid">
-          <div class="adv-meta-cell"><div class="adv-meta-lbl">Filler Words</div><div class="adv-meta-val good" id="advFiller">0</div></div>
-          <div class="adv-meta-cell"><div class="adv-meta-lbl">Pace</div><div class="adv-meta-val" id="advPace">—</div></div>
-          <div class="adv-meta-cell"><div class="adv-meta-lbl">Executive Tone</div><div class="adv-meta-val good" id="advTone">—</div></div>
-          <div class="adv-meta-cell"><div class="adv-meta-lbl">Coherence</div><div class="adv-meta-val good" id="advCoherence">—</div></div>
-        </div>
-      </div>
-      <div class="adv-debug-line">
-        <span id="advSid">SID: —</span><span id="advQProgress">Q — / 5</span><span>MedhaIQ AI</span>
-      </div>
+      <span class="tp-title">Intelligence Terminal</span>
+      <span class="tp-ver">v0.6 OS</span>
     </div>
 
     <!-- VAPI voice engine -->
@@ -681,7 +552,7 @@
 
     <!-- 5-vector live metrics -->
     <div class="metrics-block">
-      <div class="blabel">// Live Terminal — 5-Vector Intelligence</div>
+      <div class="blabel">// 5-Vector Intelligence</div>
 
       <div class="metric-row">
         <span class="metric-icon">⚡</span>
@@ -763,39 +634,14 @@
 ═══════════════════════════════════════════════════════════════ -->
 <script>
 (function() {
-  /* ══════════════════════════════════════════════════════════════
-     SYNC ENGINE — fixes the original UI/audio desync bug.
-     Root cause: the old code rendered whatever partial text Vapi's
-     speech-start event carried (`speech.text`), which is a live
-     transcript fragment, NOT the actual question object from our
-     backend. That's why the on-screen text never matched the audio.
-
-     Fix: the backend answer is fetched and held in `pendingQuestion`
-     as soon as it arrives. We only paint it to the DOM the instant
-     Vapi reports the AI has actually started speaking. In text-only
-     mode (no voice), there's no audio to wait for, so we reveal
-     immediately. Exposed on window so the separate Vapi script block
-     below can call it without any global spaghetti.
-  ══════════════════════════════════════════════════════════════ */
-  var pendingQuestion = null;
-  var MedhaIQSync = {
-    /* Called by submitAnswer() the moment the API responds */
-    hold: function(question, type, competency) {
-      pendingQuestion = { question: question, type: type, competency: competency };
-      /* Text-mode candidates (voice not enabled) see it immediately —
-         there is no audio stream to synchronise against. window.MedhaIQVoiceLive
-         is flipped true/false by the Vapi state machine further down the page. */
-      if (!window.MedhaIQVoiceLive) MedhaIQSync.reveal();
-    },
-    /* Called by vapi.on('speech-start') the millisecond audio begins */
-    reveal: function() {
-      if (!pendingQuestion) return;
-      showQuestion(pendingQuestion.question, pendingQuestion.type, pendingQuestion.competency);
-      pendingQuestion = null;
+  /* ── ADDED: INTERVIEW OBSERVER (Line ~355) ── */
+const InterviewApp = {
+    displayQuestion: function(text) {
+        const qEl = document.getElementById('questionText');
+        if (qEl) qEl.textContent = text;
+        console.log("[MedhaIQ] UI Synced to:", text);
     }
-  };
-  window.MedhaIQSync = MedhaIQSync;
-  window.MedhaIQVoiceLive = false;
+};
   /* ── EJS-injected session variables ── */
   var SID    = '<%= sessionId %>';
   var QID    = '<%= questionId %>';
@@ -856,59 +702,37 @@
     }
   }
 
-  /* ══════════════════════════════════════════════════════════════
-     5-VECTOR METRICS — consumes the standardized IntelligenceMetrics
-     schema emitted by the backend after every AI analysis step:
-       { overallScore, vectors:{structure,technicalDepth,
-         executivePresence,gccReadiness,communicationClarity},
-         status, metadata:{fillerWords,pace,coherence,executiveTone} }
-     This exact object also drives the landing-page terminal preview,
-     so both surfaces render off one shared shape — no divergence.
-  ══════════════════════════════════════════════════════════════ */
+  /* ── 5-Vector metrics ── */
   var runningScores = [];
-  function updateMetrics(m) {
-    if (!m || !m.vectors) return;
-    runningScores.push(m);
-    var v = m.vectors;
+  function updateMetrics(s) {
+    if (!s) return;
+    runningScores.push(s);
     var map = [
-      ['mStar','mStarV', v.structure             || 0],
-      ['mTech','mTechV', v.technicalDepth        || 0],
-      ['mExec','mExecV', v.executivePresence     || 0],
-      ['mGcc', 'mGccV',  v.gccReadiness          || 0],
-      ['mFric','mFricV', v.communicationClarity  || 0],
+      ['mStar','mStarV', s.star      || s.structure || 0],
+      ['mTech','mTechV', s.technical || s.depth     || 0],
+      ['mExec','mExecV', s.executive || 0],
+      ['mGcc', 'mGccV',  s.gcc       || s.coherence || 0],
+      ['mFric','mFricV', s.friction  || s.clarity   || 0],
     ];
     map.forEach(function(r) {
-      var val = Math.round(r[2]);
+      var v = Math.round(r[2]);
       var bar = document.getElementById(r[0]);
-      var lbl = document.getElementById(r[1]);
-      if (bar) setTimeout(function(){ bar.style.width=val+'%'; }, 80);
-      if (lbl) {
-        lbl.textContent = val;
-        lbl.classList.remove('revealed');
-        void lbl.offsetWidth;
-        lbl.classList.add('revealed');
+      var val = document.getElementById(r[1]);
+      if (bar) setTimeout(function(){ bar.style.width=v+'%'; }, 80);
+      if (val) {
+        val.textContent = v;
+        val.classList.remove('revealed');
+        void val.offsetWidth;
+        val.classList.add('revealed');
       }
     });
-    /* Advanced terminal mirrors the same payload */
-    document.getElementById('advStarNum').textContent = Math.round(v.structure||0);
-    var advCirc = 119;
-    document.getElementById('advStarRing').style.strokeDashoffset = advCirc - (advCirc * (v.structure||0) / 100);
-    if (m.metadata) {
-      document.getElementById('advFiller').textContent     = m.metadata.fillerWords ?? '0';
-      document.getElementById('advPace').textContent       = m.metadata.pace || '—';
-      document.getElementById('advTone').textContent       = m.metadata.executiveTone || m.metadata.coherence || '—';
-      document.getElementById('advCoherence').textContent  = m.metadata.coherence || '—';
-    }
-    document.getElementById('advQProgress').textContent = 'Q'+QN+' / '+MAXQ;
-    document.getElementById('advSid').textContent = 'SID: '+SID.toString().slice(0,6).toUpperCase();
-
-    updateScoreRing(m.overallScore);
+    updateScoreRing();
   }
 
-  /* ── Running score ring (Live Terminal card) ── */
-  function updateScoreRing(latestOverall) {
-    if (typeof latestOverall !== 'number') return;
-    var total = runningScores.reduce(function(a,s){ return a+(s.overallScore||0); }, 0);
+  /* ── Running score ring ── */
+  function updateScoreRing() {
+    if (!runningScores.length) return;
+    var total = runningScores.reduce(function(a,s){ return a+(s.weighted||0); }, 0);
     var avg   = Math.round(total / runningScores.length);
     var ring  = document.getElementById('ringFill');
     var lbl   = document.getElementById('ringLabel');
@@ -921,42 +745,6 @@
     else if (avg >= 60) { rec.textContent='Lean Hire';   rec.className='ring-meta-rec lean'; }
     else if (avg >= 45) { rec.textContent='Lean No Hire';rec.className='ring-meta-rec lean'; }
     else                { rec.textContent='No Hire';     rec.className='ring-meta-rec nohire'; }
-  }
-
-  /* ══════════════════════════════════════════════════════════════
-     AI INTERVIEW STATUS — the calm always-visible state machine.
-     Maps directly to the required states: Preparing, Calibrating,
-     Listening, Analyzing, Generating, Ready, Session Complete,
-     Generating Report, Finished.
-  ══════════════════════════════════════════════════════════════ */
-  var STATE_META = {
-    PREPARING:        { title:'Preparing…',        sub:'Setting up your next question', pulse:true,  ring:0.15, steps:[] },
-    CALIBRATING:       { title:'Calibrating…',       sub:'Analysing your target role',    pulse:true,  ring:0.25, steps:[] },
-    LISTENING:         { title:'Listening…',         sub:'Capturing your answer',         pulse:false, ring:0.4,  steps:['captured'] },
-    ANALYZING:         { title:'Analyzing…',         sub:'Scoring your response',         pulse:true,  ring:0.75, steps:['captured','analyzing'] },
-    GENERATING:        { title:'Generating…',        sub:'Preparing next question',       pulse:true,  ring:0.9,  steps:['captured','analyzing','preparing'] },
-    READY:             { title:'Ready',              sub:'Your next question is up',      pulse:false, ring:1,    steps:['captured','analyzing','preparing'] },
-    SESSION_COMPLETE:  { title:'Session Complete',   sub:'All questions answered',         pulse:false, ring:1,    steps:['captured','analyzing','preparing'] },
-    GENERATING_REPORT: { title:'Generating Report…', sub:'Compiling your Intelligence Report', pulse:true, ring:0.95, steps:['captured','analyzing','preparing'] },
-    FINISHED:          { title:'Finished',           sub:'Redirecting to your report',    pulse:false, ring:1,    steps:['captured','analyzing','preparing'] },
-  };
-  var RING_CIRC = 176; /* 2 * π * 28 */
-  function setAIState(key) {
-    var meta = STATE_META[key] || STATE_META.PREPARING;
-    document.getElementById('aiStatusTitle').textContent = meta.title;
-    document.getElementById('aiStatusSub').textContent   = meta.sub;
-    var ring = document.getElementById('aiStatusRing');
-    ring.style.strokeDashoffset = RING_CIRC - (RING_CIRC * meta.ring);
-    ring.classList.toggle('pulsing', !!meta.pulse);
-    var WORKING_STATES = { LISTENING:1, ANALYZING:1, GENERATING:1 };
-    var lastStep = meta.steps[meta.steps.length - 1];
-    document.querySelectorAll('#statusChecklist .status-item').forEach(function(el){
-      var step = el.getAttribute('data-step');
-      var included = meta.steps.indexOf(step) > -1;
-      var isCurrent = included && step === lastStep && WORKING_STATES[key];
-      el.classList.toggle('active', !!isCurrent);
-      el.classList.toggle('done', included && !isCurrent);
-    });
   }
 
   /* ── Score toast ── */
@@ -995,11 +783,10 @@
  function showQuestion(q, type, competency) {
     document.getElementById('loadingOverlay').classList.remove('show');
     document.getElementById('answerArea').style.display='flex';
-
-    /* Timing is already handled by MedhaIQSync (see top of script) —
-       by the time showQuestion() runs, we're clear to paint it. */
-    document.getElementById('questionText').textContent = q.text;
-
+    
+    // SYNC: Call the Observer to update the UI
+    InterviewApp.displayQuestion(q.text); 
+    
     var p=document.getElementById('qPrompt');
     p.textContent='> question_0'+QN+'.'+(type||'behavioral');
     /* Competency tag — shows which skill is being tested */
@@ -1013,7 +800,6 @@
     document.getElementById('submitBtn').disabled=true;
     document.getElementById('answerInput').focus();
     stopViz();
-    setAIState('LISTENING');
   }
 
   /* ── Textarea ── */
@@ -1030,12 +816,9 @@
     var ans=skip?'':document.getElementById('answerInput').value.trim();
     if(!skip&&!ans)return;
     document.getElementById('submitBtn').disabled=true;
-    setAIState('ANALYZING');
     showLoading(PNAME+' is analysing your response...');
     slog('Q'+QN+' submitted — AI scoring...','info');
     try {
-      /* Backend contract (see routes/interview-answer.js):
-         { text, audio_url, competency_tag, scores: IntelligenceMetrics, sessionEnded, reportId } */
       var resp=await fetch('/api/interview/sessions/'+SID+'/answer',{
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({questionId:QID,answerText:ans,skip:skip}),
@@ -1044,19 +827,16 @@
       if(!resp.ok) throw new Error(data.error||'Server error '+resp.status);
 
       if(data.scores&&!skip) {
-        updateMetrics(data.scores); /* consumes the standardized IntelligenceMetrics schema */
-        showToast(data.scores.overallScore, data.scores.vectors);
-        slog('Scored: '+Math.round(data.scores.overallScore)+'/100 · Structure:'+Math.round((data.scores.vectors&&data.scores.vectors.structure)||0),'ok');
+        updateMetrics(data.scores);
+        showToast(data.scores.weighted,data.scores);
+        slog('Scored: '+Math.round(data.scores.weighted)+'/100 · STAR:'+Math.round(data.scores.star||0),'ok');
       }
 
       /* Update competency map if backend returns which area was tested */
-      if(data.competency_tag) updateCompetency(data.competency_tag, 20);
-
-      setAIState('PREPARING');
+      if(data.competency) updateCompetency(data.competency, 20);
 
       if(data.sessionEnded) {
         clearInterval(timerInt);
-        setAIState('GENERATING_REPORT');
         slog('Session complete — generating Career Intelligence Report...','ok');
         showLoading('Generating your Career Intelligence Report...');
         setTimeout(function(){ window.location.href='/interview/report/'+data.reportId; },2200);
@@ -1065,10 +845,8 @@
       QID=data.question.id;
       QN++;
       updateCounter();
-      /* Hand off to the sync buffer instead of rendering directly —
-         this is what fixes the UI/audio desync (see MedhaIQSync above). */
-      MedhaIQSync.hold(data.question, data.question.type, data.competency_tag || data.question.competency);
-      slog('Q'+QN+' ready · competency: '+(data.competency_tag||data.question.competency||'behavioral'));
+      showQuestion(data.question, data.question.type, data.question.competency);
+      slog('Q'+QN+' loaded · competency: '+(data.question.competency||'behavioral'));
     } catch(err) {
       console.error('[MedhaIQ]',err);
       slog('ERROR: '+err.message,'err');
@@ -1088,36 +866,8 @@
     window.location.href='/dashboard/history';
   });
 
-  /* ══ Advanced terminal toggle — collapsed by default ══
-     Candidates opt in to see the AI's raw working; nothing here
-     interrupts the interview flow when toggled either way. */
-  var advTerminal   = document.getElementById('advTerminal');
-  var terminalToggle= document.getElementById('terminalToggle');
-  var tpToggleLbl   = document.getElementById('tpToggleLbl');
-  var advWaveEl     = document.getElementById('advWaveBars');
-  for (var wb=0; wb<26; wb++) {
-    var wbar=document.createElement('div'); wbar.className='adv-vbar';
-    wbar.style.height=(Math.random()*20+4)+'px'; advWaveEl.appendChild(wbar);
-  }
-  var advWaveAnimating=false;
-  function animAdvWave(){
-    if(!advWaveAnimating)return;
-    advWaveEl.querySelectorAll('.adv-vbar').forEach(function(b){b.style.height=(Math.random()*26+4)+'px';});
-    setTimeout(animAdvWave,90);
-  }
-  terminalToggle.addEventListener('change', function(){
-    var expanded = this.checked;
-    advTerminal.classList.toggle('expanded', expanded);
-    tpToggleLbl.textContent = expanded ? 'Hide terminal' : 'Show terminal';
-    advWaveAnimating = expanded;
-    if (expanded) animAdvWave();
-    slog(expanded ? 'Advanced terminal opened by candidate' : 'Advanced terminal collapsed', 'info');
-  });
-  tpToggleLbl.textContent = 'Show terminal'; /* default = collapsed */
-
   /* ── Initialise ── */
   updateCounter();
-  setAIState('CALIBRATING');
   if(INITQ) showQuestion({text:INITQ},QTYPE,null);
   slog('Session #'+SID+' initialised — '+PNAME,'ok');
   slog('Role: '+ROLE+' | Level: '+LEVEL);
@@ -1211,20 +961,18 @@
     if(vapi||!window.vapiSDK)return;
     vapi=window.vapiSDK.run({apiKey:VKEY,assistant:VAST,config:{position:'hidden'}});
 
-    /* ══ VAPI EVENT SYNC — fixed ══
-       speech-start no longer paints raw ASR/TTS partial text. It only
-       triggers MedhaIQSync.reveal(), which paints the actual question
-       object already fetched from our backend. Audio and DOM now
-       change on the exact same tick, with the correct text. ── */
+    /* ── UPDATED: VAPI EVENT SYNC (Lines ~485-520) ── */
 vapi.on('call-start', function() {
     setState(STATES.LIVE, 'Voice active — speak your answer');
-    window.MedhaIQVoiceLive = true;
     vizEl.querySelectorAll('.vbar').forEach(function(b){ b.classList.add('lit'); });
     animVizLive();
 });
 
-vapi.on('speech-start', function() {
-    if (window.MedhaIQSync) window.MedhaIQSync.reveal();
+vapi.on('speech-start', function(speech) {
+    // SYNC: Force the screen text to match the AI speech start
+    if (speech && speech.text) {
+        document.getElementById('questionText').textContent = speech.text;
+    }
     sub.textContent = '● AI is speaking…';
     voiceInd.textContent = 'Voice: ● AI speaking';
 });
@@ -1232,10 +980,6 @@ vapi.on('speech-start', function() {
 vapi.on('speech-end', function() {
     sub.textContent = 'Your turn — speak clearly';
     voiceInd.textContent = 'Voice: ● listening';
-});
-
-vapi.on('call-end', function() {
-    window.MedhaIQVoiceLive = false;
 });
     vapi.on('error',function(e){
       console.error('[Vapi]',e);
