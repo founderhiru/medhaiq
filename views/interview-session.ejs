@@ -634,6 +634,14 @@
 ═══════════════════════════════════════════════════════════════ -->
 <script>
 (function() {
+  /* ── ADDED: INTERVIEW OBSERVER (Line ~355) ── */
+const InterviewApp = {
+    displayQuestion: function(text) {
+        const qEl = document.getElementById('questionText');
+        if (qEl) qEl.textContent = text;
+        console.log("[MedhaIQ] UI Synced to:", text);
+    }
+};
   /* ── EJS-injected session variables ── */
   var SID    = '<%= sessionId %>';
   var QID    = '<%= questionId %>';
