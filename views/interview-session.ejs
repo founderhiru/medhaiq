@@ -3,41 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Interview — MedhaIQ</title>
+  <title>Live Interview OS — MedhaIQ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <!--
-    Vapi SDK note: vapiSDK html-script-tag CDN.
-    This loads asynchronously and exposes window.vapiSDK when ready.
-    The state machine below waits for it before attempting any call.
-  -->
   <script>
   (function(d,t){
     var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
     g.src='https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
-    g.defer=true; g.async=true;
-    s.parentNode.insertBefore(g,s);
+    g.defer=true; g.async=true; s.parentNode.insertBefore(g,s);
   })(document,'script');
   </script>
   <style>
+    /* ═══════════════════════════════════════════════════════════════
+       DESIGN TOKENS — one place to change the entire visual system
+    ═══════════════════════════════════════════════════════════════ */
     :root {
-      --bg:        #070d1a;
-      --panel:     #0e1628;
-      --card:      #111e33;
-      --border:    rgba(59,130,246,0.1);
-      --border-hi: rgba(59,130,246,0.45);
-      --blue:      #1d4ed8;
-      --blue-hi:   #3b82f6;
-      --blue-glow: rgba(59,130,246,0.18);
-      --green:     #22c55e;
-      --purple:    #a78bfa;
-      --amber:     #f59e0b;
-      --red:       #ef4444;
-      --muted:     #475569;
-      --soft:      #94a3b8;
-      --white:     #f1f5f9;
-      --mono:      'JetBrains Mono', monospace;
+      --bg:         #070d1a;
+      --panel:      #0d1829;
+      --card:       #111e33;
+      --border:     rgba(59,130,246,0.1);
+      --border-hi:  rgba(59,130,246,0.42);
+      --blue:       #1d4ed8;
+      --blue-hi:    #3b82f6;
+      --blue-glow:  rgba(59,130,246,0.2);
+      --green:      #22c55e;
+      --purple:     #a78bfa;
+      --amber:      #f59e0b;
+      --red:        #ef4444;
+      --muted:      #3d5068;
+      --soft:       #94a3b8;
+      --white:      #f1f5f9;
+      --mono:       'JetBrains Mono', monospace;
+      --sidebar-w:  272px;
+      --terminal-w: 284px;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; }
@@ -46,240 +45,324 @@
       color: var(--white);
       font-family: 'Inter', system-ui, sans-serif;
       font-size: 14px;
+      /* Premium dot-grid background */
       background-image: radial-gradient(circle, rgba(59,130,246,0.055) 1px, transparent 1px);
       background-size: 28px 28px;
     }
 
     /* ── TOPBAR ── */
     .topbar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 60;
-      height: 50px;
-      background: rgba(7,13,26,0.96);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 48px;
+      background: rgba(7,13,26,0.97);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
       border-bottom: 1px solid var(--border);
-      display: flex; align-items: center;
-      padding: 0 20px; gap: 14px;
+      display: flex; align-items: center; padding: 0 20px; gap: 12px;
+      box-shadow: 0 1px 0 rgba(59,130,246,0.06);
     }
-    .tb-brand { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 800; color: #fff; }
+    .tb-brand { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
     .tb-brand em { color: var(--blue-hi); font-style: normal; }
-    .tb-sep { width: 1px; height: 18px; background: var(--border); }
-    .tb-persona { display: flex; align-items: center; gap: 9px; }
-    .tb-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: #fff; }
+    .tb-sep { width: 1px; height: 16px; background: var(--border); }
+    .tb-persona { display: flex; align-items: center; gap: 8px; }
+    .tb-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 800; color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
     .tb-avatar.royal-blue { background: linear-gradient(135deg,#1e40af,#3b82f6); }
     .tb-avatar.emerald    { background: linear-gradient(135deg,#065f46,#10b981); }
     .tb-avatar.gold       { background: linear-gradient(135deg,#78350f,#f59e0b); }
-    .tb-name { font-size: 13px; font-weight: 600; }
-    .tb-role { font-size: 10px; color: var(--soft); }
+    .tb-name  { font-size: 12px; font-weight: 600; }
+    .tb-role  { font-size: 10px; color: var(--soft); }
     .tb-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-    .tb-q { font-size: 10px; font-weight: 700; color: var(--blue-hi); font-family: var(--mono); background: rgba(59,130,246,0.1); border: 1px solid var(--border); padding: 3px 10px; border-radius: 5px; }
+    .tb-q     { font-size: 10px; font-weight: 700; color: var(--blue-hi); font-family: var(--mono); background: rgba(59,130,246,0.1); border: 1px solid var(--border); padding: 3px 9px; border-radius: 5px; }
     .tb-timer { font-size: 13px; font-weight: 600; color: var(--soft); font-family: var(--mono); }
-    .tb-end { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.28); color: #fca5a5; font-size: 12px; font-weight: 600; padding: 5px 13px; border-radius: 6px; cursor: pointer; transition: background 0.15s; }
+    .tb-end   { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.28); color: #fca5a5; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 5px; cursor: pointer; transition: background 0.15s; }
     .tb-end:hover { background: rgba(239,68,68,0.22); }
 
-    /* ── 2-COLUMN LAYOUT ── */
-    .layout {
+    /* ══════════════════════════════════════════════════════════════
+       3-COLUMN OS LAYOUT
+       Left: 272px session sidebar
+       Centre: 1fr — webcam + question + answer
+       Right: 284px — live terminal / intelligence panel
+    ══════════════════════════════════════════════════════════════ */
+    .os-grid {
       display: grid;
-      grid-template-columns: 1fr 300px;
+      grid-template-columns: var(--sidebar-w) 1fr var(--terminal-w);
       height: 100vh;
-      padding-top: 50px;
+      padding-top: 48px;
     }
 
-    /* ── LEFT: INTERVIEW AREA ── */
-    .interview-area {
+    /* ────────────────────────────────────────────────
+       LEFT SIDEBAR — Session context & competency map
+    ──────────────────────────────────────────────── */
+    .sidebar {
+      background: rgba(13,24,41,0.98);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
-      padding: 18px 20px;
-      gap: 13px;
-      overflow-y: auto;
+      overflow: hidden;
+    }
+    .sb-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .sb-label { font-size: 9px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--blue-hi); margin-bottom: 10px; font-family: var(--mono); }
+
+    /* Session meta */
+    .sb-meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .sb-meta-icon { font-size: 14px; flex-shrink: 0; }
+    .sb-meta-key { font-size: 9px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.6px; }
+    .sb-meta-val { font-size: 12px; font-weight: 500; color: var(--white); }
+
+    /* Live status */
+    .live-pill {
+      display: flex; align-items: center; gap: 7px;
+      background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 7px; padding: 7px 12px;
+      font-size: 11px; font-weight: 600; color: var(--green); font-family: var(--mono);
+    }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 7px var(--green); animation: lp 1.8s ease-in-out infinite; }
+    @keyframes lp { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+    .voice-pill { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 6px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; transition: all 0.2s; }
+    .voice-pill.active { color: var(--purple); border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.05); }
+    .voice-pill.error  { color: var(--red);    border-color: rgba(239,68,68,0.3); }
+
+    /* Competency map — shows which skills have been tested */
+    .comp-map { display: flex; flex-direction: column; gap: 8px; }
+    .comp-row { display: flex; align-items: center; gap: 9px; }
+    .comp-icon { font-size: 12px; flex-shrink: 0; }
+    .comp-body { flex: 1; }
+    .comp-name { font-size: 10px; color: var(--soft); font-family: var(--mono); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .comp-track { height: 2px; background: rgba(255,255,255,0.05); border-radius: 1px; }
+    .comp-fill  { height: 100%; border-radius: 1px; transition: width 1s cubic-bezier(0.25,1,0.5,1); }
+    .comp-count { font-size: 9px; font-family: var(--mono); color: var(--muted); flex-shrink: 0; min-width: 28px; text-align: right; }
+
+    /* Session log in sidebar */
+    .sb-log { flex: 1; overflow-y: auto; padding: 10px 16px; }
+    .slog-entry { font-family: var(--mono); font-size: 9px; color: var(--muted); line-height: 2; }
+    .slog-entry.ok  { color: rgba(34,197,94,0.65); }
+    .slog-entry.err { color: rgba(239,68,68,0.65); }
+    .slog-entry.info{ color: rgba(59,130,246,0.65); }
+
+    /* ────────────────────────────────────────────────
+       CENTRE COLUMN — Webcam + Question + Answer
+    ──────────────────────────────────────────────── */
+    .centre-col {
+      display: flex; flex-direction: column;
+      background: transparent;
+      overflow: hidden;
     }
 
-    /* Live status bar */
-    .live-bar {
-      display: flex; align-items: center; gap: 10px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 8px 14px;
+    /* Webcam — hero section at top of centre column */
+    .webcam-hero {
+      position: relative;
       flex-shrink: 0;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      height: 220px;
+      background: #050b17;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
     }
-    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: lpulse 1.8s ease-in-out infinite; }
-    @keyframes lpulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
-    .live-lbl { font-size: 10px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); }
-    .live-role-lbl { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-left: 2px; }
-    .live-gap { flex: 1; }
-    .voice-ind { font-size: 10px; color: var(--muted); font-family: var(--mono); transition: color 0.3s; }
-    .voice-ind.active { color: var(--purple); }
-    .voice-ind.error  { color: var(--red); }
+    .webcam-hero video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+      display: none;
+    }
+    .webcam-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px;
+      background: radial-gradient(circle at 50% 60%, rgba(29,78,216,0.08) 0%, transparent 70%);
+    }
+    .wc-icon { font-size: 36px; color: var(--muted); }
+    .wc-hint { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+    /* Webcam overlays */
+    .webcam-badge {
+      position: absolute; top: 10px; left: 12px;
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(0,0,0,0.72); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; padding: 3px 10px;
+      font-size: 9px; font-family: var(--mono); color: #fff;
+      backdrop-filter: blur(8px);
+    }
+    .webcam-badge .wbdot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); box-shadow: 0 0 5px var(--green); }
+    .webcam-badge.off .wbdot { background: var(--muted); box-shadow: none; }
+    .webcam-toggle {
+      position: absolute; top: 10px; right: 12px;
+      background: rgba(0,0,0,0.65); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px; padding: 4px 10px;
+      font-size: 10px; color: var(--soft); cursor: pointer;
+      font-family: var(--mono); transition: all 0.15s;
+      backdrop-filter: blur(8px);
+    }
+    .webcam-toggle:hover { background: rgba(59,130,246,0.15); color: #fff; }
 
-    /* Calibrating overlay — shows for first 5s */
+    /* Interview content area */
+    .interview-content {
+      flex: 1; overflow-y: auto;
+      display: flex; flex-direction: column;
+      padding: 16px 20px; gap: 13px;
+    }
+
+    /* Calibrating bar */
     .calibrating-bar {
-      display: flex; align-items: center; gap: 10px;
-      background: rgba(59,130,246,0.06);
-      border: 1px solid rgba(59,130,246,0.2);
-      border-radius: 9px; padding: 9px 14px;
-      font-size: 11px; font-family: var(--mono); color: var(--blue-hi);
+      display: flex; align-items: center; gap: 9px;
+      background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.18);
+      border-radius: 8px; padding: 8px 13px;
+      font-size: 10px; font-family: var(--mono); color: var(--blue-hi);
       flex-shrink: 0;
       animation: calfade 1.2s ease-in-out infinite alternate;
     }
     @keyframes calfade { from{opacity:0.5;} to{opacity:1;} }
-    .cal-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue-hi); animation: lpulse 0.8s ease-in-out infinite; }
+    .cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue-hi); animation: lp 0.9s ease-in-out infinite; }
 
     /* Question terminal */
     .q-terminal {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      flex-shrink: 0;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 11px;
+      overflow: hidden; flex-shrink: 0;
       backdrop-filter: blur(10px);
       box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
     .q-term-hdr {
       display: flex; align-items: center; gap: 7px;
-      padding: 9px 14px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(0,0,0,0.22);
+      padding: 8px 13px; border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.2);
     }
-    .tdot { width: 10px; height: 10px; border-radius: 50%; }
+    .tdot { width: 9px; height: 9px; border-radius: 50%; }
     .td-r{background:#ef4444;} .td-y{background:#f59e0b;} .td-g{background:#22c55e;}
-    .q-path { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-left: 4px; }
-    .q-term-body { padding: 20px 22px; }
-    .q-prompt { font-size: 10px; color: var(--blue-hi); font-family: var(--mono); margin-bottom: 8px; }
-    .q-text { font-size: 16px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; color: #fff; line-height: 1.58; }
-    .q-tip { font-size: 10px; color: var(--muted); font-style: italic; margin-top: 9px; font-family: var(--mono); }
+    .q-path { font-size: 9px; color: var(--muted); font-family: var(--mono); margin-left: 4px; }
+    .q-term-body { padding: 18px 20px; }
+    .q-prompt { font-size: 10px; color: var(--blue-hi); font-family: var(--mono); margin-bottom: 7px; }
+    .q-competency-tag {
+      display: inline-block; font-size: 9px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px; margin-bottom: 9px;
+      background: rgba(59,130,246,0.12); color: var(--blue-hi); border: 1px solid var(--border);
+      font-family: var(--mono); letter-spacing: 0.4px; text-transform: uppercase;
+    }
+    .q-text { font-size: 15px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; color: #fff; line-height: 1.6; }
+    .q-tip  { font-size: 10px; color: var(--muted); font-style: italic; margin-top: 8px; font-family: var(--mono); }
 
-    /* Voice visualiser */
+    /* Voice signal visualiser */
     .viz-wrap {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 9px; padding: 11px 16px;
-      display: flex; align-items: center; gap: 12px;
-      flex-shrink: 0;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; display: flex; align-items: center; gap: 11px; flex-shrink: 0;
     }
     .viz-lbl { font-size: 9px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
-    .viz-bars { display: flex; align-items: flex-end; gap: 3px; height: 28px; flex: 1; }
-    .vbar { width: 4px; border-radius: 2px; background: var(--blue-hi); opacity: 0.2; transition: height 0.07s ease; }
+    .viz-bars { display: flex; align-items: flex-end; gap: 3px; height: 26px; flex: 1; }
+    .vbar { width: 4px; border-radius: 2px; background: var(--blue-hi); opacity: 0.18; transition: height 0.07s ease; }
     .vbar.lit { opacity: 1; }
-    .cam-toggle { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--border-hi); background: rgba(59,130,246,0.07); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
-    .cam-toggle:hover { background: rgba(59,130,246,0.18); }
-    .cam-toggle.recording { border-color: var(--red); background: rgba(239,68,68,0.12); animation: recring 1.2s infinite; }
-    @keyframes recring { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.3);} 50%{box-shadow:0 0 0 8px rgba(239,68,68,0);} }
 
     /* Answer area */
-    .answer-area { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 140px; }
+    .answer-area { display: flex; flex-direction: column; gap: 9px; flex: 1; min-height: 130px; }
     .answer-textarea {
-      width: 100%; min-height: 130px; flex: 1;
-      background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-      padding: 14px 16px; color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; line-height: 1.6; resize: none;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      width: 100%; min-height: 120px; flex: 1;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 9px;
+      padding: 13px 15px; color: #fff; font-size: 13px; font-family: 'Inter', sans-serif; line-height: 1.65; resize: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     }
     .answer-textarea:focus { outline: none; border-color: var(--blue-hi); box-shadow: 0 0 0 3px rgba(59,130,246,0.08); }
     .answer-textarea::placeholder { color: var(--muted); }
-    .answer-actions { display: flex; align-items: center; gap: 10px; }
+    .answer-actions { display: flex; align-items: center; gap: 9px; }
     .char-count { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-right: auto; }
-    .btn-skip { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 12px; font-weight: 500; padding: 7px 14px; border-radius: 6px; cursor: pointer; }
+    .btn-skip   { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 12px; font-weight: 500; padding: 6px 13px; border-radius: 6px; cursor: pointer; }
     .btn-skip:hover { border-color: var(--border-hi); color: #fff; }
-    .btn-submit { background: var(--blue); border: none; border-radius: 7px; color: #fff; font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; padding: 9px 28px; cursor: pointer; transition: all 0.16s; }
+    .btn-submit { background: var(--blue); border: none; border-radius: 7px; color: #fff; font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; padding: 8px 24px; cursor: pointer; transition: all 0.16s; }
     .btn-submit:not(:disabled):hover { background: var(--blue-hi); box-shadow: 0 0 14px var(--blue-glow); }
-    .btn-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-submit:disabled { opacity: 0.32; cursor: not-allowed; }
 
     /* Loading state */
-    .loading-overlay { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 44px; text-align: center; flex: 1; }
+    .loading-overlay { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px; text-align: center; flex: 1; }
     .loading-overlay.show { display: flex; }
     .ldots { display: flex; gap: 6px; }
     .ldots span { width: 7px; height: 7px; border-radius: 50%; background: var(--blue-hi); animation: lbounce 1s ease-in-out infinite; }
     .ldots span:nth-child(2){animation-delay:.15s;} .ldots span:nth-child(3){animation-delay:.3s;}
-    @keyframes lbounce { 0%,60%,100%{transform:translateY(0);} 30%{transform:translateY(-8px);} }
-    .ltext { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+    @keyframes lbounce { 0%,60%,100%{transform:translateY(0);} 30%{transform:translateY(-7px);} }
+    .ltext { font-size: 11px; color: var(--muted); font-family: var(--mono); }
 
-    /* ── RIGHT: TERMINAL PANEL ── */
+    /* ────────────────────────────────────────────────
+       RIGHT TERMINAL PANEL — Live Intelligence
+    ──────────────────────────────────────────────── */
     .terminal-panel {
-      background: rgba(14,22,40,0.97);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: rgba(13,22,40,0.98);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
       border-left: 1px solid var(--border);
       display: flex; flex-direction: column;
       overflow: hidden;
-      box-shadow: -8px 0 32px rgba(0,0,0,0.3);
+      box-shadow: -8px 0 32px rgba(0,0,0,0.28);
     }
     .tp-header {
       padding: 11px 14px; border-bottom: 1px solid var(--border);
       display: flex; align-items: center; gap: 8px;
     }
-    .tp-title { font-size: 10px; font-weight: 700; color: var(--blue-hi); letter-spacing: 1.6px; text-transform: uppercase; font-family: var(--mono); }
-    .tp-ver { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: rgba(59,130,246,0.1); color: var(--blue-hi); border: 1px solid var(--border); margin-left: auto; }
+    .tp-title { font-size: 9px; font-weight: 700; color: var(--blue-hi); letter-spacing: 1.8px; text-transform: uppercase; font-family: var(--mono); }
+    .tp-ver   { font-size: 8px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: rgba(59,130,246,0.1); color: var(--blue-hi); border: 1px solid var(--border); margin-left: auto; font-family: var(--mono); }
 
-    /* Webcam block */
-    .cam-block { padding: 10px 14px; border-bottom: 1px solid var(--border); }
-    .blabel { font-size: 9px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 1.1px; margin-bottom: 8px; }
-    .cam-wrap {
-      position: relative; width: 100%; padding-top: 62%;
-      background: #050b17; border-radius: 8px; overflow: hidden;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    }
-    .cam-wrap video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-    .cam-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--muted); }
-    .cam-status-badge { position: absolute; bottom: 7px; left: 8px; font-size: 9px; font-weight: 700; color: #fff; background: rgba(0,0,0,0.7); padding: 2px 7px; border-radius: 4px; font-family: var(--mono); }
-
-    /* Vapi state machine block */
+    /* Vapi voice section */
     .vapi-block { padding: 10px 14px; border-bottom: 1px solid var(--border); }
     .vapi-btn {
       width: 100%; padding: 9px;
       background: rgba(59,130,246,0.08); border: 1px solid var(--border-hi);
       border-radius: 7px; color: var(--blue-hi);
-      font-size: 12px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;
       cursor: pointer; transition: all 0.18s;
       display: flex; align-items: center; justify-content: center; gap: 7px;
     }
     .vapi-btn:hover:not(:disabled) { background: rgba(59,130,246,0.18); }
-    .vapi-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .vapi-btn.state-live { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
-    .vapi-btn.state-connecting { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.4); color: #fcd34d; }
-    .vapi-btn.state-error { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25); color: #fca5a5; }
-    .vapi-sub { font-size: 9px; color: var(--muted); text-align: center; margin-top: 5px; font-family: var(--mono); transition: color 0.2s; }
-    .vapi-perm-warn { display: none; font-size: 9px; color: var(--amber); text-align: center; margin-top: 5px; font-family: var(--mono); }
+    .vapi-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .vapi-btn.state-live       { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+    .vapi-btn.state-connecting { background: rgba(245,158,11,0.1);  border-color: rgba(245,158,11,0.4); color: #fcd34d; }
+    .vapi-sub  { font-size: 9px; color: var(--muted); text-align: center; margin-top: 5px; font-family: var(--mono); transition: color 0.2s; }
+    .vapi-warn { display: none; font-size: 9px; color: var(--amber); text-align: center; margin-top: 5px; font-family: var(--mono); }
 
-    /* Metrics */
+    /* 5-Vector metrics */
     .metrics-block { flex: 1; overflow-y: auto; padding: 11px 14px; }
-    .metric-row { display: flex; align-items: center; gap: 9px; margin-bottom: 13px; }
-    .metric-icon { font-size: 13px; flex-shrink: 0; }
+    .blabel { font-size: 9px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 1.1px; margin-bottom: 10px; }
+    .metric-row { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
+    .metric-icon { font-size: 12px; flex-shrink: 0; }
     .metric-body { flex: 1; }
-    .metric-lbl { font-size: 9px; color: var(--muted); font-family: var(--mono); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.6px; }
-    .metric-track { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
-    .metric-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 0.75s cubic-bezier(0.25,1,0.5,1); }
-    .metric-val { font-size: 11px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; min-width: 24px; text-align: right; }
-    /* Metric slide-up animation when value first arrives */
-    @keyframes metric-reveal { from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:translateY(0);} }
-    .metric-val.revealed { animation: metric-reveal 0.35s ease forwards; }
+    .metric-lbl  { font-size: 9px; color: var(--muted); font-family: var(--mono); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-track{ height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+    .metric-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 0.8s cubic-bezier(0.25,1,0.5,1); }
+    .metric-val  { font-size: 11px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; min-width: 24px; text-align: right; }
+    @keyframes metric-reveal { from{opacity:0;transform:translateY(5px);} to{opacity:1;transform:translateY(0);} }
+    .metric-val.revealed { animation: metric-reveal 0.38s ease forwards; }
 
-    /* Session log */
-    .slog { padding: 8px 14px 10px; border-top: 1px solid var(--border); max-height: 110px; overflow-y: auto; }
-    .slog-entry { font-family: var(--mono); font-size: 9px; color: var(--muted); line-height: 1.9; }
-    .slog-entry.ok  { color: #22c55e88; }
-    .slog-entry.err { color: #ef444488; }
+    /* Weighted score ring */
+    .score-ring-block {
+      padding: 12px 14px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .score-ring-wrap { position: relative; width: 52px; height: 52px; flex-shrink: 0; }
+    .score-ring-wrap svg { transform: rotate(-90deg); }
+    .ring-bg   { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 4; }
+    .ring-fill { fill: none; stroke: var(--blue-hi); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 138; stroke-dashoffset: 138; transition: stroke-dashoffset 1s cubic-bezier(0.25,1,0.5,1); }
+    .ring-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .ring-meta { flex: 1; }
+    .ring-meta-title { font-size: 10px; font-weight: 700; color: var(--soft); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.6px; }
+    .ring-meta-rec   { font-size: 11px; font-weight: 600; color: var(--white); margin-top: 3px; }
+    .ring-meta-rec.hire  { color: var(--green); }
+    .ring-meta-rec.nohire{ color: var(--red); }
+    .ring-meta-rec.lean  { color: var(--amber); }
 
     /* Score toast */
     .score-toast {
-      position: fixed; top: 62px; right: 16px; z-index: 200;
-      background: var(--card); border: 1px solid var(--border-hi); border-radius: 12px;
-      padding: 12px 18px; display: flex; align-items: center; gap: 14px;
-      transform: translateX(120%);
-      transition: transform 0.42s cubic-bezier(0.34,1.56,0.64,1);
-      box-shadow: 0 10px 32px rgba(0,0,0,0.45), 0 0 0 1px var(--border-hi);
+      position: fixed; top: 58px; right: calc(var(--terminal-w) + 12px); z-index: 200;
+      background: var(--card); border: 1px solid var(--border-hi); border-radius: 11px;
+      padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+      transform: translateY(-20px) scale(0.95); opacity: 0;
+      transition: transform 0.42s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      pointer-events: none;
     }
-    .score-toast.show { transform: translateX(0); }
+    .score-toast.show { transform: translateY(0) scale(1); opacity: 1; }
     .toast-score { font-size: 24px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .toast-score.high { color: var(--green); } .toast-score.mid { color: var(--amber); } .toast-score.low { color: var(--red); }
+    .toast-score.high{color:var(--green);} .toast-score.mid{color:var(--amber);} .toast-score.low{color:var(--red);}
     .toast-lbl { font-size: 10px; color: var(--muted); }
     .toast-vec { font-size: 9px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
   </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
+<!-- ═══ TOPBAR ═══ -->
 <div class="topbar">
   <span class="tb-brand">Medha<em>IQ</em></span>
   <div class="tb-sep"></div>
@@ -297,168 +380,261 @@
   </div>
 </div>
 
-<!-- LAYOUT -->
-<div class="layout">
+<!-- ═══ 3-COLUMN OS GRID ═══ -->
+<div class="os-grid">
 
-  <!-- LEFT: INTERVIEW AREA -->
-  <div class="interview-area" id="interviewArea">
+  <!-- ══ LEFT SIDEBAR ══ -->
+  <div class="sidebar">
 
-    <!-- Calibrating bar — hides after 5s -->
-    <div class="calibrating-bar" id="calibBar">
-      <div class="cal-dot"></div>
-      <span>Calibrating interview environment... AI engine loading</span>
-    </div>
-
-    <!-- Live status bar -->
-    <div class="live-bar">
-      <div class="live-dot"></div>
-      <span class="live-lbl">Live Interview</span>
-      <span class="live-role-lbl" id="liveRole"></span>
-      <div class="live-gap"></div>
-      <span class="voice-ind" id="voiceInd">Voice: standby</span>
-    </div>
-
-    <!-- Question terminal -->
-    <div class="q-terminal">
-      <div class="q-term-hdr">
-        <div class="tdot td-r"></div>
-        <div class="tdot td-y"></div>
-        <div class="tdot td-g"></div>
-        <span class="q-path">medhaiq://session/<%= sessionId %>/question</span>
+    <!-- Session meta -->
+    <div class="sb-section">
+      <div class="sb-label">// Session Context</div>
+      <div class="sb-meta-row">
+        <span class="sb-meta-icon">🎯</span>
+        <div><div class="sb-meta-key">Role</div><div class="sb-meta-val" id="sbRole">—</div></div>
       </div>
-      <div class="q-term-body">
-        <div class="q-prompt" id="qPrompt">&gt; question_01.opening</div>
-        <div class="q-text" id="questionText">Loading your first question...</div>
-        <div class="q-tip" id="qTip">// Tip: Use the STAR framework — Situation, Task, Action, Result.</div>
+      <div class="sb-meta-row">
+        <span class="sb-meta-icon">⚡</span>
+        <div><div class="sb-meta-key">Level</div><div class="sb-meta-val" id="sbLevel">—</div></div>
+      </div>
+      <div class="sb-meta-row">
+        <span class="sb-meta-icon">🆔</span>
+        <div><div class="sb-meta-key">Session ID</div><div class="sb-meta-val" style="font-family:var(--mono);font-size:10px;">#<%= sessionId %></div></div>
       </div>
     </div>
 
-    <!-- Voice signal visualiser -->
-    <div class="viz-wrap">
-      <span class="viz-lbl">Signal</span>
-      <div class="viz-bars" id="vizBars"></div>
-      <div class="cam-toggle" id="camToggle" title="Toggle webcam">&#127909;</div>
+    <!-- Live status -->
+    <div class="sb-section">
+      <div class="live-pill">
+        <div class="live-dot"></div>
+        <span>LIVE INTERVIEW</span>
+      </div>
+      <div class="voice-pill" id="voiceInd">Voice: standby</div>
     </div>
 
-    <!-- Answer area -->
-    <div class="answer-area" id="answerArea">
-      <textarea class="answer-textarea" id="answerInput"
-        placeholder="Type your answer here, or use Voice Mode in the right panel..."
-        maxlength="4000"></textarea>
-      <div class="answer-actions">
-        <span class="char-count" id="charCount">0 / 4000</span>
-        <button class="btn-skip" id="skipBtn">Skip &rarr;</button>
-        <button class="btn-submit" id="submitBtn" disabled>Submit Answer</button>
+    <!-- Competency map — tracks which areas have been tested -->
+    <div class="sb-section">
+      <div class="sb-label">// Competency Coverage</div>
+      <div class="comp-map" id="compMap">
+        <div class="comp-row">
+          <span class="comp-icon">🏗</span>
+          <div class="comp-body">
+            <div class="comp-name">System Design</div>
+            <div class="comp-track"><div class="comp-fill" id="comp-system_design" style="width:0%;background:#3b82f6;"></div></div>
+          </div>
+          <span class="comp-count" id="compC-system_design" style="color:#3b82f6;">0</span>
+        </div>
+        <div class="comp-row">
+          <span class="comp-icon">👥</span>
+          <div class="comp-body">
+            <div class="comp-name">Leadership</div>
+            <div class="comp-track"><div class="comp-fill" id="comp-leadership" style="width:0%;background:#22c55e;"></div></div>
+          </div>
+          <span class="comp-count" id="compC-leadership" style="color:#22c55e;">0</span>
+        </div>
+        <div class="comp-row">
+          <span class="comp-icon">📊</span>
+          <div class="comp-body">
+            <div class="comp-name">Strategy</div>
+            <div class="comp-track"><div class="comp-fill" id="comp-strategy" style="width:0%;background:#a78bfa;"></div></div>
+          </div>
+          <span class="comp-count" id="compC-strategy" style="color:#a78bfa;">0</span>
+        </div>
+        <div class="comp-row">
+          <span class="comp-icon">💬</span>
+          <div class="comp-body">
+            <div class="comp-name">Communication</div>
+            <div class="comp-track"><div class="comp-fill" id="comp-communication" style="width:0%;background:#f59e0b;"></div></div>
+          </div>
+          <span class="comp-count" id="compC-communication" style="color:#f59e0b;">0</span>
+        </div>
+        <div class="comp-row">
+          <span class="comp-icon">🔧</span>
+          <div class="comp-body">
+            <div class="comp-name">Technical</div>
+            <div class="comp-track"><div class="comp-fill" id="comp-technical" style="width:0%;background:#fb923c;"></div></div>
+          </div>
+          <span class="comp-count" id="compC-technical" style="color:#fb923c;">0</span>
+        </div>
       </div>
     </div>
 
-    <!-- Loading overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-      <div class="ldots"><span></span><span></span><span></span></div>
-      <div class="ltext" id="loadingText">Reviewing your answer...</div>
+    <!-- Session log fills rest of sidebar -->
+    <div style="padding:10px 16px 6px;border-bottom:1px solid var(--border);">
+      <div class="sb-label">// Activity Log</div>
+    </div>
+    <div class="sb-log" id="slogBody"></div>
+
+  </div><!-- /sidebar -->
+
+  <!-- ══ CENTRE COLUMN ══ -->
+  <div class="centre-col">
+
+    <!-- Webcam hero feed -->
+    <div class="webcam-hero" id="webcamHero">
+      <video id="camVideo" autoplay playsinline muted></video>
+      <div class="webcam-placeholder" id="camPlaceholder">
+        <div class="wc-icon">📷</div>
+        <div class="wc-hint">Click toggle to start camera</div>
+      </div>
+      <div class="webcam-badge off" id="camBadge">
+        <div class="wbdot"></div>
+        <span id="camBadgeText">CAM OFF</span>
+      </div>
+      <button class="webcam-toggle" id="camToggle">Enable Camera</button>
     </div>
 
-  </div><!-- /interview-area -->
+    <!-- Interview content: question + answer -->
+    <div class="interview-content">
 
-  <!-- RIGHT: TERMINAL PANEL -->
+      <!-- Calibrating pulse — fades after 5s -->
+      <div class="calibrating-bar" id="calibBar">
+        <div class="cal-dot"></div>
+        <span>Calibrating adaptive AI engine — analysing your target role and experience...</span>
+      </div>
+
+      <!-- Question terminal -->
+      <div class="q-terminal">
+        <div class="q-term-hdr">
+          <div class="tdot td-r"></div>
+          <div class="tdot td-y"></div>
+          <div class="tdot td-g"></div>
+          <span class="q-path">medhaiq://session/<%= sessionId %>/adaptive-question</span>
+        </div>
+        <div class="q-term-body">
+          <div class="q-prompt" id="qPrompt">&gt; question_01.opening</div>
+          <div class="q-competency-tag" id="qCompTag">LOADING</div>
+          <div class="q-text" id="questionText">Loading your first question...</div>
+          <div class="q-tip" id="qTip">// Tip: Use the STAR framework — Situation, Task, Action, Result.</div>
+        </div>
+      </div>
+
+      <!-- Voice signal visualiser -->
+      <div class="viz-wrap">
+        <span class="viz-lbl">Signal</span>
+        <div class="viz-bars" id="vizBars"></div>
+      </div>
+
+      <!-- Answer -->
+      <div class="answer-area" id="answerArea">
+        <textarea class="answer-textarea" id="answerInput"
+          placeholder="Type your answer here, or use Voice Mode (right panel) to speak your response..."
+          maxlength="4000"></textarea>
+        <div class="answer-actions">
+          <span class="char-count" id="charCount">0 / 4000</span>
+          <button class="btn-skip" id="skipBtn">Skip &rarr;</button>
+          <button class="btn-submit" id="submitBtn" disabled>Submit Answer</button>
+        </div>
+      </div>
+
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="ldots"><span></span><span></span><span></span></div>
+        <div class="ltext" id="loadingText">Analysing your response...</div>
+      </div>
+
+    </div><!-- /interview-content -->
+  </div><!-- /centre-col -->
+
+  <!-- ══ RIGHT TERMINAL PANEL ══ -->
   <div class="terminal-panel">
 
     <div class="tp-header">
-      <span class="tp-title">Live Terminal</span>
-      <span class="tp-ver">v0.5</span>
+      <span class="tp-title">Intelligence Terminal</span>
+      <span class="tp-ver">v0.6 OS</span>
     </div>
 
-    <!-- Webcam feed -->
-    <div class="cam-block">
-      <div class="blabel">// Candidate Feed</div>
-      <div class="cam-wrap">
-        <video id="camVideo" autoplay playsinline muted style="display:none;"></video>
-        <div class="cam-placeholder" id="camPlaceholder">&#128247;</div>
-        <div class="cam-status-badge" id="camStatus">CAM OFF</div>
-      </div>
-    </div>
-
-    <!-- VAPI VOICE — State Machine UI -->
+    <!-- VAPI voice engine -->
     <div class="vapi-block">
-      <button class="vapi-btn" id="vapiBtn">&#127897; Enable Voice Mode</button>
-      <div class="vapi-sub" id="vapiSub">Click to speak with your interviewer</div>
-      <div class="vapi-perm-warn" id="vapiPermWarn">&#9888; Mic permission required — check browser bar</div>
+      <button class="vapi-btn" id="vapiBtn">🎙 Enable Voice Mode</button>
+      <div class="vapi-sub" id="vapiSub">Speak directly with your AI interviewer</div>
+      <div class="vapi-warn" id="vapiPermWarn">⚠ Microphone access required — check browser bar</div>
     </div>
 
-    <!-- Live metrics -->
+    <!-- 5-vector live metrics -->
     <div class="metrics-block">
-      <div class="blabel" style="margin-bottom:12px;">// Performance Metrics</div>
+      <div class="blabel">// 5-Vector Intelligence</div>
 
       <div class="metric-row">
-        <span class="metric-icon">&#9889;</span>
+        <span class="metric-icon">⚡</span>
         <div class="metric-body">
           <div class="metric-lbl">Structure (STAR)</div>
           <div class="metric-track"><div class="metric-fill" id="mStar" style="background:#3b82f6;"></div></div>
         </div>
-        <span class="metric-val" id="mStarV" style="color:#3b82f6;">&#8212;</span>
+        <span class="metric-val" id="mStarV" style="color:#3b82f6;">—</span>
       </div>
 
       <div class="metric-row">
-        <span class="metric-icon">&#129504;</span>
+        <span class="metric-icon">🧠</span>
         <div class="metric-body">
           <div class="metric-lbl">Technical Depth</div>
           <div class="metric-track"><div class="metric-fill" id="mTech" style="background:#a78bfa;"></div></div>
         </div>
-        <span class="metric-val" id="mTechV" style="color:#a78bfa;">&#8212;</span>
+        <span class="metric-val" id="mTechV" style="color:#a78bfa;">—</span>
       </div>
 
       <div class="metric-row">
-        <span class="metric-icon">&#128084;</span>
+        <span class="metric-icon">👔</span>
         <div class="metric-body">
           <div class="metric-lbl">Executive Presence</div>
           <div class="metric-track"><div class="metric-fill" id="mExec" style="background:#22c55e;"></div></div>
         </div>
-        <span class="metric-val" id="mExecV" style="color:#22c55e;">&#8212;</span>
+        <span class="metric-val" id="mExecV" style="color:#22c55e;">—</span>
       </div>
 
       <div class="metric-row">
-        <span class="metric-icon">&#127758;</span>
+        <span class="metric-icon">🌐</span>
         <div class="metric-body">
           <div class="metric-lbl">GCC Readiness</div>
           <div class="metric-track"><div class="metric-fill" id="mGcc" style="background:#f59e0b;"></div></div>
         </div>
-        <span class="metric-val" id="mGccV" style="color:#f59e0b;">&#8212;</span>
+        <span class="metric-val" id="mGccV" style="color:#f59e0b;">—</span>
       </div>
 
       <div class="metric-row">
-        <span class="metric-icon">&#128172;</span>
+        <span class="metric-icon">💬</span>
         <div class="metric-body">
           <div class="metric-lbl">Communication Clarity</div>
           <div class="metric-track"><div class="metric-fill" id="mFric" style="background:#fb923c;"></div></div>
         </div>
-        <span class="metric-val" id="mFricV" style="color:#fb923c;">&#8212;</span>
+        <span class="metric-val" id="mFricV" style="color:#fb923c;">—</span>
       </div>
     </div>
 
-    <!-- Session log -->
-    <div class="slog">
-      <div class="blabel" style="margin-bottom:6px;">// Session Log</div>
-      <div id="slogBody"></div>
+    <!-- Running weighted score ring -->
+    <div class="score-ring-block">
+      <div class="score-ring-wrap">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle class="ring-bg"   cx="26" cy="26" r="22"/>
+          <circle class="ring-fill" id="ringFill" cx="26" cy="26" r="22"/>
+        </svg>
+        <div class="ring-label" id="ringLabel" style="color:var(--blue-hi);">—</div>
+      </div>
+      <div class="ring-meta">
+        <div class="ring-meta-title">Running Score</div>
+        <div class="ring-meta-rec" id="ringRec">Awaiting data</div>
+      </div>
     </div>
 
   </div><!-- /terminal-panel -->
-</div><!-- /layout -->
+</div><!-- /os-grid -->
 
 <!-- Score toast -->
 <div class="score-toast" id="scoreToast">
   <div>
-    <div class="toast-score" id="toastScore">&#8212;</div>
+    <div class="toast-score" id="toastScore">—</div>
     <div class="toast-lbl">Answer Score</div>
     <div class="toast-vec" id="toastVec"></div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     INTERVIEW ENGINE — Main logic
+     INTERVIEW OS ENGINE
+     Handles: question display, answer submission, metric updates,
+     competency tracking, running score ring, and session log.
 ═══════════════════════════════════════════════════════════════ -->
 <script>
 (function() {
-  /* EJS-injected session variables */
+  /* ── EJS-injected session variables ── */
   var SID    = '<%= sessionId %>';
   var QID    = '<%= questionId %>';
   var QN     = <%= answeredCount %> + 1;
@@ -469,19 +645,21 @@
   var PCOL   = '<%= personaStyleColor %>';
   var QTYPE  = '<%= questionType %>';
   var ROLE   = '<%= roleTitle %>';
+  var LEVEL  = '<%= experienceLevel %>';
   var INITQ  = `<%- questionText.replace(/`/g, '\\`') %>`;
 
-  /* ── Topbar init ── */
+  /* ── Topbar & sidebar init ── */
   document.getElementById('tbAvatar').textContent = PINIT;
   document.getElementById('tbAvatar').className   = 'tb-avatar ' + PCOL;
   document.getElementById('tbName').textContent   = PNAME;
   document.getElementById('tbRole').textContent   = PTITLE;
-  document.getElementById('liveRole').textContent = ROLE ? '· ' + ROLE : '';
+  document.getElementById('sbRole').textContent   = ROLE  || '—';
+  document.getElementById('sbLevel').textContent  = LEVEL || '—';
 
-  /* ── Calibrating bar — hide after 5s ── */
+  /* ── Calibrating bar fades after 5s ── */
   setTimeout(function() {
     var cb = document.getElementById('calibBar');
-    if (cb) { cb.style.transition = 'opacity 0.6s'; cb.style.opacity = '0'; setTimeout(function(){cb.style.display='none';}, 650); }
+    if (cb) { cb.style.transition='opacity 0.7s'; cb.style.opacity='0'; setTimeout(function(){cb.style.display='none';},750); }
   }, 5000);
 
   /* ── Timer ── */
@@ -489,41 +667,76 @@
   function tick() {
     var e = Math.floor((Date.now()-t0)/1000);
     document.getElementById('timer').textContent =
-      String(Math.floor(e/60)).padStart(2,'0') + ':' + String(e%60).padStart(2,'0');
+      String(Math.floor(e/60)).padStart(2,'0')+':'+String(e%60).padStart(2,'0');
   }
   timerInt = setInterval(tick, 1000);
-  function updateCounter() { document.getElementById('qCounter').textContent = 'Q' + QN + ' / ' + MAXQ; }
+  function updateCounter() { document.getElementById('qCounter').textContent='Q'+QN+' / '+MAXQ; }
 
-  /* ── Session log ── */
+  /* ── Activity log ── */
   function slog(msg, type) {
     var el = document.getElementById('slogBody');
     var ts = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    var cls = 'slog-entry' + (type === 'ok' ? ' ok' : type === 'err' ? ' err' : '');
-    el.insertAdjacentHTML('afterbegin', '<div class="'+cls+'">['+ts+'] '+msg+'</div>');
+    var cls= 'slog-entry' + (type==='ok'?' ok':type==='err'?' err':type==='info'?' info':'');
+    el.insertAdjacentHTML('afterbegin','<div class="'+cls+'">['+ts+'] '+msg+'</div>');
   }
 
-  /* ── Metrics update with slide-up animation ── */
+  /* ── Competency map (updated when backend returns competency in response) ── */
+  var compScores = { system_design:0, leadership:0, strategy:0, communication:0, technical:0 };
+  function updateCompetency(key, increment) {
+    if (!(key in compScores)) return;
+    compScores[key] = Math.min(100, compScores[key] + (increment || 20));
+    var bar = document.getElementById('comp-'+key);
+    var cnt = document.getElementById('compC-'+key);
+    if (bar) bar.style.width = compScores[key]+'%';
+    if (cnt) {
+      var n = parseInt(cnt.textContent||0)+1;
+      cnt.textContent = n;
+    }
+  }
+
+  /* ── 5-Vector metrics ── */
+  var runningScores = [];
   function updateMetrics(s) {
     if (!s) return;
+    runningScores.push(s);
     var map = [
-      ['mStar','mStarV',s.star||s.structure||0],
-      ['mTech','mTechV',s.technical||s.depth||0],
-      ['mExec','mExecV',s.executive||0],
-      ['mGcc', 'mGccV', s.gcc||s.coherence||0],
-      ['mFric','mFricV',s.friction||s.clarity||0],
+      ['mStar','mStarV', s.star      || s.structure || 0],
+      ['mTech','mTechV', s.technical || s.depth     || 0],
+      ['mExec','mExecV', s.executive || 0],
+      ['mGcc', 'mGccV',  s.gcc       || s.coherence || 0],
+      ['mFric','mFricV', s.friction  || s.clarity   || 0],
     ];
     map.forEach(function(r) {
       var v = Math.round(r[2]);
       var bar = document.getElementById(r[0]);
       var val = document.getElementById(r[1]);
-      if (bar) { setTimeout(function(){ bar.style.width = v+'%'; }, 80); }
+      if (bar) setTimeout(function(){ bar.style.width=v+'%'; }, 80);
       if (val) {
         val.textContent = v;
         val.classList.remove('revealed');
-        void val.offsetWidth; /* reflow to retrigger animation */
+        void val.offsetWidth;
         val.classList.add('revealed');
       }
     });
+    updateScoreRing();
+  }
+
+  /* ── Running score ring ── */
+  function updateScoreRing() {
+    if (!runningScores.length) return;
+    var total = runningScores.reduce(function(a,s){ return a+(s.weighted||0); }, 0);
+    var avg   = Math.round(total / runningScores.length);
+    var ring  = document.getElementById('ringFill');
+    var lbl   = document.getElementById('ringLabel');
+    var rec   = document.getElementById('ringRec');
+    var CIRC  = 138; /* 2 * π * 22 ≈ 138 */
+    ring.style.strokeDashoffset = CIRC - (CIRC * avg / 100);
+    lbl.textContent = avg;
+    lbl.style.color = avg>=75?'#22c55e':avg>=55?'#f59e0b':'#ef4444';
+    if (avg >= 75)      { rec.textContent='Strong Hire'; rec.className='ring-meta-rec hire'; }
+    else if (avg >= 60) { rec.textContent='Lean Hire';   rec.className='ring-meta-rec lean'; }
+    else if (avg >= 45) { rec.textContent='Lean No Hire';rec.className='ring-meta-rec lean'; }
+    else                { rec.textContent='No Hire';     rec.className='ring-meta-rec nohire'; }
   }
 
   /* ── Score toast ── */
@@ -531,174 +744,173 @@
     var s = Math.round(w||0);
     var el = document.getElementById('toastScore');
     el.textContent = s;
-    el.className = 'toast-score ' + (s>=75?'high':s>=55?'mid':'low');
+    el.className = 'toast-score '+(s>=75?'high':s>=55?'mid':'low');
     var vec = document.getElementById('toastVec');
     if (scores && vec) {
       vec.textContent = 'STAR:'+Math.round(scores.star||0)+' EXE:'+Math.round(scores.executive||0)+' CLR:'+Math.round(scores.friction||0);
     }
     var t = document.getElementById('scoreToast');
     t.classList.add('show');
-    setTimeout(function(){t.classList.remove('show');}, 4000);
+    setTimeout(function(){ t.classList.remove('show'); }, 4000);
   }
 
   /* ── Voice visualiser ── */
   var vizEl = document.getElementById('vizBars');
-  for (var i=0;i<26;i++) {
-    var b = document.createElement('div'); b.className='vbar';
-    b.style.height = (Math.random()*18+4)+'px'; vizEl.appendChild(b);
+  for (var i=0;i<28;i++) {
+    var b=document.createElement('div'); b.className='vbar';
+    b.style.height=(Math.random()*16+4)+'px'; vizEl.appendChild(b);
   }
-  var vizOn = false;
-  function startViz() { vizOn=true; vizEl.querySelectorAll('.vbar').forEach(function(b){b.classList.add('lit');}); animViz(); }
-  function stopViz()  { vizOn=false; vizEl.querySelectorAll('.vbar').forEach(function(b){b.classList.remove('lit');b.style.height=(Math.random()*18+4)+'px';}); }
-  function animViz()  { if(!vizOn)return; vizEl.querySelectorAll('.vbar').forEach(function(b){b.style.height=(Math.random()*26+4)+'px';}); setTimeout(animViz,85); }
+  var vizOn=false;
+  function startViz(){ vizOn=true; vizEl.querySelectorAll('.vbar').forEach(function(b){b.classList.add('lit');}); animViz(); }
+  function stopViz() { vizOn=false; vizEl.querySelectorAll('.vbar').forEach(function(b){b.classList.remove('lit');b.style.height=(Math.random()*16+4)+'px';}); }
+  function animViz() { if(!vizOn)return; vizEl.querySelectorAll('.vbar').forEach(function(b){b.style.height=(Math.random()*26+4)+'px';}); setTimeout(animViz,85); }
 
   /* ── Show/hide states ── */
   function showLoading(text) {
-    document.getElementById('answerArea').style.display = 'none';
+    document.getElementById('answerArea').style.display='none';
     document.getElementById('loadingOverlay').classList.add('show');
-    document.getElementById('loadingText').textContent = text || 'Reviewing...';
+    document.getElementById('loadingText').textContent=text||'Analysing...';
     startViz();
   }
-  function showQuestion(q, type) {
+  function showQuestion(q, type, competency) {
     document.getElementById('loadingOverlay').classList.remove('show');
-    document.getElementById('answerArea').style.display = 'flex';
-    document.getElementById('questionText').textContent = q.text;
-    var p = document.getElementById('qPrompt');
-    p.textContent = '> question_0'+QN+'.'+(type||'behavioral');
-    var tip = document.getElementById('qTip');
-    tip.style.display = (type==='drill_down') ? 'none' : 'block';
-    document.getElementById('answerInput').value = '';
-    document.getElementById('charCount').textContent = '0 / 4000';
-    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('answerArea').style.display='flex';
+    document.getElementById('questionText').textContent=q.text;
+    var p=document.getElementById('qPrompt');
+    p.textContent='> question_0'+QN+'.'+(type||'behavioral');
+    /* Competency tag — shows which skill is being tested */
+    var ct=document.getElementById('qCompTag');
+    var compLabel = competency ? competency.replace(/_/g,' ').toUpperCase() : (type==='drill_down'?'DEEP DIVE':'BEHAVIORAL');
+    ct.textContent=compLabel;
+    var tip=document.getElementById('qTip');
+    tip.style.display=(type==='drill_down')?'none':'block';
+    document.getElementById('answerInput').value='';
+    document.getElementById('charCount').textContent='0 / 4000';
+    document.getElementById('submitBtn').disabled=true;
     document.getElementById('answerInput').focus();
     stopViz();
   }
 
-  /* ── Textarea char count ── */
+  /* ── Textarea ── */
   document.getElementById('answerInput').addEventListener('input', function() {
-    document.getElementById('charCount').textContent = this.value.length + ' / 4000';
-    document.getElementById('submitBtn').disabled = !this.value.trim();
+    document.getElementById('charCount').textContent=this.value.length+' / 4000';
+    document.getElementById('submitBtn').disabled=!this.value.trim();
   });
 
   /* ── Submit / Skip ── */
-  document.getElementById('submitBtn').addEventListener('click', function(){ submitAnswer(false); });
-  document.getElementById('skipBtn').addEventListener('click', function(){ submitAnswer(true); });
+  document.getElementById('submitBtn').addEventListener('click',function(){ submitAnswer(false); });
+  document.getElementById('skipBtn').addEventListener('click',function(){ submitAnswer(true); });
 
   async function submitAnswer(skip) {
-    var ans = skip ? '' : document.getElementById('answerInput').value.trim();
-    if (!skip && !ans) return;
-    document.getElementById('submitBtn').disabled = true;
-    showLoading(PNAME + ' is analysing your answer...');
-    slog('Q'+QN+' submitted — AI scoring in progress...');
+    var ans=skip?'':document.getElementById('answerInput').value.trim();
+    if(!skip&&!ans)return;
+    document.getElementById('submitBtn').disabled=true;
+    showLoading(PNAME+' is analysing your response...');
+    slog('Q'+QN+' submitted — AI scoring...','info');
     try {
-      var resp = await fetch('/api/interview/sessions/'+SID+'/answer', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({questionId: QID, answerText: ans, skip: skip}),
+      var resp=await fetch('/api/interview/sessions/'+SID+'/answer',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({questionId:QID,answerText:ans,skip:skip}),
       });
-      var data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'Server error '+resp.status);
+      var data=await resp.json();
+      if(!resp.ok) throw new Error(data.error||'Server error '+resp.status);
 
-      if (data.scores && !skip) {
+      if(data.scores&&!skip) {
         updateMetrics(data.scores);
-        showToast(data.scores.weighted, data.scores);
-        slog('Scored: '+Math.round(data.scores.weighted)+'/100 · STAR:'+Math.round(data.scores.star||0), 'ok');
+        showToast(data.scores.weighted,data.scores);
+        slog('Scored: '+Math.round(data.scores.weighted)+'/100 · STAR:'+Math.round(data.scores.star||0),'ok');
       }
 
-      if (data.sessionEnded) {
+      /* Update competency map if backend returns which area was tested */
+      if(data.competency) updateCompetency(data.competency, 20);
+
+      if(data.sessionEnded) {
         clearInterval(timerInt);
-        slog('Session complete — generating Career Intelligence Report...', 'ok');
+        slog('Session complete — generating Career Intelligence Report...','ok');
         showLoading('Generating your Career Intelligence Report...');
-        setTimeout(function(){ window.location.href = '/interview/report/'+data.reportId; }, 2000);
+        setTimeout(function(){ window.location.href='/interview/report/'+data.reportId; },2200);
         return;
       }
-
-      QID = data.question.id;
+      QID=data.question.id;
       QN++;
       updateCounter();
-      showQuestion(data.question, data.question.type);
-      slog('Q'+QN+' loaded ('+data.question.type+')');
+      showQuestion(data.question, data.question.type, data.question.competency);
+      slog('Q'+QN+' loaded · competency: '+(data.question.competency||'behavioral'));
     } catch(err) {
-      console.error('[MedhaIQ]', err);
-      slog('ERROR: '+err.message, 'err');
+      console.error('[MedhaIQ]',err);
+      slog('ERROR: '+err.message,'err');
       document.getElementById('loadingOverlay').classList.remove('show');
-      document.getElementById('answerArea').style.display = 'flex';
-      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('answerArea').style.display='flex';
+      document.getElementById('submitBtn').disabled=false;
       stopViz();
       alert('Error: '+err.message+'\n\nCheck browser console for details.');
     }
   }
 
   /* ── End session ── */
-  document.getElementById('endBtn').addEventListener('click', async function() {
-    if (!confirm('End this session? Your progress cannot be resumed.')) return;
+  document.getElementById('endBtn').addEventListener('click',async function(){
+    if(!confirm('End this session? Your progress cannot be resumed.'))return;
     clearInterval(timerInt);
-    try { await fetch('/api/interview/sessions/'+SID, {method:'DELETE'}); } catch(e){}
-    window.location.href = '/dashboard/history';
+    try{ await fetch('/api/interview/sessions/'+SID,{method:'DELETE'}); }catch(e){}
+    window.location.href='/dashboard/history';
   });
 
   /* ── Initialise ── */
   updateCounter();
-  if (INITQ) showQuestion({text: INITQ}, QTYPE);
-  slog('Session '+SID+' initialised — '+PNAME);
-  slog('Role: '+ROLE+' | Level: '+'<%= experienceLevel %>');
-  slog('Agentic AI engine ready');
+  if(INITQ) showQuestion({text:INITQ},QTYPE,null);
+  slog('Session #'+SID+' initialised — '+PNAME,'ok');
+  slog('Role: '+ROLE+' | Level: '+LEVEL);
+  slog('Agentic CompetencyRouter active','info');
 })();
 </script>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     WEBCAM — Auto-start with graceful fallback
+     WEBCAM — Clean hero-style feed, user-toggled
 ═══════════════════════════════════════════════════════════════ -->
 <script>
-(function() {
-  var video       = document.getElementById('camVideo');
-  var placeholder = document.getElementById('camPlaceholder');
-  var statusBadge = document.getElementById('camStatus');
-  var camToggleBtn= document.getElementById('camToggle');
-  var camStream   = null;
-  var camOn       = false;
+(function(){
+  var video    = document.getElementById('camVideo');
+  var ph       = document.getElementById('camPlaceholder');
+  var badge    = document.getElementById('camBadge');
+  var badgeTxt = document.getElementById('camBadgeText');
+  var toggle   = document.getElementById('camToggle');
+  var stream   = null, on = false;
 
-  async function startCam() {
-    try {
-      camStream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
-      video.srcObject = camStream;
-      video.style.display = 'block';
-      placeholder.style.display = 'none';
-      statusBadge.textContent = '● LIVE';
-      statusBadge.style.color = '#22c55e';
-      camOn = true;
-    } catch(e) {
-      statusBadge.textContent = 'BLOCKED';
-      console.warn('[cam]', e.message);
+  async function startCam(){
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+      video.srcObject=stream; video.style.display='block';
+      ph.style.display='none';
+      badge.classList.remove('off'); badgeTxt.textContent='● LIVE';
+      toggle.textContent='Disable Camera';
+      on=true;
+    }catch(e){
+      badgeTxt.textContent='BLOCKED';
+      console.warn('[cam]',e.message);
     }
   }
-
-  function stopCam() {
-    if (camStream) { camStream.getTracks().forEach(function(t){ t.stop(); }); camStream = null; }
-    video.style.display = 'none';
-    placeholder.style.display = 'flex';
-    statusBadge.textContent = 'CAM OFF';
-    statusBadge.style.color = '#fff';
-    camOn = false;
+  function stopCam(){
+    if(stream){stream.getTracks().forEach(function(t){t.stop();}); stream=null;}
+    video.style.display='none'; ph.style.display='flex';
+    badge.classList.add('off'); badgeTxt.textContent='CAM OFF';
+    toggle.textContent='Enable Camera';
+    on=false;
   }
-
-  camToggleBtn.addEventListener('click', function() {
-    if (!camOn) startCam(); else stopCam();
-  });
-
-  /* Auto-start after short delay */
+  toggle.addEventListener('click',function(){ if(!on)startCam(); else stopCam(); });
+  /* Auto-start with 1.4s delay so page renders first */
   setTimeout(startCam, 1400);
 })();
 </script>
 
 <!-- ═══════════════════════════════════════════════════════════════
      VAPI VOICE STATE MACHINE
-     States: IDLE → REQUESTING_PERMISSIONS → CONNECTING → LIVE → STOPPING
-     Each state update changes button text, colour, and disabled state.
-     Errors are caught per-state with specific user messages.
+     IDLE → REQUESTING_PERMISSIONS → CONNECTING → LIVE → STOPPING
+     Each transition has explicit UI state + specific error messages.
+     Root cause of "Voice: error": mic permission was never checked
+     before Vapi was called. This is now step 1 before any SDK init.
 ═══════════════════════════════════════════════════════════════ -->
 <script>
-(function() {
+(function(){
   var VKEY = '<%= vapiPublicKey %>';
   var VAST = '<%= vapiAssistantId %>';
 
@@ -706,179 +918,117 @@
   var sub      = document.getElementById('vapiSub');
   var permWarn = document.getElementById('vapiPermWarn');
   var voiceInd = document.getElementById('voiceInd');
-  var camToggle= document.getElementById('camToggle');
   var vizEl    = document.getElementById('vizBars');
 
-  /* Hide button if no credentials configured */
-  if (!VKEY || !VAST) {
-    btn.style.display = 'none';
-    sub.textContent = 'Voice mode: credentials not configured';
-    return;
+  if(!VKEY||!VAST){ btn.style.display='none'; sub.textContent='Voice: not configured (add VAPI keys in Render)'; return; }
+
+  var STATES={ IDLE:'IDLE',REQUESTING:'REQUESTING',CONNECTING:'CONNECTING',LIVE:'LIVE',STOPPING:'STOPPING' };
+  var state=STATES.IDLE, vapi=null;
+
+  function setState(s,msg,isErr){
+    state=s;
+    var L={
+      IDLE:      {text:'🎙 Enable Voice Mode',   cls:'',                dis:false},
+      REQUESTING:{text:'⏳ Checking mic…',        cls:'state-connecting',dis:true },
+      CONNECTING:{text:'⏳ Connecting…',           cls:'state-connecting',dis:true },
+      LIVE:      {text:'🔴 End Voice Session',    cls:'state-live',      dis:false},
+      STOPPING:  {text:'⏹ Stopping…',             cls:'',                dis:true },
+    }[s]||{text:'🎙 Enable Voice Mode',cls:'',dis:false};
+    btn.textContent=L.text; btn.className='vapi-btn '+L.cls; btn.disabled=L.dis;
+    if(msg){ sub.textContent=msg; sub.style.color=isErr?'#ef4444':''; }
+    if(s===STATES.LIVE)    { voiceInd.textContent='Voice: ● active';  voiceInd.className='voice-pill active'; }
+    else if(s===STATES.IDLE){ voiceInd.textContent='Voice: standby';  voiceInd.className='voice-pill'; }
+    if(isErr)               { voiceInd.textContent='Voice: error';    voiceInd.className='voice-pill error'; }
   }
 
-  /* ── State machine ── */
-  var STATES = { IDLE: 'IDLE', REQUESTING: 'REQUESTING', CONNECTING: 'CONNECTING', LIVE: 'LIVE', STOPPING: 'STOPPING' };
-  var state = STATES.IDLE;
-  var vapiInstance = null;
-
-  function setState(newState, msg, isErr) {
-    state = newState;
-    var labels = {
-      IDLE:       { text: '🎙 Enable Voice Mode', cls: '',               dis: false },
-      REQUESTING: { text: '⏳ Checking mic...',    cls: 'state-connecting', dis: true  },
-      CONNECTING: { text: '⏳ Connecting...',       cls: 'state-connecting', dis: true  },
-      LIVE:       { text: '🔴 End Voice Session',   cls: 'state-live',      dis: false },
-      STOPPING:   { text: '⏹ Stopping...',          cls: '',               dis: true  },
-    };
-    var L = labels[newState] || labels.IDLE;
-    btn.textContent = L.text;
-    btn.className   = 'vapi-btn ' + L.cls;
-    btn.disabled    = L.dis;
-    if (msg) {
-      sub.textContent = msg;
-      sub.style.color = isErr ? '#ef4444' : '';
-    }
-    /* Voice indicator in topbar */
-    if (newState === STATES.LIVE) {
-      voiceInd.textContent = 'Voice: ● active'; voiceInd.className = 'voice-ind active';
-      camToggle.classList.add('recording');
-    } else if (newState === STATES.IDLE || newState === STATES.STOPPING) {
-      voiceInd.textContent = 'Voice: standby'; voiceInd.className = 'voice-ind';
-      camToggle.classList.remove('recording');
-    }
-    if (isErr) { voiceInd.textContent = 'Voice: error'; voiceInd.className = 'voice-ind error'; }
+  function setErr(msg){
+    setState(STATES.IDLE,msg,true);
+    setTimeout(function(){ if(state===STATES.IDLE){ sub.textContent='Speak directly with your AI interviewer'; sub.style.color=''; } },7000);
   }
 
-  function setErrState(userMsg) {
-    setState(STATES.IDLE, userMsg, true);
-    /* Reset to IDLE after 6s so user can retry */
-    setTimeout(function() {
-      if (state === STATES.IDLE) { sub.textContent = 'Click to speak with your interviewer'; sub.style.color = ''; }
-    }, 6000);
-  }
+  function initVapi(){
+    if(vapi||!window.vapiSDK)return;
+    vapi=window.vapiSDK.run({apiKey:VKEY,assistant:VAST,config:{position:'hidden'}});
 
-  /* ── Initialise Vapi instance ── */
-  function initVapi() {
-    if (vapiInstance) return;
-    if (!window.vapiSDK) { setErrState('SDK not loaded — refresh and try again'); return; }
-
-    vapiInstance = window.vapiSDK.run({
-      apiKey:    VKEY,
-      assistant: VAST,
-      config:    { position: 'hidden' },
+    vapi.on('call-start',function(){
+      setState(STATES.LIVE,'Voice active — speak your answer');
+      vizEl.querySelectorAll('.vbar').forEach(function(b){b.classList.add('lit');}); animVizLive();
     });
-
-    vapiInstance.on('call-start', function() {
-      setState(STATES.LIVE, 'Voice active — speak your answer');
-      startVizFromVapi();
+    vapi.on('call-end',function(){
+      setState(STATES.IDLE,'Voice session ended');
+      vizEl.querySelectorAll('.vbar').forEach(function(b){b.classList.remove('lit');b.style.height=(Math.random()*16+4)+'px';});
     });
-
-    vapiInstance.on('call-end', function() {
-      setState(STATES.IDLE, 'Voice session ended');
-      stopVizFromVapi();
-    });
-
-    vapiInstance.on('speech-start', function() {
-      sub.textContent = '● AI interviewer is speaking...';
-      voiceInd.textContent = 'Voice: ● AI speaking';
-    });
-
-    vapiInstance.on('speech-end', function() {
-      sub.textContent = 'Your turn — answer clearly';
-      voiceInd.textContent = 'Voice: ● listening';
-    });
-
-    vapiInstance.on('error', function(e) {
-      console.error('[Vapi error]', e);
-      var msg = 'Connection error — retry';
-      /* Translate common Vapi error codes to plain English */
-      if (e && e.message) {
-        if (/permission|not allowed/i.test(e.message)) msg = 'Mic blocked — allow in browser settings';
-        else if (/network|fetch/i.test(e.message))     msg = 'Network issue — check connection';
-        else if (/assistant/i.test(e.message))         msg = 'Assistant config error — check VAPI_ASSISTANT_ID';
+    vapi.on('speech-start',function(){ sub.textContent='● AI is speaking…'; voiceInd.textContent='Voice: ● AI speaking'; });
+    vapi.on('speech-end',  function(){ sub.textContent='Your turn — speak clearly'; voiceInd.textContent='Voice: ● listening'; });
+    vapi.on('error',function(e){
+      console.error('[Vapi]',e);
+      var msg='Connection error — retry';
+      if(e&&e.message){
+        if(/permission|not allowed/i.test(e.message)) msg='Microphone blocked — open browser settings';
+        else if(/network|fetch/i.test(e.message))     msg='Network error — check your connection';
+        else if(/assistant/i.test(e.message))         msg='Config error — check VAPI_ASSISTANT_ID in Render';
       }
-      setErrState(msg);
-      stopVizFromVapi();
+      setErr(msg);
     });
   }
 
-  /* Visualiser control from Vapi events */
-  function startVizFromVapi() { vizEl.querySelectorAll('.vbar').forEach(function(b){b.classList.add('lit');}); animVizVapi(); }
-  function stopVizFromVapi()  { vizEl.querySelectorAll('.vbar').forEach(function(b){b.classList.remove('lit');b.style.height=(Math.random()*18+4)+'px';}); }
-  var vapiVizOn = false;
-  function animVizVapi() {
-    if (state !== STATES.LIVE) return;
+  function animVizLive(){
+    if(state!==STATES.LIVE)return;
     vizEl.querySelectorAll('.vbar').forEach(function(b){b.style.height=(Math.random()*26+4)+'px';});
-    setTimeout(animVizVapi, 90);
+    setTimeout(animVizLive,90);
   }
 
-  /* ── Button click: full state machine flow ── */
-  btn.addEventListener('click', async function() {
-    if (state === STATES.LIVE || state === STATES.STOPPING) {
-      /* STOP */
-      setState(STATES.STOPPING, 'Ending voice session...');
-      if (vapiInstance) { try { vapiInstance.stop(); } catch(e){} }
+  btn.addEventListener('click',async function(){
+    if(state===STATES.LIVE||state===STATES.STOPPING){
+      setState(STATES.STOPPING,'Ending voice session…');
+      if(vapi){try{vapi.stop();}catch(e){}}
+      return;
+    }
+    if(state!==STATES.IDLE)return;
+
+    /* ── Step 1: REQUEST MICROPHONE PERMISSION ── */
+    setState(STATES.REQUESTING,'Requesting microphone access…');
+    permWarn.style.display='none';
+    try{
+      var ms=await navigator.mediaDevices.getUserMedia({audio:true});
+      ms.getTracks().forEach(function(t){t.stop();}); /* test only — release immediately */
+    }catch(e){
+      permWarn.style.display='block';
+      if(e.name==='NotAllowedError') setErr('Microphone Access Required — click the lock icon in your browser bar');
+      else if(e.name==='NotFoundError') setErr('No microphone detected — plug one in and retry');
+      else setErr('Mic error: '+e.message);
       return;
     }
 
-    if (state !== STATES.IDLE) return; /* block rapid clicking */
-
-    /* Step 1: REQUEST PERMISSIONS */
-    setState(STATES.REQUESTING, 'Requesting microphone access...');
-    permWarn.style.display = 'none';
-
-    var micStream = null;
-    try {
-      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      /* Permission granted — stop the test stream immediately */
-      micStream.getTracks().forEach(function(t){ t.stop(); });
-    } catch(e) {
-      permWarn.style.display = 'block';
-      if (e.name === 'NotAllowedError') {
-        setErrState('Mic blocked — click the lock icon in your browser bar');
-      } else if (e.name === 'NotFoundError') {
-        setErrState('No microphone found — plug one in and retry');
-      } else {
-        setErrState('Mic error: ' + e.message);
-      }
-      return;
+    /* ── Step 2: WAIT FOR SDK ── */
+    if(!window.vapiSDK){
+      setState(STATES.CONNECTING,'Loading voice engine…');
+      var waited=0;
+      try{
+        await new Promise(function(res,rej){
+          var t=setInterval(function(){
+            waited+=150;
+            if(window.vapiSDK){clearInterval(t);res();}
+            if(waited>9000){clearInterval(t);rej(new Error('Voice SDK load timeout — check network'));}
+          },150);
+        });
+      }catch(e){ setErr(e.message); return; }
     }
+    if(state!==STATES.CONNECTING&&state!==STATES.REQUESTING)return;
 
-    /* Step 2: LOAD SDK if not ready yet */
-    if (!window.vapiSDK) {
-      setState(STATES.CONNECTING, 'Loading Vapi SDK...');
-      var waited = 0;
-      await new Promise(function(resolve, reject) {
-        var t = setInterval(function() {
-          waited += 150;
-          if (window.vapiSDK) { clearInterval(t); resolve(); }
-          if (waited > 8000)  { clearInterval(t); reject(new Error('SDK load timeout')); }
-        }, 150);
-      }).catch(function(e) { setErrState(e.message); return Promise.reject(e); });
-      if (state !== STATES.CONNECTING) return; /* aborted */
-    }
+    /* ── Step 3: CONNECT ── */
+    setState(STATES.CONNECTING,'Connecting to AI interviewer…');
+    try{ initVapi(); vapi.start(); }
+    catch(e){ setErr('Failed to connect: '+e.message); return; }
 
-    /* Step 3: CONNECT */
-    setState(STATES.CONNECTING, 'Connecting to AI interviewer...');
-    try {
-     initVapi();
-      vapiInstance.start(VAST);
-    } catch(e) {
-      setErrState('Failed to start: '+e.message);
-    }
-
-    /* Safety re-enable after 12s if stuck in CONNECTING */
-    setTimeout(function() {
-      if (state === STATES.CONNECTING) {
-        setErrState('Connection timed out — check your internet and retry');
-      }
-    }, 12000);
+    /* Safety fallback — re-enable if stuck CONNECTING after 13s */
+    setTimeout(function(){
+      if(state===STATES.CONNECTING) setErr('Connection timed out — check your internet and retry');
+    },13000);
   });
 
-  /* Re-enable if vapiBtn gets stuck disabled for any reason */
-  setInterval(function() {
-    if (state === STATES.IDLE && btn.disabled) { btn.disabled = false; }
-  }, 3000);
+  /* Watchdog: un-stuck the button if it gets disabled in IDLE */
+  setInterval(function(){ if(state===STATES.IDLE&&btn.disabled) btn.disabled=false; },3000);
 })();
 </script>
 
