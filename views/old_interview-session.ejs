@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Interview OS — MedhaIQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+  (function(d,t){
+    var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+    g.src='https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
+    g.defer=true; g.async=true; s.parentNode.insertBefore(g,s);
+  })(document,'script');
+  </script>
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       DESIGN TOKENS — one place to change the entire visual system
+    ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --bg:         #070d1a;
+      --panel:      #0d1829;
+      --card:       #111e33;
+      --border:     rgba(59,130,246,0.1);
+      --border-hi:  rgba(59,130,246,0.42);
+      --blue:       #1d4ed8;
+      --blue-hi:    #3b82f6;
+      --blue-glow:  rgba(59,130,246,0.2);
+      --green:      #22c55e;
+      --purple:     #a78bfa;
+      --amber:      #f59e0b;
+      --red:        #ef4444;
+      --muted:      #3d5068;
+      --soft:       #94a3b8;
+      --white:      #f1f5f9;
+      --mono:       'JetBrains Mono', monospace;
+      --sidebar-w:  272px;
+      --terminal-w: 284px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      /* Premium dot-grid background */
+      background-image: radial-gradient(circle, rgba(59,130,246,0.055) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 48px;
+      background: rgba(7,13,26,0.97);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 20px; gap: 12px;
+      box-shadow: 0 1px 0 rgba(59,130,246,0.06);
+    }
+    .tb-brand { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+    .tb-brand em { color: var(--blue-hi); font-style: normal; }
+    .tb-sep { width: 1px; height: 16px; background: var(--border); }
+    .tb-persona { display: flex; align-items: center; gap: 8px; }
+    .tb-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 800; color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .tb-avatar.royal-blue { background: linear-gradient(135deg,#1e40af,#3b82f6); }
+    .tb-avatar.emerald    { background: linear-gradient(135deg,#065f46,#10b981); }
+    .tb-avatar.gold       { background: linear-gradient(135deg,#78350f,#f59e0b); }
+    .tb-name  { font-size: 12px; font-weight: 600; }
+    .tb-role  { font-size: 10px; color: var(--soft); }
+    .tb-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .tb-q     { font-size: 10px; font-weight: 700; color: var(--blue-hi); font-family: var(--mono); background: rgba(59,130,246,0.1); border: 1px solid var(--border); padding: 3px 9px; border-radius: 5px; }
+    .tb-timer { font-size: 13px; font-weight: 600; color: var(--soft); font-family: var(--mono); }
+    .tb-end   { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.28); color: #fca5a5; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 5px; cursor: pointer; transition: background 0.15s; }
+    .tb-end:hover { background: rgba(239,68,68,0.22); }
+
+    /* ══════════════════════════════════════════════════════════════
+       3-COLUMN OS LAYOUT
+       Left: 272px session sidebar
+       Centre: 1fr — webcam + question + answer
+       Right: 284px — live terminal / intelligence panel
+    ══════════════════════════════════════════════════════════════ */
+    .os-grid {
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr var(--terminal-w);
+      height: 100vh;
+      padding-top: 48px;
+    }
+
+    /* ────────────────────────────────────────────────
+       LEFT SIDEBAR — Session context & competency map
+    ──────────────────────────────────────────────── */
+    .sidebar {
+      background: rgba(13,24,41,0.98);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .sb-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .sb-label { font-size: 9px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--blue-hi); margin-bottom: 10px; font-family: var(--mono); }
+
+    /* Session meta */
+    .sb-meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .sb-meta-icon { font-size: 14px; flex-shrink: 0; }
+    .sb-meta-key { font-size: 9px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.6px; }
+    .sb-meta-val { font-size: 12px; font-weight: 500; color: var(--white); }
+
+    /* Live status */
+    .live-pill {
+      display: flex; align-items: center; gap: 7px;
+      background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 7px; padding: 7px 12px;
+      font-size: 11px; font-weight: 600; color: var(--green); font-family: var(--mono);
+    }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 7px var(--green); animation: lp 1.8s ease-in-out infinite; }
+    @keyframes lp { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+    .voice-pill { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 6px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; transition: all 0.2s; }
+    .voice-pill.active { color: var(--purple); border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.05); }
+    .voice-pill.error  { color: var(--red);    border-color: rgba(239,68,68,0.3); }
+
+    /* Competency map — shows which skills have been tested */
+    .comp-map { display: flex; flex-direction: column; gap: 8px; }
+    .comp-row { display: flex; align-items: center; gap: 9px; }
+    .comp-icon { font-size: 12px; flex-shrink: 0; }
+    .comp-body { flex: 1; }
+    .comp-name { font-size: 10px; color: var(--soft); font-family: var(--mono); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .comp-track { height: 2px; background: rgba(255,255,255,0.05); border-radius: 1px; }
+    .comp-fill  { height: 100%; border-radius: 1px; transition: width 1s cubic-bezier(0.25,1,0.5,1); }
+    .comp-count { font-size: 9px; font-family: var(--mono); color: var(--muted); flex-shrink: 0; min-width: 28px; text-align: right; }
+
+    /* Session log in sidebar */
+    .sb-log { flex: 1; overflow-y: auto; padding: 10px 16px; }
+    .slog-entry { font-family: var(--mono); font-size: 9px; color: var(--muted); line-height: 2; }
+    .slog-entry.ok  { color: rgba(34,197,94,0.65); }
+    .slog-entry.err { color: rgba(239,68,68,0.65); }
+    .slog-entry.info{ color: rgba(59,130,246,0.65); }
+
+    /* ────────────────────────────────────────────────
+       CENTRE COLUMN — Webcam + Question + Answer
+    ──────────────────────────────────────────────── */
+    .centre-col {
+      display: flex; flex-direction: column;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    /* Webcam — hero section at top of centre column */
+    .webcam-hero {
+      position: relative;
+      flex-shrink: 0;
+      height: 220px;
+      background: #050b17;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .webcam-hero video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+      display: none;
+    }
+    .webcam-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px;
+      background: radial-gradient(circle at 50% 60%, rgba(29,78,216,0.08) 0%, transparent 70%);
+    }
+    .wc-icon { font-size: 36px; color: var(--muted); }
+    .wc-hint { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+    /* Webcam overlays */
+    .webcam-badge {
+      position: absolute; top: 10px; left: 12px;
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(0,0,0,0.72); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; padding: 3px 10px;
+      font-size: 9px; font-family: var(--mono); color: #fff;
+      backdrop-filter: blur(8px);
+    }
+    .webcam-badge .wbdot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); box-shadow: 0 0 5px var(--green); }
+    .webcam-badge.off .wbdot { background: var(--muted); box-shadow: none; }
+    .webcam-toggle {
+      position: absolute; top: 10px; right: 12px;
+      background: rgba(0,0,0,0.65); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px; padding: 4px 10px;
+      font-size: 10px; color: var(--soft); cursor: pointer;
+      font-family: var(--mono); transition: all 0.15s;
+      backdrop-filter: blur(8px);
+    }
+    .webcam-toggle:hover { background: rgba(59,130,246,0.15); color: #fff; }
+
+    /* Interview content area */
+    .interview-content {
+      flex: 1; overflow-y: auto;
+      display: flex; flex-direction: column;
+      padding: 16px 20px; gap: 13px;
+    }
+
+    /* Calibrating bar */
+    .calibrating-bar {
+      display: flex; align-items: center; gap: 9px;
+      background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.18);
+      border-radius: 8px; padding: 8px 13px;
+      font-size: 10px; font-family: var(--mono); color: var(--blue-hi);
+      flex-shrink: 0;
+      animation: calfade 1.2s ease-in-out infinite alternate;
+    }
+    @keyframes calfade { from{opacity:0.5;} to{opacity:1;} }
+    .cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue-hi); animation: lp 0.9s ease-in-out infinite; }
+
+    /* Question terminal */
+    .q-terminal {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 11px;
+      overflow: hidden; flex-shrink: 0;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .q-term-hdr {
+      display: flex; align-items: center; gap: 7px;
+      padding: 8px 13px; border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.2);
+    }
+    .tdot { width: 9px; height: 9px; border-radius: 50%; }
+    .td-r{background:#ef4444;} .td-y{background:#f59e0b;} .td-g{background:#22c55e;}
+    .q-path { font-size: 9px; color: var(--muted); font-family: var(--mono); margin-left: 4px; }
+    .q-term-body { padding: 18px 20px; }
+    .q-prompt { font-size: 10px; color: var(--blue-hi); font-family: var(--mono); margin-bottom: 7px; }
+    .q-competency-tag {
+      display: inline-block; font-size: 9px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px; margin-bottom: 9px;
+      background: rgba(59,130,246,0.12); color: var(--blue-hi); border: 1px solid var(--border);
+      font-family: var(--mono); letter-spacing: 0.4px; text-transform: uppercase;
+    }
+    .q-text { font-size: 15px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; color: #fff; line-height: 1.6; }
+    .q-tip  { font-size: 10px; color: var(--muted); font-style: italic; margin-top: 8px; font-family: var(--mono); }
+
+    /* Voice signal visualiser */
+    .viz-wrap {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; display: flex; align-items: center; gap: 11px; flex-shrink: 0;
+    }
+    .viz-lbl { font-size: 9px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+    .viz-bars { display: flex; align-items: flex-end; gap: 3px; height: 26px; flex: 1; }
+    .vbar { width: 4px; border-radius: 2px; background: var(--blue-hi); opacity: 0.18; transition: height 0.07s ease; }
+    .vbar.lit { opacity: 1; }
+
+    /* Answer area */
+    .answer-area { display: flex; flex-direction: column; gap: 9px; flex: 1; min-height: 130px; }
+    .answer-textarea {
+      width: 100%; min-height: 120px; flex: 1;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 9px;
+      padding: 13px 15px; color: #fff; font-size: 13px; font-family: 'Inter', sans-serif; line-height: 1.65; resize: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .answer-textarea:focus { outline: none; border-color: var(--blue-hi); box-shadow: 0 0 0 3px rgba(59,130,246,0.08); }
+    .answer-textarea::placeholder { color: var(--muted); }
+    .answer-actions { display: flex; align-items: center; gap: 9px; }
+    .char-count { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-right: auto; }
+    .btn-skip   { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 12px; font-weight: 500; padding: 6px 13px; border-radius: 6px; cursor: pointer; }
+    .btn-skip:hover { border-color: var(--border-hi); color: #fff; }
+    .btn-submit { background: var(--blue); border: none; border-radius: 7px; color: #fff; font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; padding: 8px 24px; cursor: pointer; transition: all 0.16s; }
+    .btn-submit:not(:disabled):hover { background: var(--blue-hi); box-shadow: 0 0 14px var(--blue-glow); }
+    .btn-submit:disabled { opacity: 0.32; cursor: not-allowed; }
+
+    /* Loading state */
+    .loading-overlay { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px; text-align: center; flex: 1; }
+    .loading-overlay.show { display: flex; }
+    .ldots { display: flex; gap: 6px; }
+    .ldots span { width: 7px; height: 7px; border-radius: 50%; background: var(--blue-hi); animation: lbounce 1s ease-in-out infinite; }
+    .ldots span:nth-child(2){animation-delay:.15s;} .ldots span:nth-child(3){animation-delay:.3s;}
+    @keyframes lbounce { 0%,60%,100%{transform:translateY(0);} 30%{transform:translateY(-7px);} }
+    .ltext { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+    /* ────────────────────────────────────────────────
+       RIGHT TERMINAL PANEL — Live Intelligence
+    ──────────────────────────────────────────────── */
+    .terminal-panel {
+      background: rgba(13,22,40,0.98);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      box-shadow: -8px 0 32px rgba(0,0,0,0.28);
+    }
+    .tp-header {
+      padding: 11px 14px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .tp-title { font-size: 9px; font-weight: 700; color: var(--blue-hi); letter-spacing: 1.8px; text-transform: uppercase; font-family: var(--mono); }
+    .tp-ver   { font-size: 8px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: rgba(59,130,246,0.1); color: var(--blue-hi); border: 1px solid var(--border); margin-left: auto; font-family: var(--mono); }
+
+    /* Vapi voice section */
+    .vapi-block { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .vapi-btn {
+      width: 100%; padding: 9px;
+      background: rgba(59,130,246,0.08); border: 1px solid var(--border-hi);
+      border-radius: 7px; color: var(--blue-hi);
+      font-size: 11px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;
+      cursor: pointer; transition: all 0.18s;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .vapi-btn:hover:not(:disabled) { background: rgba(59,130,246,0.18); }
+    .vapi-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .vapi-btn.state-live       { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+    .vapi-btn.state-connecting { background: rgba(245,158,11,0.1);  border-color: rgba(245,158,11,0.4); color: #fcd34d; }
+    .vapi-sub  { font-size: 9px; color: var(--muted); text-align: center; margin-top: 5px; font-family: var(--mono); transition: color 0.2s; }
+    .vapi-warn { display: none; font-size: 9px; color: var(--amber); text-align: center; margin-top: 5px; font-family: var(--mono); }
+
+    /* 5-Vector metrics */
+    .metrics-block { flex: 1; overflow-y: auto; padding: 11px 14px; }
+    .blabel { font-size: 9px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 1.1px; margin-bottom: 10px; }
+    .metric-row { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
+    .metric-icon { font-size: 12px; flex-shrink: 0; }
+    .metric-body { flex: 1; }
+    .metric-lbl  { font-size: 9px; color: var(--muted); font-family: var(--mono); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-track{ height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+    .metric-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 0.8s cubic-bezier(0.25,1,0.5,1); }
+    .metric-val  { font-size: 11px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; min-width: 24px; text-align: right; }
+    @keyframes metric-reveal { from{opacity:0;transform:translateY(5px);} to{opacity:1;transform:translateY(0);} }
+    .metric-val.revealed { animation: metric-reveal 0.38s ease forwards; }
+
+    /* Weighted score ring */
+    .score-ring-block {
+      padding: 12px 14px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .score-ring-wrap { position: relative; width: 52px; height: 52px; flex-shrink: 0; }
+    .score-ring-wrap svg { transform: rotate(-90deg); }
+    .ring-bg   { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 4; }
+    .ring-fill { fill: none; stroke: var(--blue-hi); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 138; stroke-dashoffset: 138; transition: stroke-dashoffset 1s cubic-bezier(0.25,1,0.5,1); }
+    .ring-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .ring-meta { flex: 1; }
+    .ring-meta-title { font-size: 10px; font-weight: 700; color: var(--soft); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.6px; }
+    .ring-meta-rec   { font-size: 11px; font-weight: 600; color: var(--white); margin-top: 3px; }
+    .ring-meta-rec.hire  { color: var(--green); }
+    .ring-meta-rec.nohire{ color: var(--red); }
+    .ring-meta-rec.lean  { color: var(--amber); }
+
+    /* Score toast */
+    .score-toast {
+      position: fixed; top: 58px; right: calc(var(--terminal-w) + 12px); z-index: 200;
+      background: var(--card); border: 1px solid var(--border-hi); border-radius: 11px;
+      padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+      transform: translateY(-20px) scale(0.95); opacity: 0;
+      transition: transform 0.42s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      pointer-events: none;
+    }
+    .score-toast.show { transform: translateY(0) scale(1); opacity: 1; }
+    .toast-score { font-size: 24px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .toast-score.high{color:var(--green);} .toast-score.mid{color:var(--amber);} .toast-score.low{color:var(--red);}
+    .toast-lbl { font-size: 10px; color: var(--muted); }
+    .toast-vec { font-size: 9px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+
+    /* ══════════════════════════════════════════════════════════════
+       TERMINAL TOGGLE + AI INTERVIEW STATUS
+       "Collapsed by default" — the deep audio terminal stays hidden
+       until the candidate explicitly asks for it. This is the single
+       biggest lever for the "psychological calm" design principle:
+       nothing technical is forced onto the candidate's screen.
+    ══════════════════════════════════════════════════════════════ */
+    .tp-toggle-row { display: flex; align-items: center; gap: 7px; margin-left: auto; }
+    .tp-toggle-lbl { font-size: 9px; color: var(--muted); font-family: var(--mono); }
+    .tp-switch { position: relative; width: 30px; height: 16px; flex-shrink: 0; }
+    .tp-switch input { opacity: 0; width: 0; height: 0; }
+    .tp-switch-track {
+      position: absolute; inset: 0; background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border); border-radius: 20px; cursor: pointer; transition: all .2s;
+    }
+    .tp-switch-track::before {
+      content: ''; position: absolute; width: 12px; height: 12px; left: 2px; top: 1px;
+      background: var(--soft); border-radius: 50%; transition: all .2s;
+    }
+    .tp-switch input:checked + .tp-switch-track { background: rgba(59,130,246,0.25); border-color: var(--border-hi); }
+    .tp-switch input:checked + .tp-switch-track::before { transform: translateX(14px); background: var(--blue-hi); }
+
+    /* AI Interview Status — the calm, always-visible summary block */
+    .ai-status-block { padding: 14px; border-bottom: 1px solid var(--border); text-align: center; }
+    .ai-status-ring-wrap { width: 64px; height: 64px; margin: 0 auto 8px; position: relative; }
+    .ai-status-ring-wrap svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+    .ai-status-ring-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 4; }
+    .ai-status-ring-fill { fill: none; stroke: var(--blue-hi); stroke-width: 4; stroke-linecap: round;
+      stroke-dasharray: 176; stroke-dashoffset: 176; transition: stroke-dashoffset 0.6s ease; }
+    .ai-status-ring-fill.pulsing { animation: statusPulse 1.6s ease-in-out infinite; }
+    @keyframes statusPulse { 0%,100%{ opacity:1; } 50%{ opacity:0.45; } }
+    .ai-status-title { font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .ai-status-sub   { font-size: 9px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+
+    .status-checklist { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+    .status-item { display: flex; align-items: center; gap: 9px; font-size: 11px; color: var(--muted); transition: color .2s; }
+    .status-item .si-dot {
+      width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
+      border: 1.5px solid var(--muted); display: flex; align-items: center; justify-content: center;
+      font-size: 9px; transition: all .2s;
+    }
+    .status-item.done  { color: var(--white); }
+    .status-item.done .si-dot { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .status-item.active { color: var(--blue-hi); font-weight: 600; }
+    .status-item.active .si-dot { border-color: var(--blue-hi); box-shadow: 0 0 8px var(--blue-glow); animation: lp 1s ease-in-out infinite; }
+
+    /* Advanced audio terminal — the part that's collapsed by default */
+    .adv-terminal { display: none; border-bottom: 1px solid var(--border); }
+    .adv-terminal.expanded { display: block; }
+    .adv-hdr { display: flex; align-items: center; gap: 8px; padding: 9px 14px; background: rgba(0,0,0,0.25); }
+    .adv-hdr .tdot { width: 8px; height: 8px; }
+    .adv-hdr-title { font-size: 9px; color: var(--soft); font-family: var(--mono); }
+    .adv-hdr-live { margin-left: auto; font-size: 8px; color: var(--green); font-family: var(--mono); }
+    .adv-body { padding: 12px 14px; }
+    .adv-wave-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .adv-wave-bars { display: flex; align-items: center; gap: 2px; height: 30px; flex: 1; }
+    .adv-vbar { width: 3px; border-radius: 2px; background: var(--blue-hi); opacity: 0.85; }
+    .adv-star-ring { width: 46px; height: 46px; position: relative; flex-shrink: 0; margin-left: 12px; }
+    .adv-star-ring svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+    .adv-star-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; font-family: var(--mono); color: var(--white); }
+    .adv-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; margin-top: 10px; }
+    .adv-meta-cell { text-align: left; }
+    .adv-meta-lbl { font-size: 8px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; }
+    .adv-meta-val { font-size: 12px; font-weight: 700; font-family: var(--mono); color: var(--white); }
+    .adv-meta-val.good { color: var(--green); }
+    .adv-debug-line { font-size: 8px; color: var(--muted); font-family: var(--mono); padding: 8px 14px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; }
+  </style>
+</head>
+<body>
+
+<!-- ═══ TOPBAR ═══ -->
+<div class="topbar">
+  <span class="tb-brand">Medha<em>IQ</em></span>
+  <div class="tb-sep"></div>
+  <div class="tb-persona">
+    <div class="tb-avatar <%= personaStyleColor %>" id="tbAvatar"></div>
+    <div>
+      <div class="tb-name" id="tbName"></div>
+      <div class="tb-role" id="tbRole"></div>
+    </div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-q" id="qCounter">Q1 / 5</div>
+    <div class="tb-timer" id="timer">00:00</div>
+    <button class="tb-end" id="endBtn">End Session</button>
+  </div>
+</div>
+
+<!-- ═══ 3-COLUMN OS GRID ═══ -->
+<div class="os-grid">
+
+  <!-- ══ LEFT SIDEBAR ══ -->
+  <div class="sidebar">
+
+    <!-- Session meta -->
+    <div class="sb-section">
+      <div class="sb-label">// Session Context</div>
+      <div class="sb-meta-row">
+        <span class="sb-meta-icon">🎯</span>
+        <div><div class="sb-meta-key">Role</div><div class="sb-meta-val" id="sbRole">—</div></div>
+      </div>
+      <div class="sb-meta-row">
+        <span class="sb-meta-icon">⚡</span>
+        <div><div class="sb-meta-key">Level</div><div class="sb-meta-val" id="sbLevel">—</div></div>
+      </div>
+      <div class="sb-meta-row">
+        <span class="sb-meta-icon">🆔</span>
+        <div><div class="sb-meta-key">Session ID</div><div class="sb-meta-val" style="font-family:var(--mono);font-size:10px;">#<%= sessionId %></div></div>
+      </div>
+    </div>
+
+    <!-- Live status -->
+    <div class="sb-section">
+      <div class="live-pill">
+        <div class="live-dot"></div>
+        <span>LIVE INTERVIEW</span>
+      </div>
+      <div class="voice-pill" id="voiceInd">Voice: standby</div>
+    </div>
+
+    <!-- Competency map — tracks which areas have been tested -->
+    <div class="sb-section">
+      <div class="sb-label">// Competency Coverage</div>
+      <div class="comp-map" id="compMap">
+        <div class="comp-row">
+          <span class="comp-icon">🏗</span>
+          <div class="comp-body">
+            <div class="comp-name">System Design</div>
+            <div class="comp-track"><div class="comp-fill" id="comp-system_design" style="width:0%;background:#3b82f6;"></div></div>
+          </div>
+          <span class="comp-count" id="compC-system_design" style="color:#3b82f6;">0</span>
+        </div>
+        <div class="comp-row">
+          <span class="comp-icon">👥</span>
+          <div class="comp-body">
+            <div class="comp-name">Leadership</div>
+            <div class="comp-track"><div class="comp-fill" id="comp-leadership" style="width:0%;background:#22c55e;"></div></div>
+          </div>
+          <span class="comp-count" id="compC-leadership" style="color:#22c55e;">0</span>
+        </div>
+        <div class="comp-row">
+          <span class="comp-icon">📊</span>
+          <div class="comp-body">
+            <div class="comp-name">Strategy</div>
+            <div class="comp-track"><div class="comp-fill" id="comp-strategy" style="width:0%;background:#a78bfa;"></div></div>
+          </div>
+          <span class="comp-count" id="compC-strategy" style="color:#a78bfa;">0</span>
+        </div>
+        <div class="comp-row">
+          <span class="comp-icon">💬</span>
+          <div class="comp-body">
+            <div class="comp-name">Communication</div>
+            <div class="comp-track"><div class="comp-fill" id="comp-communication" style="width:0%;background:#f59e0b;"></div></div>
+          </div>
+          <span class="comp-count" id="compC-communication" style="color:#f59e0b;">0</span>
+        </div>
+        <div class="comp-row">
+          <span class="comp-icon">🔧</span>
+          <div class="comp-body">
+            <div class="comp-name">Technical</div>
+            <div class="comp-track"><div class="comp-fill" id="comp-technical" style="width:0%;background:#fb923c;"></div></div>
+          </div>
+          <span class="comp-count" id="compC-technical" style="color:#fb923c;">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session log fills rest of sidebar -->
+    <div style="padding:10px 16px 6px;border-bottom:1px solid var(--border);">
+      <div class="sb-label">// Activity Log</div>
+    </div>
+    <div class="sb-log" id="slogBody"></div>
+
+  </div><!-- /sidebar -->
+
+  <!-- ══ CENTRE COLUMN ══ -->
+  <div class="centre-col">
+
+    <!-- Webcam hero feed -->
+    <div class="webcam-hero" id="webcamHero">
+      <video id="camVideo" autoplay playsinline muted></video>
+      <div class="webcam-placeholder" id="camPlaceholder">
+        <div class="wc-icon">📷</div>
+        <div class="wc-hint">Click toggle to start camera</div>
+      </div>
+      <div class="webcam-badge off" id="camBadge">
+        <div class="wbdot"></div>
+        <span id="camBadgeText">CAM OFF</span>
+      </div>
+      <button class="webcam-toggle" id="camToggle">Enable Camera</button>
+    </div>
+
+    <!-- Interview content: question + answer -->
+    <div class="interview-content">
+
+      <!-- Calibrating pulse — fades after 5s -->
+      <div class="calibrating-bar" id="calibBar">
+        <div class="cal-dot"></div>
+        <span>Calibrating adaptive AI engine — analysing your target role and experience...</span>
+      </div>
+
+      <!-- Question terminal -->
+      <div class="q-terminal">
+        <div class="q-term-hdr">
+          <div class="tdot td-r"></div>
+          <div class="tdot td-y"></div>
+          <div class="tdot td-g"></div>
+          <span class="q-path">medhaiq://session/<%= sessionId %>/adaptive-question</span>
+        </div>
+        <div class="q-term-body">
+          <div class="q-prompt" id="qPrompt">&gt; question_01.opening</div>
+          <div class="q-competency-tag" id="qCompTag">LOADING</div>
+          <div class="q-text" id="questionText">Loading your first question...</div>
+          <div class="q-tip" id="qTip">// Tip: Use the STAR framework — Situation, Task, Action, Result.</div>
+        </div>
+      </div>
+
+      <!-- Voice signal visualiser -->
+      <div class="viz-wrap">
+        <span class="viz-lbl">Signal</span>
+        <div class="viz-bars" id="vizBars"></div>
+      </div>
+
+      <!-- Answer -->
+      <div class="answer-area" id="answerArea">
+        <textarea class="answer-textarea" id="answerInput"
+          placeholder="Type your answer here, or use Voice Mode (right panel) to speak your response..."
+          maxlength="4000"></textarea>
+        <div class="answer-actions">
+          <span class="char-count" id="charCount">0 / 4000</span>
+          <button class="btn-skip" id="skipBtn">Skip &rarr;</button>
+          <button class="btn-submit" id="submitBtn" disabled>Submit Answer</button>
+        </div>
+      </div>
+
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="ldots"><span></span><span></span><span></span></div>
+        <div class="ltext" id="loadingText">Analysing your response...</div>
+      </div>
+
+    </div><!-- /interview-content -->
+  </div><!-- /centre-col -->
+
+  <!-- ══ RIGHT TERMINAL PANEL ══ -->
+  <div class="terminal-panel">
+
+    <div class="tp-header">
+      <span class="tp-title">AI Interview Status</span>
+      <div class="tp-toggle-row">
+        <span class="tp-toggle-lbl" id="tpToggleLbl">Hide terminal</span>
+        <label class="tp-switch">
+          <input type="checkbox" id="terminalToggle">
+          <span class="tp-switch-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Always-visible, calm status summary — this is what satisfies
+         "minimal cognitive load": a candidate never NEEDS to expand
+         the terminal to know the AI is working with them. -->
+    <div class="ai-status-block">
+      <div class="ai-status-ring-wrap">
+        <svg viewBox="0 0 64 64">
+          <circle class="ai-status-ring-bg" cx="32" cy="32" r="28"/>
+          <circle class="ai-status-ring-fill" id="aiStatusRing" cx="32" cy="32" r="28"/>
+        </svg>
+      </div>
+      <div class="ai-status-title" id="aiStatusTitle">Listening…</div>
+      <div class="ai-status-sub" id="aiStatusSub">Capturing your answer</div>
+    </div>
+
+    <div class="status-checklist" id="statusChecklist">
+      <div class="status-item" data-step="captured"><span class="si-dot"></span>Answer captured</div>
+      <div class="status-item" data-step="analyzing"><span class="si-dot"></span>Analyzing response</div>
+      <div class="status-item" data-step="preparing"><span class="si-dot"></span>Preparing next question</div>
+    </div>
+
+    <!-- ══ ADVANCED AUDIO TERMINAL — collapsed by default ══
+         Mirrors the landing-page "Live Terminal" preview 1:1: same
+         CSS tokens, same IntelligenceMetrics schema, same waveform
+         treatment. Toggled on by the candidate only if they want to
+         see the AI's raw working — never forced on them. ── -->
+    <div class="adv-terminal" id="advTerminal">
+      <div class="adv-hdr">
+        <div class="tdot td-r"></div><div class="tdot td-y"></div><div class="tdot td-g"></div>
+        <span class="adv-hdr-title">Live Interview Audio Terminal</span>
+        <span class="adv-hdr-live">● LIVE</span>
+      </div>
+      <div class="adv-body">
+        <div class="adv-wave-row">
+          <div class="adv-wave-bars" id="advWaveBars"></div>
+          <div class="adv-star-ring">
+            <svg viewBox="0 0 46 46">
+              <circle cx="23" cy="23" r="19" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/>
+              <circle id="advStarRing" cx="23" cy="23" r="19" fill="none" stroke="#3b82f6" stroke-width="4"
+                stroke-linecap="round" stroke-dasharray="119" stroke-dashoffset="119"
+                style="transition:stroke-dashoffset .6s ease; transform:rotate(-90deg); transform-origin:50% 50%;"/>
+            </svg>
+            <div class="adv-star-num" id="advStarNum">—</div>
+          </div>
+        </div>
+        <div class="adv-meta-grid">
+          <div class="adv-meta-cell"><div class="adv-meta-lbl">Filler Words</div><div class="adv-meta-val good" id="advFiller">0</div></div>
+          <div class="adv-meta-cell"><div class="adv-meta-lbl">Pace</div><div class="adv-meta-val" id="advPace">—</div></div>
+          <div class="adv-meta-cell"><div class="adv-meta-lbl">Executive Tone</div><div class="adv-meta-val good" id="advTone">—</div></div>
+          <div class="adv-meta-cell"><div class="adv-meta-lbl">Coherence</div><div class="adv-meta-val good" id="advCoherence">—</div></div>
+        </div>
+      </div>
+      <div class="adv-debug-line">
+        <span id="advSid">SID: —</span><span id="advQProgress">Q — / 5</span><span>MedhaIQ AI</span>
+      </div>
+    </div>
+
+    <!-- VAPI voice engine -->
+    <div class="vapi-block">
+      <button class="vapi-btn" id="vapiBtn">🎙 Enable Voice Mode</button>
+      <div class="vapi-sub" id="vapiSub">Speak directly with your AI interviewer</div>
+      <div class="vapi-warn" id="vapiPermWarn">⚠ Microphone access required — check browser bar</div>
+    </div>
+
+    <!-- 5-vector live metrics -->
+    <div class="metrics-block">
+      <div class="blabel">// Live Terminal — 5-Vector Intelligence</div>
+
+      <div class="metric-row">
+        <span class="metric-icon">⚡</span>
+        <div class="metric-body">
+          <div class="metric-lbl">Structure (STAR)</div>
+          <div class="metric-track"><div class="metric-fill" id="mStar" style="background:#3b82f6;"></div></div>
+        </div>
+        <span class="metric-val" id="mStarV" style="color:#3b82f6;">—</span>
+      </div>
+
+      <div class="metric-row">
+        <span class="metric-icon">🧠</span>
+        <div class="metric-body">
+          <div class="metric-lbl">Technical Depth</div>
+          <div class="metric-track"><div class="metric-fill" id="mTech" style="background:#a78bfa;"></div></div>
+        </div>
+        <span class="metric-val" id="mTechV" style="color:#a78bfa;">—</span>
+      </div>
+
+      <div class="metric-row">
+        <span class="metric-icon">👔</span>
+        <div class="metric-body">
+          <div class="metric-lbl">Executive Presence</div>
+          <div class="metric-track"><div class="metric-fill" id="mExec" style="background:#22c55e;"></div></div>
+        </div>
+        <span class="metric-val" id="mExecV" style="color:#22c55e;">—</span>
+      </div>
+
+      <div class="metric-row">
+        <span class="metric-icon">🌐</span>
+        <div class="metric-body">
+          <div class="metric-lbl">GCC Readiness</div>
+          <div class="metric-track"><div class="metric-fill" id="mGcc" style="background:#f59e0b;"></div></div>
+        </div>
+        <span class="metric-val" id="mGccV" style="color:#f59e0b;">—</span>
+      </div>
+
+      <div class="metric-row">
+        <span class="metric-icon">💬</span>
+        <div class="metric-body">
+          <div class="metric-lbl">Communication Clarity</div>
+          <div class="metric-track"><div class="metric-fill" id="mFric" style="background:#fb923c;"></div></div>
+        </div>
+        <span class="metric-val" id="mFricV" style="color:#fb923c;">—</span>
+      </div>
+    </div>
+
+    <!-- Running weighted score ring -->
+    <div class="score-ring-block">
+      <div class="score-ring-wrap">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle class="ring-bg"   cx="26" cy="26" r="22"/>
+          <circle class="ring-fill" id="ringFill" cx="26" cy="26" r="22"/>
+        </svg>
+        <div class="ring-label" id="ringLabel" style="color:var(--blue-hi);">—</div>
+      </div>
+      <div class="ring-meta">
+        <div class="ring-meta-title">Running Score</div>
+        <div class="ring-meta-rec" id="ringRec">Awaiting data</div>
+      </div>
+    </div>
+
+  </div><!-- /terminal-panel -->
+</div><!-- /os-grid -->
+
+<!-- Score toast -->
+<div class="score-toast" id="scoreToast">
+  <div>
+    <div class="toast-score" id="toastScore">—</div>
+    <div class="toast-lbl">Answer Score</div>
+    <div class="toast-vec" id="toastVec"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     INTERVIEW OS ENGINE
+     Handles: question display, answer submission, metric updates,
+     competency tracking, running score ring, and session log.
+═══════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  /* ══════════════════════════════════════════════════════════════
+     SYNC ENGINE — fixes the original UI/audio desync bug.
+     Root cause: the old code rendered whatever partial text Vapi's
+     speech-start event carried (`speech.text`), which is a live
+     transcript fragment, NOT the actual question object from our
+     backend. That's why the on-screen text never matched the audio.
+
+     Fix: the backend answer is fetched and held in `pendingQuestion`
+     as soon as it arrives. We only paint it to the DOM the instant
+     Vapi reports the AI has actually started speaking. In text-only
+     mode (no voice), there's no audio to wait for, so we reveal
+     immediately. Exposed on window so the separate Vapi script block
+     below can call it without any global spaghetti.
+  ══════════════════════════════════════════════════════════════ */
+  var pendingQuestion = null;
+  var MedhaIQSync = {
+    /* Called by submitAnswer() the moment the API responds */
+    hold: function(question, type, competency) {
+      pendingQuestion = { question: question, type: type, competency: competency };
+      /* Text-mode candidates (voice not enabled) see it immediately —
+         there is no audio stream to synchronise against. window.MedhaIQVoiceLive
+         is flipped true/false by the Vapi state machine further down the page. */
+      if (!window.MedhaIQVoiceLive) MedhaIQSync.reveal();
+    },
+    /* Called by vapi.on('speech-start') the millisecond audio begins */
+    reveal: function() {
+      if (!pendingQuestion) return;
+      showQuestion(pendingQuestion.question, pendingQuestion.type, pendingQuestion.competency);
+      pendingQuestion = null;
+    }
+  };
+  window.MedhaIQSync = MedhaIQSync;
+  window.MedhaIQVoiceLive = false;
+  /* ── EJS-injected session variables ── */
+  var SID    = '<%= sessionId %>';
+  var QID    = '<%= questionId %>';
+  var QN     = <%= answeredCount %> + 1;
+  var MAXQ   = 5;
+  var PNAME  = '<%= personaName %>';
+  var PTITLE = '<%= personaTitle %>';
+  var PINIT  = '<%= personaInitials %>';
+  var PCOL   = '<%= personaStyleColor %>';
+  var QTYPE  = '<%= questionType %>';
+  var ROLE   = '<%= roleTitle %>';
+  var LEVEL  = '<%= experienceLevel %>';
+  var INITQ  = `<%- questionText.replace(/`/g, '\\`') %>`;
+
+  /* ── Topbar & sidebar init ── */
+  document.getElementById('tbAvatar').textContent = PINIT;
+  document.getElementById('tbAvatar').className   = 'tb-avatar ' + PCOL;
+  document.getElementById('tbName').textContent   = PNAME;
+  document.getElementById('tbRole').textContent   = PTITLE;
+  document.getElementById('sbRole').textContent   = ROLE  || '—';
+  document.getElementById('sbLevel').textContent  = LEVEL || '—';
+
+  /* ── Calibrating bar fades after 5s ── */
+  setTimeout(function() {
+    var cb = document.getElementById('calibBar');
+    if (cb) { cb.style.transition='opacity 0.7s'; cb.style.opacity='0'; setTimeout(function(){cb.style.display='none';},750); }
+  }, 5000);
+
+  /* ── Timer ── */
+  var t0 = Date.now(), timerInt;
+  function tick() {
+    var e = Math.floor((Date.now()-t0)/1000);
+    document.getElementById('timer').textContent =
+      String(Math.floor(e/60)).padStart(2,'0')+':'+String(e%60).padStart(2,'0');
+  }
+  timerInt = setInterval(tick, 1000);
+  function updateCounter() { document.getElementById('qCounter').textContent='Q'+QN+' / '+MAXQ; }
+
+  /* ── Activity log ── */
+  function slog(msg, type) {
+    var el = document.getElementById('slogBody');
+    var ts = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    var cls= 'slog-entry' + (type==='ok'?' ok':type==='err'?' err':type==='info'?' info':'');
+    el.insertAdjacentHTML('afterbegin','<div class="'+cls+'">['+ts+'] '+msg+'</div>');
+  }
+
+  /* ── Competency map (updated when backend returns competency in response) ── */
+  var compScores = { system_design:0, leadership:0, strategy:0, communication:0, technical:0 };
+  function updateCompetency(key, increment) {
+    if (!(key in compScores)) return;
+    compScores[key] = Math.min(100, compScores[key] + (increment || 20));
+    var bar = document.getElementById('comp-'+key);
+    var cnt = document.getElementById('compC-'+key);
+    if (bar) bar.style.width = compScores[key]+'%';
+    if (cnt) {
+      var n = parseInt(cnt.textContent||0)+1;
+      cnt.textContent = n;
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     5-VECTOR METRICS — consumes the standardized IntelligenceMetrics
+     schema emitted by the backend after every AI analysis step:
+       { overallScore, vectors:{structure,technicalDepth,
+         executivePresence,gccReadiness,communicationClarity},
+         status, metadata:{fillerWords,pace,coherence,executiveTone} }
+     This exact object also drives the landing-page terminal preview,
+     so both surfaces render off one shared shape — no divergence.
+  ══════════════════════════════════════════════════════════════ */
+  var runningScores = [];
+  function updateMetrics(m) {
+    if (!m || !m.vectors) return;
+    runningScores.push(m);
+    var v = m.vectors;
+    var map = [
+      ['mStar','mStarV', v.structure             || 0],
+      ['mTech','mTechV', v.technicalDepth        || 0],
+      ['mExec','mExecV', v.executivePresence     || 0],
+      ['mGcc', 'mGccV',  v.gccReadiness          || 0],
+      ['mFric','mFricV', v.communicationClarity  || 0],
+    ];
+    map.forEach(function(r) {
+      var val = Math.round(r[2]);
+      var bar = document.getElementById(r[0]);
+      var lbl = document.getElementById(r[1]);
+      if (bar) setTimeout(function(){ bar.style.width=val+'%'; }, 80);
+      if (lbl) {
+        lbl.textContent = val;
+        lbl.classList.remove('revealed');
+        void lbl.offsetWidth;
+        lbl.classList.add('revealed');
+      }
+    });
+    /* Advanced terminal mirrors the same payload */
+    document.getElementById('advStarNum').textContent = Math.round(v.structure||0);
+    var advCirc = 119;
+    document.getElementById('advStarRing').style.strokeDashoffset = advCirc - (advCirc * (v.structure||0) / 100);
+    if (m.metadata) {
+      document.getElementById('advFiller').textContent     = m.metadata.fillerWords ?? '0';
+      document.getElementById('advPace').textContent       = m.metadata.pace || '—';
+      document.getElementById('advTone').textContent       = m.metadata.executiveTone || m.metadata.coherence || '—';
+      document.getElementById('advCoherence').textContent  = m.metadata.coherence || '—';
+    }
+    document.getElementById('advQProgress').textContent = 'Q'+QN+' / '+MAXQ;
+    document.getElementById('advSid').textContent = 'SID: '+SID.toString().slice(0,6).toUpperCase();
+
+    updateScoreRing(m.overallScore);
+  }
+
+  /* ── Running score ring (Live Terminal card) ── */
+  function updateScoreRing(latestOverall) {
+    if (typeof latestOverall !== 'number') return;
+    var total = runningScores.reduce(function(a,s){ return a+(s.overallScore||0); }, 0);
+    var avg   = Math.round(total / runningScores.length);
+    var ring  = document.getElementById('ringFill');
+    var lbl   = document.getElementById('ringLabel');
+    var rec   = document.getElementById('ringRec');
+    var CIRC  = 138; /* 2 * π * 22 ≈ 138 */
+    ring.style.strokeDashoffset = CIRC - (CIRC * avg / 100);
+    lbl.textContent = avg;
+    lbl.style.color = avg>=75?'#22c55e':avg>=55?'#f59e0b':'#ef4444';
+    if (avg >= 75)      { rec.textContent='Strong Hire'; rec.className='ring-meta-rec hire'; }
+    else if (avg >= 60) { rec.textContent='Lean Hire';   rec.className='ring-meta-rec lean'; }
+    else if (avg >= 45) { rec.textContent='Lean No Hire';rec.className='ring-meta-rec lean'; }
+    else                { rec.textContent='No Hire';     rec.className='ring-meta-rec nohire'; }
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     AI INTERVIEW STATUS — the calm always-visible state machine.
+     Maps directly to the required states: Preparing, Calibrating,
+     Listening, Analyzing, Generating, Ready, Session Complete,
+     Generating Report, Finished.
+  ══════════════════════════════════════════════════════════════ */
+  var STATE_META = {
+    PREPARING:        { title:'Preparing…',        sub:'Setting up your next question', pulse:true,  ring:0.15, steps:[] },
+    CALIBRATING:       { title:'Calibrating…',       sub:'Analysing your target role',    pulse:true,  ring:0.25, steps:[] },
+    LISTENING:         { title:'Listening…',         sub:'Capturing your answer',         pulse:false, ring:0.4,  steps:['captured'] },
+    ANALYZING:         { title:'Analyzing…',         sub:'Scoring your response',         pulse:true,  ring:0.75, steps:['captured','analyzing'] },
+    GENERATING:        { title:'Generating…',        sub:'Preparing next question',       pulse:true,  ring:0.9,  steps:['captured','analyzing','preparing'] },
+    READY:             { title:'Ready',              sub:'Your next question is up',      pulse:false, ring:1,    steps:['captured','analyzing','preparing'] },
+    SESSION_COMPLETE:  { title:'Session Complete',   sub:'All questions answered',         pulse:false, ring:1,    steps:['captured','analyzing','preparing'] },
+    GENERATING_REPORT: { title:'Generating Report…', sub:'Compiling your Intelligence Report', pulse:true, ring:0.95, steps:['captured','analyzing','preparing'] },
+    FINISHED:          { title:'Finished',           sub:'Redirecting to your report',    pulse:false, ring:1,    steps:['captured','analyzing','preparing'] },
+  };
+  var RING_CIRC = 176; /* 2 * π * 28 */
+  function setAIState(key) {
+    var meta = STATE_META[key] || STATE_META.PREPARING;
+    document.getElementById('aiStatusTitle').textContent = meta.title;
+    document.getElementById('aiStatusSub').textContent   = meta.sub;
+    var ring = document.getElementById('aiStatusRing');
+    ring.style.strokeDashoffset = RING_CIRC - (RING_CIRC * meta.ring);
+    ring.classList.toggle('pulsing', !!meta.pulse);
+    var WORKING_STATES = { LISTENING:1, ANALYZING:1, GENERATING:1 };
+    var lastStep = meta.steps[meta.steps.length - 1];
+    document.querySelectorAll('#statusChecklist .status-item').forEach(function(el){
+      var step = el.getAttribute('data-step');
+      var included = meta.steps.indexOf(step) > -1;
+      var isCurrent = included && step === lastStep && WORKING_STATES[key];
+      el.classList.toggle('active', !!isCurrent);
+      el.classList.toggle('done', included && !isCurrent);
+    });
+  }
+
+  /* ── Score toast ── */
+  function showToast(w, scores) {
+    var s = Math.round(w||0);
+    var el = document.getElementById('toastScore');
+    el.textContent = s;
+    el.className = 'toast-score '+(s>=75?'high':s>=55?'mid':'low');
+    var vec = document.getElementById('toastVec');
+    if (scores && vec) {
+      vec.textContent = 'STAR:'+Math.round(scores.star||0)+' EXE:'+Math.round(scores.executive||0)+' CLR:'+Math.round(scores.friction||0);
+    }
+    var t = document.getElementById('scoreToast');
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 4000);
+  }
+
+  /* ── Voice visualiser ── */
+  var vizEl = document.getElementById('vizBars');
+  for (var i=0;i<28;i++) {
+    var b=document.createElement('div'); b.className='vbar';
+    b.style.height=(Math.random()*16+4)+'px'; vizEl.appendChild(b);
+  }
+  var vizOn=false;
+  function startViz(){ vizOn=true; vizEl.querySelectorAll('.vbar').forEach(function(b){b.classList.add('lit');}); animViz(); }
+  function stopViz() { vizOn=false; vizEl.querySelectorAll('.vbar').forEach(function(b){b.classList.remove('lit');b.style.height=(Math.random()*16+4)+'px';}); }
+  function animViz() { if(!vizOn)return; vizEl.querySelectorAll('.vbar').forEach(function(b){b.style.height=(Math.random()*26+4)+'px';}); setTimeout(animViz,85); }
+
+  /* ── Show/hide states ── */
+  function showLoading(text) {
+    document.getElementById('answerArea').style.display='none';
+    document.getElementById('loadingOverlay').classList.add('show');
+    document.getElementById('loadingText').textContent=text||'Analysing...';
+    startViz();
+  }
+ function showQuestion(q, type, competency) {
+    document.getElementById('loadingOverlay').classList.remove('show');
+    document.getElementById('answerArea').style.display='flex';
+
+    /* Timing is already handled by MedhaIQSync (see top of script) —
+       by the time showQuestion() runs, we're clear to paint it. */
+    document.getElementById('questionText').textContent = q.text;
+
+    var p=document.getElementById('qPrompt');
+    p.textContent='> question_0'+QN+'.'+(type||'behavioral');
+    /* Competency tag — shows which skill is being tested */
+    var ct=document.getElementById('qCompTag');
+    var compLabel = competency ? competency.replace(/_/g,' ').toUpperCase() : (type==='drill_down'?'DEEP DIVE':'BEHAVIORAL');
+    ct.textContent=compLabel;
+    var tip=document.getElementById('qTip');
+    tip.style.display=(type==='drill_down')?'none':'block';
+    document.getElementById('answerInput').value='';
+    document.getElementById('charCount').textContent='0 / 4000';
+    document.getElementById('submitBtn').disabled=true;
+    document.getElementById('answerInput').focus();
+    stopViz();
+    setAIState('LISTENING');
+  }
+
+  /* ── Textarea ── */
+  document.getElementById('answerInput').addEventListener('input', function() {
+    document.getElementById('charCount').textContent=this.value.length+' / 4000';
+    document.getElementById('submitBtn').disabled=!this.value.trim();
+  });
+
+  /* ── Submit / Skip ── */
+  document.getElementById('submitBtn').addEventListener('click',function(){ submitAnswer(false); });
+  document.getElementById('skipBtn').addEventListener('click',function(){ submitAnswer(true); });
+
+  async function submitAnswer(skip) {
+    var ans=skip?'':document.getElementById('answerInput').value.trim();
+    if(!skip&&!ans)return;
+    document.getElementById('submitBtn').disabled=true;
+    setAIState('ANALYZING');
+    showLoading(PNAME+' is analysing your response...');
+    slog('Q'+QN+' submitted — AI scoring...','info');
+    try {
+      /* Backend contract (see routes/interview-answer.js):
+         { text, audio_url, competency_tag, scores: IntelligenceMetrics, sessionEnded, reportId } */
+      var resp=await fetch('/api/interview/sessions/'+SID+'/answer',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({questionId:QID,answerText:ans,skip:skip}),
+      });
+      var data=await resp.json();
+      if(!resp.ok) throw new Error(data.error||'Server error '+resp.status);
+
+      if(data.scores&&!skip) {
+        updateMetrics(data.scores); /* consumes the standardized IntelligenceMetrics schema */
+        showToast(data.scores.overallScore, data.scores.vectors);
+        slog('Scored: '+Math.round(data.scores.overallScore)+'/100 · Structure:'+Math.round((data.scores.vectors&&data.scores.vectors.structure)||0),'ok');
+      }
+
+      /* Update competency map if backend returns which area was tested */
+      if(data.competency_tag) updateCompetency(data.competency_tag, 20);
+
+      setAIState('PREPARING');
+
+      if(data.sessionEnded) {
+        clearInterval(timerInt);
+        setAIState('GENERATING_REPORT');
+        slog('Session complete — generating Career Intelligence Report...','ok');
+        showLoading('Generating your Career Intelligence Report...');
+        setTimeout(function(){ window.location.href='/interview/report/'+data.reportId; },2200);
+        return;
+      }
+      QID=data.question.id;
+      QN++;
+      updateCounter();
+      /* Hand off to the sync buffer instead of rendering directly —
+         this is what fixes the UI/audio desync (see MedhaIQSync above). */
+      MedhaIQSync.hold(data.question, data.question.type, data.competency_tag || data.question.competency);
+      slog('Q'+QN+' ready · competency: '+(data.competency_tag||data.question.competency||'behavioral'));
+    } catch(err) {
+      console.error('[MedhaIQ]',err);
+      slog('ERROR: '+err.message,'err');
+      document.getElementById('loadingOverlay').classList.remove('show');
+      document.getElementById('answerArea').style.display='flex';
+      document.getElementById('submitBtn').disabled=false;
+      stopViz();
+      alert('Error: '+err.message+'\n\nCheck browser console for details.');
+    }
+  }
+
+  /* ── End session ── */
+  document.getElementById('endBtn').addEventListener('click',async function(){
+    if(!confirm('End this session? Your progress cannot be resumed.'))return;
+    clearInterval(timerInt);
+    try{ await fetch('/api/interview/sessions/'+SID,{method:'DELETE'}); }catch(e){}
+    window.location.href='/dashboard/history';
+  });
+
+  /* ══ Advanced terminal toggle — collapsed by default ══
+     Candidates opt in to see the AI's raw working; nothing here
+     interrupts the interview flow when toggled either way. */
+  var advTerminal   = document.getElementById('advTerminal');
+  var terminalToggle= document.getElementById('terminalToggle');
+  var tpToggleLbl   = document.getElementById('tpToggleLbl');
+  var advWaveEl     = document.getElementById('advWaveBars');
+  for (var wb=0; wb<26; wb++) {
+    var wbar=document.createElement('div'); wbar.className='adv-vbar';
+    wbar.style.height=(Math.random()*20+4)+'px'; advWaveEl.appendChild(wbar);
+  }
+  var advWaveAnimating=false;
+  function animAdvWave(){
+    if(!advWaveAnimating)return;
+    advWaveEl.querySelectorAll('.adv-vbar').forEach(function(b){b.style.height=(Math.random()*26+4)+'px';});
+    setTimeout(animAdvWave,90);
+  }
+  terminalToggle.addEventListener('change', function(){
+    var expanded = this.checked;
+    advTerminal.classList.toggle('expanded', expanded);
+    tpToggleLbl.textContent = expanded ? 'Hide terminal' : 'Show terminal';
+    advWaveAnimating = expanded;
+    if (expanded) animAdvWave();
+    slog(expanded ? 'Advanced terminal opened by candidate' : 'Advanced terminal collapsed', 'info');
+  });
+  tpToggleLbl.textContent = 'Show terminal'; /* default = collapsed */
+
+  /* ── Initialise ── */
+  updateCounter();
+  setAIState('CALIBRATING');
+  if(INITQ) showQuestion({text:INITQ},QTYPE,null);
+  slog('Session #'+SID+' initialised — '+PNAME,'ok');
+  slog('Role: '+ROLE+' | Level: '+LEVEL);
+  slog('Agentic CompetencyRouter active','info');
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     WEBCAM — Clean hero-style feed, user-toggled
+═══════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+  var video    = document.getElementById('camVideo');
+  var ph       = document.getElementById('camPlaceholder');
+  var badge    = document.getElementById('camBadge');
+  var badgeTxt = document.getElementById('camBadgeText');
+  var toggle   = document.getElementById('camToggle');
+  var stream   = null, on = false;
+
+  async function startCam(){
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+      video.srcObject=stream; video.style.display='block';
+      ph.style.display='none';
+      badge.classList.remove('off'); badgeTxt.textContent='● LIVE';
+      toggle.textContent='Disable Camera';
+      on=true;
+    }catch(e){
+      badgeTxt.textContent='BLOCKED';
+      console.warn('[cam]',e.message);
+    }
+  }
+  function stopCam(){
+    if(stream){stream.getTracks().forEach(function(t){t.stop();}); stream=null;}
+    video.style.display='none'; ph.style.display='flex';
+    badge.classList.add('off'); badgeTxt.textContent='CAM OFF';
+    toggle.textContent='Enable Camera';
+    on=false;
+  }
+  toggle.addEventListener('click',function(){ if(!on)startCam(); else stopCam(); });
+  /* Auto-start with 1.4s delay so page renders first */
+  setTimeout(startCam, 1400);
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     VAPI VOICE STATE MACHINE
+     IDLE → REQUESTING_PERMISSIONS → CONNECTING → LIVE → STOPPING
+     Each transition has explicit UI state + specific error messages.
+     Root cause of "Voice: error": mic permission was never checked
+     before Vapi was called. This is now step 1 before any SDK init.
+═══════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+  var VKEY = '<%= vapiPublicKey %>';
+  var VAST = '<%= vapiAssistantId %>';
+
+  var btn      = document.getElementById('vapiBtn');
+  var sub      = document.getElementById('vapiSub');
+  var permWarn = document.getElementById('vapiPermWarn');
+  var voiceInd = document.getElementById('voiceInd');
+  var vizEl    = document.getElementById('vizBars');
+
+  if(!VKEY||!VAST){ btn.style.display='none'; sub.textContent='Voice: not configured (add VAPI keys in Render)'; return; }
+
+  var STATES={ IDLE:'IDLE',REQUESTING:'REQUESTING',CONNECTING:'CONNECTING',LIVE:'LIVE',STOPPING:'STOPPING' };
+  var state=STATES.IDLE, vapi=null;
+
+  function setState(s,msg,isErr){
+    state=s;
+    var L={
+      IDLE:      {text:'🎙 Enable Voice Mode',   cls:'',                dis:false},
+      REQUESTING:{text:'⏳ Checking mic…',        cls:'state-connecting',dis:true },
+      CONNECTING:{text:'⏳ Connecting…',           cls:'state-connecting',dis:true },
+      LIVE:      {text:'🔴 End Voice Session',    cls:'state-live',      dis:false},
+      STOPPING:  {text:'⏹ Stopping…',             cls:'',                dis:true },
+    }[s]||{text:'🎙 Enable Voice Mode',cls:'',dis:false};
+    btn.textContent=L.text; btn.className='vapi-btn '+L.cls; btn.disabled=L.dis;
+    if(msg){ sub.textContent=msg; sub.style.color=isErr?'#ef4444':''; }
+    if(s===STATES.LIVE)    { voiceInd.textContent='Voice: ● active';  voiceInd.className='voice-pill active'; }
+    else if(s===STATES.IDLE){ voiceInd.textContent='Voice: standby';  voiceInd.className='voice-pill'; }
+    if(isErr)               { voiceInd.textContent='Voice: error';    voiceInd.className='voice-pill error'; }
+  }
+
+  function setErr(msg){
+    setState(STATES.IDLE,msg,true);
+    setTimeout(function(){ if(state===STATES.IDLE){ sub.textContent='Speak directly with your AI interviewer'; sub.style.color=''; } },7000);
+  }
+
+  function initVapi(){
+    if(vapi||!window.vapiSDK)return;
+    vapi=window.vapiSDK.run({apiKey:VKEY,assistant:VAST,config:{position:'hidden'}});
+
+    /* ══ VAPI EVENT SYNC — fixed ══
+       speech-start no longer paints raw ASR/TTS partial text. It only
+       triggers MedhaIQSync.reveal(), which paints the actual question
+       object already fetched from our backend. Audio and DOM now
+       change on the exact same tick, with the correct text. ── */
+vapi.on('call-start', function() {
+    setState(STATES.LIVE, 'Voice active — speak your answer');
+    window.MedhaIQVoiceLive = true;
+    vizEl.querySelectorAll('.vbar').forEach(function(b){ b.classList.add('lit'); });
+    animVizLive();
+});
+
+vapi.on('speech-start', function() {
+    if (window.MedhaIQSync) window.MedhaIQSync.reveal();
+    sub.textContent = '● AI is speaking…';
+    voiceInd.textContent = 'Voice: ● AI speaking';
+});
+
+vapi.on('speech-end', function() {
+    sub.textContent = 'Your turn — speak clearly';
+    voiceInd.textContent = 'Voice: ● listening';
+});
+
+vapi.on('call-end', function() {
+    window.MedhaIQVoiceLive = false;
+});
+    vapi.on('error',function(e){
+      console.error('[Vapi]',e);
+      var msg='Connection error — retry';
+      if(e&&e.message){
+        if(/permission|not allowed/i.test(e.message)) msg='Microphone blocked — open browser settings';
+        else if(/network|fetch/i.test(e.message))     msg='Network error — check your connection';
+        else if(/assistant/i.test(e.message))         msg='Config error — check VAPI_ASSISTANT_ID in Render';
+      }
+      setErr(msg);
+    });
+  }
+
+  function animVizLive(){
+    if(state!==STATES.LIVE)return;
+    vizEl.querySelectorAll('.vbar').forEach(function(b){b.style.height=(Math.random()*26+4)+'px';});
+    setTimeout(animVizLive,90);
+  }
+
+  btn.addEventListener('click',async function(){
+    if(state===STATES.LIVE||state===STATES.STOPPING){
+      setState(STATES.STOPPING,'Ending voice session…');
+      if(vapi){try{vapi.stop();}catch(e){}}
+      return;
+    }
+    if(state!==STATES.IDLE)return;
+
+    /* ── Step 1: REQUEST MICROPHONE PERMISSION ── */
+    setState(STATES.REQUESTING,'Requesting microphone access…');
+    permWarn.style.display='none';
+    try{
+      var ms=await navigator.mediaDevices.getUserMedia({audio:true});
+      ms.getTracks().forEach(function(t){t.stop();}); /* test only — release immediately */
+    }catch(e){
+      permWarn.style.display='block';
+      if(e.name==='NotAllowedError') setErr('Microphone Access Required — click the lock icon in your browser bar');
+      else if(e.name==='NotFoundError') setErr('No microphone detected — plug one in and retry');
+      else setErr('Mic error: '+e.message);
+      return;
+    }
+
+    /* ── Step 2: WAIT FOR SDK ── */
+    if(!window.vapiSDK){
+      setState(STATES.CONNECTING,'Loading voice engine…');
+      var waited=0;
+      try{
+        await new Promise(function(res,rej){
+          var t=setInterval(function(){
+            waited+=150;
+            if(window.vapiSDK){clearInterval(t);res();}
+            if(waited>9000){clearInterval(t);rej(new Error('Voice SDK load timeout — check network'));}
+          },150);
+        });
+      }catch(e){ setErr(e.message); return; }
+    }
+    if(state!==STATES.CONNECTING&&state!==STATES.REQUESTING)return;
+
+    /* ── Step 3: CONNECT ── */
+    setState(STATES.CONNECTING,'Connecting to AI interviewer…');
+    try{ initVapi(); vapi.start(VAST); }
+    catch(e){ setErr('Failed to connect: '+e.message); return; }
+
+    /* Safety fallback — re-enable if stuck CONNECTING after 13s */
+    setTimeout(function(){
+      if(state===STATES.CONNECTING) setErr('Connection timed out — check your internet and retry');
+    },13000);
+  });
+
+  /* Watchdog: un-stuck the button if it gets disabled in IDLE */
+  setInterval(function(){ if(state===STATES.IDLE&&btn.disabled) btn.disabled=false; },3000);
+})();
+</script>
+
+</body>
+</html>
