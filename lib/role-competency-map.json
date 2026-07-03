@@ -1,0 +1,70 @@
+{
+  "_comment": "Ideal Interview Profile per role family. The interview router reads this to decide which competencies to probe and how the 5-Vector schema should be weighted, WITHOUT hard-coding questions anywhere in the app. To add a new role family, add an entry here — no code changes required.",
+
+  "engineering": {
+    "label": "Engineering",
+    "matches": ["engineer", "developer", "swe", "backend", "frontend", "fullstack", "devops", "sre", "architect"],
+    "primaryCompetencies": ["system_design", "coding_efficiency"],
+    "secondaryCompetencies": ["technical_communication", "debugging_process"],
+    "vectorWeights": {
+      "structure": 0.15,
+      "technicalDepth": 0.40,
+      "executivePresence": 0.10,
+      "gccReadiness": 0.10,
+      "communicationClarity": 0.25
+    },
+    "openingQuestionType": "system_design"
+  },
+
+  "leadership": {
+    "label": "Leadership / Management",
+    "matches": ["manager", "director", "vp", "head of", "lead", "chief", "founder"],
+    "primaryCompetencies": ["star_method", "executive_tone"],
+    "secondaryCompetencies": ["stakeholder_management", "conflict_resolution"],
+    "vectorWeights": {
+      "structure": 0.30,
+      "technicalDepth": 0.10,
+      "executivePresence": 0.30,
+      "gccReadiness": 0.10,
+      "communicationClarity": 0.20
+    },
+    "openingQuestionType": "behavioral"
+  },
+
+  "consulting_analyst": {
+    "label": "Consulting / Analyst",
+    "matches": ["consultant", "analyst", "strategy", "business analyst", "product analyst"],
+    "primaryCompetencies": ["analytical_rigor", "case_structure"],
+    "secondaryCompetencies": ["data_storytelling", "hypothesis_driven_thinking"],
+    "vectorWeights": {
+      "structure": 0.30,
+      "technicalDepth": 0.20,
+      "executivePresence": 0.15,
+      "gccReadiness": 0.10,
+      "communicationClarity": 0.25
+    },
+    "openingQuestionType": "case_study"
+  },
+
+  "_default": {
+    "label": "General Professional",
+    "matches": [],
+    "primaryCompetencies": ["star_method", "communication"],
+    "secondaryCompetencies": ["problem_solving"],
+    "vectorWeights": {
+      "structure": 0.25,
+      "technicalDepth": 0.20,
+      "executivePresence": 0.20,
+      "gccReadiness": 0.15,
+      "communicationClarity": 0.20
+    },
+    "openingQuestionType": "opening"
+  },
+
+  "personaModifiers": {
+    "_comment": "Interviewer Persona acts as a system-prompt modifier layered on top of the role profile above — never replaces it.",
+    "strict":   "Give less feedback. Focus on deep-dive follow-up questions that probe for weaknesses in the candidate's story. Do not soften critique.",
+    "helpful":  "Provide brief constructive guidance after each answer. Encourage the candidate and offer one concrete tip before moving to the next question.",
+    "technical":"Prioritize depth over breadth. Ask one strong follow-up per answer that tests technical correctness, not just narrative structure."
+  }
+}
