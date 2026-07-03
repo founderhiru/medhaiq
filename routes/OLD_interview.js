@@ -20,7 +20,6 @@ const {
   abandonSession,
 } = require('../db/interview');
 const { getUserById } = require('../db/auth');
-const { sendInterviewReportEmail } = require('../services/email');
 
 // ── Auth middleware ────────────────────────────────────────────────────────
 async function requireAuth(req, res, next) {
@@ -172,28 +171,6 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
       });
 
       await completeSession(sessionId, reportData.overall_score);
-
-      // ── Send report email (non-blocking — never fails the response) ──────────
-      try {
-        const persona   = PERSONAS[session.persona_id];
-        const userEmail = req.user.email || null;
-        if (userEmail) {
-          sendInterviewReportEmail({
-            toEmail:          userEmail,
-            userName:         req.user.name || '',
-            reportId:         sessionId,
-            personaName:      persona ? persona.name : 'Expert Interviewer',
-            roleTitle:        session.role_title || 'Professional',
-            overallScore:     reportData.overall_score,
-            recommendation:   reportData.recommendation,
-            executiveSummary: reportData.executive_summary,
-            scoreboard:       reportData.scoreboard,
-            topPriorities:    reportData.improvements_json || [],
-          }).catch(e => console.error('[email] report delivery failed (non-fatal):', e.message));
-        }
-      } catch (emailErr) {
-        console.error('[email] report setup failed (non-fatal):', emailErr.message);
-      }
 
       return res.json({
         sessionEnded: true,
