@@ -174,19 +174,81 @@ function buildSessionHistory(qaPairs) {
   if (!qaPairs.length) return 'No previous answers.';
   return qaPairs.map((q, i) => `Q${i + 1}: ${q.question}\nA${i + 1}: ${q.answer}`).join('\n\n');
 }
+// ═══════════════════════════════════════════════════════════════════
+// AGENTIC COMPETENCY ROUTER
+// File: services/interview.js  — add this ABOVE generateNextQuestion
+//
+// PURPOSE: Tracks which competencies have been tested so far and
+// tells the AI which gap to probe next.  Returns { question, competency }
+// instead of just a plain string, so the frontend can show the
+// "SYSTEM DESIGN" / "LEADERSHIP" tag above each question.
+// ═══════════════════════════════════════════════════════════════════
 
-// ── Generate next question (v0.5 behavioral rules) ───────────────────────────
+// ── CompetencyMap — defines which skills matter per role ──────────
+const COMPETENCY_MAP = {
+  'Software Engineer':        ['system_design','technical','leadership','communication','strategy'],
+  'Engineering Manager':      ['leadership','system_design','strategy','communication','technical'],
+  'Product Manager':          ['strategy','communication','leadership','technical','system_design'],
+  'Management Consultant':    ['strategy','communication','leadership','system_design','technical'],
+  'AI Engineer':              ['technical','system_design','communication','leadership','strategy'],
+  'Data Engineer':            ['technical','system_design','communication','strategy','leadership'],
+  'Executive Leadership':     ['leadership','strategy','communication','system_design','technical'],
+  'default':                  ['communication','leadership','strategy','technical','system_design'],
+};
+
+// ── Competency prompt fragments injected into the AI prompt ───────
+const COMPETENCY_PROMPTS = {
+  system_design:  'Focus this question on system design, architecture decisions, scalability trade-offs, or technical infrastructure choices.',
+  leadership:     'Focus this question on team leadership, people management, influencing without authority, or navigating org conflict.',
+  strategy:       'Focus this question on strategic thinking, roadmap prioritisation, business trade-offs, or long-term vision setting.',
+  communication:  'Focus this question on stakeholder communication, executive presence, delivering difficult messages, or cross-functional alignment.',
+  technical:      'Focus this question on domain-specific technical knowledge, implementation depth, debugging approaches, or engineering best practices.',
+};
+
+// ── selectNextCompetency — picks the least-covered area ──────────
+function selectNextCompetency(roleTitle, qaPairs, questionCount) {
+  const roleKey  = Object.keys(COMPETENCY_MAP).includes(roleTitle) ? roleTitle : 'default';
+  const priority = COMPETENCY_MAP[roleKey];
+  const counts   = {};
+  priority.forEach(c => counts[c] = 0);
+
+  // Count how many previous questions targeted each competency
+  // We embed the competency in a comment at the end of each stored question
+  qaPairs.forEach(function(qa) {
+    priority.forEach(function(c) {
+      if (qa.question && qa.question.toLowerCase().includes('['+c+']')) counts[c]++;
+    });
+  });
+
+  // Find the competency with the lowest coverage
+  let selected = priority[questionCount % priority.length]; // fallback round-robin
+  let minCount = Infinity;
+  priority.forEach(function(c) {
+    if ((counts[c] || 0) < minCount) { minCount = counts[c]; selected = c; }
+  });
+  return selected;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// REPLACE the existing generateNextQuestion function with this version
+// ═══════════════════════════════════════════════════════════════════
 async function generateNextQuestion({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, qaPairs, questionCount }) {
   const persona = PERSONAS[personaId];
   if (!persona) throw new Error(`Unknown persona: ${personaId}`);
 
-  const roleKey = Object.keys(OPENING_QUESTIONS).includes(roleTitle) ? roleTitle : 'default';
-  const levelKey = experienceLevel || 'mid';
-  const openingQ = OPENING_QUESTIONS[roleKey][levelKey] || OPENING_QUESTIONS.default.mid;
+  // 1. Select which competency to probe next
+  const competency = selectNextCompetency(roleTitle, qaPairs, questionCount);
+  const compPrompt = COMPETENCY_PROMPTS[competency] || '';
 
-  const history = buildSessionHistory(qaPairs);
-  const isGCCDirector = personaId === 'raj_mehta';
-  const isGCCProfile = experienceLevel === 'senior' || experienceLevel === 'executive';
+  // 2. Determine if we need a drill-down (last score was weak)
+  const lastQA    = qaPairs[qaPairs.length - 1];
+  const isDrill   = questionCount > 0 && lastQA && lastQA.score && lastQA.score < 60;
+
+  // 3. Get role-specific opening anchor
+  const roleKey   = Object.keys(OPENING_QUESTIONS).includes(roleTitle) ? roleTitle : 'default';
+  const levelKey  = experienceLevel || 'mid';
+  const openingQ  = OPENING_QUESTIONS[roleKey]?.[levelKey] || OPENING_QUESTIONS.default.mid;
+  const history   = buildSessionHistory(qaPairs);
 
   const system = `${persona.systemPrompt}
 
@@ -194,39 +256,34 @@ Role: ${roleTitle || 'General Professional'}
 Experience Level: ${experienceLevel || 'mid'}
 Organisation: ${orgPreset || 'Generic Global Enterprise'}
 
-Session so far:
+Session transcript so far:
 ${history}
 
-v0.5 CONVERSATIONAL CADENCE RULES:
-- SILENCE DETECTION: Wait 2.5–3.0 seconds of silence before registering an utterance is complete. Do not interrupt senior candidates using strategic mid-sentence pauses.
-- COGNITIVE THINKING WINDOW: If the candidate explicitly signals they are structuring thoughts ("Let me unpack that...", "I'm thinking about..."), hold input state open without interruption for up to 12 continuous seconds.
-- IDLE PROMPT PROTOCOL: If zero voice or text input for 15 full seconds after a question is delivered, execute a polite low-profile contextual nudging prompt: "Take your time to frame your approach to that milestone, or let me know if you would like me to clarify the operational context."
-
-v0.5 FOLLOW-UP CLASSIFICATION (not generic "drill-down"):
-- [Clarification Intent]: triggered when timeline, core architecture, or organizational boundaries are ambiguous.
-- [Evidence & Ownership Intent]: triggered when candidate uses passive or collective language ("We deployed...", "The team decided..."). Challenge directly: "You mentioned the team [action], but what was your specific individual contribution to the technical resolution?"
-- [Deep Dive Intent]: triggered to test technical accuracy boundaries — use counterexamples to validate factual correctness vs. memorized fluency.
-
-v0.5 TECHNICAL ACCURACY VALIDATION LAYER:
-- If a candidate states an unconditional technical claim (e.g. "Microservices reduce latency"), flag it silently. Do NOT lecture mid-stream. Use [Deep Dive Intent] to test if they understand the engineering trade-offs: network overhead, serialization costs, operational complexity, deployment surface.
-
-${isGCCDirector || isGCCProfile ? 'v0.5 GCC LEADERSHIP LAYER: Specifically probe for: cross-border stakeholder management, managing large-scale matrix teams, cost optimization under pressure, handling ambiguity, driving AI/digital transformation strategy.' : ''}
+COMPETENCY ROUTING DIRECTIVE:
+${compPrompt}
+${isDrill ? `
+DRILL-DOWN REQUIRED: The candidate's previous answer scored below 60 on the STAR rubric.
+Ask a targeted follow-up that directly challenges the weakest aspect of their last response.
+Prefix the question text with [${competency}] so it can be tracked.` : `
+ADVANCE THE EVALUATION: Ask a NEW question on a different dimension from previous questions.
+Prefix the question text with [${competency}] so it can be tracked.`}
 
 Rules:
-- Ask ONE question only — no lists, no compound questions.
-- If previous answer scored below 60 on STAR adherence or Technical Depth, classify the follow-up intent explicitly and probe with precision.
-- Otherwise ask a new question that advances the interview on a different dimension.
+- Ask ONE question only — no compound questions.
 - NEVER give feedback during the session.
-- If this is the opening question (questionCount === 0), anchor with: "${openingQ}"
-- Return ONLY the question text. No preamble, no framing.`;
+- Return ONLY the question text with the [${competency}] prefix. No preamble.
+${questionCount === 0 ? `- This is the opening question. Use this anchor: "${openingQ}"` : ''}`;
 
   const prompt = questionCount === 0
-    ? `Ask the opening question for this interview. Use the exact opening anchor provided in the system prompt.`
-    : `Based on the session history, ask ONE follow-up question. Classify the intent ([Clarification], [Evidence & Ownership], or [Deep Dive]) and ask the question that best advances the evaluation.`;
+    ? 'Generate the opening interview question using the anchor provided.'
+    : `Generate the next adaptive interview question targeting the ${competency.replace('_',' ')} competency.`;
 
-  const question = await chat(prompt, { system, maxTokens: 512 });
-  return question.trim();
+  const raw = await chat(prompt, { system, maxTokens: 512 });
+  // Strip the [competency] tag from the display text
+  const text = raw.trim().replace(/^\[[\w_]+\]\s*/,'');
+  return { text, competency };
 }
+
 
 // ── Score an answer (v0.5) ───────────────────────────────────────────────────
 const SCORING_SYSTEM = `You are a professional interview evaluator scoring a candidate's response. Score across 5 vectors and return valid JSON only.
