@@ -1018,7 +1018,7 @@
 
     /* ── Step 3: CONNECT ── */
     setState(STATES.CONNECTING,'Connecting to AI interviewer…');
-    try{ initVapi(); vapi.start(VAST); }
+    try{ initVapi(); vapi.start(); }
     catch(e){ setErr('Failed to connect: '+e.message); return; }
 
     /* Safety fallback — re-enable if stuck CONNECTING after 13s */

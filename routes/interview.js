@@ -203,13 +203,16 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
         scores,
       });
     }
-
-    // 5. Generate next question
+ // 5. Generate next question
     const qaPairs = allQuestions
       .filter(q => q.answer_text !== null && q.answer_text !== undefined)
       .map(q => ({ question: q.question_text, answer: q.answer_text || '' }));
 
-    const nextQuestionText = await generateNextQuestion({
+    if (qaPairs.length && scores) {
+      qaPairs[qaPairs.length - 1].score = scores.star;
+    }
+
+    const nextResult = await generateNextQuestion({
       sessionId,
       personaId: session.persona_id,
       roleTitle: session.role_title,
@@ -221,10 +224,11 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
 
     const nextQuestion = await addQuestion({
       sessionId,
-      questionText: nextQuestionText,
+      questionText: nextResult.text,
       personaId: session.persona_id,
       questionType: scores && scores.star < 60 ? 'drill_down' : 'behavioral',
       questionOrder: answeredCount,
+      competency: nextResult.competency,
     });
 
     return res.json({
