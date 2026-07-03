@@ -41,8 +41,7 @@ app.get('/health', (_req, res) => res.json({ status: 'healthy' }));
 // Static files
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
-// ── API Routes ──────────────────────────────────────────────────────────────
-app.use('/api/waitlist',   require('./routes/waitlist'));
+// ── API Routes ──────────────────────────────────────────────────────────────;
 app.use('/api/contact',    require('./routes/contact'));
 app.use('/auth',           require('./routes/auth'));
 app.use('/api/interview',  require('./routes/interview'));
@@ -50,8 +49,8 @@ app.use('/api/dashboard',  require('./routes/dashboard'));
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/', (_req, res) => res.render('layout', buildLandingContext()));
-app.get('/privacy', (_req, res) => res.redirect('/#waitlist'));
-app.get('/terms',   (_req, res) => res.redirect('/#waitlist'));
+app.get('/privacy', (_req, res) => res.redirect('/'));
+app.get('/terms',   (_req, res) => res.redirect('/'));
 
 app.get('/auth/login',  (_req, res) => res.render('auth-login'));
 app.get('/auth/signup', (_req, res) => res.render('auth-signup'));
