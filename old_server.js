@@ -84,20 +84,6 @@ app.get('/interview/session/:id', async (req, res) => {
     const initials = persona.name.split(' ').map(n => n[0]).join('');
     const answeredCount = questions.filter(q => q.answer_text !== null && q.answer_text !== undefined).length;
 
-    // Candidate-facing "interviewer style" label — never the persona's real
-    // name/title (that stays internal for scoring/report generation only).
-    // A single calm adjective, matching the Session Context card on the
-    // Target2 reference (e.g. "Helpful").
-    const STYLE_LABELS = {
-      alex_chen:        'Structured',
-      priya_ramesh:     'Rigorous',
-      marcus_webb:      'Conversational',
-      sanjeev_nair:     'Methodical',
-      sarah_kim:        'Direct',
-      raj_mehta:        'Helpful',
-    };
-    const personaStyleLabel = STYLE_LABELS[session.persona_id] || 'Helpful';
-
    res.render('interview-session', {
   sessionId:        req.params.id,
   questionId:       currentQ.id,
@@ -109,7 +95,6 @@ app.get('/interview/session/:id', async (req, res) => {
   personaTitle:     persona.title + ' @ ' + persona.org,
   personaInitials:  initials,
   personaStyleColor:persona.styleColor,
-  personaStyleLabel,
   roleTitle:        session.role_title || '',
   experienceLevel:  session.experience_level || '',
   orgPreset:        session.org_preset || '',

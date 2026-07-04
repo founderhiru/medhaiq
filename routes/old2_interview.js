@@ -5,7 +5,6 @@ const {
   generateNextQuestion,
   scoreAnswer,
   generateReport,
-  computeStarProgress,
   PERSONAS,
 } = require('../services/interview');
 const {
@@ -121,8 +120,6 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
 
     // 2. Score the answer (skip scores 0 across the board)
     let scores = null;
-    let starProgress = null;
-    let intelligenceScores = null;
     if (!skip && answerText && answerText.trim()) {
       scores = await scoreAnswer(answerText, session.persona_id, {
         roleTitle: session.role_title,
@@ -140,24 +137,6 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
         friction: scores.friction,
         weighted: scores.weighted,
       });
-
-      // Tactical: instant, deterministic S/T/A/R detection — no AI round
-      // trip needed, so the Live Terminal can light up immediately.
-      starProgress = computeStarProgress(answerText);
-
-      // Strategic: standardized IntelligenceMetrics shape the frontend
-      // binds to directly (overall gauge + 5-vector bars), decoupled from
-      // whatever shape scoreAnswer() happens to return internally.
-      intelligenceScores = {
-        overallScore: scores.weighted,
-        vectors: {
-          structure: scores.star,
-          technicalDepth: scores.technical,
-          executivePresence: scores.executive,
-          gccReadiness: scores.gcc,
-          communicationClarity: scores.friction,
-        },
-      };
     }
 
     // 3. Get all answered Q&As so far
@@ -227,8 +206,6 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
         sessionEnded: true,
         reportId: sessionId,
         scores,
-        star_progress: starProgress,
-        intelligence_scores: intelligenceScores,
         text: null,
         audio_url: null,
         competency_tag: null,
@@ -265,8 +242,6 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
     return res.json({
       sessionEnded: false,
       scores,
-      star_progress: starProgress,
-      intelligence_scores: intelligenceScores,
       question: {
         id: nextQuestion.id,
         text: nextQuestion.question_text,

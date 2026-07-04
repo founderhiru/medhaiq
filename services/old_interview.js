@@ -498,36 +498,10 @@ ${(result.priorities || []).slice(0, 3).map((p, i) => `${i + 1}. **${p.theme}:**
   };
 }
 
-// ── STAR Progress detector ──────────────────────────────────────────────────
-// Lightweight, deterministic keyword/structure heuristic (no extra AI call —
-// this runs instantly so the Live Terminal can light up S/T/A/R the moment
-// an answer is submitted). It is intentionally conservative: each letter only
-// lights up when the answer contains a real signal for that STAR component,
-// not just because *some* text was typed.
-const STAR_PATTERNS = {
-  situation: /\b(when i|at my (previous|last|current)|in my role|while (working|leading)|the (context|situation|background) was|we (were|had) facing|a few (months|years) ago|during)\b/i,
-  task: /\b(my (task|responsibility|goal|objective) was|i was (responsible|asked|tasked)|needed to|had to (deliver|fix|solve|build)|the (goal|objective|target) was)\b/i,
-  action: /\b(i (led|built|designed|implemented|created|drove|decided|initiated|coordinated|proposed|negotiated|restructured|launched|rolled out|owned))\b/i,
-  result: /\b(as a result|resulted in|which (led to|resulted)|(reduced|increased|improved|grew|cut|saved|boosted)[^.]{0,40}(\d+%|\$|percent)|the outcome was|we (achieved|delivered)|\d+%)\b/i,
-};
-
-function computeStarProgress(answerText) {
-  const text = (answerText || '').toLowerCase();
-  const progress = {
-    situation: STAR_PATTERNS.situation.test(text),
-    task: STAR_PATTERNS.task.test(text),
-    action: STAR_PATTERNS.action.test(text),
-    result: STAR_PATTERNS.result.test(text),
-  };
-  const stepsComplete = Object.values(progress).filter(Boolean).length;
-  return { ...progress, stepsComplete, totalSteps: 4 };
-}
-
 module.exports = {
   PERSONAS,
   PERSONA_LIST,
   generateNextQuestion,
   scoreAnswer,
   generateReport,
-  computeStarProgress,
 };

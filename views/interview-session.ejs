@@ -14,362 +14,7 @@
     g.defer=true; g.async=true; s.parentNode.insertBefore(g,s);
   })(document,'script');
   </script>
-  <style>
-    /* ═══════════════════════════════════════════════════════════════
-       DESIGN TOKENS
-       These are the ONLY place colors/spacing should be edited. Every
-       component below references these variables — change a value
-       here and it updates everywhere, without touching component code.
-    ═══════════════════════════════════════════════════════════════ */
-    :root {
-      --bg:         #070d1a;
-      --panel:      #0d1829;
-      --card:       #111e33;
-      --border:     rgba(59,130,246,0.1);
-      --border-hi:  rgba(59,130,246,0.42);
-      --blue:       #1d4ed8;
-      --blue-hi:    #3b82f6;
-      --blue-glow:  rgba(59,130,246,0.2);
-      --green:      #22c55e;
-      --purple:     #a78bfa;
-      --amber:      #f59e0b;
-      --red:        #ef4444;
-      --muted:      #3d5068;
-      --soft:       #94a3b8;
-      --white:      #f1f5f9;
-      --mono:       'JetBrains Mono', monospace;
-      --sidebar-w:  296px;
-      --terminal-w: 320px;
-      --radius:     16px;
-      --blur:       blur(12px);
-      --glass-bg:   rgba(10,15,30,0.8);
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; overflow: hidden; }
-    body {
-      background: var(--bg);
-      color: var(--white);
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 14px;
-      background-image: radial-gradient(circle, rgba(59,130,246,0.05) 1px, transparent 1px);
-      background-size: 30px 30px;
-    }
-
-    /* ── PAGE HEADER — title + calm-tagline bullets, sits above the
-       session bar. Matches the marketing/landing header treatment so
-       the "Interview OS" identity is consistent everywhere. ── */
-    .page-header {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 101;
-      height: 64px; display: flex; align-items: center; justify-content: space-between;
-      padding: 0 26px; background: var(--bg); border-bottom: 1px solid var(--border);
-    }
-    .ph-title-block { display: flex; flex-direction: column; gap: 2px; }
-    .ph-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
-    .ph-tagline { font-size: 12px; color: var(--soft); }
-    .ph-bullets { display: flex; align-items: flex-start; gap: 28px; }
-    .ph-bullet { display: flex; align-items: flex-start; gap: 8px; max-width: 190px; }
-    .ph-bullet-icon { font-size: 15px; color: var(--blue-hi); flex-shrink: 0; margin-top: 1px; }
-    .ph-bullet-title { font-size: 11.5px; font-weight: 700; color: #fff; }
-    .ph-bullet-sub { font-size: 10.5px; color: var(--muted); line-height: 1.4; margin-top: 1px; }
-
-    /* ── SESSION BAR — live status row directly under the header. ── */
-    .topbar {
-      position: fixed; top: 64px; left: 0; right: 0; z-index: 100;
-      height: 52px;
-      background: rgba(7,13,26,0.97);
-      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; padding: 0 22px; gap: 14px;
-    }
-    .tb-brand { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
-    .tb-brand em { color: var(--blue-hi); font-style: normal; }
-    .tb-sep { width: 1px; height: 18px; background: var(--border); }
-    .tb-session-meta { display: flex; align-items: center; gap: 9px; }
-    .tb-session-label { font-size: 13px; font-weight: 700; }
-    .tb-session-sub { font-size: 10px; color: var(--soft); }
-    .tb-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-    .tb-live  { display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:var(--green); font-family: var(--mono); }
-    .tb-live-dot { width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:lp 1.8s ease-in-out infinite; }
-    @keyframes lp { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
-    .tb-timer { font-size: 13px; font-weight: 600; color: var(--soft); font-family: var(--mono); }
-    .tb-meta  { font-size: 11px; color: var(--soft); }
-    .tb-end   { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.28); color: #fca5a5; font-size: 11px; font-weight: 700; padding: 6px 14px; border-radius: 7px; cursor: pointer; transition: background 0.15s; }
-    .tb-end:hover { background: rgba(239,68,68,0.22); }
-
-    /* ══════════════════════════════════════════════════════════════
-       3-COLUMN GRID — 300px | 1fr | 300px, exactly as specified.
-       Swap any single column's inner markup freely; the grid itself
-       never needs to change.
-    ══════════════════════════════════════════════════════════════ */
-    .os-grid {
-      display: grid;
-      grid-template-columns: var(--sidebar-w) 1fr var(--terminal-w);
-      height: 100vh;
-      padding-top: 116px; /* 64px page header + 52px session bar */
-    }
-
-    /* ────────────────────────────────────────────────
-       LEFT COLUMN — session context + progress only.
-       No activity log, no raw scores, no debug data.
-       (Debug data lives in #debugConsole — see bottom of
-       file — hidden unless explicitly opened by staff.)
-    ──────────────────────────────────────────────── */
-    .sidebar {
-      background: var(--glass-bg);
-      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-      border-right: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      padding: 22px 20px;
-      overflow-y: auto;
-    }
-    .sb-block { margin-bottom: 26px; }
-    .sb-block-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--blue-hi); margin-bottom: 12px; }
-    .sb-field { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; }
-    .sb-field:last-child { margin-bottom: 0; }
-    .sb-field-icon { font-size: 13px; color: var(--blue-hi); margin-top: 1px; flex-shrink: 0; }
-    .sb-field-key { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
-    .sb-field-val { font-size: 12px; font-weight: 600; color: var(--white); }
-
-    .sb-progress-num { font-size: 28px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1; }
-    .sb-progress-num span { font-size: 15px; font-weight: 500; color: var(--soft); }
-    .sb-progress-lbl { font-size: 11px; color: var(--soft); margin: 4px 0 10px; }
-    .sb-progress-track { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
-    .sb-progress-fill { height: 100%; background: linear-gradient(90deg,var(--blue),var(--blue-hi)); border-radius: 3px; transition: width 0.6s cubic-bezier(0.25,1,0.5,1); }
-    .sb-progress-remaining { font-size: 11px; color: var(--muted); }
-
-    .sb-time-val { font-size: 22px; font-weight: 700; font-family: var(--mono); }
-    .sb-time-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
-
-    .sb-spacer { flex: 1; }
-
-    .sb-tip { background: rgba(59,130,246,0.06); border: 1px solid var(--border); border-radius: 12px; padding: 14px; display: flex; gap: 10px; }
-    .sb-tip-icon { font-size: 15px; flex-shrink: 0; }
-    .sb-tip-text { font-size: 11.5px; color: var(--soft); line-height: 1.5; }
-    .sb-tip-text strong { color: var(--white); display:block; margin-bottom: 3px; font-size: 12px; }
-
-    /* ────────────────────────────────────────────────
-       CENTER COLUMN — the Focus Zone.
-       Webcam on top, floating blurred question card below.
-    ──────────────────────────────────────────────── */
-    .centre-col { display: flex; flex-direction: column; overflow: hidden; padding: 18px 22px 22px; gap: 24px; }
-
-    .webcam-card {
-      position: relative; flex-shrink: 0;
-      width: 84%; max-width: 640px; margin: 0 auto;
-      aspect-ratio: 16 / 9; max-height: 288px;
-      background: #0a1526; border-radius: 16px; overflow: hidden;
-      border: 1px solid var(--border);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-    }
-    .webcam-you-tag {
-      position: absolute; bottom: 12px; left: 14px; z-index: 2;
-      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px; padding: 4px 11px; font-size: 11px; font-weight: 600; color: #fff;
-      backdrop-filter: var(--blur);
-    }
-    .webcam-card video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: none; }
-    .webcam-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-      background: radial-gradient(circle at 50% 55%, rgba(29,78,216,0.1) 0%, transparent 70%); }
-    .wc-icon { font-size: 34px; color: var(--muted); }
-    .wc-hint { font-size: 10px; color: var(--muted); font-family: var(--mono); }
-    .webcam-badge { position: absolute; top: 12px; left: 14px; display: flex; align-items: center; gap: 6px;
-      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 4px 11px;
-      font-size: 9px; font-family: var(--mono); color: #fff; backdrop-filter: var(--blur); }
-    .webcam-badge .wbdot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); box-shadow: 0 0 5px var(--green); }
-    .webcam-badge.off .wbdot { background: var(--muted); box-shadow: none; }
-    .webcam-toggle { position: absolute; top: 12px; right: 14px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 7px; padding: 5px 12px; font-size: 10px; color: var(--soft); cursor: pointer; transition: all 0.15s; backdrop-filter: var(--blur); }
-    .webcam-toggle:hover { background: rgba(59,130,246,0.18); color: #fff; }
-
-    /* Floating blurred question card — the single primary task on screen.
-       This is the "Top Slot": always above the webcam in markup order. */
-    .question-card {
-      flex: 1; display: flex; flex-direction: column; min-height: 0;
-      background: var(--glass-bg);
-      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-      border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 22px 26px; box-shadow: 0 16px 48px rgba(0,0,0,0.3);
-      overflow-y: auto;
-    }
-    .qc-top-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-    .qc-eyebrow { font-size: 10px; font-weight: 700; color: var(--blue-hi); text-transform: uppercase; letter-spacing: 0.6px; }
-    .qc-report-issue { margin-left: auto; font-size: 10px; color: var(--muted); cursor: pointer; text-decoration: none; }
-    .qc-report-issue:hover { color: var(--soft); }
-    .qc-text { font-size: 16px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.5; color: #fff; margin-bottom: 14px; }
-    .qc-why-btn { align-self: flex-start; background: rgba(59,130,246,0.12); border: 1px solid var(--border-hi); color: var(--blue-hi);
-      font-size: 11px; font-weight: 600; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all 0.15s; }
-    .qc-why-btn:hover { background: rgba(59,130,246,0.2); }
-    .qc-why-text { font-size: 12.5px; color: var(--soft); line-height: 1.6; margin-top: 12px; display: none; }
-    .qc-why-text.shown { display: block; }
-
-    /* Answer bar — single pill, mic integrated, no clutter */
-    .answer-bar-wrap { flex-shrink: 0; }
-    .answer-bar {
-      display: flex; align-items: flex-end; gap: 10px;
-      background: var(--glass-bg); border: 1px solid var(--border); border-radius: 26px;
-      padding: 8px 8px 8px 20px; backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    }
-    .answer-bar textarea {
-      flex: 1; background: transparent; border: none; outline: none; resize: none;
-      color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; line-height: 1.5;
-      max-height: 140px; padding: 8px 0;
-    }
-    .answer-bar textarea::placeholder { color: var(--muted); }
-    .mic-btn {
-      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-      background: var(--blue); border: none; color: #fff; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; font-size: 17px;
-      transition: all 0.18s;
-    }
-    .mic-btn:hover { background: var(--blue-hi); box-shadow: 0 0 16px var(--blue-glow); }
-    .mic-btn.live { background: rgba(239,68,68,0.85); animation: micPulse 1.4s ease-in-out infinite; }
-    @keyframes micPulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.5);} 50%{box-shadow:0 0 0 8px rgba(239,68,68,0);} }
-    .send-btn {
-      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-      background: var(--blue); border: none; color: #fff; cursor: pointer;
-      display: none; align-items: center; justify-content: center; font-size: 16px;
-      transition: all 0.18s;
-    }
-    .send-btn.show { display: flex; }
-    .send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-    .answer-bar-meta { display: flex; align-items: center; margin-top: 8px; padding: 0 6px; }
-    .char-count { font-size: 10px; color: var(--muted); font-family: var(--mono); }
-    .skip-link { margin-left: auto; font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; }
-    .skip-link:hover { color: var(--soft); }
-    .voice-status-line { font-size: 10px; color: var(--muted); font-family: var(--mono); text-align: center; margin-top: 8px; }
-
-    /* Loading state */
-    .loading-overlay { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; flex: 1; text-align: center; }
-    .loading-overlay.show { display: flex; }
-    .ldots { display: flex; gap: 6px; }
-    .ldots span { width: 7px; height: 7px; border-radius: 50%; background: var(--blue-hi); animation: lbounce 1s ease-in-out infinite; }
-    .ldots span:nth-child(2){animation-delay:.15s;} .ldots span:nth-child(3){animation-delay:.3s;}
-    @keyframes lbounce { 0%,60%,100%{transform:translateY(0);} 30%{transform:translateY(-7px);} }
-    .ltext { font-size: 11px; color: var(--muted); font-family: var(--mono); }
-
-    /* ────────────────────────────────────────────────
-       RIGHT COLUMN — AI Interview Status (always calm,
-       always visible) + Live Terminal (collapsed by
-       default, mirrors the landing-page component).
-    ──────────────────────────────────────────────── */
-    .terminal-panel { background: var(--glass-bg); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; padding: 18px 18px 24px; }
-    .tp-header { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
-    .tp-title { font-size: 11px; font-weight: 700; color: var(--soft); letter-spacing: 0.6px; text-transform: uppercase; }
-    .tp-toggle-row { margin-left: auto; display: flex; align-items: center; gap: 7px; }
-    .tp-toggle-lbl { font-size: 10px; color: var(--muted); }
-    .tp-switch { position: relative; width: 32px; height: 17px; flex-shrink: 0; }
-    .tp-switch input { opacity: 0; width: 0; height: 0; }
-    .tp-switch-track { position: absolute; inset: 0; background: rgba(255,255,255,0.08); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; transition: all .2s; }
-    .tp-switch-track::before { content:''; position:absolute; width:13px; height:13px; left:2px; top:1px; background:var(--soft); border-radius:50%; transition: all .2s; }
-    .tp-switch input:checked + .tp-switch-track { background: rgba(59,130,246,0.28); border-color: var(--border-hi); }
-    .tp-switch input:checked + .tp-switch-track::before { transform: translateX(15px); background: var(--blue-hi); }
-
-    /* Always-visible calm status */
-    .ai-status-block { text-align: center; padding: 8px 4px 22px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
-    .ai-status-ring-wrap { width: 78px; height: 78px; margin: 0 auto 12px; position: relative; }
-    .ai-status-ring-wrap svg { transform: rotate(-90deg); width: 100%; height: 100%; }
-    .ai-status-ring-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 4; }
-    .ai-status-ring-fill { fill: none; stroke: var(--blue-hi); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 0.6s ease; }
-    .ai-status-ring-fill.pulsing { animation: statusPulse 1.6s ease-in-out infinite; }
-    @keyframes statusPulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
-    .ai-status-title { font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .ai-status-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
-
-    .status-checklist { display: flex; flex-direction: column; gap: 11px; padding: 0 6px; }
-    .status-item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); transition: color .2s; }
-    .status-item .si-dot { width: 17px; height: 17px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid var(--muted); display: flex; align-items: center; justify-content: center; font-size: 10px; transition: all .2s; }
-    .status-item.done { color: var(--white); }
-    .status-item.done .si-dot { background: var(--blue); border-color: var(--blue); color: #fff; }
-    .status-item.active { color: var(--blue-hi); font-weight: 600; }
-    .status-item.active .si-dot { border-color: var(--blue-hi); box-shadow: 0 0 8px var(--blue-glow); animation: lp 1s ease-in-out infinite; }
-
-    /* Live Terminal card — collapsed by default. Uses max-height + opacity
-       (not display:none/block) so the toggle animates smoothly and never
-       reflows the fixed 3-column grid itself — only this card's own height
-       changes. */
-    .live-terminal-card {
-      max-height: 0; opacity: 0; overflow: hidden;
-      background: var(--glass-bg); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-      border: 1px solid var(--border); border-radius: 14px;
-      margin-top: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      transition: max-height 0.4s cubic-bezier(0.25,1,0.5,1), opacity 0.3s ease, margin-top 0.4s ease, padding 0.4s ease;
-      padding: 0 16px;
-    }
-    .live-terminal-card.expanded {
-      max-height: 620px; opacity: 1; margin-top: 18px; padding: 16px;
-    }
-    .lt-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-    .lt-hdr-title { font-size: 10px; font-weight: 700; color: var(--soft); text-transform: uppercase; letter-spacing: 0.6px; }
-    .lt-hdr-live { margin-left: auto; display: flex; align-items: center; gap: 5px; font-size: 9px; color: var(--green); font-family: var(--mono); font-weight: 700; }
-    .lt-hdr-live .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); box-shadow: 0 0 5px var(--green); animation: lp 1.8s ease-in-out infinite; }
-
-    .lt-score-block { text-align: center; margin-bottom: 18px; }
-    .lt-score-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
-    .score-ring-wrap { position: relative; width: 78px; height: 78px; margin: 0 auto; }
-    .score-ring-wrap svg { transform: rotate(-90deg); }
-    .ring-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 5; }
-    .ring-fill { fill: none; stroke: var(--blue-hi); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 213; stroke-dashoffset: 213; transition: stroke-dashoffset 0.8s cubic-bezier(0.25,1,0.5,1); }
-    .ring-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .ring-out-of { font-size: 10px; color: var(--muted); text-align: center; margin-top: 4px; }
-
-    .lt-vec-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
-    .metric-row { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
-    .metric-icon { font-size: 12px; flex-shrink: 0; }
-    .metric-body { flex: 1; }
-    .metric-lbl { font-size: 10px; color: var(--soft); margin-bottom: 4px; }
-    .metric-track { height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
-    .metric-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 0.8s cubic-bezier(0.25,1,0.5,1); }
-    .metric-val { font-size: 12px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; min-width: 24px; text-align: right; }
-
-    .lt-footer { font-size: 10px; color: var(--blue-hi); font-family: var(--mono); text-align: center; margin-top: 4px; }
-    .lt-footer.pulsing { animation: calfade 1.2s ease-in-out infinite alternate; }
-    @keyframes calfade { from{opacity:0.5;} to{opacity:1;} }
-
-    /* ══════════════════════════════════════════════════════════════
-       HIDDEN DEBUG CONSOLE — Activity Log, Competency Coverage, and
-       raw audio metadata live here. NEVER shown to a candidate. Only
-       opens via Ctrl+Shift+D, for founder/staff troubleshooting a
-       live session. This is where "system data" belongs — not on the
-       candidate's screen.
-    ══════════════════════════════════════════════════════════════ */
-    .debug-console {
-      display: none; position: fixed; bottom: 16px; left: 16px; z-index: 500;
-      width: 320px; max-height: 70vh; overflow-y: auto;
-      background: rgba(5,10,20,0.97); border: 1px solid var(--border-hi); border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-    }
-    .debug-console.open { display: block; }
-    .dbg-hdr { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border); background: rgba(239,68,68,0.08); }
-    .dbg-hdr-title { font-size: 10px; font-weight: 700; color: #fca5a5; font-family: var(--mono); }
-    .dbg-close { margin-left: auto; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; }
-    .dbg-section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
-    .dbg-section-lbl { font-size: 9px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; margin-bottom: 8px; }
-    .dbg-comp-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 10px; }
-    .dbg-comp-name { flex: 1; color: var(--soft); }
-    .dbg-comp-track { width: 60px; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; }
-    .dbg-comp-fill { height: 100%; border-radius: 2px; }
-    .dbg-comp-count { width: 20px; text-align: right; color: var(--muted); font-family: var(--mono); }
-    .dbg-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .dbg-meta-cell .k { font-size: 8px; color: var(--muted); text-transform: uppercase; }
-    .dbg-meta-cell .v { font-size: 12px; font-weight: 700; font-family: var(--mono); }
-    .dbg-log-body { padding: 10px 14px; max-height: 200px; overflow-y: auto; }
-    .dbg-entry { font-family: var(--mono); font-size: 9px; color: var(--muted); line-height: 1.9; }
-    .dbg-entry.ok { color: rgba(34,197,94,0.65); }
-    .dbg-entry.err { color: rgba(239,68,68,0.65); }
-    .dbg-entry.info { color: rgba(59,130,246,0.65); }
-    .dbg-hint { font-size: 9px; color: var(--muted); padding: 8px 14px; font-family: var(--mono); }
-
-    /* Score toast */
-    .score-toast { position: fixed; top: 62px; right: calc(var(--terminal-w) + 14px); z-index: 200;
-      background: var(--card); border: 1px solid var(--border-hi); border-radius: 12px; padding: 13px 17px;
-      display: flex; align-items: center; gap: 12px; transform: translateY(-20px) scale(0.95); opacity: 0;
-      transition: transform 0.42s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease; box-shadow: 0 14px 44px rgba(0,0,0,0.5); pointer-events: none; }
-    .score-toast.show { transform: translateY(0) scale(1); opacity: 1; }
-    .toast-score { font-size: 24px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .toast-score.high{color:var(--green);} .toast-score.mid{color:var(--amber);} .toast-score.low{color:var(--red);}
-    .toast-lbl { font-size: 10px; color: var(--muted); }
-  </style>
+  <link rel="stylesheet" href="/css/interview-session.css">
 </head>
 <body>
 
@@ -411,181 +56,14 @@
   </div>
 </div>
 
-<!-- ═══ 3-COLUMN GRID ═══ -->
 <div class="os-grid">
 
-  <!-- ══ LEFT — session context + progress only ══ -->
-  <div class="sidebar">
-    <div class="sb-block">
-      <div class="sb-block-label">Session Context</div>
-      <div class="sb-field">
-        <span class="sb-field-icon">◎</span>
-        <div><div class="sb-field-key">Role</div><div class="sb-field-val" id="sbRole">—</div></div>
-      </div>
-      <div class="sb-field">
-        <span class="sb-field-icon">⚡</span>
-        <div><div class="sb-field-key">Level</div><div class="sb-field-val" id="sbLevel">—</div></div>
-      </div>
-    </div>
+  <%- include('partials/session-context') %>
 
-    <div class="sb-block">
-      <div class="sb-block-label">Progress</div>
-      <div class="sb-progress-num"><span id="sbProgNum">1</span><span>/ <%= 5 %></span></div>
-      <div class="sb-progress-lbl">Questions</div>
-      <div class="sb-progress-track"><div class="sb-progress-fill" id="sbProgFill" style="width:0%;"></div></div>
-      <div class="sb-progress-remaining" id="sbProgRemaining">4 questions remaining</div>
-    </div>
+  <%- include('partials/active-question') %>
 
-    <div class="sb-block">
-      <div class="sb-block-label">Time</div>
-      <div class="sb-time-val" id="sbTimeRemaining">15:00</div>
-      <div class="sb-time-lbl">Est. remaining</div>
-    </div>
+  <%- include('partials/live-terminal') %>
 
-    <div class="sb-spacer"></div>
-
-    <div class="sb-tip">
-      <span class="sb-tip-icon">📍</span>
-      <div class="sb-tip-text"><strong>Use the STAR framework</strong>Situation, Task, Action, Result</div>
-    </div>
-  </div><!-- /sidebar -->
-
-  <!-- ══ CENTER — Focus Zone ══ -->
-  <div class="centre-col">
-
-    <!-- Top Slot: dynamic question container, driven entirely by the
-         live API/vapi payload — no hard-coded question text below. -->
-    <div class="question-card" id="questionCard">
-      <div class="qc-top-row">
-        <span class="qc-eyebrow" id="qEyebrow">QUESTION 1 OF 5 · OPENING</span>
-        <a class="qc-report-issue" id="reportIssueLink">Report Issue</a>
-      </div>
-      <div class="qc-text" id="questionText">Connecting to your interviewer...</div>
-      <button class="qc-why-btn" id="whyBtn">Why this question?</button>
-      <div class="qc-why-text" id="qWhyText"></div>
-    </div>
-
-    <!-- Middle Slot: webcam, deliberately smaller than the question card
-         above it so the question stays the visual focal point. -->
-    <div class="webcam-card" id="webcamHero">
-      <video id="camVideo" autoplay playsinline muted></video>
-      <div class="webcam-placeholder" id="camPlaceholder">
-        <div class="wc-icon">📷</div>
-        <div class="wc-hint">Click "Enable Camera" to start</div>
-      </div>
-      <div class="webcam-badge off" id="camBadge"><div class="wbdot"></div><span id="camBadgeText">CAM OFF</span></div>
-      <button class="webcam-toggle" id="camToggle">Enable Camera</button>
-      <div class="webcam-you-tag">You</div>
-    </div>
-
-    <!-- Bottom Slot: mic + answer input -->
-    <div class="answer-bar-wrap">
-      <div class="answer-bar">
-        <textarea id="answerInput" rows="1" placeholder="Start speaking or type your answer…" maxlength="4000"></textarea>
-        <button class="send-btn" id="submitBtn" disabled title="Submit answer">➤</button>
-        <button class="mic-btn" id="vapiBtn" title="Hold to speak">🎙</button>
-      </div>
-      <div class="answer-bar-meta">
-        <span class="char-count" id="charCount">0 / 4000</span>
-        <button class="skip-link" id="skipBtn">Skip question →</button>
-      </div>
-      <div class="voice-status-line" id="vapiSub">Speak directly with your AI interviewer</div>
-    </div>
-
-    <div class="loading-overlay" id="loadingOverlay">
-      <div class="ldots"><span></span><span></span><span></span></div>
-      <div class="ltext" id="loadingText">Analysing your response...</div>
-    </div>
-
-  </div><!-- /centre-col -->
-
-  <!-- ══ RIGHT — AI Interview Status (always visible, calm)
-       + Live Terminal (collapsed by default) ══ -->
-  <div class="terminal-panel">
-
-    <div class="tp-header">
-      <span class="tp-title">AI Interview Status</span>
-      <div class="tp-toggle-row">
-        <span class="tp-toggle-lbl" id="tpToggleLbl">Show terminal</span>
-        <label class="tp-switch">
-          <input type="checkbox" id="terminalToggle">
-          <span class="tp-switch-track"></span>
-        </label>
-      </div>
-    </div>
-
-    <div class="ai-status-block">
-      <div class="ai-status-ring-wrap">
-        <svg viewBox="0 0 78 78">
-          <circle class="ai-status-ring-bg" cx="39" cy="39" r="35"/>
-          <circle class="ai-status-ring-fill" id="aiStatusRing" cx="39" cy="39" r="35"/>
-        </svg>
-      </div>
-      <div class="ai-status-title" id="aiStatusTitle">Calibrating…</div>
-      <div class="ai-status-sub" id="aiStatusSub">Setting up your session</div>
-    </div>
-
-    <div class="status-checklist" id="statusChecklist">
-      <div class="status-item" data-step="captured"><span class="si-dot"></span>Answer captured</div>
-      <div class="status-item" data-step="analyzing"><span class="si-dot"></span>Analyzing response</div>
-      <div class="status-item" data-step="preparing"><span class="si-dot"></span>Preparing next question</div>
-    </div>
-
-    <!-- Live Terminal — collapsed by default, mirrors the landing page -->
-    <div class="live-terminal-card" id="liveTerminalCard">
-      <div class="lt-hdr">
-        <span class="lt-hdr-title">Live Terminal</span>
-        <span class="lt-hdr-live"><span class="dot"></span>LIVE</span>
-      </div>
-
-      <div class="lt-score-block">
-        <div class="lt-score-lbl">Overall Intelligence Score</div>
-        <div class="score-ring-wrap">
-          <svg width="78" height="78" viewBox="0 0 78 78">
-            <circle class="ring-bg" cx="39" cy="39" r="34"/>
-            <circle class="ring-fill" id="ringFill" cx="39" cy="39" r="34"/>
-          </svg>
-          <div class="ring-label" id="ringLabel">—</div>
-        </div>
-        <div class="ring-out-of" id="ringOutOf">/ 100</div>
-      </div>
-
-      <div class="lt-vec-lbl">5-Vector Intelligence</div>
-      <div class="metric-row">
-        <span class="metric-icon">⚡</span>
-        <div class="metric-body"><div class="metric-lbl">Structure (STAR)</div>
-          <div class="metric-track"><div class="metric-fill" id="mStar" style="background:#3b82f6;"></div></div></div>
-        <span class="metric-val" id="mStarV" style="color:#3b82f6;">—</span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-icon">🧠</span>
-        <div class="metric-body"><div class="metric-lbl">Technical Depth</div>
-          <div class="metric-track"><div class="metric-fill" id="mTech" style="background:#a78bfa;"></div></div></div>
-        <span class="metric-val" id="mTechV" style="color:#a78bfa;">—</span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-icon">👔</span>
-        <div class="metric-body"><div class="metric-lbl">Executive Presence</div>
-          <div class="metric-track"><div class="metric-fill" id="mExec" style="background:#22c55e;"></div></div></div>
-        <span class="metric-val" id="mExecV" style="color:#22c55e;">—</span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-icon">🌐</span>
-        <div class="metric-body"><div class="metric-lbl">GCC Readiness</div>
-          <div class="metric-track"><div class="metric-fill" id="mGcc" style="background:#f59e0b;"></div></div></div>
-        <span class="metric-val" id="mGccV" style="color:#f59e0b;">—</span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-icon">💬</span>
-        <div class="metric-body"><div class="metric-lbl">Communication Clarity</div>
-          <div class="metric-track"><div class="metric-fill" id="mFric" style="background:#fb923c;"></div></div></div>
-        <span class="metric-val" id="mFricV" style="color:#fb923c;">—</span>
-      </div>
-
-      <div class="lt-footer pulsing" id="ltFooter">⚡ Analyzing in real-time</div>
-    </div>
-
-  </div><!-- /terminal-panel -->
 </div><!-- /os-grid -->
 
 <!-- Score toast -->
@@ -771,8 +249,58 @@
     document.getElementById('ringFill').style.strokeDashoffset = CIRC - (CIRC*avg/100);
     var lbl = document.getElementById('ringLabel');
     lbl.textContent = avg;
+    var tier = avg>=75?'high':avg>=55?'mid':'low';
     lbl.style.color = avg>=75?'#22c55e':avg>=55?'#f59e0b':'#ef4444';
+    var STATUS_COPY = {
+      high: ['Strong Performance', "You're demonstrating excellent leadership potential."],
+      mid:  ['Solid Progress', 'A few more concrete results would sharpen this further.'],
+      low:  ['Early Signal', 'Lean harder into STAR structure and quantified results.'],
+    };
+    var statusEl = document.getElementById('ringStatus');
+    var subEl    = document.getElementById('ringStatusSub');
+    if (statusEl) { statusEl.className = 'ring-status '+tier; statusEl.textContent = STATUS_COPY[tier][0]; }
+    if (subEl)    subEl.textContent = STATUS_COPY[tier][1];
   }
+
+  /* ══ STAR Progress — Tactical view ══
+     Two sources feed the same four nodes:
+     1) A real-time client-side regex pass, run on every keystroke, paints
+        nodes as "active" (pulsing) the instant a STAR signal appears in
+        the answer as it's being typed/spoken.
+     2) The server's own computeStarProgress() (services/interview.js),
+        returned as `star_progress` on submit, is the source of truth and
+        repaints the same nodes as solid "done" once the answer lands. */
+  var STAR_ORDER = ['situation','task','action','result'];
+  var STAR_PATTERNS = {
+    situation: /\b(when i|at my (previous|last|current)|in my role|while (working|leading)|the (context|situation|background) was|we (were|had) facing|a few (months|years) ago|during)\b/i,
+    task: /\b(my (task|responsibility|goal|objective) was|i was (responsible|asked|tasked)|needed to|had to (deliver|fix|solve|build)|the (goal|objective|target) was)\b/i,
+    action: /\b(i (led|built|designed|implemented|created|drove|decided|initiated|coordinated|proposed|negotiated|restructured|launched|rolled out|owned))\b/i,
+    result: /\b(as a result|resulted in|which (led to|resulted)|(reduced|increased|improved|grew|cut|saved|boosted)[^.]{0,40}(\d+%|\$|percent)|the outcome was|we (achieved|delivered)|\d+%)\b/i,
+  };
+  function liveDetectStar(text) {
+    var t = (text || '').toLowerCase();
+    return {
+      situation: STAR_PATTERNS.situation.test(t),
+      task: STAR_PATTERNS.task.test(t),
+      action: STAR_PATTERNS.action.test(t),
+      result: STAR_PATTERNS.result.test(t),
+    };
+  }
+  function paintStarProgress(progress, finalized) {
+    STAR_ORDER.forEach(function(key) {
+      var node = document.getElementById('starNode-'+key);
+      if (!node) return;
+      var on = !!(progress && progress[key]);
+      node.classList.toggle('done', on && !!finalized);
+      node.classList.toggle('active', on && !finalized);
+    });
+    for (var i = 1; i <= 3; i++) {
+      var a = STAR_ORDER[i-1], b = STAR_ORDER[i];
+      var conn = document.getElementById('starConn-'+i);
+      if (conn) conn.classList.toggle('done', !!(progress && progress[a] && progress[b]));
+    }
+  }
+  function resetStarProgress() { paintStarProgress({}, false); }
 
   /* ══ AI Interview Status — always-visible calm state machine ══ */
   var STATE_META = {
@@ -847,6 +375,7 @@
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('submitBtn').classList.remove('show');
     document.getElementById('answerInput').focus();
+    resetStarProgress();
     setAIState('LISTENING');
   }
 
@@ -863,6 +392,7 @@
     document.getElementById('submitBtn').classList.toggle('show', hasText);
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 140)+'px';
+    paintStarProgress(liveDetectStar(this.value), false);
   });
 
   document.getElementById('submitBtn').addEventListener('click', function(){ submitAnswer(false); });
@@ -883,10 +413,14 @@
       var data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'Server error '+resp.status);
 
-      if (data.scores && !skip) {
-        updateMetrics(data.scores);
-        showToast(data.scores.overallScore);
-        slog('Scored: '+Math.round(data.scores.overallScore)+'/100','ok');
+      if (data.intelligence_scores && !skip) {
+        updateMetrics(data.intelligence_scores);
+        showToast(data.intelligence_scores.overallScore);
+        slog('Scored: '+Math.round(data.intelligence_scores.overallScore)+'/100','ok');
+      }
+      if (data.star_progress && !skip) {
+        paintStarProgress(data.star_progress, true);
+        slog('STAR detected: '+data.star_progress.stepsComplete+'/4 components','info');
       }
       if (data.competency_tag) updateCompetency(data.competency_tag, 20);
 
@@ -926,15 +460,13 @@
     window.location.href = '/dashboard/history';
   });
 
-  /* ── Live Terminal toggle — collapsed by default ── */
-  var liveTerminalCard = document.getElementById('liveTerminalCard');
-  var terminalToggle   = document.getElementById('terminalToggle');
-  var tpToggleLbl       = document.getElementById('tpToggleLbl');
-  terminalToggle.addEventListener('change', function(){
-    var expanded = this.checked;
-    liveTerminalCard.classList.toggle('expanded', expanded);
-    tpToggleLbl.textContent = expanded ? 'Hide terminal' : 'Show terminal';
-    slog(expanded ? 'Live Terminal opened by candidate' : 'Live Terminal collapsed', 'info');
+  /* ── Tactical card Hide/Show — expanded by default, per Target2 ── */
+  var tacticalBody = document.getElementById('tacticalBody');
+  var tacticalHideBtn = document.getElementById('tacticalHideBtn');
+  tacticalHideBtn.addEventListener('click', function(){
+    var collapsed = tacticalBody.classList.toggle('collapsed');
+    this.textContent = collapsed ? 'Show' : 'Hide';
+    slog(collapsed ? 'Tactical view collapsed' : 'Tactical view opened', 'info');
   });
 
   /* ── Initialise ── */
