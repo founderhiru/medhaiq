@@ -323,11 +323,6 @@ body {
 .metric-lbl { font-size: 9.5px; color: var(--soft); margin-bottom: 4px; }
 .metric-track { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
 .metric-fill { height: 100%; width: 0%; border-radius: 3px; transition: width 0.6s cubic-bezier(0.25,1,0.5,1); }
-/* A genuine score of 0 renders identically to an unset/never-updated bar
-   (both are 0% wide) unless we give it its own visible marker — this is
-   what makes "recorded as zero" distinguishable from "hasn't updated yet". */
-.metric-fill.is-zero { width: 4% !important; background: var(--red) !important; opacity: 0.85; }
-.metric-val.is-zero { color: var(--red) !important; }
 .metric-val { font-size: 10.5px; font-weight: 700; font-family: var(--mono); width: 26px; text-align: right; flex-shrink: 0; }
 
 .lt-footer { text-align: center; font-size: 9px; color: var(--blue-hi); font-family: var(--mono); margin-top: 14px; }

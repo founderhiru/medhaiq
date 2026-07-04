@@ -234,29 +234,13 @@
     if (!m || !m.vectors) return;
     runningScores.push(m);
     var v = m.vectors;
-    // .hasOwnProperty style checks would be overkill here — these are
-    // always-present numeric fields from the server — but the important
-    // fix is using `?? 0` (nullish coalescing) instead of `|| 0`: `?? 0`
-    // only substitutes when the value is null/undefined, so a genuine 0
-    // passes straight through instead of being masked by a fallback that
-    // happens to also be 0 (same value, but this makes the intent explicit
-    // and safe against a future change to the fallback).
-    [['mStar','mStarV', v.structure ?? 0], ['mTech','mTechV', v.technicalDepth ?? 0],
-     ['mExec','mExecV', v.executivePresence ?? 0], ['mGcc','mGccV', v.gccReadiness ?? 0],
-     ['mFric','mFricV', v.communicationClarity ?? 0]].forEach(function(r) {
+    [['mStar','mStarV', v.structure||0], ['mTech','mTechV', v.technicalDepth||0],
+     ['mExec','mExecV', v.executivePresence||0], ['mGcc','mGccV', v.gccReadiness||0],
+     ['mFric','mFricV', v.communicationClarity||0]].forEach(function(r) {
       var val = Math.round(r[2]);
-      var isZero = val === 0;
       var bar = document.getElementById(r[0]); var lbl = document.getElementById(r[1]);
-      if (bar) {
-        bar.classList.toggle('is-zero', isZero);
-        // Immediate DOM update — no setTimeout delay. A real 0 especially
-        // needs to register as "recorded right now", not fade in later.
-        bar.style.width = isZero ? '' : val + '%'; // CSS !important on .is-zero handles the zero width
-      }
-      if (lbl) {
-        lbl.textContent = val;
-        lbl.classList.toggle('is-zero', isZero);
-      }
+      if (bar) setTimeout(function(){ bar.style.width=val+'%'; }, 80);
+      if (lbl) lbl.textContent = val;
     });
     if (m.metadata) {
       document.getElementById('advFiller').textContent    = m.metadata.fillerWords ?? '0';
@@ -386,14 +370,6 @@
   };
 
   function showQuestionMeta(q, type, competency) {
-    // Defensive consolidation: updateCounter() also runs immediately when
-    // a new question is fetched (in submitAnswer, right after QN++), but
-    // it's called here too so the progress bar is GUARANTEED correct at
-    // the exact moment any question — drill-down or not, voice or text —
-    // actually gets painted, regardless of which code path got it there.
-    // Calling it twice is harmless; it just re-renders the same numbers.
-    updateCounter();
-
     document.getElementById('loadingOverlay').classList.remove('show');
     document.getElementById('questionCard').style.display='flex';
     document.querySelector('.answer-bar-wrap').style.display='block';
@@ -477,17 +453,12 @@
       }
       if (!resp.ok) throw new Error(data.error || 'Server error '+resp.status);
 
-      // The server now ALWAYS returns real intelligence_scores/star_progress
-      // — including an explicit all-zero set for skip — so the dashboard
-      // updates immediately and visibly every time, instead of silently
-      // doing nothing on skip (which used to leave the bars wherever they
-      // last were, making it look like nothing had been recorded).
-      if (data.intelligence_scores) {
+      if (data.intelligence_scores && !skip) {
         updateMetrics(data.intelligence_scores);
         showToast(data.intelligence_scores.overallScore);
         slog('Scored: '+Math.round(data.intelligence_scores.overallScore)+'/100','ok');
       }
-      if (data.star_progress) {
+      if (data.star_progress && !skip) {
         paintStarProgress(data.star_progress, true);
         slog('STAR detected: '+data.star_progress.stepsComplete+'/4 components','info');
       }
