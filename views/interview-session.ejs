@@ -101,18 +101,43 @@
 <script>
 (function() {
   /* ══ Sync engine — fixes the UI/audio desync bug ══
-     The fetched question is held here and only painted to the DOM the
-     instant Vapi reports the AI has actually started speaking. In
-     text-only mode there's no audio to wait for, so it paints
-     immediately. window.MedhaIQVoiceLive is flipped by the Vapi state
-     machine further down this file. */
+     THE ROOT BUG: two independent AI calls were generating "the next
+     question" — our own backend text call, AND whatever Vapi's own voice
+     assistant decided to actually say — with nothing forcing them to
+     match. The card showed our backend's guess the moment it arrived,
+     regardless of what the voice assistant was really saying a beat
+     later, so the two drifted apart on almost every question.
+     THE FIX: when voice is live, our backend's text is sent to Vapi as an
+     instruction for what to ask (via window.MedhaIQVoice.instructNext,
+     wired up in the Vapi script below), and the on-screen card is ONLY
+     ever painted from Vapi's own live transcript of what it actually
+     says (see vapi.on('message') below) — never from our own guess. In
+     text-only mode (no voice connected) there's nothing to wait for, so
+     it still paints our backend text immediately, same as before. */
   var pendingQuestion = null;
   var pendingAudioUrl = null;
   var qAudioEl = new Audio();
   var MedhaIQSync = {
     hold: function(question, type, competency) {
       pendingQuestion = { question: question, type: type, competency: competency };
-      if (!window.MedhaIQVoiceLive) MedhaIQSync.reveal();
+      var voice = window.MedhaIQVoice;
+      if (voice && voice.isLive && voice.isLive()) {
+        // Paint everything EXCEPT the question body right away (counter,
+        // "why this question", input reset) — the body stays a neutral
+        // placeholder until Vapi's own transcript fills it in live.
+        showQuestionMeta(question, type, competency);
+        showQuestionText('Listening for your interviewer…');
+        var instructed = voice.instructNext(question.text);
+        pendingQuestion = null;
+        if (instructed) {
+          pendingAudioUrl = null; // Vapi is speaking now — our own TTS clip (if any) must not fire later
+          return;
+        }
+        // instructNext failed (voice flagged live but the call object
+        // isn't actually usable) — fall back to the text reveal below so
+        // the candidate never gets stuck on the placeholder.
+      }
+      MedhaIQSync.reveal();
     },
     reveal: function() {
       if (!pendingQuestion) return;
@@ -148,14 +173,26 @@
   document.getElementById('sbRole').textContent   = ROLE  || '—';
   document.getElementById('sbLevel').textContent  = LEVEL || '—';
 
-  /* ── Elapsed timer (topbar) ── */
+  /* ── Elapsed timer (topbar) + Est. remaining (sidebar) — both driven off
+     the SAME real clock now. Previously "Est. remaining" was recomputed
+     only from the question count (MAXQ-remaining * 180s) and never moved
+     within a question, so it could show 9:00 remaining while the actual
+     elapsed timer said 2:00 — the two numbers had nothing to do with each
+     other. Now there's one 15:00 session budget and remaining = budget
+     minus actual elapsed seconds, ticking every second like the timer. ── */
+  var TOTAL_BUDGET_SEC = MAXQ * SEC_PER_Q; // 5 * 180s = 15:00 total
   var t0 = Date.now(), timerInt;
+  function mmss(totalSeconds) {
+    var s = Math.max(0, Math.floor(totalSeconds));
+    return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  }
   function tick() {
-    var e = Math.floor((Date.now()-t0)/1000);
-    document.getElementById('timer').textContent =
-      String(Math.floor(e/60)).padStart(2,'0')+':'+String(e%60).padStart(2,'0');
+    var elapsed = Math.floor((Date.now()-t0)/1000);
+    document.getElementById('timer').textContent = mmss(elapsed);
+    document.getElementById('sbTimeRemaining').textContent = mmss(TOTAL_BUDGET_SEC - elapsed);
   }
   timerInt = setInterval(tick, 1000);
+  tick();
 
   function updateCounter() {
     document.getElementById('qCounter').textContent = 'Q'+QN+' / '+MAXQ;
@@ -164,9 +201,6 @@
     document.getElementById('sbProgFill').style.width = pct+'%';
     var remaining = Math.max(0, MAXQ-(QN-1));
     document.getElementById('sbProgRemaining').textContent = remaining + (remaining===1?' question remaining':' questions remaining');
-    var secsLeft = remaining * SEC_PER_Q;
-    document.getElementById('sbTimeRemaining').textContent =
-      String(Math.floor(secsLeft/60)).padStart(2,'0')+':'+String(secsLeft%60).padStart(2,'0');
   }
 
   /* ── Debug console (staff-only, Ctrl+Shift+D) ── */
@@ -335,12 +369,11 @@
     drill_down: 'A deep-dive follow-up — the AI probes a gap or vague point from your last answer.',
   };
 
-  function showQuestion(q, type, competency) {
+  function showQuestionMeta(q, type, competency) {
     document.getElementById('loadingOverlay').classList.remove('show');
     document.getElementById('questionCard').style.display='flex';
     document.querySelector('.answer-bar-wrap').style.display='block';
 
-    document.getElementById('questionText').textContent = q.text;
     var label = competency ? competency.replace(/_/g,' ').toUpperCase() : (type==='drill_down' ? 'DEEP DIVE' : 'BEHAVIORAL');
     document.getElementById('qEyebrow').textContent = 'QUESTION '+QN+' OF '+MAXQ+' · '+label;
     var why = document.getElementById('qWhyText');
@@ -355,6 +388,15 @@
     resetStarProgress();
     setAIState('LISTENING');
   }
+  function showQuestionText(text) {
+    document.getElementById('questionText').textContent = text;
+  }
+  function showQuestion(q, type, competency) {
+    showQuestionMeta(q, type, competency);
+    showQuestionText(q.text);
+  }
+  window.MedhaIQ_showQuestionMeta = showQuestionMeta;
+  window.MedhaIQ_showQuestionText = showQuestionText;
 
   document.getElementById('whyBtn').addEventListener('click', function(){
     document.getElementById('qWhyText').classList.toggle('shown');
@@ -375,10 +417,23 @@
   document.getElementById('submitBtn').addEventListener('click', function(){ submitAnswer(false); });
   document.getElementById('skipBtn').addEventListener('click', function(){ submitAnswer(true); });
 
+  /* Hard re-entrancy guard. Previously only submitBtn was disabled while a
+     request was in flight — skipBtn had no lock at all, so an impatient
+     candidate clicking "Skip" repeatedly during a slow AI scoring/next-
+     question call could fire 2-3 overlapping POSTs. Each one independently
+     read "answeredCount" before any of the others had saved, so more than
+     MAXQ questions could get created and the session would run to 6/5, 7/5,
+     etc. instead of ending at 5. isSubmitting blocks that at the source,
+     regardless of which control the candidate mashes. */
+  var isSubmitting = false;
+
   async function submitAnswer(skip) {
+    if (isSubmitting) return;
+    isSubmitting = true;
     var ans = skip ? '' : answerInput.value.trim();
-    if (!skip && !ans) return;
+    if (!skip && !ans) { isSubmitting = false; return; }
     document.getElementById('submitBtn').disabled = true;
+    document.getElementById('skipBtn').disabled = true;
     setAIState('ANALYZING');
     showLoading('Analyzing your response...');
     slog('Q'+QN+' submitted — AI scoring...','info');
@@ -388,6 +443,14 @@
         body: JSON.stringify({ questionId: QID, answerText: ans, skip: skip }),
       });
       var data = await resp.json();
+      if (resp.status === 409 && data.duplicate) {
+        // A duplicate/raced submission for a question that's already been
+        // answered — expected now and then if a click slipped through
+        // before the button disabled. Nothing to show the candidate; the
+        // winning request already advanced the session normally.
+        slog('Duplicate submission ignored (already answered)', 'info');
+        return;
+      }
       if (!resp.ok) throw new Error(data.error || 'Server error '+resp.status);
 
       if (data.intelligence_scores && !skip) {
@@ -409,10 +472,10 @@
         slog('Session complete — generating report...','ok');
         showLoading('Generating your Career Intelligence Report...');
         setTimeout(function(){ window.location.href='/interview/report/'+data.reportId; }, 2200);
-        return;
+        return; // isSubmitting intentionally stays true — page is navigating away
       }
       QID = data.question.id;
-      QN++;
+      QN = Math.min(QN + 1, MAXQ); // clamp — never display past MAXQ even if something upstream misbehaves
       updateCounter();
       var nextQ = { text: data.text || data.question.text, type: data.question.type, id: data.question.id, order: data.question.order };
       pendingAudioUrl = data.audio_url || null;
@@ -425,7 +488,11 @@
       document.getElementById('questionCard').style.display='flex';
       document.querySelector('.answer-bar-wrap').style.display='block';
       document.getElementById('submitBtn').disabled = false;
+      document.getElementById('skipBtn').disabled = false;
       alert('Error: '+err.message);
+    } finally {
+      isSubmitting = false;
+      document.getElementById('skipBtn').disabled = false;
     }
   }
 
@@ -505,6 +572,18 @@
      VAPI VOICE STATE MACHINE — now driving a single inline mic
      button instead of a standalone panel button. Fixes the desync
      via MedhaIQSync (defined in the main engine script above).
+
+     IMPORTANT CAVEAT (read before assuming this is 100% closed):
+     `vapi.send({ type: 'add-message', ... })` is the documented way to
+     hand Vapi's assistant a mid-call instruction, and the transcript
+     listener below is the documented shape for its own spoken output.
+     Both depend on how the assistant itself is configured on the Vapi
+     dashboard (VAPI_ASSISTANT_ID) — if that assistant's own system
+     prompt tells it to freelance rather than follow instructions handed
+     to it mid-call, it can still say something different from what we
+     asked it to. What this code guarantees is narrower but real: the
+     text on screen will always match Vapi's own transcript of what it
+     actually said — never a separate guess generated by our backend.
 ═══════════════════════════════════════════════════════════════ -->
 <script>
 (function(){
@@ -519,6 +598,7 @@
 
   var STATES={ IDLE:'IDLE',REQUESTING:'REQUESTING',CONNECTING:'CONNECTING',LIVE:'LIVE',STOPPING:'STOPPING' };
   var state=STATES.IDLE, vapi=null;
+  var assistantTranscriptBuf = '';
 
   function setState(s,msg,isErr){
     state=s;
@@ -531,6 +611,29 @@
     setTimeout(function(){ if(state===STATES.IDLE){ sub.textContent='Speak directly with your AI interviewer'; sub.style.color=''; } },7000);
   }
 
+  /* ── Exposed to the main engine's MedhaIQSync so it can (a) check
+     whether voice is actually live and (b) hand Vapi the exact question
+     our backend chose, instead of letting the two AI systems diverge. ── */
+  window.MedhaIQVoice = {
+    isLive: function(){ return state === STATES.LIVE && !!vapi; },
+    instructNext: function(questionText){
+      if (state !== STATES.LIVE || !vapi) return false;
+      try {
+        vapi.send({
+          type: 'add-message',
+          message: {
+            role: 'system',
+            content: 'Ask the candidate this exact next question next, in your own natural delivery, without announcing that it was given to you: "' + String(questionText).replace(/"/g, "'") + '"'
+          }
+        });
+        return true;
+      } catch (e) {
+        console.error('[Vapi] instructNext failed', e);
+        return false;
+      }
+    }
+  };
+
   function initVapi(){
     if(vapi||!window.vapiSDK)return;
     vapi=window.vapiSDK.run({apiKey:VKEY,assistant:VAST,config:{position:'hidden'}});
@@ -540,21 +643,27 @@
       window.MedhaIQVoiceLive = true;
     });
 
-    /* Sync fix: speech-start reveals the already-fetched question via
-       MedhaIQSync (the question text that was already returned by our
-       own API, not raw ASR/TTS partial text — that's what stays true to
-       the API payload instead of guessing from audio). If Vapi also
-       hands us a live message payload, mirror it into the SAME element
-       the rest of the app uses (#questionText) rather than an id that
-       doesn't exist in the DOM — the previous version referenced
-       #active-question-card, which isn't present anywhere in this page
-       and threw a null-reference error every time a message arrived. */
-    vapi.on('speech-start', function(payload) {
-      if (window.MedhaIQSync) window.MedhaIQSync.reveal();
-      var qEl = document.getElementById('questionText');
-      if (qEl && payload && payload.message) {
-        qEl.textContent = payload.message;
+    /* The ONLY source of truth for what appears in the question card
+       while voice is live: Vapi's own transcript of what it is actually
+       saying, painted live as it speaks — not a pre-fetched guess from
+       our backend. This is what actually closes the "text doesn't match
+       what the AI says" bug: whatever's on screen IS what was said,
+       because it's built from the same transcript, word for word. */
+    vapi.on('message', function(message) {
+      if (!message || message.type !== 'transcript' || message.role !== 'assistant') return;
+      if (!window.MedhaIQ_showQuestionText) return;
+      if (message.transcriptType === 'final') {
+        assistantTranscriptBuf = (assistantTranscriptBuf ? assistantTranscriptBuf + ' ' : '') + message.transcript;
+        window.MedhaIQ_showQuestionText(assistantTranscriptBuf.trim());
+      } else {
+        // partial/live caption — show buffer-so-far + the in-progress chunk
+        var preview = (assistantTranscriptBuf ? assistantTranscriptBuf + ' ' : '') + (message.transcript || '');
+        window.MedhaIQ_showQuestionText(preview.trim());
       }
+    });
+
+    vapi.on('speech-start', function() {
+      assistantTranscriptBuf = ''; // fresh sentence — don't append to the last question's leftover text
       sub.textContent = '● AI is speaking…';
     });
 

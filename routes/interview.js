@@ -112,12 +112,22 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
     if (String(session.user_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' });
     if (session.status !== 'active') return res.status(400).json({ error: 'Session is not active' });
 
-    // 1. Save the answer
-    await addAnswer({
+    // 1. Save the answer — addAnswer returns null if this question was
+    // already answered by a request that won a race against this one
+    // (see migration 002_answer_uniqueness). Never treat that as a new
+    // answer: it's the same reason the session could previously overshoot
+    // past 5 questions when Skip got double-clicked during a slow AI call.
+    const savedAnswer = await addAnswer({
       sessionId,
       questionId,
       answerText: answerText || '',
     });
+    if (!savedAnswer) {
+      return res.status(409).json({
+        error: 'This question was already answered — ignoring duplicate submission.',
+        duplicate: true,
+      });
+    }
 
     // 2. Score the answer (skip scores 0 across the board)
     let scores = null;

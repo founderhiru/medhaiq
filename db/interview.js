@@ -83,12 +83,18 @@ async function addQuestion({ sessionId, questionText, personaId, questionType, q
 }
 
 async function addAnswer({ sessionId, questionId, answerText }) {
+  // ON CONFLICT + the unique index from migration 002: if a question has
+  // already been answered (including by a concurrent duplicate request
+  // that lost the race), this returns no row instead of inserting a
+  // second answer. Callers must check for a falsy return.
   const result = await pool.query(
     `INSERT INTO interview_answers (session_id, question_id, answer_text)
-     VALUES ($1, $2, $3) RETURNING *`,
+     VALUES ($1, $2, $3)
+     ON CONFLICT (question_id) DO NOTHING
+     RETURNING *`,
     [sessionId, questionId, answerText]
   );
-  return result.rows[0];
+  return result.rows[0] || null;
 }
 
 async function addScore({ sessionId, questionId, star, technical, executive, gcc, friction, weighted }) {

@@ -174,6 +174,17 @@ app.get('/dashboard/history', async (req, res) => {
     if (!user) return res.redirect('/auth/login');
 
     const sessions = await getUserSessions(userId, { limit: 20 });
+    // Two bugs were compounding here:
+    // 1) `s.overall_score || s.report_score || null` treats a real score of
+    //    0 as falsy, silently discarding it (and `report_score` isn't even
+    //    a real column on this query — it was always undefined). Explicit
+    //    null/undefined checks fix that.
+    // 2) node-postgres returns NUMERIC columns as STRINGS (e.g. "0.00"),
+    //    not JS numbers. Left as strings, `trend.reduce((a,b)=>a+b,0)` does
+    //    string concatenation instead of addition, and .toFixed() on the
+    //    result either throws or prints garbage — that's what was showing
+    //    up as "Average: NaN" on the dashboard. Number(...) fixes it.
+    const toScoreOrNull = (v) => (v === null || v === undefined || v === '') ? null : Number(v);
     const history = sessions.map(s => ({
       id: s.id,
       personaId: s.persona_id,
@@ -181,11 +192,15 @@ app.get('/dashboard/history', async (req, res) => {
       experienceLevel: s.experience_level,
       startedAt: s.started_at,
       endedAt: s.ended_at,
-      overallScore: s.overall_score || s.report_score || null,
+      overallScore: toScoreOrNull(s.overall_score),
       status: s.status,
     }));
 
-    const trend = history.filter(s => s.overallScore !== null).slice(0, 10).reverse().map(s => s.overallScore);
+    const trend = history
+      .map(s => s.overallScore)
+      .filter(v => typeof v === 'number' && !Number.isNaN(v))
+      .slice(0, 10)
+      .reverse();
     const trendWidth = 600, trendHeight = 80;
     const trendX = (i) => trend.length > 1 ? (i / (trend.length - 1)) * trendWidth : trendWidth / 2;
     const trendY = (score) => trendHeight - (score / 100) * trendHeight;
@@ -195,8 +210,12 @@ app.get('/dashboard/history', async (req, res) => {
       trendPoints = pts.join(' ');
       trendPointsFill = pts.join(' ') + ` ${trendX(trend.length - 1)},${trendHeight} ${trendX(0)},${trendHeight}`;
     }
+    // Computed here, once, as real numbers — the template just displays
+    // these rather than re-doing reduce()/toFixed() on raw DB values itself.
+    const trendLatest = trend.length ? trend[trend.length - 1] : null;
+    const trendAvg = trend.length ? (trend.reduce((a, b) => a + b, 0) / trend.length) : null;
 
-    res.render('dashboard-history', { history, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY });
+    res.render('dashboard-history', { history, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY, trendLatest, trendAvg });
   } catch (err) {
     console.error('[dashboard/history]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });

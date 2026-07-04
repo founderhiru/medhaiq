@@ -119,7 +119,30 @@ async function runMigrations() {
             created_at TIMESTAMPTZ DEFAULT NOW()
           )`);
         }
-      }
+      },
+      {
+        name: '002_answer_uniqueness',
+        up: async (c) => {
+          // Fixes the "session ran to 6/5, 7/5..." bug: with no constraint,
+          // a double-click on Skip/Submit during a slow AI call could fire
+          // two overlapping requests that both read "not yet answered" and
+          // both went on to create a brand new question, silently pushing
+          // the session past its 5-question limit. First, collapse any
+          // duplicate answers already sitting in the table from that bug
+          // (keep only the latest one per question)...
+          await c.query(`
+            DELETE FROM interview_answers a
+            USING interview_answers b
+            WHERE a.id < b.id AND a.question_id = b.question_id
+          `);
+          // ...then make it structurally impossible to insert a second
+          // answer for the same question ever again.
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS interview_answers_question_id_unique_idx
+            ON interview_answers (question_id)
+          `);
+        }
+      },
     ];
 
     for (const m of migrations) {

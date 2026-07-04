@@ -18,6 +18,10 @@ async function requireAuth(req, res, next) {
 router.get('/history', requireAuth, async (req, res) => {
   const sessions = await getUserSessions(req.user.id, { limit: 20 });
 
+  // Same fix as server.js's /dashboard/history: explicit null/undefined
+  // checks (0 is a valid score, not a missing one) plus Number() coercion
+  // (Postgres NUMERIC columns come back as strings via node-postgres).
+  const toScoreOrNull = (v) => (v === null || v === undefined || v === '') ? null : Number(v);
   const history = sessions.map(s => ({
     id: s.id,
     personaId: s.persona_id,
@@ -25,16 +29,16 @@ router.get('/history', requireAuth, async (req, res) => {
     experienceLevel: s.experience_level,
     startedAt: s.started_at,
     endedAt: s.ended_at,
-    overallScore: s.overall_score || s.report_score || null,
+    overallScore: toScoreOrNull(s.overall_score),
     status: s.status,
   }));
 
   // Score trend for chart (last 10)
   const trend = history
-    .filter(s => s.overallScore !== null)
+    .map(s => s.overallScore)
+    .filter(v => typeof v === 'number' && !Number.isNaN(v))
     .slice(0, 10)
-    .reverse()
-    .map(s => s.overallScore);
+    .reverse();
 
   return res.json({ history, trend });
 });

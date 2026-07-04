@@ -325,9 +325,27 @@ Conciseness, absence of filler language, directness, logical flow.
 
 Overall Score: (STAR × 0.25) + (Technical × 0.25) + (Executive × 0.20) + (GCC × 0.15) + (Friction × 0.15)
 
+MANDATORY FLOOR RULE — apply before anything else: if the answer is a greeting,
+filler, refusal, "I don't know", off-topic, or otherwise does not substantively
+attempt the question (including anything under ~15 words with no real
+content), every one of the 5 vectors MUST be scored 0–10. Do not award
+generous or "benefit of the doubt" scores for non-answers.
+
 Return JSON: { "star": 0–100, "technical": 0–100, "executive": 0–100, "gcc": 0–100, "friction": 0–100 }`;
 
 async function scoreAnswer(answer, personaId, sessionContext) {
+  const trimmed = (answer || '').trim();
+  const wordCount = trimmed.split(/\s+/).filter(Boolean).length;
+
+  // Deterministic floor for trivial/non-answers — this must NOT depend on
+  // the model noticing on its own. A greeting like "Hi" or a couple of
+  // filler words should never reach the grader and risk coming back with a
+  // generous score; it's zeroed out in code, every time, before any AI call.
+  const TRIVIAL_RE = /^(hi|hello|hey|yo|test|testing|idk|i\s*don'?t\s*know|n\/a|none|na|ok|okay|sure|yes|no)[\s.!?]*$/i;
+  if (wordCount < 8 || TRIVIAL_RE.test(trimmed)) {
+    return { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 };
+  }
+
   const prompt = `Answer being evaluated:\n"${answer}"\n\nPersona archetype: ${personaId}\nRole: ${sessionContext.roleTitle || 'General'}\nExperience Level: ${sessionContext.experienceLevel || 'mid'}\nOrganisation: ${sessionContext.orgPreset || 'Generic Global Enterprise'}`;
 
   let result;
@@ -338,7 +356,11 @@ async function scoreAnswer(answer, personaId, sessionContext) {
     });
   } catch (e) {
     console.error('[interview] score parse error:', e.message);
-    result = { star: 60, technical: 60, executive: 60, gcc: 60, friction: 60 };
+    // A failed/ungradeable AI call must never silently hand out a flat 60 —
+    // that overstates a response we genuinely couldn't evaluate. Default to
+    // the floor and let the candidate answer again rather than reward them
+    // for an infrastructure hiccup.
+    result = { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0 };
   }
 
   const weighted = (
