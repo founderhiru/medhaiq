@@ -66,17 +66,18 @@
     .tb-brand { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
     .tb-brand em { color: var(--blue-hi); font-style: normal; }
     .tb-sep { width: 1px; height: 18px; background: var(--border); }
-    .tb-title-block { display: flex; flex-direction: column; line-height: 1.15; }
-    .tb-title-main  { font-size: 13px; font-weight: 700; color: #fff; }
-    .tb-title-sub   { font-size: 9.5px; color: var(--muted); font-family: var(--mono); }
-    .tb-features { display: flex; align-items: center; gap: 22px; margin-left: auto; padding-right: 24px; }
-    .tb-feature  { display: flex; align-items: center; gap: 7px; }
-    .tb-feature-icon { width: 22px; height: 22px; border-radius: 6px; background: rgba(59,130,246,0.12); border: 1px solid var(--border-hi);
-      display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
-    .tb-feature-copy { line-height: 1.15; }
-    .tb-feature-title { font-size: 10.5px; font-weight: 700; color: #fff; }
-    .tb-feature-sub   { font-size: 8.5px; color: var(--muted); }
-    @media (max-width: 1180px) { .tb-features { display: none; } }
+    .tb-persona { display: flex; align-items: center; gap: 9px; }
+    .tb-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .tb-avatar.royal-blue { background: linear-gradient(135deg,#1e40af,#3b82f6); }
+    .tb-avatar.emerald    { background: linear-gradient(135deg,#065f46,#10b981); }
+    .tb-avatar.gold       { background: linear-gradient(135deg,#78350f,#f59e0b); }
+    .tb-name  { font-size: 13px; font-weight: 700; }
+    .tb-role  { font-size: 10px; color: var(--soft); }
     .tb-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
     .tb-live  { display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:var(--green); font-family: var(--mono); }
     .tb-live-dot { width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:lp 1.8s ease-in-out infinite; }
@@ -143,7 +144,7 @@
     .centre-col { display: flex; flex-direction: column; overflow: hidden; padding: 18px 22px 22px; gap: 16px; }
 
     .webcam-card {
-      position: relative; flex-shrink: 0; width: 100%; aspect-ratio: 16 / 8; max-height: 320px; min-height: 200px;
+      position: relative; flex-shrink: 0; height: 40vh; min-height: 240px; max-height: 360px;
       background: #0a1526; border-radius: var(--radius); overflow: hidden;
       border: 1px solid var(--border);
       box-shadow: 0 12px 40px rgba(0,0,0,0.35);
@@ -161,8 +162,6 @@
     .webcam-toggle { position: absolute; top: 12px; right: 14px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12);
       border-radius: 7px; padding: 5px 12px; font-size: 10px; color: var(--soft); cursor: pointer; transition: all 0.15s; backdrop-filter: var(--blur); }
     .webcam-toggle:hover { background: rgba(59,130,246,0.18); color: #fff; }
-    .webcam-you-label { position: absolute; bottom: 12px; left: 14px; background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 7px; padding: 4px 11px; font-size: 10px; font-weight: 600; color: #fff; backdrop-filter: var(--blur); }
 
     /* Floating blurred question card — the single primary task on screen */
     .question-card {
@@ -350,23 +349,11 @@
 <div class="topbar">
   <span class="tb-brand">Medha<em>IQ</em></span>
   <div class="tb-sep"></div>
-  <div class="tb-title-block">
-    <span class="tb-title-main">MedhaIQ.live — Demo Interview Session</span>
-    <span class="tb-title-sub">Calm. Focused. Intelligent in the background.</span>
-  </div>
-
-  <div class="tb-features">
-    <div class="tb-feature">
-      <span class="tb-feature-icon">◎</span>
-      <div class="tb-feature-copy"><div class="tb-feature-title">Focused Experience</div><div class="tb-feature-sub">Minimal UI, maximum clarity</div></div>
-    </div>
-    <div class="tb-feature">
-      <span class="tb-feature-icon">◈</span>
-      <div class="tb-feature-copy"><div class="tb-feature-title">Live Intelligence</div><div class="tb-feature-sub">AI analyzes in real-time</div></div>
-    </div>
-    <div class="tb-feature">
-      <span class="tb-feature-icon">✧</span>
-      <div class="tb-feature-copy"><div class="tb-feature-title">Instant Insights</div><div class="tb-feature-sub">Deep report after the interview</div></div>
+  <div class="tb-persona">
+    <div class="tb-avatar <%= personaStyleColor %>" id="tbAvatar"></div>
+    <div>
+      <div class="tb-name" id="tbName"></div>
+      <div class="tb-role" id="tbRole"></div>
     </div>
   </div>
   <div class="tb-right">
@@ -431,7 +418,6 @@
       </div>
       <div class="webcam-badge off" id="camBadge"><div class="wbdot"></div><span id="camBadgeText">CAM OFF</span></div>
       <button class="webcam-toggle" id="camToggle">Enable Camera</button>
-      <div class="webcam-you-label">You</div>
     </div>
 
     <div class="question-card" id="questionCard">
@@ -505,7 +491,13 @@
 
       <div class="lt-score-block">
         <div class="lt-score-lbl">Overall Intelligence Score</div>
-        <div id="scoreRingMount"></div>
+        <div class="score-ring-wrap">
+          <svg width="78" height="78" viewBox="0 0 78 78">
+            <circle class="ring-bg" cx="39" cy="39" r="34"/>
+            <circle class="ring-fill" id="ringFill" cx="39" cy="39" r="34"/>
+          </svg>
+          <div class="ring-label" id="ringLabel">—</div>
+        </div>
         <div class="ring-out-of" id="ringOutOf">/ 100</div>
       </div>
 
@@ -601,7 +593,6 @@
 <!-- ═══════════════════════════════════════════════════════════════
      INTERVIEW OS ENGINE
 ═══════════════════════════════════════════════════════════════ -->
-<script src="/js/score-circle.js"></script>
 <script>
 (function() {
   /* ══ Sync engine — fixes the UI/audio desync bug ══
@@ -614,15 +605,7 @@
   var MedhaIQSync = {
     hold: function(question, type, competency) {
       pendingQuestion = { question: question, type: type, competency: competency };
-      if (!window.MedhaIQVoiceLive) {
-        /* Text-mode: no audio to wait for, show immediately. */
-        MedhaIQSync.reveal();
-      } else if (window.MedhaIQSpeakQuestion) {
-        /* Voice-mode: command Vapi to speak this exact question now.
-           The DOM won't update until speech-start fires below — that's
-           what keeps the on-screen text and the audio in lockstep. */
-        window.MedhaIQSpeakQuestion(question.text);
-      }
+      if (!window.MedhaIQVoiceLive) MedhaIQSync.reveal();
     },
     reveal: function() {
       if (!pendingQuestion) return;
@@ -648,9 +631,13 @@
   var LEVEL  = '<%= experienceLevel %>';
   var INITQ  = `<%- questionText.replace(/`/g, '\\`') %>`;
 
+  document.getElementById('tbAvatar').textContent = PINIT;
+  document.getElementById('tbAvatar').className   = 'tb-avatar ' + PCOL;
+  document.getElementById('tbName').textContent   = PNAME;
+  document.getElementById('tbRole').textContent   = PTITLE;
   document.getElementById('sbRole').textContent   = ROLE  || '—';
   document.getElementById('sbLevel').textContent  = LEVEL || '—';
-  document.getElementById('sbPersona').textContent= (PTITLE ? PTITLE.split(' @ ')[0] : '—');
+  document.getElementById('sbPersona').textContent= PNAME || '—';
 
   /* ── Elapsed timer (topbar) ── */
   var t0 = Date.now(), timerInt;
@@ -722,12 +709,15 @@
     updateScoreRing(m.overallScore);
   }
 
-  var scoreRing = window.ScoreCircle ? window.ScoreCircle.mount('scoreRingMount', { size: 78, strokeWidth: 5, color: '#3b82f6' }) : null;
   function updateScoreRing(latestOverall) {
-    if (typeof latestOverall !== 'number' || !scoreRing) return;
+    if (typeof latestOverall !== 'number') return;
     var total = runningScores.reduce(function(a,s){ return a+(s.overallScore||0); }, 0);
     var avg   = Math.round(total / runningScores.length);
-    scoreRing.update(avg, { high: 75, mid: 55, highColor: '#22c55e', midColor: '#f59e0b', lowColor: '#ef4444' });
+    var CIRC  = 213; /* 2 * π * 34 */
+    document.getElementById('ringFill').style.strokeDashoffset = CIRC - (CIRC*avg/100);
+    var lbl = document.getElementById('ringLabel');
+    lbl.textContent = avg;
+    lbl.style.color = avg>=75?'#22c55e':avg>=55?'#f59e0b':'#ef4444';
   }
 
   /* ══ AI Interview Status — always-visible calm state machine ══ */
@@ -751,7 +741,6 @@
     var ring = document.getElementById('aiStatusRing');
     ring.style.strokeDashoffset = RING_CIRC - (RING_CIRC * meta.ring);
     ring.classList.toggle('pulsing', !!meta.pulse);
-    if (scoreRing) scoreRing.setPulsing(key === 'ANALYZING');
     var lastStep = meta.steps[meta.steps.length-1];
     document.querySelectorAll('#statusChecklist .status-item').forEach(function(el){
       var step = el.getAttribute('data-step');
@@ -788,7 +777,6 @@
   };
 
   function showQuestion(q, type, competency) {
-    window.MedhaIQCurrentQuestionText = q.text;
     document.getElementById('loadingOverlay').classList.remove('show');
     document.getElementById('questionCard').style.display='flex';
     document.querySelector('.answer-bar-wrap').style.display='block';
@@ -950,49 +938,6 @@
 (function(){
   var VKEY = '<%= vapiPublicKey %>';
   var VAST = '<%= vapiAssistantId %>';
-  var INITQ_RAW = `<%- questionText.replace(/`/g, '\\`') %>`;
-
-  /* ══ ROOT-CAUSE FIX for "question shown ≠ question spoken" ══
-     vapi.start(assistantId) alone launches Vapi's assistant with
-     whatever system prompt/first message is configured in the Vapi
-     dashboard — completely independent of our backend's question
-     state. That's two separate question-generation pipelines running
-     in parallel, which is why they diverged.
-
-     Fix: never let the Vapi assistant invent its own questions.
-     - At call start, we override firstMessage + inject a system
-       instruction so it opens by asking OUR current question,
-       verbatim.
-     - For every question after that (mid-call), we push a system
-       message via vapi.send() telling it to ask the new question,
-       verbatim, and then stop talking and listen.
-     This makes Vapi purely a voice bridge for text we control, not
-     an independent interviewer.
-
-     ⚠ VERIFY: this assumes your Vapi assistant (dashboard config for
-     VAST) has NOT been given its own free-form "conduct the interview"
-     system prompt. If it has, that prompt will still compete with
-     these overrides — the assistant's own dashboard prompt should be
-     reduced to something like "You are a calm, professional voice
-     interviewer. Only ever ask the exact question you're given by the
-     system message. Never invent your own questions." ── */
-  var INTERVIEW_VOICE_RULE =
-    'You are the voice for a structured interview. You must ONLY ask the ' +
-    'exact question text given to you in this message or in later system ' +
-    'messages — verbatim, word for word. Never invent, reword, or add your ' +
-    'own follow-up questions. After asking the question, stop talking and ' +
-    'wait for the candidate to respond.';
-
-  function speakQuestionNow(text) {
-    if (!vapi || !window.MedhaIQVoiceLive) return;
-    try {
-      vapi.send({
-        type: 'add-message',
-        message: { role: 'system', content: INTERVIEW_VOICE_RULE + ' Ask this now, verbatim: "' + text.replace(/"/g,"'") + '"' }
-      });
-    } catch (e) { console.warn('[Vapi] speakQuestionNow failed', e); }
-  }
-  window.MedhaIQSpeakQuestion = speakQuestionNow;
 
   var btn = document.getElementById('vapiBtn');
   var sub = document.getElementById('vapiSub');
@@ -1086,13 +1031,7 @@
     if(state!==STATES.CONNECTING&&state!==STATES.REQUESTING)return;
 
     setState(STATES.CONNECTING,'Connecting to AI interviewer…');
-    try{
-      initVapi();
-      vapi.start(VAST, {
-        firstMessage: window.MedhaIQCurrentQuestionText || INITQ_RAW || 'Let\'s begin whenever you\'re ready.',
-        model: { messages: [{ role: 'system', content: INTERVIEW_VOICE_RULE }] },
-      });
-    }
+    try{ initVapi(); vapi.start(VAST); }
     catch(e){ setErr('Failed to connect: '+e.message); return; }
 
     setTimeout(function(){
