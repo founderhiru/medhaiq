@@ -54,26 +54,9 @@
       background-size: 30px 30px;
     }
 
-    /* ── PAGE HEADER — title + calm-tagline bullets, sits above the
-       session bar. Matches the marketing/landing header treatment so
-       the "Interview OS" identity is consistent everywhere. ── */
-    .page-header {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 101;
-      height: 64px; display: flex; align-items: center; justify-content: space-between;
-      padding: 0 26px; background: var(--bg); border-bottom: 1px solid var(--border);
-    }
-    .ph-title-block { display: flex; flex-direction: column; gap: 2px; }
-    .ph-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
-    .ph-tagline { font-size: 12px; color: var(--soft); }
-    .ph-bullets { display: flex; align-items: flex-start; gap: 28px; }
-    .ph-bullet { display: flex; align-items: flex-start; gap: 8px; max-width: 190px; }
-    .ph-bullet-icon { font-size: 15px; color: var(--blue-hi); flex-shrink: 0; margin-top: 1px; }
-    .ph-bullet-title { font-size: 11.5px; font-weight: 700; color: #fff; }
-    .ph-bullet-sub { font-size: 10.5px; color: var(--muted); line-height: 1.4; margin-top: 1px; }
-
-    /* ── SESSION BAR — live status row directly under the header. ── */
+    /* ── TOPBAR ── */
     .topbar {
-      position: fixed; top: 64px; left: 0; right: 0; z-index: 100;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       height: 52px;
       background: rgba(7,13,26,0.97);
       backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
@@ -83,9 +66,18 @@
     .tb-brand { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
     .tb-brand em { color: var(--blue-hi); font-style: normal; }
     .tb-sep { width: 1px; height: 18px; background: var(--border); }
-    .tb-session-meta { display: flex; align-items: center; gap: 9px; }
-    .tb-session-label { font-size: 13px; font-weight: 700; }
-    .tb-session-sub { font-size: 10px; color: var(--soft); }
+    .tb-persona { display: flex; align-items: center; gap: 9px; }
+    .tb-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .tb-avatar.royal-blue { background: linear-gradient(135deg,#1e40af,#3b82f6); }
+    .tb-avatar.emerald    { background: linear-gradient(135deg,#065f46,#10b981); }
+    .tb-avatar.gold       { background: linear-gradient(135deg,#78350f,#f59e0b); }
+    .tb-name  { font-size: 13px; font-weight: 700; }
+    .tb-role  { font-size: 10px; color: var(--soft); }
     .tb-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
     .tb-live  { display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:var(--green); font-family: var(--mono); }
     .tb-live-dot { width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:lp 1.8s ease-in-out infinite; }
@@ -104,7 +96,7 @@
       display: grid;
       grid-template-columns: var(--sidebar-w) 1fr var(--terminal-w);
       height: 100vh;
-      padding-top: 116px; /* 64px page header + 52px session bar */
+      padding-top: 52px;
     }
 
     /* ────────────────────────────────────────────────
@@ -152,17 +144,10 @@
     .centre-col { display: flex; flex-direction: column; overflow: hidden; padding: 18px 22px 22px; gap: 16px; }
 
     .webcam-card {
-      position: relative; flex-shrink: 0;
-      width: 100%; aspect-ratio: 16 / 9; max-height: 360px;
+      position: relative; flex-shrink: 0; height: 40vh; min-height: 240px; max-height: 360px;
       background: #0a1526; border-radius: var(--radius); overflow: hidden;
       border: 1px solid var(--border);
       box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-    }
-    .webcam-you-tag {
-      position: absolute; bottom: 12px; left: 14px; z-index: 2;
-      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px; padding: 4px 11px; font-size: 11px; font-weight: 600; color: #fff;
-      backdrop-filter: var(--blur);
     }
     .webcam-card video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: none; }
     .webcam-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
@@ -360,35 +345,16 @@
 </head>
 <body>
 
-<!-- ═══ PAGE HEADER ═══ -->
-<div class="page-header">
-  <div class="ph-title-block">
-    <div class="ph-title">MedhaIQ.live — Demo Interview Session</div>
-    <div class="ph-tagline">Calm. Focused. Intelligent in the background.</div>
-  </div>
-  <div class="ph-bullets">
-    <div class="ph-bullet">
-      <span class="ph-bullet-icon">⌁</span>
-      <div><div class="ph-bullet-title">Focused Experience</div><div class="ph-bullet-sub">Minimal UI to help candidates perform their best</div></div>
-    </div>
-    <div class="ph-bullet">
-      <span class="ph-bullet-icon">◎</span>
-      <div><div class="ph-bullet-title">Live Intelligence</div><div class="ph-bullet-sub">AI analyzes in real-time without distraction</div></div>
-    </div>
-    <div class="ph-bullet">
-      <span class="ph-bullet-icon">✦</span>
-      <div><div class="ph-bullet-title">Instant Insights</div><div class="ph-bullet-sub">Deep intelligence report after the interview</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ SESSION BAR — persona-free; focuses on candidate + system ═══ -->
+<!-- ═══ TOPBAR ═══ -->
 <div class="topbar">
   <span class="tb-brand">Medha<em>IQ</em></span>
   <div class="tb-sep"></div>
-  <div class="tb-session-meta">
-    <div class="tb-session-label" id="tbSessionLabel">Interview Session</div>
-    <div class="tb-session-sub" id="tbRole"></div>
+  <div class="tb-persona">
+    <div class="tb-avatar <%= personaStyleColor %>" id="tbAvatar"></div>
+    <div>
+      <div class="tb-name" id="tbName"></div>
+      <div class="tb-role" id="tbRole"></div>
+    </div>
   </div>
   <div class="tb-right">
     <div class="tb-live"><div class="tb-live-dot"></div>LIVE</div>
@@ -412,6 +378,10 @@
       <div class="sb-field">
         <span class="sb-field-icon">⚡</span>
         <div><div class="sb-field-key">Level</div><div class="sb-field-val" id="sbLevel">—</div></div>
+      </div>
+      <div class="sb-field">
+        <span class="sb-field-icon">◈</span>
+        <div><div class="sb-field-key">Persona</div><div class="sb-field-val" id="sbPersona">—</div></div>
       </div>
     </div>
 
@@ -448,7 +418,6 @@
       </div>
       <div class="webcam-badge off" id="camBadge"><div class="wbdot"></div><span id="camBadgeText">CAM OFF</span></div>
       <button class="webcam-toggle" id="camToggle">Enable Camera</button>
-      <div class="webcam-you-tag">You</div>
     </div>
 
     <div class="question-card" id="questionCard">
@@ -633,8 +602,6 @@
      immediately. window.MedhaIQVoiceLive is flipped by the Vapi state
      machine further down this file. */
   var pendingQuestion = null;
-  var pendingAudioUrl = null;
-  var qAudioEl = new Audio();
   var MedhaIQSync = {
     hold: function(question, type, competency) {
       pendingQuestion = { question: question, type: type, competency: competency };
@@ -644,10 +611,6 @@
       if (!pendingQuestion) return;
       showQuestion(pendingQuestion.question, pendingQuestion.type, pendingQuestion.competency);
       pendingQuestion = null;
-      if (pendingAudioUrl) {
-        try { qAudioEl.src = pendingAudioUrl; qAudioEl.play().catch(function(){}); } catch(e){}
-        pendingAudioUrl = null;
-      }
     }
   };
   window.MedhaIQSync = MedhaIQSync;
@@ -668,12 +631,13 @@
   var LEVEL  = '<%= experienceLevel %>';
   var INITQ  = `<%- questionText.replace(/`/g, '\\`') %>`;
 
-  /* Persona (PNAME/PTITLE/PINIT/PCOL) is retained purely as internal
-     session data for scoring/report generation — it is never rendered.
-     The UI shows only the candidate and the System's own presence. */
-  document.getElementById('tbRole').textContent   = ROLE || '—';
+  document.getElementById('tbAvatar').textContent = PINIT;
+  document.getElementById('tbAvatar').className   = 'tb-avatar ' + PCOL;
+  document.getElementById('tbName').textContent   = PNAME;
+  document.getElementById('tbRole').textContent   = PTITLE;
   document.getElementById('sbRole').textContent   = ROLE  || '—';
   document.getElementById('sbLevel').textContent  = LEVEL || '—';
+  document.getElementById('sbPersona').textContent= PNAME || '—';
 
   /* ── Elapsed timer (topbar) ── */
   var t0 = Date.now(), timerInt;
@@ -855,7 +819,7 @@
     if (!skip && !ans) return;
     document.getElementById('submitBtn').disabled = true;
     setAIState('ANALYZING');
-    showLoading('Analyzing your response...');
+    showLoading(PNAME+' is analysing your response...');
     slog('Q'+QN+' submitted — AI scoring...','info');
     try {
       var resp = await fetch('/api/interview/sessions/'+SID+'/answer', {
@@ -872,7 +836,7 @@
       }
       if (data.competency_tag) updateCompetency(data.competency_tag, 20);
 
-      setAIState('GENERATING');
+      setAIState('PREPARING');
 
       if (data.sessionEnded) {
         clearInterval(timerInt);
@@ -885,9 +849,7 @@
       QID = data.question.id;
       QN++;
       updateCounter();
-      var nextQ = { text: data.text || data.question.text, type: data.question.type, id: data.question.id, order: data.question.order };
-      pendingAudioUrl = data.audio_url || null;
-      MedhaIQSync.hold(nextQ, data.question.type, data.competency_tag || data.question.competency);
+      MedhaIQSync.hold(data.question, data.question.type, data.competency_tag || data.question.competency);
       slog('Q'+QN+' ready','info');
     } catch (err) {
       console.error('[MedhaIQ]', err);
@@ -923,8 +885,7 @@
   updateCounter();
   setAIState('CALIBRATING');
   if (INITQ) showQuestion({text:INITQ}, QTYPE, null);
-  slog('Session #'+SID+' initialised', 'ok');
-  slog('Persona (internal): '+PNAME, 'info'); /* debug-console only, never shown in candidate UI */
+  slog('Session #'+SID+' initialised — '+PNAME, 'ok');
   slog('Role: '+ROLE+' | Level: '+LEVEL);
   window.MedhaIQ_log = slog; /* exposed for the Vapi block below */
   window.MedhaIQ_setAIState = setAIState;

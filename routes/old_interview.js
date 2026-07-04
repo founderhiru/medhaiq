@@ -20,6 +20,7 @@ const {
   abandonSession,
 } = require('../db/interview');
 const { getUserById } = require('../db/auth');
+const { sendInterviewReportEmail } = require('../services/email');
 
 // ── Auth middleware ────────────────────────────────────────────────────────
 async function requireAuth(req, res, next) {
@@ -53,7 +54,7 @@ router.post('/sessions', requireAuth, async (req, res) => {
     });
 
     // 2. Generate opening question from AI
-    const questionText = await generateNextQuestion({
+    const openingResult = await generateNextQuestion({
       sessionId: session.id,
       personaId,
       roleTitle,
@@ -66,10 +67,11 @@ router.post('/sessions', requireAuth, async (req, res) => {
     // 3. Save question to DB
     const question = await addQuestion({
       sessionId: session.id,
-      questionText,
+      questionText: openingResult.text,
       personaId,
       questionType: 'opening',
       questionOrder: 0,
+      competency: openingResult.competency,
     });
 
     return res.json({
@@ -80,6 +82,7 @@ router.post('/sessions', requireAuth, async (req, res) => {
         text: question.question_text,
         type: question.question_type,
         order: question.question_order,
+        competency: question.competency || openingResult.competency,
       },
     });
   } catch (err) {
@@ -172,19 +175,44 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
 
       await completeSession(sessionId, reportData.overall_score);
 
+      // ── Send report email (non-blocking — never fails the response) ──────────
+      try {
+        const persona   = PERSONAS[session.persona_id];
+        const userEmail = req.user.email || null;
+        if (userEmail) {
+          sendInterviewReportEmail({
+            toEmail:          userEmail,
+            userName:         req.user.name || '',
+            reportId:         sessionId,
+            personaName:      persona ? persona.name : 'Expert Interviewer',
+            roleTitle:        session.role_title || 'Professional',
+            overallScore:     reportData.overall_score,
+            recommendation:   reportData.recommendation,
+            executiveSummary: reportData.executive_summary,
+            scoreboard:       reportData.scoreboard,
+            topPriorities:    reportData.improvements_json || [],
+          }).catch(e => console.error('[email] report delivery failed (non-fatal):', e.message));
+        }
+      } catch (emailErr) {
+        console.error('[email] report setup failed (non-fatal):', emailErr.message);
+      }
+
       return res.json({
         sessionEnded: true,
         reportId: sessionId,
         scores,
       });
     }
-
-    // 5. Generate next question
+ // 5. Generate next question
     const qaPairs = allQuestions
       .filter(q => q.answer_text !== null && q.answer_text !== undefined)
       .map(q => ({ question: q.question_text, answer: q.answer_text || '' }));
 
-    const nextQuestionText = await generateNextQuestion({
+    if (qaPairs.length && scores) {
+      qaPairs[qaPairs.length - 1].score = scores.star;
+    }
+
+    const nextResult = await generateNextQuestion({
       sessionId,
       personaId: session.persona_id,
       roleTitle: session.role_title,
@@ -196,11 +224,12 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
 
     const nextQuestion = await addQuestion({
       sessionId,
-      questionText: nextQuestionText,
+      questionText: nextResult.text,
       personaId: session.persona_id,
       questionType: scores && scores.star < 60 ? 'drill_down' : 'behavioral',
       questionOrder: answeredCount,
-    });
+      competency: nextResult.competency,
+    }); 
 
     return res.json({
       sessionEnded: false,

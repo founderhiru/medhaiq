@@ -84,6 +84,11 @@ router.post('/sessions', requireAuth, async (req, res) => {
         order: question.question_order,
         competency: question.competency || openingResult.competency,
       },
+      // Clean, flat fields the frontend can bind to directly — no digging
+      // through nested question objects required.
+      text: question.question_text,
+      audio_url: openingResult.audio_url || null,
+      competency_tag: question.competency || openingResult.competency || null,
     });
   } catch (err) {
     console.error('[interview/sessions POST]', err);
@@ -201,6 +206,9 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
         sessionEnded: true,
         reportId: sessionId,
         scores,
+        text: null,
+        audio_url: null,
+        competency_tag: null,
       });
     }
  // 5. Generate next question
@@ -240,6 +248,12 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
         type: nextQuestion.question_type,
         order: nextQuestion.question_order,
       },
+      // Flat mirror of `question` above so the client never has to guess
+      // which shape came back — fixes the UI/audio desync where the DOM
+      // waited on one shape while Vapi's audio events assumed another.
+      text: nextQuestion.question_text,
+      audio_url: nextResult.audio_url || null,
+      competency_tag: nextQuestion.competency || nextResult.competency || null,
     });
   } catch (err) {
     console.error('[interview/sessions/:id/answer]', err);
@@ -295,8 +309,10 @@ router.post('/start', async (req, res) => {
   res.status(410).json({ error: 'This endpoint is deprecated. Use POST /api/interview/sessions instead.' });
 });
 
-// Lightweight utility route to convert any standalone text to the soft female accent
-router.post('/api/interview/tts', async (req, res) => {
+// Text-to-speech utility route, used to generate the audio_url returned
+// alongside a question so the frontend can play/sync it against the
+// on-screen text (see speech-start handling in interview-session.ejs).
+router.post('/tts', async (req, res) => {
   try {
     const { text } = req.body;
     const { OpenAI } = require('openai');
@@ -304,7 +320,7 @@ router.post('/api/interview/tts', async (req, res) => {
 
     const mp3 = await openai.audio.speech.create({
       model: "tts-1",
-      voice: "shimmer", // Matches your soft female profile configuration
+      voice: "shimmer", // Configured TTS voice for the AI interviewer
       input: text,
     });
 
