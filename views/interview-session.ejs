@@ -100,53 +100,46 @@
 ═══════════════════════════════════════════════════════════════ -->
 <script>
 (function() {
-  /* ══ Sync engine — Engine-Driven Questioning ══
-     The backend (generateNextQuestion, using role-competency-map.json) is
-     the ONLY source of truth for question content. Vapi's job is purely
-     to speak whatever text it's handed — never to invent its own next
-     question. Concretely:
-       1. The moment a new question comes back from the backend, it's
-          handed to Vapi via window.MedhaIQVoice.instructNext() (an
-          add-message system instruction) — Vapi is told what to say.
-       2. speech-start does NOT paint anything by itself anymore — it only
-          calls reveal(), which paints the SAME text we just sent Vapi.
-          There is no second, independently-generated text ever competing
-          with it, so there's nothing left to drift out of sync.
-     (An earlier version of this tried to paint the card from Vapi's own
-     live transcript instead. That's a reasonable idea in principle, but
-     it made the UI dependent on transcript event timing/shape, which is
-     more moving parts than necessary once Vapi is actually being told
-     what to say. Backend-text-is-truth is simpler and just as correct.) */
+  /* ══ Sync engine — fixes the UI/audio desync bug ══
+     THE ROOT BUG: two independent AI calls were generating "the next
+     question" — our own backend text call, AND whatever Vapi's own voice
+     assistant decided to actually say — with nothing forcing them to
+     match. The card showed our backend's guess the moment it arrived,
+     regardless of what the voice assistant was really saying a beat
+     later, so the two drifted apart on almost every question.
+     THE FIX: when voice is live, our backend's text is sent to Vapi as an
+     instruction for what to ask (via window.MedhaIQVoice.instructNext,
+     wired up in the Vapi script below), and the on-screen card is ONLY
+     ever painted from Vapi's own live transcript of what it actually
+     says (see vapi.on('message') below) — never from our own guess. In
+     text-only mode (no voice connected) there's nothing to wait for, so
+     it still paints our backend text immediately, same as before. */
   var pendingQuestion = null;
   var pendingAudioUrl = null;
-  var revealWatchdog = null;
   var qAudioEl = new Audio();
   var MedhaIQSync = {
     hold: function(question, type, competency) {
       pendingQuestion = { question: question, type: type, competency: competency };
       var voice = window.MedhaIQVoice;
       if (voice && voice.isLive && voice.isLive()) {
-        var instructed = voice.instructNext(question.text); // tell Vapi exactly what to say next
+        // Paint everything EXCEPT the question body right away (counter,
+        // "why this question", input reset) — the body stays a neutral
+        // placeholder until Vapi's own transcript fills it in live.
+        showQuestionMeta(question, type, competency);
+        showQuestionText('Listening for your interviewer…');
+        var instructed = voice.instructNext(question.text);
+        pendingQuestion = null;
         if (instructed) {
-          // Wait for speech-start to reveal — but if it never fires
-          // (dropped connection, misconfigured assistant, etc.) don't
-          // leave the candidate staring at a stuck screen forever.
-          clearTimeout(revealWatchdog);
-          revealWatchdog = setTimeout(function(){
-            if (pendingQuestion) {
-              (window.MedhaIQ_log || function(){})('speech-start watchdog fired — revealing question directly', 'info');
-              MedhaIQSync.reveal();
-            }
-          }, 8000);
+          pendingAudioUrl = null; // Vapi is speaking now — our own TTS clip (if any) must not fire later
           return;
         }
-        // instructNext failed even though voice reported itself live —
-        // fall through to an immediate text reveal instead.
+        // instructNext failed (voice flagged live but the call object
+        // isn't actually usable) — fall back to the text reveal below so
+        // the candidate never gets stuck on the placeholder.
       }
       MedhaIQSync.reveal();
     },
     reveal: function() {
-      clearTimeout(revealWatchdog);
       if (!pendingQuestion) return;
       showQuestion(pendingQuestion.question, pendingQuestion.type, pendingQuestion.competency);
       pendingQuestion = null;
@@ -605,6 +598,7 @@
 
   var STATES={ IDLE:'IDLE',REQUESTING:'REQUESTING',CONNECTING:'CONNECTING',LIVE:'LIVE',STOPPING:'STOPPING' };
   var state=STATES.IDLE, vapi=null;
+  var assistantTranscriptBuf = '';
 
   function setState(s,msg,isErr){
     state=s;
@@ -647,28 +641,29 @@
     vapi.on('call-start', function() {
       setState(STATES.LIVE, 'Voice active — speak your answer');
       window.MedhaIQVoiceLive = true;
-      /* Reinforce the decoupling rule for THIS call, on top of whatever
-         is (or isn't) configured in the Vapi dashboard's own system
-         prompt for this assistant — see the note above the <script> tag
-         for the dashboard-level instruction this depends on. */
-      try {
-        vapi.send({
-          type: 'add-message',
-          message: {
-            role: 'system',
-            content: 'Do not invent your own interview questions. Wait for a system message telling you exactly what to ask next, and ask only that, verbatim in your own natural delivery.'
-          }
-        });
-      } catch (e) { console.error('[Vapi] startup instruction failed', e); }
     });
 
-    /* speech-start is now ONLY a reveal trigger, nothing more. The
-       question text was already decided by the backend and already sent
-       to Vapi via instructNext() the moment it was fetched — this just
-       times the on-screen reveal to the instant Vapi actually starts
-       talking, so the card never appears before the AI is speaking. */
+    /* The ONLY source of truth for what appears in the question card
+       while voice is live: Vapi's own transcript of what it is actually
+       saying, painted live as it speaks — not a pre-fetched guess from
+       our backend. This is what actually closes the "text doesn't match
+       what the AI says" bug: whatever's on screen IS what was said,
+       because it's built from the same transcript, word for word. */
+    vapi.on('message', function(message) {
+      if (!message || message.type !== 'transcript' || message.role !== 'assistant') return;
+      if (!window.MedhaIQ_showQuestionText) return;
+      if (message.transcriptType === 'final') {
+        assistantTranscriptBuf = (assistantTranscriptBuf ? assistantTranscriptBuf + ' ' : '') + message.transcript;
+        window.MedhaIQ_showQuestionText(assistantTranscriptBuf.trim());
+      } else {
+        // partial/live caption — show buffer-so-far + the in-progress chunk
+        var preview = (assistantTranscriptBuf ? assistantTranscriptBuf + ' ' : '') + (message.transcript || '');
+        window.MedhaIQ_showQuestionText(preview.trim());
+      }
+    });
+
     vapi.on('speech-start', function() {
-      if (window.MedhaIQSync) window.MedhaIQSync.reveal();
+      assistantTranscriptBuf = ''; // fresh sentence — don't append to the last question's leftover text
       sub.textContent = '● AI is speaking…';
     });
 
