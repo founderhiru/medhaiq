@@ -18,13 +18,35 @@
 </head>
 <body>
 
-<!-- ═══ SINGLE TOP BAR — matches Target2.jpg exactly:
-     "MedhaIQ.live | Interview Session" (left) · LIVE · timer · Qx/5 (center-right) · End Session (right) ═══ -->
+<!-- ═══ PAGE HEADER ═══ -->
+<div class="page-header">
+  <div class="ph-title-block">
+    <div class="ph-title">MedhaIQ.live — Demo Interview Session</div>
+    <div class="ph-tagline">Calm. Focused. Intelligent in the background.</div>
+  </div>
+  <div class="ph-bullets">
+    <div class="ph-bullet">
+      <span class="ph-bullet-icon">⌁</span>
+      <div><div class="ph-bullet-title">Focused Experience</div><div class="ph-bullet-sub">Minimal UI to help candidates perform their best</div></div>
+    </div>
+    <div class="ph-bullet">
+      <span class="ph-bullet-icon">◎</span>
+      <div><div class="ph-bullet-title">Live Intelligence</div><div class="ph-bullet-sub">AI analyzes in real-time without distraction</div></div>
+    </div>
+    <div class="ph-bullet">
+      <span class="ph-bullet-icon">✦</span>
+      <div><div class="ph-bullet-title">Instant Insights</div><div class="ph-bullet-sub">Deep intelligence report after the interview</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SESSION BAR — persona-free; focuses on candidate + system ═══ -->
 <div class="topbar">
-  <span class="tb-brand">Medha<em>IQ</em>.live</span>
-  <span class="tb-brand-sep">|</span>
+  <span class="tb-brand">Medha<em>IQ</em></span>
+  <div class="tb-sep"></div>
   <div class="tb-session-meta">
     <div class="tb-session-label" id="tbSessionLabel">Interview Session</div>
+    <div class="tb-session-sub" id="tbRole"></div>
   </div>
   <div class="tb-right">
     <div class="tb-live"><div class="tb-live-dot"></div>LIVE</div>
@@ -145,6 +167,7 @@
   /* Persona (PNAME/PTITLE/PINIT/PCOL) is retained purely as internal
      session data for scoring/report generation — it is never rendered.
      The UI shows only the candidate and the System's own presence. */
+  document.getElementById('tbRole').textContent   = ROLE || '—';
   document.getElementById('sbRole').textContent   = ROLE  || '—';
   document.getElementById('sbLevel').textContent  = LEVEL || '—';
 
@@ -437,19 +460,13 @@
     window.location.href = '/dashboard/history';
   });
 
-  /* ── Live Terminal — single master toggle, off by default.
-     Controls the ENTIRE terminal container (Tactical + Strategic
-     together); the underlying data (STAR nodes, gauge, vectors) keeps
-     updating in the background either way, so nothing is lost when
-     the candidate switches it back on mid-session. ── */
-  var terminalContent = document.getElementById('terminalContent');
-  var terminalToggle   = document.getElementById('terminalToggle');
-  var termToggleLbl     = document.getElementById('termToggleLbl');
-  terminalToggle.addEventListener('change', function(){
-    var expanded = this.checked;
-    terminalContent.classList.toggle('expanded', expanded);
-    termToggleLbl.textContent = expanded ? 'Hide terminal' : 'Show terminal';
-    slog(expanded ? 'Live Terminal opened by candidate' : 'Live Terminal collapsed', 'info');
+  /* ── Tactical card Hide/Show — expanded by default, per Target2 ── */
+  var tacticalBody = document.getElementById('tacticalBody');
+  var tacticalHideBtn = document.getElementById('tacticalHideBtn');
+  tacticalHideBtn.addEventListener('click', function(){
+    var collapsed = tacticalBody.classList.toggle('collapsed');
+    this.textContent = collapsed ? 'Show' : 'Hide';
+    slog(collapsed ? 'Tactical view collapsed' : 'Tactical view opened', 'info');
   });
 
   /* ── Initialise ── */
