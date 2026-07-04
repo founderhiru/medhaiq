@@ -60,7 +60,20 @@
     },
     "openingQuestionType": "opening"
   },
-
+"ai_data": {
+    "label": "AI & Data Science",
+    "matches": ["ai", "ml", "data engineer", "llm", "research scientist"],
+    "primaryCompetencies": ["model_architecture", "data_pipeline_design", "evaluation_metrics"],
+    "secondaryCompetencies": ["deployment_strategy", "ethical_ai"],
+    "vectorWeights": {
+        "structure": 0.10,
+        "technicalDepth": 0.50,
+        "executivePresence": 0.05,
+        "gccReadiness": 0.10,
+        "communicationClarity": 0.25
+    },
+    "openingQuestionType": "technical_case"
+}
   "personaModifiers": {
     "_comment": "Interviewer Persona acts as a system-prompt modifier layered on top of the role profile above — never replaces it.",
     "strict":   "Give less feedback. Focus on deep-dive follow-up questions that probe for weaknesses in the candidate's story. Do not soften critique.",
