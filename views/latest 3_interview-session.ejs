@@ -39,10 +39,9 @@
       --white:      #f1f5f9;
       --mono:       'JetBrains Mono', monospace;
       --sidebar-w:  296px;
-      --terminal-w: 320px;
+      --terminal-w: 300px;
       --radius:     16px;
-      --blur:       blur(12px);
-      --glass-bg:   rgba(10,15,30,0.8);
+      --blur:       blur(10px);
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; }
@@ -115,8 +114,7 @@
        file — hidden unless explicitly opened by staff.)
     ──────────────────────────────────────────────── */
     .sidebar {
-      background: var(--glass-bg);
-      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      background: rgba(13,24,41,0.9);
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
       padding: 22px 20px;
@@ -128,9 +126,9 @@
     .sb-field:last-child { margin-bottom: 0; }
     .sb-field-icon { font-size: 13px; color: var(--blue-hi); margin-top: 1px; flex-shrink: 0; }
     .sb-field-key { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
-    .sb-field-val { font-size: 12px; font-weight: 600; color: var(--white); }
+    .sb-field-val { font-size: 14px; font-weight: 600; color: var(--white); }
 
-    .sb-progress-num { font-size: 28px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1; }
+    .sb-progress-num { font-size: 34px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1; }
     .sb-progress-num span { font-size: 15px; font-weight: 500; color: var(--soft); }
     .sb-progress-lbl { font-size: 11px; color: var(--soft); margin: 4px 0 10px; }
     .sb-progress-track { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
@@ -151,13 +149,12 @@
        CENTER COLUMN — the Focus Zone.
        Webcam on top, floating blurred question card below.
     ──────────────────────────────────────────────── */
-    .centre-col { display: flex; flex-direction: column; overflow: hidden; padding: 18px 22px 22px; gap: 24px; }
+    .centre-col { display: flex; flex-direction: column; overflow: hidden; padding: 18px 22px 22px; gap: 16px; }
 
     .webcam-card {
       position: relative; flex-shrink: 0;
-      width: 84%; max-width: 640px; margin: 0 auto;
-      aspect-ratio: 16 / 9; max-height: 288px;
-      background: #0a1526; border-radius: 16px; overflow: hidden;
+      width: 100%; aspect-ratio: 16 / 9; max-height: 360px;
+      background: #0a1526; border-radius: var(--radius); overflow: hidden;
       border: 1px solid var(--border);
       box-shadow: 0 12px 40px rgba(0,0,0,0.35);
     }
@@ -181,21 +178,20 @@
       border-radius: 7px; padding: 5px 12px; font-size: 10px; color: var(--soft); cursor: pointer; transition: all 0.15s; backdrop-filter: var(--blur); }
     .webcam-toggle:hover { background: rgba(59,130,246,0.18); color: #fff; }
 
-    /* Floating blurred question card — the single primary task on screen.
-       This is the "Top Slot": always above the webcam in markup order. */
+    /* Floating blurred question card — the single primary task on screen */
     .question-card {
       flex: 1; display: flex; flex-direction: column; min-height: 0;
-      background: var(--glass-bg);
+      background: rgba(17,30,51,0.66);
       backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
       border: 1px solid var(--border); border-radius: var(--radius);
       padding: 22px 26px; box-shadow: 0 16px 48px rgba(0,0,0,0.3);
       overflow-y: auto;
     }
     .qc-top-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-    .qc-eyebrow { font-size: 10px; font-weight: 700; color: var(--blue-hi); text-transform: uppercase; letter-spacing: 0.6px; }
-    .qc-report-issue { margin-left: auto; font-size: 10px; color: var(--muted); cursor: pointer; text-decoration: none; }
+    .qc-eyebrow { font-size: 11px; font-weight: 700; color: var(--blue-hi); text-transform: uppercase; letter-spacing: 0.6px; }
+    .qc-report-issue { margin-left: auto; font-size: 11px; color: var(--muted); cursor: pointer; text-decoration: none; }
     .qc-report-issue:hover { color: var(--soft); }
-    .qc-text { font-size: 16px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.5; color: #fff; margin-bottom: 14px; }
+    .qc-text { font-size: 19px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.5; color: #fff; margin-bottom: 14px; }
     .qc-why-btn { align-self: flex-start; background: rgba(59,130,246,0.12); border: 1px solid var(--border-hi); color: var(--blue-hi);
       font-size: 11px; font-weight: 600; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all 0.15s; }
     .qc-why-btn:hover { background: rgba(59,130,246,0.2); }
@@ -206,8 +202,8 @@
     .answer-bar-wrap { flex-shrink: 0; }
     .answer-bar {
       display: flex; align-items: flex-end; gap: 10px;
-      background: var(--glass-bg); border: 1px solid var(--border); border-radius: 26px;
-      padding: 8px 8px 8px 20px; backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      background: rgba(17,30,51,0.85); border: 1px solid var(--border); border-radius: 26px;
+      padding: 8px 8px 8px 20px; backdrop-filter: var(--blur);
       box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
     .answer-bar textarea {
@@ -253,7 +249,7 @@
        always visible) + Live Terminal (collapsed by
        default, mirrors the landing-page component).
     ──────────────────────────────────────────────── */
-    .terminal-panel { background: var(--glass-bg); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; padding: 18px 18px 24px; }
+    .terminal-panel { background: rgba(13,22,40,0.92); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; padding: 18px 18px 24px; }
     .tp-header { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
     .tp-title { font-size: 11px; font-weight: 700; color: var(--soft); letter-spacing: 0.6px; text-transform: uppercase; }
     .tp-toggle-row { margin-left: auto; display: flex; align-items: center; gap: 7px; }
@@ -273,7 +269,7 @@
     .ai-status-ring-fill { fill: none; stroke: var(--blue-hi); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 0.6s ease; }
     .ai-status-ring-fill.pulsing { animation: statusPulse 1.6s ease-in-out infinite; }
     @keyframes statusPulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
-    .ai-status-title { font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .ai-status-title { font-size: 15px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
     .ai-status-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
 
     .status-checklist { display: flex; flex-direction: column; gap: 11px; padding: 0 6px; }
@@ -284,21 +280,12 @@
     .status-item.active { color: var(--blue-hi); font-weight: 600; }
     .status-item.active .si-dot { border-color: var(--blue-hi); box-shadow: 0 0 8px var(--blue-glow); animation: lp 1s ease-in-out infinite; }
 
-    /* Live Terminal card — collapsed by default. Uses max-height + opacity
-       (not display:none/block) so the toggle animates smoothly and never
-       reflows the fixed 3-column grid itself — only this card's own height
-       changes. */
+    /* Live Terminal card — collapsed by default */
     .live-terminal-card {
-      max-height: 0; opacity: 0; overflow: hidden;
-      background: var(--glass-bg); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-      border: 1px solid var(--border); border-radius: 14px;
-      margin-top: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      transition: max-height 0.4s cubic-bezier(0.25,1,0.5,1), opacity 0.3s ease, margin-top 0.4s ease, padding 0.4s ease;
-      padding: 0 16px;
+      display: none; background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; margin-top: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
-    .live-terminal-card.expanded {
-      max-height: 620px; opacity: 1; margin-top: 18px; padding: 16px;
-    }
+    .live-terminal-card.expanded { display: block; }
     .lt-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
     .lt-hdr-title { font-size: 10px; font-weight: 700; color: var(--soft); text-transform: uppercase; letter-spacing: 0.6px; }
     .lt-hdr-live { margin-left: auto; display: flex; align-items: center; gap: 5px; font-size: 9px; color: var(--green); font-family: var(--mono); font-weight: 700; }
@@ -453,20 +440,6 @@
   <!-- ══ CENTER — Focus Zone ══ -->
   <div class="centre-col">
 
-    <!-- Top Slot: dynamic question container, driven entirely by the
-         live API/vapi payload — no hard-coded question text below. -->
-    <div class="question-card" id="questionCard">
-      <div class="qc-top-row">
-        <span class="qc-eyebrow" id="qEyebrow">QUESTION 1 OF 5 · OPENING</span>
-        <a class="qc-report-issue" id="reportIssueLink">Report Issue</a>
-      </div>
-      <div class="qc-text" id="questionText">Connecting to your interviewer...</div>
-      <button class="qc-why-btn" id="whyBtn">Why this question?</button>
-      <div class="qc-why-text" id="qWhyText"></div>
-    </div>
-
-    <!-- Middle Slot: webcam, deliberately smaller than the question card
-         above it so the question stays the visual focal point. -->
     <div class="webcam-card" id="webcamHero">
       <video id="camVideo" autoplay playsinline muted></video>
       <div class="webcam-placeholder" id="camPlaceholder">
@@ -478,7 +451,16 @@
       <div class="webcam-you-tag">You</div>
     </div>
 
-    <!-- Bottom Slot: mic + answer input -->
+    <div class="question-card" id="questionCard">
+      <div class="qc-top-row">
+        <span class="qc-eyebrow" id="qEyebrow">QUESTION 1 OF 5 · OPENING</span>
+        <a class="qc-report-issue" id="reportIssueLink">Report Issue</a>
+      </div>
+      <div class="qc-text" id="questionText">Loading your first question...</div>
+      <button class="qc-why-btn" id="whyBtn">Why this question?</button>
+      <div class="qc-why-text" id="qWhyText"></div>
+    </div>
+
     <div class="answer-bar-wrap">
       <div class="answer-bar">
         <textarea id="answerInput" rows="1" placeholder="Start speaking or type your answer…" maxlength="4000"></textarea>
@@ -1026,22 +1008,17 @@
     });
 
     /* Sync fix: speech-start reveals the already-fetched question via
-       MedhaIQSync (the question text that was already returned by our
-       own API, not raw ASR/TTS partial text — that's what stays true to
-       the API payload instead of guessing from audio). If Vapi also
-       hands us a live message payload, mirror it into the SAME element
-       the rest of the app uses (#questionText) rather than an id that
-       doesn't exist in the DOM — the previous version referenced
-       #active-question-card, which isn't present anywhere in this page
-       and threw a null-reference error every time a message arrived. */
-    vapi.on('speech-start', function(payload) {
-      if (window.MedhaIQSync) window.MedhaIQSync.reveal();
-      var qEl = document.getElementById('questionText');
-      if (qEl && payload && payload.message) {
-        qEl.textContent = payload.message;
-      }
-      sub.textContent = '● AI is speaking…';
-    });
+       MedhaIQSync rather than painting raw ASR/TTS partial text. */
+    // Replace lines 1012-1015 with this:
+vapi.on('speech-start', function(payload) {
+    if (window.MedhaIQSync) {
+        window.MedhaIQSync.reveal();
+        // Dynamically update the UI with the message payload from the LLM
+        if (payload && payload.message) {
+            document.getElementById('active-question-card').innerText = payload.message;
+        }
+    }
+});
 
     vapi.on('speech-end', function() {
       sub.textContent = 'Your turn — speak clearly';
