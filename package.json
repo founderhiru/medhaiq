@@ -17,6 +17,9 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0"
   },
+  "devDependencies": {
+    "dotenv": "^16.4.5"
+  },
   "engines": {
     "node": ">=18.0.0"
   }

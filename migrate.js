@@ -1,6 +1,13 @@
 // Standalone migration runner — used by `npm run migrate` (Render build step)
 // Also called from server.js at startup as a fallback.
-require('dotenv').config({ path: '.env' });
+// dotenv is a devDependency for local `.env` files only — Render (and any
+// other host) injects real env vars directly, so this must never be able
+// to crash a production run just because the package isn't installed.
+try {
+  require('dotenv').config({ path: '.env' });
+} catch (e) {
+  // no-op: expected in production, where env vars come from the platform
+}
 
 if (!process.env.DATABASE_URL) {
   console.error('FATAL: DATABASE_URL not set');
