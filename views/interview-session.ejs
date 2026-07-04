@@ -1009,10 +1009,16 @@
 
     /* Sync fix: speech-start reveals the already-fetched question via
        MedhaIQSync rather than painting raw ASR/TTS partial text. */
-    vapi.on('speech-start', function() {
-      if (window.MedhaIQSync) window.MedhaIQSync.reveal();
-      sub.textContent = '● AI is speaking…';
-    });
+    // Replace lines 1012-1015 with this:
+vapi.on('speech-start', function(payload) {
+    if (window.MedhaIQSync) {
+        window.MedhaIQSync.reveal();
+        // Dynamically update the UI with the message payload from the LLM
+        if (payload && payload.message) {
+            document.getElementById('active-question-card').innerText = payload.message;
+        }
+    }
+});
 
     vapi.on('speech-end', function() {
       sub.textContent = 'Your turn — speak clearly';
