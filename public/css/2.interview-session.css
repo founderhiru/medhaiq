@@ -24,16 +24,16 @@
   --soft:       #94a3b8;
   --white:      #f1f5f9;
   --mono:       'JetBrains Mono', monospace;
-  --sidebar-w:  300px;
+  --sidebar-w:  296px;
   --terminal-w: 320px;
   --radius:     16px;
   --blur:       blur(12px);
   --glass-bg:   rgba(10,15,30,0.8);
   /* "Professional Balanced" type scale — rem-based off a 16px root so
      Headers/Body/Sidebar stay proportionate at any zoom level. */
-  --fs-header:  1.02rem;   /* reduced ~15% from 1.2rem */
-  --fs-body:    0.78rem;   /* reduced ~13% from 0.9rem */
-  --fs-sidebar: 0.72rem;   /* reduced ~10% from 0.8rem */
+  --fs-header:  1.2rem;
+  --fs-body:    0.9rem;
+  --fs-sidebar: 0.8rem;
 }
 html { font-size: 16px; }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -115,8 +115,8 @@ body {
 .sb-tip-text { font-size: 10px; color: var(--soft); line-height: 1.5; }
 .sb-tip-text strong { color: var(--white); display:block; margin-bottom: 3px; font-size: 10.5px; }
 .sb-tip-star { display: flex; gap: 6px; margin-top: 10px; }
-.sb-tip-star span { flex: 1; text-align: center; background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.25); border-radius: 8px; padding: 6px 0; font-size: 9px; font-weight: 700; color: var(--soft); }
-.sb-tip-star span b { display: block; font-size: 13px; color: var(--amber); letter-spacing: 0.3px; }
+.sb-tip-star span { flex: 1; text-align: center; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 6px 0; font-size: 9px; font-weight: 700; color: var(--soft); }
+.sb-tip-star span b { display: block; font-size: 11px; color: var(--blue-hi); }
 
 /* ── CENTER COLUMN — active-question.ejs ── */
 .centre-col { display: flex; flex-direction: column; overflow: hidden; padding: 16px 20px 20px; gap: 24px; }
@@ -130,9 +130,8 @@ body {
 
 .webcam-card {
   position: relative;
-  height: 100%; width: 100%; max-width: 100%;
-  /* Fills the flex slot exactly — matches question card height 1:1.
-     Video uses object-fit:cover so no distortion. */
+  height: 100%; width: auto; max-width: 100%;
+  aspect-ratio: 16 / 9;
   background: #0a1526; border-radius: 16px; overflow: hidden;
   border: 1px solid var(--border);
   box-shadow: 0 12px 40px rgba(0,0,0,0.35);
@@ -247,15 +246,15 @@ body {
 .tp-switch input:checked + .tp-switch-track { background: rgba(59,130,246,0.28); border-color: var(--border-hi); }
 .tp-switch input:checked + .tp-switch-track::before { transform: translateX(15px); background: var(--blue-hi); }
 
-/* Collapsible content wrapper — starts EXPANDED by default so both
-   Tactical and Strategic views are immediately visible on session open.
-   max-height/opacity animate smoothly without touching the 3-column grid. */
+/* Collapsible content wrapper — max-height/opacity (not display:none) so
+   the toggle animates smoothly without ever touching the fixed 3-column
+   grid; only this wrapper's own height changes. */
 .term-content {
   max-height: 0; opacity: 0; overflow: hidden;
   display: flex; flex-direction: column; gap: 16px;
   transition: max-height 0.4s cubic-bezier(0.25,1,0.5,1), opacity 0.3s ease, margin-top 0.4s ease;
 }
-.term-content.expanded { max-height: 1800px; opacity: 1; margin-top: 16px; }
+.term-content.expanded { max-height: 1400px; opacity: 1; margin-top: 16px; }
 
 .term-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
 .term-card-hdr { display: flex; align-items: center; gap: 7px; margin-bottom: 14px; }
@@ -324,11 +323,11 @@ body {
 .metric-lbl { font-size: 9.5px; color: var(--soft); margin-bottom: 4px; }
 .metric-track { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
 .metric-fill { height: 100%; width: 0%; border-radius: 3px; transition: width 0.6s cubic-bezier(0.25,1,0.5,1); }
-/* Score of 0 = empty bar (0% fill). The track bg stays visible so the
-   candidate sees the slot exists and was recorded — just scored zero.
-   The value label dims to muted to distinguish "zero scored" from "—" (unset). */
-.metric-fill.is-zero { width: 0% !important; }
-.metric-val.is-zero { color: var(--muted) !important; }
+/* A genuine score of 0 renders identically to an unset/never-updated bar
+   (both are 0% wide) unless we give it its own visible marker — this is
+   what makes "recorded as zero" distinguishable from "hasn't updated yet". */
+.metric-fill.is-zero { width: 4% !important; background: var(--red) !important; opacity: 0.85; }
+.metric-val.is-zero { color: var(--red) !important; }
 .metric-val { font-size: 10.5px; font-weight: 700; font-family: var(--mono); width: 26px; text-align: right; flex-shrink: 0; }
 
 .lt-footer { text-align: center; font-size: 9px; color: var(--blue-hi); font-family: var(--mono); margin-top: 14px; }
@@ -366,29 +365,3 @@ body {
 .dbg-entry { font-size: 9.5px; color: var(--soft); }
 .dbg-entry.ok { color: var(--green); } .dbg-entry.err { color: var(--red); } .dbg-entry.info { color: var(--blue-hi); }
 .dbg-hint { padding: 10px 14px; font-size: 9px; color: var(--muted); text-align: center; }
-
-/* ── RESPONSIVE ADAPTATIONS
-   As the window narrows, the terminal compresses its padding rather than
-   clipping content. Grid columns shrink gracefully: terminal stays on-screen
-   down to ~900px where it collapses to minimum safe width. ── */
-@media (max-width: 1200px) {
-  :root { --terminal-w: 280px; --sidebar-w: 260px; }
-  .terminal-panel { padding: 14px 10px 18px; }
-  .term-card { padding: 12px 12px; }
-}
-@media (max-width: 1000px) {
-  :root { --terminal-w: 240px; --sidebar-w: 220px; }
-  .terminal-panel { padding: 12px 8px 14px; }
-  .term-card { padding: 10px 10px; }
-  .sidebar { padding: 16px 12px; }
-}
-@media (max-width: 860px) {
-  /* Stack to 2 columns: hide sidebar, terminal stays */
-  .os-grid { grid-template-columns: 0 1fr var(--terminal-w); }
-  .sidebar { display: none; }
-}
-@media (max-width: 680px) {
-  /* Single column: hide both sidebars, full-width center */
-  .os-grid { grid-template-columns: 1fr; }
-  .terminal-panel { display: none; }
-}

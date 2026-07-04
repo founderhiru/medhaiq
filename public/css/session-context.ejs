@@ -1,0 +1,59 @@
+<!-- ══════════════════════════════════════════════════════════════
+     session-context.ejs — LEFT COLUMN
+     Session context + progress + time remaining only. No activity
+     log, no raw scores, no debug data (that lives in #debugConsole,
+     staff-only via Ctrl+Shift+D).
+
+     Expects locals: roleTitle, experienceLevel, personaStyleLabel
+════════════════════════════════════════════════════════════════ -->
+<div class="sidebar">
+  <div class="sb-block">
+    <div class="sb-block-label">Session Context</div>
+    <div class="sb-field">
+      <span class="sb-field-icon">◎</span>
+      <div><div class="sb-field-key">Role</div><div class="sb-field-val" id="sbRole"><%= roleTitle || '—' %></div></div>
+    </div>
+    <div class="sb-field">
+      <span class="sb-field-icon">⚡</span>
+      <div><div class="sb-field-key">Experience</div><div class="sb-field-val" id="sbLevel"><%= experienceLevel || '—' %></div></div>
+    </div>
+    <div class="sb-field">
+      <span class="sb-field-icon">☺</span>
+      <div><div class="sb-field-key">Persona (Interviewer Style)</div><div class="sb-field-val" id="sbPersonaStyle"><%= personaStyleLabel || 'Helpful' %></div></div>
+    </div>
+  </div>
+
+  <div class="sb-block">
+    <div class="sb-block-label">Progress</div>
+    <div class="sb-progress-num"><span id="sbProgNum">1</span><span>/ <%= 5 %></span></div>
+    <div class="sb-progress-lbl">Questions</div>
+    <div class="sb-progress-track"><div class="sb-progress-fill" id="sbProgFill" style="width:0%;"></div></div>
+    <div class="sb-progress-remaining" id="sbProgRemaining">4 questions remaining</div>
+  </div>
+
+  <div class="sb-block">
+    <div class="sb-block-label">Time Remaining</div>
+    <div class="sb-time-val" id="sbTimeRemaining">15:00</div>
+    <div class="sb-time-lbl">Est. remaining</div>
+  </div>
+
+  <div class="sb-spacer"></div>
+
+  <div class="sb-block" style="margin-bottom:0;">
+    <div class="sb-block-label">Interview Tip</div>
+  </div>
+  <div class="sb-tip">
+    <div style="width:100%;">
+      <div style="display:flex; gap:9px;">
+        <span class="sb-tip-icon">📍</span>
+        <div class="sb-tip-text"><strong>Use the STAR framework</strong>Structure your answers so each part below is covered.</div>
+      </div>
+      <div class="sb-tip-star">
+        <span><b>S</b>Situation</span>
+        <span><b>T</b>Task</span>
+        <span><b>A</b>Action</span>
+        <span><b>R</b>Result</span>
+      </div>
+    </div>
+  </div>
+</div><!-- /sidebar -->
