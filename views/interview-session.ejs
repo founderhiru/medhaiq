@@ -722,11 +722,11 @@
 
   /* ══ AI Interview Status — always-visible calm state machine ══ */
   var STATE_META = {
-    PREPARING:        { title:'Preparing…',        sub:'Setting up your next question',     pulse:true,  ring:0.15, steps:[] },
-    CALIBRATING:       { title:'Calibrating…',       sub:'Analysing your target role',        pulse:true,  ring:0.25, steps:[] },
+    PREPARING:        { title:'Preparing Session…', sub:'Setting up your next question',     pulse:true,  ring:0.15, steps:[] },
+    CALIBRATING:       { title:'Calibrating AI…',     sub:'Analysing your target role',        pulse:true,  ring:0.25, steps:[] },
     LISTENING:         { title:'Listening…',         sub:'Capturing your answer',             pulse:false, ring:0.4,  steps:['captured'] },
     ANALYZING:         { title:'Analyzing…',         sub:'Scoring your response',             pulse:true,  ring:0.75, steps:['captured','analyzing'] },
-    GENERATING:        { title:'Generating…',        sub:'Preparing next question',           pulse:true,  ring:0.9,  steps:['captured','analyzing','preparing'] },
+    GENERATING:        { title:'Generating Follow-up…', sub:'Preparing next question',       pulse:true,  ring:0.9,  steps:['captured','analyzing','preparing'] },
     READY:             { title:'Ready',              sub:'Your next question is up',          pulse:false, ring:1,    steps:['captured','analyzing','preparing'] },
     SESSION_COMPLETE:  { title:'Session Complete',   sub:'All questions answered',            pulse:false, ring:1,    steps:['captured','analyzing','preparing'] },
     GENERATING_REPORT: { title:'Generating Report…', sub:'Compiling your Intelligence Report',pulse:true,  ring:0.95, steps:['captured','analyzing','preparing'] },
