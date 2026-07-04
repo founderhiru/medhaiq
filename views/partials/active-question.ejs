@@ -22,17 +22,21 @@
     <div class="qc-why-text" id="qWhyText"></div>
   </div>
 
-  <!-- Middle Slot: webcam, 16:9, deliberately smaller than the question
-       card above it so the question stays the visual focal point -->
-  <div class="webcam-card" id="webcamHero">
-    <video id="camVideo" autoplay playsinline muted></video>
-    <div class="webcam-placeholder" id="camPlaceholder">
-      <div class="wc-icon">📷</div>
-      <div class="wc-hint">Click "Enable Camera" to start</div>
+  <!-- Middle Slot: webcam, 16:9, wrapped in an equal-share flex slot so it
+       takes exactly the same vertical share as the Question Container above
+       it (1:1 ratio) — the wrapper grows/shrinks the slot, the aspect-ratio
+       on the card itself keeps the frame true to 16:9 regardless. -->
+  <div class="webcam-slot">
+    <div class="webcam-card" id="webcamHero">
+      <video id="camVideo" autoplay playsinline muted></video>
+      <div class="webcam-placeholder" id="camPlaceholder">
+        <div class="wc-icon">📷</div>
+        <div class="wc-hint">Click "Enable Camera" to start</div>
+      </div>
+      <div class="webcam-badge off" id="camBadge"><div class="wbdot"></div><span id="camBadgeText">CAM OFF</span></div>
+      <button class="webcam-toggle" id="camToggle">Enable Camera</button>
+      <div class="webcam-you-tag">You</div>
     </div>
-    <div class="webcam-badge off" id="camBadge"><div class="wbdot"></div><span id="camBadgeText">CAM OFF</span></div>
-    <button class="webcam-toggle" id="camToggle">Enable Camera</button>
-    <div class="webcam-you-tag">You</div>
   </div>
 
   <!-- Bottom Slot: mic + answer input -->

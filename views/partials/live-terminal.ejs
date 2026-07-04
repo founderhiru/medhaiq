@@ -1,21 +1,33 @@
 <!-- ══════════════════════════════════════════════════════════════
-     live-terminal.ejs — RIGHT COLUMN
-     Split view: (1) Tactical — AI status + horizontal STAR
-     checklist, driven by real-time answer-stream detection, and
-     (2) Strategic — the Overall Intelligence gauge + 5-vector bars,
-     the primary focal point of the panel. Both are visible by
-     default; "Hide" only tucks away the Tactical detail body.
+     live-terminal.ejs — RIGHT COLUMN (320px fixed)
+     Visibility logic: the ENTIRE terminal container — both the
+     Tactical (STAR checklist) and Strategic (Intelligence Score)
+     views — is governed by a single header switch. Off by default;
+     switching it "On" reveals both views together. The switch only
+     animates this panel's own content height, so the fixed 3-column
+     grid never reflows.
 ════════════════════════════════════════════════════════════════ -->
 <div class="terminal-panel">
 
-  <!-- ══ TACTICAL VIEW ══ -->
-  <div class="term-card" id="tacticalCard">
-    <div class="term-card-hdr">
-      <span class="term-card-title">Live Terminal (Tactical View)</span>
-      <button class="term-card-hide" id="tacticalHideBtn">Hide</button>
+  <div class="term-toggle-hdr">
+    <span class="term-toggle-title">Live Terminal</span>
+    <div class="term-toggle-row">
+      <span class="term-toggle-lbl" id="termToggleLbl">Show terminal</span>
+      <label class="tp-switch">
+        <input type="checkbox" id="terminalToggle">
+        <span class="tp-switch-track"></span>
+      </label>
     </div>
+  </div>
 
-    <div class="term-card-body" id="tacticalBody">
+  <div class="term-content" id="terminalContent">
+
+    <!-- ══ TACTICAL VIEW ══ -->
+    <div class="term-card">
+      <div class="term-card-hdr">
+        <span class="term-card-title">Live Terminal (Tactical View)</span>
+      </div>
+
       <div class="ai-status-block">
         <div class="ai-status-ring-wrap">
           <svg viewBox="0 0 78 78">
@@ -44,61 +56,62 @@
         <div class="status-item" data-step="preparing"><span class="si-dot"></span>Preparing next question</div>
       </div>
     </div>
-  </div>
 
-  <!-- ══ STRATEGIC VIEW — always visible, the panel's focal point ══ -->
-  <div class="term-card">
-    <div class="term-card-hdr">
-      <span class="term-card-title">Overall Intelligence Score (Strategic View)</span>
-      <span class="term-card-live"><span class="dot"></span>LIVE</span>
-    </div>
-
-    <div class="lt-score-block">
-      <div class="score-ring-wrap">
-        <svg width="96" height="96" viewBox="0 0 78 78">
-          <circle class="ring-bg" cx="39" cy="39" r="34"/>
-          <circle class="ring-fill" id="ringFill" cx="39" cy="39" r="34"/>
-        </svg>
-        <div class="ring-label" id="ringLabel">—</div>
+    <!-- ══ STRATEGIC VIEW — gauge is the focal point, 5-vector bars sit
+         directly underneath it ══ -->
+    <div class="term-card">
+      <div class="term-card-hdr">
+        <span class="term-card-title">Overall Intelligence Score (Strategic View)</span>
+        <span class="term-card-live"><span class="dot"></span>LIVE</span>
       </div>
-      <div class="ring-out-of" id="ringOutOf">/ 100</div>
-      <div class="ring-status" id="ringStatus"></div>
-      <div class="ring-status-sub" id="ringStatusSub"></div>
+
+      <div class="lt-score-block">
+        <div class="score-ring-wrap">
+          <svg width="96" height="96" viewBox="0 0 78 78">
+            <circle class="ring-bg" cx="39" cy="39" r="34"/>
+            <circle class="ring-fill" id="ringFill" cx="39" cy="39" r="34"/>
+          </svg>
+          <div class="ring-label" id="ringLabel">—</div>
+        </div>
+        <div class="ring-out-of" id="ringOutOf">/ 100</div>
+        <div class="ring-status" id="ringStatus"></div>
+        <div class="ring-status-sub" id="ringStatusSub"></div>
+      </div>
+
+      <div class="lt-vec-lbl">5-Vector Intelligence</div>
+      <div class="metric-row">
+        <span class="metric-icon">⚡</span>
+        <div class="metric-body"><div class="metric-lbl">Structure (STAR)</div>
+          <div class="metric-track"><div class="metric-fill" id="mStar" style="background:#3b82f6;"></div></div></div>
+        <span class="metric-val" id="mStarV" style="color:#3b82f6;">—</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-icon">🧠</span>
+        <div class="metric-body"><div class="metric-lbl">Technical Depth</div>
+          <div class="metric-track"><div class="metric-fill" id="mTech" style="background:#a78bfa;"></div></div></div>
+        <span class="metric-val" id="mTechV" style="color:#a78bfa;">—</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-icon">👔</span>
+        <div class="metric-body"><div class="metric-lbl">Executive Presence</div>
+          <div class="metric-track"><div class="metric-fill" id="mExec" style="background:#22c55e;"></div></div></div>
+        <span class="metric-val" id="mExecV" style="color:#22c55e;">—</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-icon">🌐</span>
+        <div class="metric-body"><div class="metric-lbl">GCC Readiness</div>
+          <div class="metric-track"><div class="metric-fill" id="mGcc" style="background:#f59e0b;"></div></div></div>
+        <span class="metric-val" id="mGccV" style="color:#f59e0b;">—</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-icon">💬</span>
+        <div class="metric-body"><div class="metric-lbl">Communication Clarity</div>
+          <div class="metric-track"><div class="metric-fill" id="mFric" style="background:#fb923c;"></div></div></div>
+        <span class="metric-val" id="mFricV" style="color:#fb923c;">—</span>
+      </div>
+
+      <div class="lt-footer pulsing" id="ltFooter">⚡ Analyzing in real-time</div>
     </div>
 
-    <div class="lt-vec-lbl">5-Vector Intelligence</div>
-    <div class="metric-row">
-      <span class="metric-icon">⚡</span>
-      <div class="metric-body"><div class="metric-lbl">Structure (STAR)</div>
-        <div class="metric-track"><div class="metric-fill" id="mStar" style="background:#3b82f6;"></div></div></div>
-      <span class="metric-val" id="mStarV" style="color:#3b82f6;">—</span>
-    </div>
-    <div class="metric-row">
-      <span class="metric-icon">🧠</span>
-      <div class="metric-body"><div class="metric-lbl">Technical Depth</div>
-        <div class="metric-track"><div class="metric-fill" id="mTech" style="background:#a78bfa;"></div></div></div>
-      <span class="metric-val" id="mTechV" style="color:#a78bfa;">—</span>
-    </div>
-    <div class="metric-row">
-      <span class="metric-icon">👔</span>
-      <div class="metric-body"><div class="metric-lbl">Executive Presence</div>
-        <div class="metric-track"><div class="metric-fill" id="mExec" style="background:#22c55e;"></div></div></div>
-      <span class="metric-val" id="mExecV" style="color:#22c55e;">—</span>
-    </div>
-    <div class="metric-row">
-      <span class="metric-icon">🌐</span>
-      <div class="metric-body"><div class="metric-lbl">GCC Readiness</div>
-        <div class="metric-track"><div class="metric-fill" id="mGcc" style="background:#f59e0b;"></div></div></div>
-      <span class="metric-val" id="mGccV" style="color:#f59e0b;">—</span>
-    </div>
-    <div class="metric-row">
-      <span class="metric-icon">💬</span>
-      <div class="metric-body"><div class="metric-lbl">Communication Clarity</div>
-        <div class="metric-track"><div class="metric-fill" id="mFric" style="background:#fb923c;"></div></div></div>
-      <span class="metric-val" id="mFricV" style="color:#fb923c;">—</span>
-    </div>
-
-    <div class="lt-footer pulsing" id="ltFooter">⚡ Analyzing in real-time</div>
-  </div>
-
+  </div><!-- /term-content -->
 </div><!-- /terminal-panel -->
