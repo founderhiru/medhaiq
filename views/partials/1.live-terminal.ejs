@@ -9,11 +9,18 @@
 ════════════════════════════════════════════════════════════════ -->
 <div class="terminal-panel">
 
-  <div class="term-header-static">
+  <div class="term-toggle-hdr">
     <span class="term-toggle-title">Live Terminal</span>
+    <div class="term-toggle-row">
+      <span class="term-toggle-lbl" id="termToggleLbl">Show terminal</span>
+      <label class="tp-switch">
+        <input type="checkbox" id="terminalToggle">
+        <span class="tp-switch-track"></span>
+      </label>
+    </div>
   </div>
 
-  <div class="term-content expanded" id="terminalContent">
+  <div class="term-content" id="terminalContent">
 
     <!-- ══ TACTICAL VIEW ══ -->
     <div class="term-card">

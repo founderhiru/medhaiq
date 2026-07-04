@@ -122,11 +122,11 @@
       pendingQuestion = { question: question, type: type, competency: competency };
       var voice = window.MedhaIQVoice;
       if (voice && voice.isLive && voice.isLive()) {
-        // Show card meta (eyebrow, counter) but leave text EMPTY.
-        // Text is stored in _pendingQText and revealed only on speech-start.
+        // Paint everything EXCEPT the question body right away (counter,
+        // "why this question", input reset) — the body stays a neutral
+        // placeholder until Vapi's own transcript fills it in live.
         showQuestionMeta(question, type, competency);
-        showQuestionText('');
-        window._pendingQText = question.text;
+        showQuestionText('Listening for your interviewer…');
         var instructed = voice.instructNext(question.text);
         pendingQuestion = null;
         if (instructed) {
@@ -199,7 +199,7 @@
     document.getElementById('sbProgNum').textContent = QN;
     var pct = Math.round(((QN-1)/MAXQ)*100);
     document.getElementById('sbProgFill').style.width = pct+'%';
-    var remaining = Math.max(0, MAXQ - QN); // questions left AFTER current one
+    var remaining = Math.max(0, MAXQ-(QN-1));
     document.getElementById('sbProgRemaining').textContent = remaining + (remaining===1?' question remaining':' questions remaining');
   }
 
@@ -249,9 +249,9 @@
       var bar = document.getElementById(r[0]); var lbl = document.getElementById(r[1]);
       if (bar) {
         bar.classList.toggle('is-zero', isZero);
-        // Always set width explicitly — 0 renders as empty bar (0% fill, track
-        // background visible), never hidden. Immediate DOM update, no delay.
-        bar.style.width = val + '%';
+        // Immediate DOM update — no setTimeout delay. A real 0 especially
+        // needs to register as "recorded right now", not fade in later.
+        bar.style.width = isZero ? '' : val + '%'; // CSS !important on .is-zero handles the zero width
       }
       if (lbl) {
         lbl.textContent = val;
@@ -533,29 +533,25 @@
     window.location.href = '/dashboard/history';
   });
 
-  /* ── Live Terminal — always expanded, no toggle needed ── */
-  // Terminal content stays permanently visible; toggle removed per UX spec.
+  /* ── Live Terminal — single master toggle, off by default.
+     Controls the ENTIRE terminal container (Tactical + Strategic
+     together); the underlying data (STAR nodes, gauge, vectors) keeps
+     updating in the background either way, so nothing is lost when
+     the candidate switches it back on mid-session. ── */
+  var terminalContent = document.getElementById('terminalContent');
+  var terminalToggle   = document.getElementById('terminalToggle');
+  var termToggleLbl     = document.getElementById('termToggleLbl');
+  terminalToggle.addEventListener('change', function(){
+    var expanded = this.checked;
+    terminalContent.classList.toggle('expanded', expanded);
+    termToggleLbl.textContent = expanded ? 'Hide terminal' : 'Show terminal';
+    slog(expanded ? 'Live Terminal opened by candidate' : 'Live Terminal collapsed', 'info');
+  });
 
   /* ── Initialise ── */
   updateCounter();
   setAIState('CALIBRATING');
-  if (INITQ) {
-    // Show the question card meta (counter, eyebrow, input reset) immediately
-    // but leave the question TEXT empty until Vapi's speech-start fires.
-    // This eliminates the "ghost text" where the card pre-fills before the
-    // AI has actually spoken a single word.
-    showQuestionMeta({text:INITQ}, QTYPE, null);
-    showQuestionText('');
-    window._pendingQText = INITQ; // picked up by vapi.on('speech-start') below
-    // Text-only fallback: if Vapi is not configured or doesn't speak within
-    // 7 seconds, reveal the question text so the candidate is never stuck.
-    window._pendingQTimer = setTimeout(function() {
-      if (window._pendingQText && window.MedhaIQ_showQuestionText) {
-        window.MedhaIQ_showQuestionText(window._pendingQText);
-        window._pendingQText = null;
-      }
-    }, 7000);
-  }
+  if (INITQ) showQuestion({text:INITQ}, QTYPE, null);
   slog('Session #'+SID+' initialised', 'ok');
   slog('Persona (internal): '+PNAME, 'info'); /* debug-console only, never shown in candidate UI */
   slog('Role: '+ROLE+' | Level: '+LEVEL);
@@ -696,16 +692,8 @@
     });
 
     vapi.on('speech-start', function() {
-      assistantTranscriptBuf = ''; // fresh buffer — don't carry over last question's text
+      assistantTranscriptBuf = ''; // fresh sentence — don't append to the last question's leftover text
       sub.textContent = '● AI is speaking…';
-      // Reveal the question text the moment the AI starts talking — not before.
-      // This is the fix for UI Ghosting: text only appears when speech physically begins.
-      if (window._pendingQText && window.MedhaIQ_showQuestionText) {
-        window.MedhaIQ_showQuestionText(window._pendingQText);
-        window._pendingQText = null;
-      }
-      // Cancel the text-only fallback timer since voice is handling it now.
-      if (window._pendingQTimer) { clearTimeout(window._pendingQTimer); window._pendingQTimer = null; }
     });
 
     vapi.on('speech-end', function() {
