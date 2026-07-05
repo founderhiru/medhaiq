@@ -1,4 +1,26 @@
-<button class="mh-btn mh-btn-<%= type || 'primary' %>">
-  <%= text %>
-  <% if (icon) { %> <span class="icon">→</span> <% } %>
-</button>
+<%
+/* ============================================================
+   BUTTON COMPONENT
+   Usage from any page:
+
+   <%- include('partials/components/button', {
+     label: 'Start AI Interview',
+     href: '/interview',
+     variant: 'primary',   // 'primary' | 'secondary' | 'ghost'
+     size: '',             // '' | 'sm' | 'lg'
+     iconRight: true,      // adds an arrow icon that slides on hover
+     extraClass: ''        // e.g. 'mh-open-modal' to hook into existing modal JS
+   }) %>
+   ============================================================ */
+const btnVariant = typeof variant !== 'undefined' ? variant : 'primary';
+const btnSize = typeof size !== 'undefined' && size ? ('btn-' + size) : '';
+const btnIconRight = typeof iconRight !== 'undefined' && iconRight;
+const btnExtra = typeof extraClass !== 'undefined' ? extraClass : '';
+const btnHref = typeof href !== 'undefined' ? href : '#';
+%>
+<a href="<%= btnHref %>" class="btn btn-<%= btnVariant %> <%= btnSize %> <%= btnIconRight ? 'btn-icon-right' : '' %> <%= btnExtra %>">
+  <%= label %>
+  <% if (btnIconRight) { %>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  <% } %>
+</a>

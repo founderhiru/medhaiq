@@ -1,0 +1,24 @@
+<%
+/* ============================================================
+   CARD COMPONENT
+   Usage — pass a title and raw HTML body:
+   <%- include('partials/components/card', {
+     title: 'AI Personalization',
+     bodyHtml: '<p>Built for you based on role and experience.</p>',
+     hover: true,       // lift + blue border on hover
+     selected: false    // highlighted border, e.g. selected role/interviewer
+   }) %>
+   ============================================================ */
+const cardHover = typeof hover !== 'undefined' && hover;
+const cardSelected = typeof selected !== 'undefined' && selected;
+const cardTitle = typeof title !== 'undefined' ? title : '';
+const cardBody = typeof bodyHtml !== 'undefined' ? bodyHtml : '';
+%>
+<div class="card <%= cardHover ? 'card-hover' : '' %> <%= cardSelected ? 'card-selected' : '' %>">
+  <% if (cardTitle) { %>
+    <div class="card-header">
+      <div class="card-title"><%= cardTitle %></div>
+    </div>
+  <% } %>
+  <%- cardBody %>
+</div>

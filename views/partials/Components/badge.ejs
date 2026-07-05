@@ -1,0 +1,14 @@
+<%
+/* ============================================================
+   BADGE COMPONENT
+   Usage:
+   <%- include('partials/components/badge', {
+     text: 'AI Career Intelligence Platform',
+     variant: 'blue',   // 'blue' | 'emerald' | 'gold' | '' (default gray)
+     live: false        // true adds a pulsing green dot (for "LIVE" status)
+   }) %>
+   ============================================================ */
+const badgeVariant = typeof variant !== 'undefined' && variant ? ('badge-' + variant) : '';
+const badgeLive = typeof live !== 'undefined' && live;
+%>
+<span class="badge <%= badgeVariant %> <%= badgeLive ? 'badge-live' : '' %>"><%= text %></span>
