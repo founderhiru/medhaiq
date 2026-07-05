@@ -1,12 +1,11 @@
 <!--
-  HERO — v4
-  Only change from v3: the 4 chip <div>s each get one extra class
-  (mh-hero-chip-purple / -green / -gold / -magenta) so their container
-  can carry a matching glass tint, and the "Continuous Growth" icon
-  color class changed from -blue to -magenta. Nothing else in this
-  file is different from what you already have — CTAs still route to
-  /login, mini card is still a plain link, logo/nav still live only in
-  header.ejs.
+  HERO — v3
+  Change from v2: every CTA now routes to /login (your real auth flow —
+  same one pricing-section.ejs and cta-banner.ejs already use), instead
+  of the old /#waitlist anchor (which pointed at a section that was never
+  actually included on the page). The mini email-capture card is simplified
+  to a plain button — no more direct /api/waitlist call from this file.
+  Logo/nav are untouched (still live in header.ejs, included separately).
 -->
 <section class="mh-hero">
   <div class="mh-hero-grid"></div>
@@ -25,26 +24,26 @@
       <p class="mh-hero-h2">Move beyond interview practice. Adaptive AI personalizes every assessment to your role, experience, and goals—delivering actionable career intelligence to help you perform, grow, and advance with confidence.</p>
 
       <div class="mh-hero-chips">
-        <div class="mh-hero-chip mh-hero-chip-purple">
+        <div class="mh-hero-chip">
           <span class="mh-hero-chip-icon mh-hero-chip-icon-purple">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           </span>
           <span>AI-Powered Interviews</span>
         </div>
-        <div class="mh-hero-chip mh-hero-chip-green">
+        <div class="mh-hero-chip">
           <span class="mh-hero-chip-icon mh-hero-chip-icon-green">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
           </span>
           <span>Personalized Feedback</span>
         </div>
-        <div class="mh-hero-chip mh-hero-chip-gold">
+        <div class="mh-hero-chip">
           <span class="mh-hero-chip-icon mh-hero-chip-icon-amber">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
           </span>
           <span>Actionable Insights</span>
         </div>
-        <div class="mh-hero-chip mh-hero-chip-magenta">
-          <span class="mh-hero-chip-icon mh-hero-chip-icon-magenta">
+        <div class="mh-hero-chip">
+          <span class="mh-hero-chip-icon mh-hero-chip-icon-blue">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           </span>
           <span>Continuous Growth</span>
@@ -69,6 +68,7 @@
         <div class="mh-proof-item">Career Intelligence Reports</div>
       </div>
 
+      <!-- Mini card — now a plain CTA, no email capture, no /api/waitlist call -->
       <div class="mh-hero-notify">
         <div class="mh-hero-notify-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
@@ -81,7 +81,7 @@
       </div>
     </div>
 
-    <!-- Right column: Live Interview Terminal dashboard mockup — unchanged from Phase 4 -->
+    <!-- Right column: Live Interview Terminal dashboard mockup (unchanged from Phase 3) -->
     <div class="mh-hero-mockup-wrap">
       <div class="mh-terminal-v2">
         <div class="mh-terminal-v2-header">

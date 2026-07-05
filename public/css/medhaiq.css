@@ -6,10 +6,10 @@
 
 :root {
   /* Color Palette */
-  --navy-deep:    #0A0F1E;
-  --navy-rich:    #0F172A;
-  --navy-card:    #131B2E;
-  --navy-border:  #1E293B;
+  --navy-deep:    #05070D;
+  --navy-rich:    #080B14;
+  --navy-card:    #0A0E1A;
+  --navy-border:  #161F30;
   --royal-blue:   #1E40AF;
   --blue-bright:  #3B82F6;
   --blue-glow:    rgba(59, 130, 246, 0.15);
