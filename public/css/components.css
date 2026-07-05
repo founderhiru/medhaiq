@@ -1,0 +1,239 @@
+/* ============================================================
+   MEDHAIQ COMPONENT LIBRARY
+   One place for every reusable UI piece. Change a style here,
+   it updates everywhere that component is used.
+
+   Depends on tokens already defined at the top of medhaiq.css:
+   --navy-deep, --navy-rich, --navy-card, --navy-border,
+   --royal-blue, --blue-bright, --blue-glow, --emerald, --gold,
+   --white, --text-muted, --text-faint, --font-display, --font-body,
+   --font-mono, --radius, --radius-lg, --radius-xl, --max-w
+
+   LOAD ORDER in layout.ejs / interview-setup.ejs <head>:
+     <link rel="stylesheet" href="/css/medhaiq.css">     (tokens + page-specific styles)
+     <link rel="stylesheet" href="/css/components.css">  (this file, loads AFTER)
+   ============================================================ */
+
+/* ---------- 1. BUTTON ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 13px 24px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--royal-blue), var(--blue-bright));
+  color: var(--white);
+  box-shadow: 0 4px 14px var(--blue-glow);
+}
+.btn-primary:hover { box-shadow: 0 6px 20px var(--blue-glow); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--white);
+  border-color: var(--navy-border);
+}
+.btn-secondary:hover { border-color: var(--blue-bright); background: var(--white-soft); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: transparent;
+}
+.btn-ghost:hover { color: var(--white); }
+
+.btn-sm { padding: 9px 16px; font-size: 13px; }
+.btn-lg { padding: 16px 32px; font-size: 16px; }
+.btn-full { width: 100%; }
+.btn-icon-right svg, .btn-icon-right i { transition: transform 0.15s ease; }
+.btn-icon-right:hover svg, .btn-icon-right:hover i { transform: translateX(3px); }
+
+/* ---------- 2. BADGE ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  padding: 6px 12px;
+  border-radius: 100px;
+  border: 1px solid var(--navy-border);
+  background: var(--white-soft);
+  color: var(--text-muted);
+}
+.badge-blue    { color: var(--blue-bright);  background: var(--blue-glow);   border-color: rgba(59,130,246,0.3); }
+.badge-emerald { color: var(--emerald);      background: var(--emerald-soft); border-color: rgba(5,150,105,0.3); }
+.badge-gold    { color: var(--gold);         background: var(--gold-soft);   border-color: rgba(217,119,6,0.3); }
+.badge-live { color: var(--emerald); }
+.badge-live::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+  box-shadow: 0 0 0 3px var(--emerald-soft);
+}
+
+/* ---------- 3. CARD ---------- */
+.card {
+  background: var(--navy-card);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+.card-hover { transition: border-color 0.2s ease, transform 0.2s ease; }
+.card-hover:hover { border-color: var(--blue-bright); transform: translateY(-2px); }
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.card-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--white);
+}
+.card-selected { border-color: var(--blue-bright); box-shadow: 0 0 0 1px var(--blue-bright); }
+
+/* ---------- 4. SECTION (page-level wrapper, every homepage block uses this) ---------- */
+.section {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 80px 40px;
+}
+.section-sm { padding: 48px 40px; }
+.section-header { text-align: center; max-width: 640px; margin: 0 auto 48px; }
+.section-eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+  color: var(--blue-bright); text-transform: uppercase; margin-bottom: 12px;
+}
+.section-title {
+  font-family: var(--font-display); font-weight: 800; font-size: 36px;
+  color: var(--white); margin-bottom: 12px; line-height: 1.2;
+}
+.section-sub { color: var(--text-muted); font-size: 16px; line-height: 1.6; }
+
+/* ---------- 5. LIVE TERMINAL ---------- */
+.terminal {
+  background: var(--navy-rich);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.terminal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--navy-border);
+  font-family: var(--font-mono);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+  color: var(--text-muted); text-transform: uppercase;
+}
+.terminal-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.terminal-block-label {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+  color: var(--text-faint); text-transform: uppercase; margin-bottom: 12px;
+}
+
+/* ---------- 6. AI SCORE (ring + label, used on homepage + report) ---------- */
+.ai-score { display: flex; align-items: center; gap: 16px; }
+.ai-score-ring {
+  width: 84px; height: 84px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 800; font-size: 22px;
+  color: var(--white);
+  background: conic-gradient(var(--blue-bright) calc(var(--score, 0) * 3.6deg), var(--navy-border) 0deg);
+}
+.ai-score-ring-inner {
+  width: 68px; height: 68px; border-radius: 50%;
+  background: var(--navy-rich);
+  display: flex; align-items: center; justify-content: center;
+}
+.ai-score-label { color: var(--text-muted); font-size: 13px; }
+
+/* ---------- 7. QUESTION CARD (STAR / interview question display) ---------- */
+.question-card { background: var(--navy-rich); border: 1px solid var(--navy-border); border-radius: var(--radius-lg); padding: 20px; }
+.question-card-tag { display: flex; gap: 8px; margin-bottom: 12px; }
+.question-card-text { color: var(--white); font-size: 15px; line-height: 1.6; }
+
+/* ---------- 8. VIDEO CARD (demo / testimonial thumbnail) ---------- */
+.video-card { position: relative; border-radius: var(--radius-lg); overflow: hidden; cursor: pointer; background: var(--navy-card); border: 1px solid var(--navy-border); }
+.video-card-play {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+}
+.video-card-play-btn {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s ease;
+}
+.video-card:hover .video-card-play-btn { transform: scale(1.08); }
+
+/* ---------- 9. INPUT BOX ---------- */
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+.input-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+.input-box {
+  font-family: var(--font-body); font-size: 15px;
+  padding: 12px 16px;
+  background: var(--navy-rich);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius);
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.input-box::placeholder { color: var(--text-faint); }
+.input-box:focus { border-color: var(--blue-bright); }
+.input-with-btn { display: flex; gap: 8px; }
+.input-with-btn .input-box { flex: 1; }
+
+/* ---------- 10. MISSION FOOTER (bottom action bar on multi-step screens) ---------- */
+.mission-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px;
+  background: var(--navy-card);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+}
+.mission-footer-meta { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.mission-footer-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); }
+.mission-footer-item strong { color: var(--white); font-weight: 600; }
+
+/* ---------- 11. STAT CARD ---------- */
+.stat-card { text-align: center; padding: 20px; }
+.stat-card-value {
+  font-family: var(--font-display); font-weight: 800; font-size: 32px;
+  color: var(--white); line-height: 1.1;
+}
+.stat-card-label { color: var(--text-muted); font-size: 13px; margin-top: 6px; }
+
+/* ---------- 12. TIMELINE ---------- */
+.timeline { display: flex; align-items: flex-start; justify-content: space-between; position: relative; }
+.timeline::before {
+  content: ''; position: absolute; top: 20px; left: 40px; right: 40px; height: 2px;
+  background: var(--navy-border);
+}
+.timeline-step { display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 1; position: relative; z-index: 1; }
+.timeline-dot {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--navy-rich); border: 2px solid var(--navy-border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; color: var(--text-muted);
+}
+.timeline-step-active .timeline-dot { border-color: var(--blue-bright); color: var(--blue-bright); background: var(--blue-glow); }
+.timeline-step-label { font-size: 13px; color: var(--text-muted); text-align: center; }
+.timeline-step-active .timeline-step-label { color: var(--white); font-weight: 600; }
