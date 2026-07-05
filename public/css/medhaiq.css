@@ -121,7 +121,7 @@ button { cursor: pointer; }
   border-radius: 10px;
   background: var(--navy-deep);
   border: 1px solid var(--navy-border);
-  display: flex;
+  display: flex; `
   align-items: center;
   justify-content: center;
   position: relative;
@@ -2481,6 +2481,14 @@ button { cursor: pointer; }
     .mh-score-layout { gap: 32px; }
   .mh-form-row { grid-template-columns: 1fr; }
   .mh-footer-inner { flex-direction: column; gap: 16px; text-align: center; }
+  .mh-hero-actions {
+     flex-wrap: wrap;
+   }
+     .mh-hero-actions .mh-btn-primary,
+   .mh-hero-actions .mh-btn-outline {
+     width: 100%;
+     justify-content: center;
+   }
   .mh-steps {
     flex-direction: column;
     align-items: center;
