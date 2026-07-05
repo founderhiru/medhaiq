@@ -55,10 +55,7 @@
 .mh-hero-chip-icon-amber   { background: var(--gold-soft);          color: var(--gold); }
 .mh-hero-chip-icon-magenta { background: rgba(236, 72, 153, 0.15);  color: #EC4899; }
 
-.mh-hero-chip-purple  { border-color: rgba(167, 139, 250, 0.25); }
-.mh-hero-chip-green   { border-color: rgba(5, 150, 105, 0.3); }
-.mh-hero-chip-gold    { border-color: rgba(217, 119, 6, 0.3); }
-.mh-hero-chip-magenta { border-color: rgba(236, 72, 153, 0.28); }
+/* chip variant border-color overrides removed — all chips now share the same neutral border for a cleaner, more solid card look */
 
 @media (max-width: 480px) {
   .mh-hero-chip { width: calc(50% - 5px); }
@@ -297,13 +294,4 @@
   .mh-terminal-v2-live-dot {
     animation: none;
   }
-}
-
-/* ---------- Wider content area on large screens — less empty gutter
-   on either side at full 100% zoom, more "filled" elite feel ---------- */
-.mh-hero-inner {
-  max-width: 1400px;
-}
-@media (min-width: 1600px) {
-  .mh-hero-inner { max-width: 1520px; }
 }
