@@ -258,3 +258,79 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+/* ============================================================
+   PHASE 5 â€” Deep-dark refresh, glassmorphic chips, blinking LIVE dot,
+   animated waveform dots. Appended to hero-v2.css â€” nothing above
+   this line is touched.
+   ============================================================ */
+
+/* ---------- 1. Chip container overhaul: distinct glassmorphic tint per icon ---------- */
+.mh-hero-chip {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 14px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.mh-hero-chip-purple  { background: rgba(167, 139, 250, 0.06); border-color: rgba(167, 139, 250, 0.25); }
+.mh-hero-chip-green   { background: var(--emerald-soft);        border-color: rgba(5, 150, 105, 0.3); }
+.mh-hero-chip-gold    { background: var(--gold-soft);           border-color: rgba(217, 119, 6, 0.3); }
+.mh-hero-chip-magenta { background: rgba(236, 72, 153, 0.06);   border-color: rgba(236, 72, 153, 0.28); }
+
+/* New icon color: magenta, for "Continuous Growth" (was blue) */
+.mh-hero-chip-icon-magenta { background: rgba(236, 72, 153, 0.15); color: #EC4899; }
+
+/* ---------- 2. Blinking LIVE indicator ---------- */
+@keyframes mh-live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.35; transform: scale(0.85); }
+}
+.mh-terminal-v2-live-dot {
+  animation: mh-live-pulse 1.6s ease-in-out infinite;
+}
+
+/* ---------- 3. Panel spacing: wider breathing room between the two hero columns ---------- */
+.mh-hero-inner {
+  gap: 72px;
+}
+@media (max-width: 1100px) {
+  .mh-hero-inner { gap: 40px; }
+}
+
+/* ---------- 4. Animated waveform dots (pure CSS â€” no markup changes needed) ---------- */
+/* Layered onto the existing .mh-hero-glow element via pseudo-elements, so
+   hero.ejs does not need to change for this effect. */
+.mh-hero-glow::before,
+.mh-hero-glow::after {
+  content: '';
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  height: 2px;
+  background-image: radial-gradient(circle, rgba(59, 130, 246, 0.45) 1.4px, transparent 1.6px);
+  background-size: 26px 2px;
+  background-repeat: repeat-x;
+  pointer-events: none;
+}
+.mh-hero-glow::before {
+  top: 22%;
+  opacity: 0.55;
+  animation: mh-wave-scroll 7s linear infinite;
+}
+.mh-hero-glow::after {
+  top: 64%;
+  opacity: 0.35;
+  background-image: radial-gradient(circle, rgba(167, 139, 250, 0.4) 1.2px, transparent 1.4px);
+  animation: mh-wave-scroll 10s linear infinite reverse;
+}
+@keyframes mh-wave-scroll {
+  from { background-position-x: 0; }
+  to   { background-position-x: -260px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mh-hero-glow::before,
+  .mh-hero-glow::after,
+  .mh-terminal-v2-live-dot {
+    animation: none;
+  }
+}
