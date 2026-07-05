@@ -16,24 +16,26 @@
   color: transparent;
 }
 
-/* ---------- Feature cards (was thin pills, now solid cards matching
-   the terminal panel / trust bar visual weight) ---------- */
+/* ---------- Compact feature chips (matches TG.jpg reference — small,
+   text wraps to 2 lines inside a narrow pill, not big square cards) ---------- */
 .mh-hero-chips {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin: 24px 0 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0 22px;
 }
 .mh-hero-chip {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 8px;
+  width: 152px;
+  padding: 8px 12px;
   background: var(--navy-card);
   border: 1px solid var(--navy-border);
-  border-radius: var(--radius);
-  font-size: 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
   font-weight: 500;
+  line-height: 1.25;
   color: var(--white);
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
@@ -42,11 +44,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   flex-shrink: 0;
 }
+.mh-hero-chip-icon svg { width: 13px; height: 13px; }
 .mh-hero-chip-icon-purple  { background: rgba(167, 139, 250, 0.15); color: #A78BFA; }
 .mh-hero-chip-icon-green   { background: var(--emerald-soft);       color: var(--emerald); }
 .mh-hero-chip-icon-amber   { background: var(--gold-soft);          color: var(--gold); }
@@ -58,12 +61,12 @@
 .mh-hero-chip-magenta { border-color: rgba(236, 72, 153, 0.28); }
 
 @media (max-width: 480px) {
-  .mh-hero-chips { grid-template-columns: 1fr; }
+  .mh-hero-chip { width: calc(50% - 5px); }
 }
 
 /* ---------- Mini email/login card ---------- */
 .mh-hero-notify {
-  margin-top: 24px;
+  margin-top: 20px;
   display: flex;
   align-items: flex-start;
   gap: 16px;
@@ -294,4 +297,13 @@
   .mh-terminal-v2-live-dot {
     animation: none;
   }
+}
+
+/* ---------- Wider content area on large screens — less empty gutter
+   on either side at full 100% zoom, more "filled" elite feel ---------- */
+.mh-hero-inner {
+  max-width: 1400px;
+}
+@media (min-width: 1600px) {
+  .mh-hero-inner { max-width: 1520px; }
 }
