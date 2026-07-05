@@ -284,7 +284,7 @@ button { cursor: pointer; }
   display: flex;
   align-items: center;
   overflow: hidden;
-  padding: 56px 32px 24px;
+  padding: 80px 32px 32px;
   background: var(--navy-deep);
 }
 
@@ -313,9 +313,6 @@ button { cursor: pointer; }
   grid-template-columns: 55% 45%;
   gap: 48px;
   align-items: center;
-}
-.mh-hero-inner > div {
-  min-width: 0;
 }
 
 /* Left text block */
@@ -380,7 +377,7 @@ button { cursor: pointer; }
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 12px; /* Reduce this number until the gap looks right */
+  margin-bottom: 20px; /* Reduce this number until the gap looks right */
 }
 
 .mh-btn-primary {
