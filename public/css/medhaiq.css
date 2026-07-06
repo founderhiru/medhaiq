@@ -428,9 +428,9 @@ button { cursor: pointer; }
 }
 
 .mh-hero-proof {
-  display: flex;
+  display: none;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
   flex-wrap: wrap;
   margin-top: -10px; /* Pulls the bullets closer to the buttons */
 }
@@ -443,6 +443,7 @@ button { cursor: pointer; }
 }
 .mh-proof-item strong { color: var(--white); font-weight: 600; }
 .mh-proof-sep {
+  display: none;
   width: 4px;
   height: 4px;
   border-radius: 50%;
