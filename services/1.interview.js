@@ -331,14 +331,7 @@ attempt the question (including anything under ~15 words with no real
 content), every one of the 5 vectors MUST be scored 0–10. Do not award
 generous or "benefit of the doubt" scores for non-answers.
 
-In addition to the 5 vector scores, judge each STAR component INDIVIDUALLY and strictly:
-- "situation": true ONLY if the answer establishes concrete context (where, when, what was going on).
-- "task": true ONLY if the answer states a specific goal, responsibility, or problem the candidate had to address.
-- "action": true ONLY if the answer describes specific steps the candidate (or their team, with the candidate's role clear) actually took.
-- "result": true ONLY if the answer states a concrete outcome — ideally quantified (%, $, time, headcount).
-Do NOT mark a component true just because the answer is long or generally coherent. If it is genuinely absent, return false — a false here is used to tell the candidate that component was skipped, so accuracy matters more than generosity.
-
-Return JSON: { "star": 0–100, "technical": 0–100, "executive": 0–100, "gcc": 0–100, "friction": 0–100, "star_components": { "situation": true|false, "task": true|false, "action": true|false, "result": true|false } }`;
+Return JSON: { "star": 0–100, "technical": 0–100, "executive": 0–100, "gcc": 0–100, "friction": 0–100 }`;
 
 async function scoreAnswer(answer, personaId, sessionContext) {
   const trimmed = (answer || '').trim();
@@ -349,9 +342,8 @@ async function scoreAnswer(answer, personaId, sessionContext) {
   // filler words should never reach the grader and risk coming back with a
   // generous score; it's zeroed out in code, every time, before any AI call.
   const TRIVIAL_RE = /^(hi|hello|hey|yo|test|testing|idk|i\s*don'?t\s*know|n\/a|none|na|ok|okay|sure|yes|no)[\s.!?]*$/i;
-  const NO_COMPONENTS = { situation: false, task: false, action: false, result: false };
   if (wordCount < 8 || TRIVIAL_RE.test(trimmed)) {
-    return { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0, star_components: NO_COMPONENTS };
+    return { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 };
   }
 
   const prompt = `Answer being evaluated:\n"${answer}"\n\nPersona archetype: ${personaId}\nRole: ${sessionContext.roleTitle || 'General'}\nExperience Level: ${sessionContext.experienceLevel || 'mid'}\nOrganisation: ${sessionContext.orgPreset || 'Generic Global Enterprise'}`;
@@ -386,9 +378,6 @@ async function scoreAnswer(answer, personaId, sessionContext) {
     gcc: result.gcc || 0,
     friction: result.friction || 0,
     weighted: Math.round(weighted * 100) / 100,
-    // Per-letter AI judgment (may be null if the model omitted it or the call
-    // failed — in that case computeStarProgress falls back to keywords only).
-    star_components: (result.star_components && typeof result.star_components === 'object') ? result.star_components : null,
   };
 }
 
@@ -537,31 +526,23 @@ ${(result.priorities || []).slice(0, 3).map((p, i) => `${i + 1}. **${p.theme}:**
 // an answer is submitted). It is intentionally conservative: each letter only
 // lights up when the answer contains a real signal for that STAR component,
 // not just because *some* text was typed.
-// NOTE: kept IDENTICAL to STAR_PATTERNS in views/interview-session.ejs so the
-// live client view and this server verdict always agree. Edit both together.
 const STAR_PATTERNS = {
-  situation: /\b(when i|at my (previous|last|current)|in my role|while (working|leading)|the (context|situation|background) was|we (were|had) facing|a few (months|years|weeks) ago|during|last (year|quarter|month|week)|in (19|20)\d{2}|i was working (on|at|with)|we were (building|working|running|struggling)|at (a|an|the|our) (company|startup|client|firm))\b/i,
-  task: /\b(my (task|responsibility|goal|objective|job) was|i was (responsible|asked|tasked|expected)|needed to|had to (deliver|fix|solve|build|reduce|improve)|the (goal|objective|target|challenge|problem|ask) was|asked me to|i had to)\b/i,
-  action: /\b(i (led|built|designed|implemented|created|drove|decided|initiated|coordinated|proposed|negotiated|restructured|launched|rolled out|owned|developed|managed|organi[sz]ed|automated|migrated|deployed|fixed|resolved|refactored|presented|convinced|persuaded|established|introduced|analy[sz]ed|started|began|took|worked)|we (implemented|built|created|designed|launched|migrated|deployed|developed|automated|redesigned|rolled out|restructured)|my approach was|so i\b|then i\b)/i,
-  result: /\b(as a result|resulted in|which (led to|resulted)|(reduced|increased|improved|grew|cut|saved|boosted)[^.]{0,40}(\d+%|\$|percent)|the (outcome|impact) was|(we|i) (achieved|delivered)|ended up|in the end|leading to|\d+%)\b/i,
+  situation: /\b(when i|at my (previous|last|current)|in my role|while (working|leading)|the (context|situation|background) was|we (were|had) facing|a few (months|years) ago|during)\b/i,
+  task: /\b(my (task|responsibility|goal|objective) was|i was (responsible|asked|tasked)|needed to|had to (deliver|fix|solve|build)|the (goal|objective|target) was)\b/i,
+  action: /\b(i (led|built|designed|implemented|created|drove|decided|initiated|coordinated|proposed|negotiated|restructured|launched|rolled out|owned))\b/i,
+  result: /\b(as a result|resulted in|which (led to|resulted)|(reduced|increased|improved|grew|cut|saved|boosted)[^.]{0,40}(\d+%|\$|percent)|the outcome was|we (achieved|delivered)|\d+%)\b/i,
 };
 
-const STAR_ORDER = ['situation', 'task', 'action', 'result'];
-
-// aiComponents (optional): per-letter booleans returned by the AI scorer
-// (scoreAnswer → star_components). When provided, a letter counts as present
-// if EITHER the keyword pass OR the AI judged it present — the AI catches
-// phrasings the keywords miss, the keywords guarantee a deterministic floor.
-// Fully backward compatible: existing calls with one argument behave as before.
-function computeStarProgress(answerText, aiComponents) {
+function computeStarProgress(answerText) {
   const text = (answerText || '').toLowerCase();
-  const progress = {};
-  STAR_ORDER.forEach((key) => {
-    progress[key] = STAR_PATTERNS[key].test(text) || !!(aiComponents && aiComponents[key] === true);
-  });
+  const progress = {
+    situation: STAR_PATTERNS.situation.test(text),
+    task: STAR_PATTERNS.task.test(text),
+    action: STAR_PATTERNS.action.test(text),
+    result: STAR_PATTERNS.result.test(text),
+  };
   const stepsComplete = Object.values(progress).filter(Boolean).length;
-  const missing = STAR_ORDER.filter((key) => !progress[key]); // additive — safe for existing consumers
-  return { ...progress, stepsComplete, totalSteps: 4, missing };
+  return { ...progress, stepsComplete, totalSteps: 4 };
 }
 
 module.exports = {
