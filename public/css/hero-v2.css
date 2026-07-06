@@ -318,3 +318,19 @@
   .mh-terminal-v2-star { flex-wrap: wrap; row-gap: 8px; }
   .mh-terminal-v2-star-line { display: none; }
 }
+
+/* ============================================================
+   PHASE 19 â€” Finalized 5-vector colors, matched exactly to the real
+   live interview terminal (views/partials/live-terminal.ejs):
+   Structure=blue, Domain Expertise=purple, Strategic Thinking=green,
+   Communication=orange, Leadership & Execution=amber.
+   Append to the END of hero-v2.css. The old .mh-vec-icon-amber/-green/
+   -rose/-blue/-magenta classes from Phase 7 are no longer referenced by
+   hero.ejs after this update â€” harmless to leave in place, or delete
+   during a future cleanup pass.
+   ============================================================ */
+.mh-vec-icon-structure   { color: #3b82f6; }
+.mh-vec-icon-domain      { color: #a78bfa; }
+.mh-vec-icon-strategic   { color: #22c55e; }
+.mh-vec-icon-comm        { color: #fb923c; }
+.mh-vec-icon-leadership  { color: #f59e0b; }
