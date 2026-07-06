@@ -1,7 +1,6 @@
 /* ============================================================
-   VALUE FOOTER — only touches .mh-value-footer-* classes.
-   Font sizes in this version are matched to the hero chip font sizes
-   (12.5px title / 11px sub) per your request to align them with CTA.jpg.
+   VALUE FOOTER — new file, only touches .mh-value-footer-* classes.
+   Cannot bleed into any other section.
    ============================================================ */
 .mh-value-footer {
   background: rgba(10, 15, 30, 0.8);
@@ -10,7 +9,7 @@
 .mh-value-footer-inner {
   max-width: var(--max-w);
   margin: 0 auto;
-  padding: 20px 40px;
+  padding: 28px 40px;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 24px;
@@ -36,8 +35,8 @@
 .mh-value-footer-icon-violet { background: rgba(139, 92, 246, 0.15); color: #8B5CF6; }
 
 .mh-value-footer-text { display: flex; flex-direction: column; }
-.mh-value-footer-title { font-size: 12.5px; font-weight: 500; color: var(--white); line-height: 1.25; }
-.mh-value-footer-sub { font-size: 11px; color: var(--text-muted); }
+.mh-value-footer-title { font-size: 14px; font-weight: 600; color: var(--white); line-height: 1.3; }
+.mh-value-footer-sub { font-size: 12px; color: var(--text-muted); }
 
 @media (max-width: 1024px) {
   .mh-value-footer-inner { grid-template-columns: repeat(3, 1fr); }

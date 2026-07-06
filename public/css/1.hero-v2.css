@@ -169,8 +169,8 @@
 .mh-terminal-v2-engine-sub { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
 
 /* STAR Progress */
-.mh-terminal-v2-star { display: flex; align-items: center; }
-.mh-terminal-v2-star-step { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.mh-terminal-v2-star { display: flex; align-items: center; width: 100%; min-width: 0; }
+.mh-terminal-v2-star-step { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; flex-shrink: 1; }
 .mh-terminal-v2-star-dot {
   width: 36px; height: 36px; border-radius: 50%;
   border: 1.5px solid var(--navy-border);
@@ -241,6 +241,10 @@
 
 /* ---------- Wider breathing room between the two hero columns ---------- */
 .mh-hero-inner {
+  grid-template-columns: 55fr 45fr; /* fr, not %: fr auto-subtracts gap from
+                                        available space before splitting the
+                                        row, so the two columns + gap can never
+                                        add up to more than 100% of the width */
   gap: 72px;
 }
 @media (max-width: 1100px) {
@@ -294,27 +298,4 @@
   .mh-terminal-v2-live-dot {
     animation: none;
   }
-}
-
-
-/* ============================================================
-   PHASE 14 — Compact the terminal's internal spacing specifically in
-   the "squeeze zone" between the mobile breakpoint (1024px, where the
-   terminal panel is hidden and things stack) and a full-width desktop
-   screen. This complements the min-width:0 fix from Phase 13 — that
-   fix stops the overflow/clipping; this makes the compressed result
-   look intentional instead of cramped.
-   Append to the END of hero-v2.css.
-   ============================================================ */
-@media (max-width: 1400px) {
-  .mh-terminal-v2-body { padding: 16px; gap: 16px; }
-  .mh-terminal-v2-vectors li { font-size: 12px; gap: 8px; }
-  .mh-terminal-v2-star-name { font-size: 9px; }
-  .mh-terminal-v2-star-dot { width: 30px; height: 30px; font-size: 12px; }
-  .mh-terminal-v2-label { font-size: 10px; }
-}
-@media (max-width: 1200px) {
-  .mh-hero-inner { gap: 32px; }
-  .mh-terminal-v2-star { flex-wrap: wrap; row-gap: 8px; }
-  .mh-terminal-v2-star-line { display: none; }
 }
