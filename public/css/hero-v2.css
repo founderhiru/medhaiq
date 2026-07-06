@@ -63,7 +63,7 @@
 
 /* ---------- Mini email/login card ---------- */
 .mh-hero-notify {
-  margin-top: 20px;
+  margin-top: 32px;
   display: flex;
   align-items: flex-start;
   gap: 16px;
