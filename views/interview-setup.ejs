@@ -3,24 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Start Your Session — MedhaIQ</title>
+  <title>AI Interview Setup — MedhaIQ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:       #0b1120;
-      --surface:  #111827;
-      --card:     #151f32;
+      --bg:       #070b14;
+      --surface:  #0d1424;
+      --card:     #111a2e;
       --border:   rgba(255,255,255,0.07);
       --blue:     #1f59b4;
       --blue-hi:  #3b82f6;
+      --blue-glow: rgba(59,130,246,0.15);
+      --violet:   #8b5cf6;
       --muted:    #94a3b8;
       --dim:      #475569;
       --white:    #ffffff;
-      --emerald:  #059669;
-      --gold:     #d97706;
+      --emerald:  #10b981;
+      --gold:     #f59e0b;
+      --orange:   #fb923c;
+      --purple:   #a78bfa;
+      --green:    #22c55e;
       --red:      #dc2626;
+      /* Finalized 5-vector colors — same as live terminal & reports */
+      --v-structure:  #3b82f6;
+      --v-domain:     #a78bfa;
+      --v-strategic:  #22c55e;
+      --v-comm:       #fb923c;
+      --v-leadership: #f59e0b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -32,14 +43,17 @@
       min-height: 100vh;
     }
     h1,h2,h3 { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 700; }
+    ul { list-style: none; }
+
+    /* ── Nav ─────────────────────────────────────────── */
     .nav {
       position: sticky; top: 0; z-index: 20;
-      background: rgba(11,17,32,0.95);
+      background: rgba(7,11,20,0.95);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       height: 52px;
       display: flex; align-items: center;
-      padding: 0 28px;
+      padding: 0 24px;
       justify-content: space-between;
     }
     .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
@@ -48,253 +62,241 @@
     .nav-actions { display: flex; align-items: center; gap: 10px; }
     .nav-link { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; padding: 5px 10px; border-radius: 6px; transition: color 0.15s; }
     .nav-link:hover { color: var(--white); }
-    .nav-cta { background: var(--blue); color: #fff; text-decoration: none; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 7px; transition: background 0.15s; }
-    .nav-cta:hover { background: var(--blue-hi); }
-    .page { max-width: 900px; margin: 0 auto; padding: 44px 24px 80px; }
-    .page-header { margin-bottom: 36px; }
-    .page-header h1 { font-size: 26px; letter-spacing: -0.4px; margin-bottom: 5px; }
-    .page-header p { color: var(--muted); font-size: 13px; }
-    .sec-label {
-      font-size: 10px; font-weight: 600; letter-spacing: 1.4px;
-      text-transform: uppercase; color: var(--blue-hi);
-      margin-bottom: 10px;
+
+    /* ── Master 3-column grid ────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 250px minmax(0,1fr) 300px;
+      gap: 18px;
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 18px 20px 24px;
+      align-items: start;
     }
-    .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 28px; }
-    .chip {
-      padding: 5px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
+
+    /* ── Shared card/panel styles ────────────────────── */
+    .panel {
       background: var(--surface);
-      color: var(--muted);
-      font-size: 12px; font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s;
-      white-space: nowrap;
-      user-select: none;
-    }
-    .chip:hover { border-color: var(--blue-hi); color: var(--white); }
-    .chip.active {
-      background: rgba(31,89,180,0.25);
-      border-color: var(--blue-hi);
-      color: var(--white);
-    }
-    .role-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
-    .role-tab {
-      padding: 5px 14px; border-radius: 999px;
       border: 1px solid var(--border);
-      background: transparent; color: var(--muted);
-      font-size: 12px; font-weight: 500;
-      cursor: pointer; transition: all 0.15s;
+      border-radius: 14px;
+      padding: 16px;
     }
-    .role-tab.active { background: var(--surface); border-color: var(--blue-hi); color: var(--white); }
+    .panel + .panel { margin-top: 14px; }
+    .panel-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.4px;
+      text-transform: uppercase; color: var(--blue-hi);
+      margin-bottom: 12px;
+    }
+
+    /* ── LEFT: Session Context ───────────────────────── */
+    .ctx-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .ctx-item:last-child { border-bottom: none; }
+    .ctx-icon { width: 28px; height: 28px; border-radius: 8px; background: var(--blue-glow); color: var(--blue-hi); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+    .ctx-k { font-size: 11px; color: var(--dim); }
+    .ctx-v { font-size: 13px; font-weight: 600; color: var(--white); }
+
+    /* ── LEFT: Session Breakdown donut ───────────────── */
+    .donut-wrap { display: flex; align-items: center; gap: 14px; }
+    .donut {
+      width: 92px; height: 92px; border-radius: 50%;
+      background: conic-gradient(
+        var(--v-structure) 0deg 126deg,
+        var(--v-domain) 126deg 216deg,
+        var(--v-strategic) 216deg 288deg,
+        var(--v-comm) 288deg 324deg,
+        var(--v-leadership) 324deg 360deg
+      );
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .donut-hole {
+      width: 62px; height: 62px; border-radius: 50%;
+      background: var(--surface);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .donut-num { font-family:'Plus Jakarta Sans',sans-serif; font-size: 20px; font-weight: 800; line-height: 1; }
+    .donut-sub { font-size: 9px; color: var(--muted); }
+    .legend { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
+    .legend li { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+    .legend .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .legend .pct { margin-left: auto; color: var(--white); font-weight: 600; }
+
+    /* ── LEFT: Live Terminal Preview ─────────────────── */
+    .prev-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; color: var(--muted); }
+    .prev-row .p-ic { width: 22px; height: 22px; border-radius: 6px; background: rgba(139,92,246,0.15); color: var(--violet); display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+    .prev-ready { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--emerald); background: rgba(16,185,129,0.12); padding: 2px 8px; border-radius: 100px; }
+    .prev-msg { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--emerald); margin-top: 8px; }
+    .live-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; color: var(--emerald); }
+    .live-pill::before { content:''; width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); animation: pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.35;transform:scale(0.85);} }
+
+    /* ── CENTER: wizard ──────────────────────────────── */
+    .wizard-header { margin-bottom: 16px; }
+    .wizard-header h1 { font-size: 22px; letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+    .wizard-header h1 .spark { color: var(--violet); }
+    .wizard-header p { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .step-label {
+      font-family:'Plus Jakarta Sans',sans-serif;
+      font-size: 14px; font-weight: 700; color: var(--white);
+      margin: 20px 0 12px;
+    }
+    .step-label:first-of-type { margin-top: 0; }
+
+    .role-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .role-tab {
+      padding: 7px 16px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--muted); font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+    }
+    .role-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
     .role-panel { display: none; }
     .role-panel.visible { display: block; }
-    .custom-input {
-      background: var(--surface);
+
+    /* Role cards */
+    .role-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .sel-card {
+      position: relative;
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 14px;
-      color: var(--white);
-      font-size: 13px;
-      font-family: 'Inter', system-ui, sans-serif;
-      width: 100%; margin-top: 8px;
-      display: none;
-      transition: border-color 0.15s;
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s;
+      user-select: none;
     }
-    .custom-input:focus { outline: none; border-color: var(--blue-hi); }
-    .divider { height: 1px; background: var(--border); margin: 28px 0; }
-    .persona-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 36px;
-    }
-    @media (max-width: 640px) { .persona-grid { grid-template-columns: 1fr; } }
- /* Refined Elite Persona Card CSS */
-/* Container & Micro-interaction */
-/* Container: High-end spacing and subtle hover interaction */
-.persona-card {
-    background: #0d1117;
-    border: 1px solid #1f2937;
-    border-radius: 16px;
-    padding: 28px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    display: flex;
-    flex-direction: column;
-    height: 260px;
-}
-
-.persona-card:hover {
-    border-color: #38bdf8;
-    transform: translateY(-4px);
-    box-shadow: 0 10px 30px -10px rgba(56, 189, 248, 0.2);
-}
-
-/* Uniform Avatar Sizing */
-.p-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 12px;
-    font-weight: 700;
-    flex-shrink: 0;
-    background: #1e3a8a;
-    color: #ffffff;
-}
-
-/* Header: Avatar, Name, and Badge Alignment */
-.p-header { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
-.p-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
-.p-info { flex: 1; }
-.p-name-row { display: flex; justify-content: space-between; align-items: center; }
-.p-name { font-size: 16px; font-weight: 700; color: #f8fafc; }
-.p-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: #991b1b; color: #fecaca; }
-.p-role { font-size: 12px; color: #cbd5e1; margin-top: 2px; }
-
-/* Typography Contrast & Spacing */
-.p-name {
-    font-size: 15px;
-    font-weight: 700;
-    color: #ffffff;
-}
-
-.p-role {
-    font-size: 10px;
-    letter-spacing: 0.05em; /* Premium spacing */
-    font-weight: 400;       /* Lighter weight */
-    color: #94a3b8;
-    text-transform: uppercase;
-    margin-top: 4px;
-}
-
-/* Horizontal Trait Tags */
-.p-traits {
-    list-style: none;
-    padding: 0;
-    margin: 12px 0 0 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.p-traits li {
-    font-size: 10px;
-    color: #60a5fa;
-    background: rgba(59, 130, 246, 0.1);
-    padding: 4px 8px;
-    border-radius: 4px;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-
-    /* Header: Avatar, Name, and Badge Alignment */
-.p-header { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
-.p-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
-.p-info { flex: 1; }
-.p-name-row { display: flex; justify-content: space-between; align-items: center; }
-.p-name { font-size: 16px; font-weight: 700; color: #f8fafc; }
-.p-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: #991b1b; color: #fecaca; }
-.p-role { font-size: 12px; color: #cbd5e1; margin-top: 2px; }
-
-    /* Subheading & Traits (Chips) */
-.p-specialty { font-size: 13px; font-weight: 600; color: #38bdf8; margin-bottom: 12px; }
-.p-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; }
-.p-chip { 
-    font-size: 11px; padding: 8px 14px; border-radius: 999px; 
-    background: rgba(255, 255, 255, 0.05); color: #94a3b8; 
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-}
-  .persona-card:hover {
+    .sel-card:hover { border-color: var(--blue-hi); transform: translateY(-1px); }
+    .sel-card.active {
       border-color: var(--blue-hi);
-      background: rgba(31,89,180,0.08);
-      transform: translateY(-1px);
-      box-shadow: 0 0 0 1px var(--blue-hi), 0 4px 20px rgba(31,89,180,0.15);
+      box-shadow: 0 0 0 1px var(--blue-hi), 0 0 18px var(--blue-glow);
     }
-    .persona-card.selected {
-      border-color: var(--blue-hi);
-      background: rgba(31,89,180,0.15);
-      box-shadow: 0 0 0 1px var(--blue-hi);
-    }
-    .persona-card .check-dot {
-      display: none;
+    .sel-card .check {
       position: absolute; top: 10px; right: 10px;
-      width: 20px; height: 20px;
-      background: var(--blue);
-      border-radius: 50%;
-      align-items: center; justify-content: center;
-      font-size: 11px; color: #fff;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--blue-hi); color: #fff;
+      display: none; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
     }
-    .persona-card.selected .check-dot { display: flex; }
+    .sel-card.active .check { display: flex; }
+    .rc-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; margin-bottom: 10px; background: var(--blue-glow); }
+    .rc-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+    .rc-desc { font-size: 11px; color: var(--muted); line-height: 1.45; }
+    .custom-input {
+      display: none; width: 100%; margin-top: 10px;
+      background: var(--card); border: 1px solid var(--blue-hi);
+      color: var(--white); border-radius: 8px; padding: 10px 14px;
+      font-family: inherit; font-size: 13px; outline: none;
+    }
+    .custom-input.show { display: block; }
+
+    /* Experience cards */
+    .exp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .exp-card { text-align: left; display: flex; align-items: center; gap: 10px; }
+    .exp-emoji { font-size: 18px; }
+    .exp-name { font-size: 13px; font-weight: 700; }
+    .exp-yrs { font-size: 11px; color: var(--muted); }
+
+    /* Persona cards */
+    .persona-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .persona-card { padding: 14px; }
+    .p-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
     .p-avatar {
-      width: 46px; height: 46px;
-      border-radius: 50%;
-      flex-shrink: 0;
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--blue-hi));
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px; font-weight: 700;
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      color: #fff;
-      background: var(--blue);
+      font-family:'Plus Jakarta Sans',sans-serif; font-size: 13px; font-weight: 700;
+      flex-shrink: 0;
     }
-    .p-avatar.emerald { background: var(--emerald); }
-    .p-avatar.gold    { background: var(--gold); }
-    .p-body { flex: 1; min-width: 0; }
-    .p-top { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; flex-wrap: wrap; }
-    .p-name { font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
-    .difficulty {
-      font-size: 10px; font-weight: 600; padding: 2px 7px;
-      border-radius: 999px; white-space: nowrap;
-    }
-    .diff-hard   { background: rgba(220,38,38,0.2);  color: #fca5a5; }
-    .diff-medium { background: rgba(217,119,6,0.2);  color: #fcd34d; }
-    .diff-elite  { background: rgba(109,40,217,0.2); color: #c4b5fd; }
-    .p-title { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
-    .p-style {
-      display: inline-block; font-size: 10px; font-weight: 600;
-      padding: 2px 8px; border-radius: 999px; margin-bottom: 8px;
-      letter-spacing: 0.2px;
-    }
+    .p-avatar.emerald { background: linear-gradient(135deg, #047857, #10b981); }
+    .p-avatar.gold    { background: linear-gradient(135deg, #b45309, #f59e0b); }
+    .p-name { font-size: 13px; font-weight: 700; }
+    .p-title { font-size: 11px; color: var(--muted); }
+    .difficulty { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
+    .diff-hard   { background: rgba(220,38,38,0.15); color: #f87171; }
+    .diff-elite  { background: rgba(139,92,246,0.15); color: #c4b5fd; }
+    .diff-medium { background: rgba(245,158,11,0.15); color: #fcd34d; }
+    .p-style { display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 6px; margin: 6px 0 8px; }
     .p-style.royal-blue { background: rgba(30,64,175,0.3); color: #93c5fd; }
     .p-style.emerald    { background: rgba(5,150,105,0.3);  color: #6ee7b7; }
     .p-style.gold       { background: rgba(217,119,6,0.3);  color: #fcd34d; }
-    .p-traits { list-style: none; padding: 0; }
-    .p-traits li {
-      font-size: 11px; color: var(--muted);
-      padding: 2px 0 2px 12px;
-      position: relative; line-height: 1.4;
+    .p-traits { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+    .p-traits li { font-size: 10.5px; color: var(--muted); position: relative; padding-left: 9px; }
+    .p-traits li::before { content:'•'; position: absolute; left: 0; color: var(--dim); }
+
+    /* ── RIGHT: Live Terminal ────────────────────────── */
+    .terminal { position: sticky; top: 66px; }
+    .term-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .term-title { font-family:'JetBrains Mono',monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); }
+    .term-block { padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .term-block:first-of-type { padding-top: 0; }
+    .term-block-last { border-bottom: none; }
+    .term-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+    .engine-row { display: flex; align-items: center; gap: 12px; }
+    .engine-ring-svg { flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(139,92,246,0.45)); }
+    .engine-title { font-family:'Plus Jakarta Sans',sans-serif; font-size: 14px; font-weight: 700; }
+    .engine-sub { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+    .star-row { display: flex; align-items: center; }
+    .star-step { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .star-dot { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--muted); font-family:'Plus Jakarta Sans',sans-serif; }
+    .star-step.on .star-dot { border-color: var(--blue-hi); color: var(--blue-hi); background: var(--blue-glow); }
+    .star-name { font-size: 9px; color: var(--muted); }
+    .star-step.on .star-name { color: var(--white); font-weight: 600; }
+    .star-line { flex: 1; height: 1px; background: var(--border); margin: 0 3px 14px; }
+
+    .score-row { display: flex; align-items: center; gap: 12px; }
+    .score-ring { width: 52px; height: 52px; border-radius: 50%; border: 3px solid var(--border); display: flex; align-items: center; justify-content: center; font-family:'Plus Jakarta Sans',sans-serif; font-weight: 700; font-size: 13px; color: var(--dim); flex-shrink: 0; }
+    .score-msg { font-size: 12px; font-weight: 600; color: var(--emerald); }
+    .score-sub { font-size: 11px; color: var(--muted); }
+
+    .vec-list { display: flex; flex-direction: column; gap: 10px; }
+    .vec-list li { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+    .vec-ic { width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+    .vec-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
+    .vec-val { font-family:'JetBrains Mono',monospace; font-size: 11px; color: var(--dim); }
+
+    .feed-row { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; color: var(--muted); }
+    .feed-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue-hi); margin-top: 6px; flex-shrink: 0; }
+
+    .begin-btn {
+      width: 100%; margin-top: 14px;
+      background: linear-gradient(135deg, var(--blue-hi), var(--violet));
+      color: #fff; border: none; border-radius: 12px;
+      padding: 14px; font-family:'Plus Jakarta Sans',sans-serif;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: opacity 0.15s, transform 0.15s;
     }
-    .p-traits li::before {
-      content: '·'; position: absolute; left: 0;
-      color: var(--blue-hi); font-size: 14px; line-height: 1.1;
+    .begin-btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .begin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .begin-sub { text-align: center; font-size: 10px; color: var(--muted); margin-top: 6px; }
+
+    /* ── Bottom trust bar ────────────────────────────── */
+    .trust {
+      border-top: 1px solid var(--border);
+      background: rgba(10,15,30,0.8);
+      margin-top: 8px;
     }
-    .status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; min-height: 22px; }
-    .status-pill {
-      font-size: 11px; font-weight: 500; padding: 3px 10px;
-      border-radius: 999px;
-      background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+    .trust-inner {
+      max-width: 1560px; margin: 0 auto; padding: 18px 20px;
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px;
     }
-    .status-pill.filled { border-color: var(--blue-hi); color: var(--blue-hi); }
-    .cta-bar { display: flex; align-items: center; gap: 16px; }
-  .sticky-cta {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: rgba(17, 24, 39, 0.98);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid var(--border);
-  padding: 16px 24px;
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100;
-}
-.sticky-inner { display: flex; align-items: center; gap: 24px; width: 100%; max-width: 900px; }
-.cta-status { display: flex; gap: 12px; flex: 1; }
-.cta-tag { font-size: 12px; color: var(--muted); padding: 4px 10px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
-.cta-tag.filled { color: var(--blue-hi); border: 1px solid var(--blue-hi); }
-.begin-btn {
-  padding: 12px 24px; background: var(--blue); border: none; border-radius: 8px;
-  color: white; font-weight: 600; cursor: pointer; transition: 0.2s;
-}
-.begin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .trust-item { display: flex; align-items: center; gap: 10px; }
+    .trust-ic { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+    .trust-t { font-size: 12px; font-weight: 600; line-height: 1.3; }
+    .trust-s { font-size: 10.5px; color: var(--muted); }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 1200px) {
+      .layout { grid-template-columns: 1fr; }
+      .terminal { position: static; }
+      .role-grid { grid-template-columns: repeat(2, 1fr); }
+      .exp-grid { grid-template-columns: repeat(2, 1fr); }
+      .persona-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .role-grid, .exp-grid, .persona-grid { grid-template-columns: 1fr; }
+      .trust-inner { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -302,193 +304,221 @@
 <nav class="nav">
   <a href="/" class="nav-logo">
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 3 L10 3 L10 10 L17 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="10" r="1.5" fill="white"/><circle cx="3" cy="3" r="1.5" fill="white"/><circle cx="17" cy="10" r="1.5" fill="white"/><path d="M10 10 L17 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M7 14 L7 17 L10 17" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span>Medha<em>IQ</em></span>
+    <span>Medha<em>IQ</em>.ai</span>
   </a>
   <div class="nav-actions">
     <a href="/dashboard/history" class="nav-link">History</a>
-    <a href="/interview" class="nav-cta">New Interview</a>
   </div>
 </nav>
 
-<div class="page">
-  <div class="page-header">
-    <h1>Build Your <span>Interview Experience</span></h1>
-    <p>Choose your target role, experience level, and interview style that best matches your target opportunity</p>
-  </div>
+<div class="layout">
 
-  <div class="sec-label">Target Role</div>
-<div class="role-tabs" style="margin-bottom: 20px; display: flex; gap: 10px;">
-  <button class="role-tab active" data-tab="core" onclick="switchTab('core')">Core Roles</button>
-  <button class="role-tab" data-tab="ai" onclick="switchTab('ai')">AI & Data Roles</button>
+  <!-- ══════════ LEFT SIDEBAR ══════════ -->
+  <aside>
+    <div class="panel">
+      <div class="panel-label">Session Context</div>
+      <div class="ctx-item"><div class="ctx-icon">💼</div><div><div class="ctx-k">Role</div><div class="ctx-v" id="ctxRole">Not selected</div></div></div>
+      <div class="ctx-item"><div class="ctx-icon">⚡</div><div><div class="ctx-k">Experience</div><div class="ctx-v" id="ctxExp">Not selected</div></div></div>
+      <div class="ctx-item"><div class="ctx-icon">👤</div><div><div class="ctx-k">Interviewer</div><div class="ctx-v" id="ctxPersona">Not selected</div></div></div>
+      <div class="ctx-item"><div class="ctx-icon">🕐</div><div><div class="ctx-k">Duration</div><div class="ctx-v">~45 minutes</div></div></div>
+      <div class="ctx-item"><div class="ctx-icon">✦</div><div><div class="ctx-k">Difficulty</div><div class="ctx-v" id="ctxDiff">—</div></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Session Breakdown</div>
+      <div class="donut-wrap">
+        <div class="donut"><div class="donut-hole"><div class="donut-num">5</div><div class="donut-sub">Vectors</div></div></div>
+        <ul class="legend">
+          <li><span class="dot" style="background:var(--v-structure)"></span>Structure<span class="pct">35%</span></li>
+          <li><span class="dot" style="background:var(--v-domain)"></span>Domain Expertise<span class="pct">25%</span></li>
+          <li><span class="dot" style="background:var(--v-strategic)"></span>Strategic Thinking<span class="pct">20%</span></li>
+          <li><span class="dot" style="background:var(--v-comm)"></span>Communication<span class="pct">10%</span></li>
+          <li><span class="dot" style="background:var(--v-leadership)"></span>Leadership &amp; Exec.<span class="pct">10%</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label" style="display:flex;justify-content:space-between;align-items:center;">Live Terminal Preview <span class="live-pill">Live</span></div>
+      <div class="prev-row"><span class="p-ic">◎</span>STAR Engine<span class="prev-ready">Ready</span></div>
+      <div class="prev-row"><span class="p-ic">◎</span>Behavior Analyzer<span class="prev-ready">Ready</span></div>
+      <div class="prev-row"><span class="p-ic">◎</span>Sentiment Engine<span class="prev-ready">Ready</span></div>
+      <div class="prev-row"><span class="p-ic">◎</span>Response Predictor<span class="prev-ready">Ready</span></div>
+      <div class="prev-msg">All systems ready. Let's begin!</div>
+    </div>
+  </aside>
+
+  <!-- ══════════ CENTER: WIZARD ══════════ -->
+  <main class="panel" style="padding:20px;">
+    <div class="wizard-header">
+      <h1><span class="spark">✦</span> AI Interview Setup</h1>
+      <p>Configure your personalized interview experience</p>
+    </div>
+
+    <div class="step-label">1. Select Target Role</div>
+    <div class="role-tabs">
+      <button class="role-tab active" data-tab="core" onclick="switchTab('core')">Core Roles</button>
+      <button class="role-tab" data-tab="ai" onclick="switchTab('ai')">AI &amp; Data Roles</button>
+    </div>
+
+    <div class="role-panel visible" id="tab-core">
+      <div class="role-grid">
+        <div class="sel-card chip" data-role="Product Manager"><div class="check">✓</div><div class="rc-icon">💼</div><div class="rc-title">Product Manager</div><div class="rc-desc">Drive product strategy and execution</div></div>
+        <div class="sel-card chip" data-role="Software Engineer"><div class="check">✓</div><div class="rc-icon">&lt;/&gt;</div><div class="rc-title">Software Engineer</div><div class="rc-desc">Design, build and scale software systems</div></div>
+        <div class="sel-card chip" data-role="Engineering Manager"><div class="check">✓</div><div class="rc-icon">👥</div><div class="rc-title">Engineering Manager</div><div class="rc-desc">Lead engineering teams and deliver impact</div></div>
+        <div class="sel-card chip" data-role="Solutions Architect"><div class="check">✓</div><div class="rc-icon">🗂</div><div class="rc-title">Solutions Architect</div><div class="rc-desc">Design scalable architectural solutions</div></div>
+        <div class="sel-card chip" data-role="Technical Program Manager"><div class="check">✓</div><div class="rc-icon">🗓</div><div class="rc-title">Technical Program Manager</div><div class="rc-desc">Plan and deliver complex technical programs</div></div>
+        <div class="sel-card chip" data-role="Management Consultant"><div class="check">✓</div><div class="rc-icon">📊</div><div class="rc-title">Management Consultant</div><div class="rc-desc">Solve business problems and drive transformation</div></div>
+        <div class="sel-card chip" data-role="Executive Leadership"><div class="check">✓</div><div class="rc-icon">👑</div><div class="rc-title">Executive Leadership</div><div class="rc-desc">Set vision and lead at the executive level</div></div>
+        <div class="sel-card chip" data-role="Custom" data-custom="true"><div class="check">✓</div><div class="rc-icon">＋</div><div class="rc-title">Custom Role</div><div class="rc-desc">Define a custom role and expectations</div></div>
+      </div>
+    </div>
+
+    <div class="role-panel" id="tab-ai">
+      <div class="role-grid">
+        <div class="sel-card chip" data-role="AI Engineer"><div class="check">✓</div><div class="rc-icon">🤖</div><div class="rc-title">AI Engineer</div><div class="rc-desc">Build and deploy AI-powered systems</div></div>
+        <div class="sel-card chip" data-role="AI Product Manager"><div class="check">✓</div><div class="rc-icon">🧭</div><div class="rc-title">AI Product Manager</div><div class="rc-desc">Ship AI products from idea to scale</div></div>
+        <div class="sel-card chip" data-role="Data Engineer"><div class="check">✓</div><div class="rc-icon">🛠</div><div class="rc-title">Data Engineer</div><div class="rc-desc">Build reliable data pipelines and platforms</div></div>
+        <div class="sel-card chip" data-role="ML Engineer"><div class="check">✓</div><div class="rc-icon">📈</div><div class="rc-title">ML Engineer</div><div class="rc-desc">Train, evaluate and productionize models</div></div>
+        <div class="sel-card chip" data-role="MLOps Engineer"><div class="check">✓</div><div class="rc-icon">🔁</div><div class="rc-title">MLOps Engineer</div><div class="rc-desc">Operate ML systems reliably at scale</div></div>
+        <div class="sel-card chip" data-role="Research Scientist"><div class="check">✓</div><div class="rc-icon">🔬</div><div class="rc-title">Research Scientist</div><div class="rc-desc">Advance the state of the art with research</div></div>
+        <div class="sel-card chip" data-role="LLM Engineer"><div class="check">✓</div><div class="rc-icon">💬</div><div class="rc-title">LLM Engineer</div><div class="rc-desc">Build applications on large language models</div></div>
+        <div class="sel-card chip" data-role="Custom" data-custom="true"><div class="check">✓</div><div class="rc-icon">＋</div><div class="rc-title">Custom Role</div><div class="rc-desc">Define a custom role and expectations</div></div>
+      </div>
+    </div>
+    <input type="text" class="custom-input" id="roleCustom" placeholder="Type your role and press Enter...">
+
+    <div class="step-label">2. Select Experience Level</div>
+    <div class="exp-grid" id="chips-exp">
+      <div class="sel-card chip exp-card" data-exp="fresher"><div class="check">✓</div><span class="exp-emoji">🌱</span><div><div class="exp-name">Fresher</div><div class="exp-yrs">0–2 yrs</div></div></div>
+      <div class="sel-card chip exp-card" data-exp="mid"><div class="check">✓</div><span class="exp-emoji">⚡</span><div><div class="exp-name">Mid-Career</div><div class="exp-yrs">3–8 yrs</div></div></div>
+      <div class="sel-card chip exp-card" data-exp="senior"><div class="check">✓</div><span class="exp-emoji">🔥</span><div><div class="exp-name">Senior</div><div class="exp-yrs">8–15 yrs</div></div></div>
+      <div class="sel-card chip exp-card" data-exp="executive"><div class="check">✓</div><span class="exp-emoji">👑</span><div><div class="exp-name">Executive</div><div class="exp-yrs">15+ yrs</div></div></div>
+    </div>
+
+    <div class="step-label">3. Select Interview Persona</div>
+    <div class="persona-grid">
+
+      <div class="sel-card persona-card" data-persona="alex_chen" data-voice="voice-alex" data-diff="Hard (Rigorous)">
+        <div class="check">✓</div>
+        <div class="p-head"><div class="p-avatar">AC</div><div><div class="p-name">Alex Chen <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Senior Principal Engineer · AWS</div></div></div>
+        <span class="p-style royal-blue">Technical Excellence</span>
+        <ul class="p-traits"><li>System Design</li><li>Scalability</li><li>Technical Judgment</li><li>Ownership</li></ul>
+      </div>
+
+      <div class="sel-card persona-card" data-persona="priya_ramesh" data-voice="voice-priya" data-diff="Elite (Rigorous)">
+        <div class="check">✓</div>
+        <div class="p-head"><div class="p-avatar emerald">PR</div><div><div class="p-name">Priya Ramesh <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Partner · McKinsey Consulting</div></div></div>
+        <span class="p-style emerald">Case-Led Strategy</span>
+        <ul class="p-traits"><li>Case Structuring</li><li>Strategic Thinking</li><li>Executive Presence</li><li>Clear Communication</li></ul>
+      </div>
+
+      <div class="sel-card persona-card" data-persona="marcus_webb" data-voice="voice-marcus" data-diff="Medium (Balanced)">
+        <div class="check">✓</div>
+        <div class="p-head"><div class="p-avatar gold">MW</div><div><div class="p-name">Marcus Webb <span class="difficulty diff-medium">⚡ Medium</span></div><div class="p-title">VP Product · Series B SaaS</div></div></div>
+        <span class="p-style gold">Product Leadership</span>
+        <ul class="p-traits"><li>Product Strategy</li><li>Prioritization</li><li>Commercial Acumen</li><li>Customer Insight</li></ul>
+      </div>
+
+      <div class="sel-card persona-card" data-persona="sanjeev_nair" data-voice="voice-sanjeev" data-diff="Hard (Rigorous)">
+        <div class="check">✓</div>
+        <div class="p-head"><div class="p-avatar">SN</div><div><div class="p-name">Sanjeev Nair <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Engineering Director · Global Tech Firm</div></div></div>
+        <span class="p-style royal-blue">Engineering Leadership</span>
+        <ul class="p-traits"><li>Engineering Strategy</li><li>Organizational Leadership</li><li>Delivery Excellence</li><li>Technical Vision</li></ul>
+      </div>
+
+      <div class="sel-card persona-card" data-persona="sarah_kim" data-voice="voice-sarah" data-diff="Hard (Rigorous)">
+        <div class="check">✓</div>
+        <div class="p-head"><div class="p-avatar emerald">SK</div><div><div class="p-name">Sarah Kim <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">CEO · Pre-Series A Startup</div></div></div>
+        <span class="p-style emerald">Founder Mindset</span>
+        <ul class="p-traits"><li>First Principles</li><li>Speed of Execution</li><li>Resilience</li><li>Bias for Action</li></ul>
+      </div>
+
+      <div class="sel-card persona-card" data-persona="raj_mehta" data-voice="voice-raj" data-diff="Elite (Rigorous)">
+        <div class="check">✓</div>
+        <div class="p-head"><div class="p-avatar gold">RM</div><div><div class="p-name">Raj Mehta <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Global Director · GCC Enterprise Network</div></div></div>
+        <span class="p-style gold">Executive Leadership</span>
+        <ul class="p-traits"><li>Executive Presence</li><li>Strategic Judgment</li><li>Board Readiness</li><li>Stakeholder Influence</li></ul>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ══════════ RIGHT: LIVE TERMINAL ══════════ -->
+  <aside class="terminal">
+    <div class="panel">
+      <div class="term-header">
+        <span class="term-title">Live Terminal</span>
+        <span class="live-pill" id="termStatus">Waiting</span>
+      </div>
+
+      <div class="term-block">
+        <div class="term-label">AI Engine Status</div>
+        <div class="engine-row">
+          <svg width="44" height="44" viewBox="0 0 44 44" class="engine-ring-svg">
+            <defs><linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3B82F6"/><stop offset="100%" stop-color="#8B5CF6"/></linearGradient></defs>
+            <circle cx="22" cy="22" r="18" fill="none" stroke="url(#ring-grad)" stroke-width="3.5"/>
+          </svg>
+          <div>
+            <div class="engine-title" id="engTitle">Waiting</div>
+            <div class="engine-sub">AI systems ready.</div>
+            <div class="engine-sub">Click 'Initialize Session' to begin.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="term-block">
+        <div class="term-label">STAR Progress (Real-time Detection)</div>
+        <div class="star-row">
+          <div class="star-step on"><div class="star-dot">S</div><div class="star-name">Situation</div></div>
+          <div class="star-line"></div>
+          <div class="star-step"><div class="star-dot">T</div><div class="star-name">Task</div></div>
+          <div class="star-line"></div>
+          <div class="star-step"><div class="star-dot">A</div><div class="star-name">Action</div></div>
+          <div class="star-line"></div>
+          <div class="star-step"><div class="star-dot">R</div><div class="star-name">Result</div></div>
+        </div>
+      </div>
+
+      <div class="term-block">
+        <div class="term-label">Overall Intelligence Score</div>
+        <div class="score-row">
+          <div class="score-ring">––</div>
+          <div><div class="score-msg">Score will appear here</div><div class="score-sub">after your interview</div></div>
+        </div>
+      </div>
+
+      <div class="term-block">
+        <div class="term-label">5-Vector Intelligence</div>
+        <ul class="vec-list">
+          <li><span class="vec-ic" style="background:rgba(59,130,246,0.15);color:var(--v-structure);">▣</span>Structure<span class="vec-bar"></span><span class="vec-val">––</span></li>
+          <li><span class="vec-ic" style="background:rgba(167,139,250,0.15);color:var(--v-domain);">✦</span>Domain Expertise<span class="vec-bar"></span><span class="vec-val">––</span></li>
+          <li><span class="vec-ic" style="background:rgba(34,197,94,0.15);color:var(--v-strategic);">◎</span>Strategic Thinking<span class="vec-bar"></span><span class="vec-val">––</span></li>
+          <li><span class="vec-ic" style="background:rgba(251,146,60,0.15);color:var(--v-comm);">💬</span>Communication<span class="vec-bar"></span><span class="vec-val">––</span></li>
+          <li><span class="vec-ic" style="background:rgba(245,158,11,0.15);color:var(--v-leadership);">♛</span>Leadership &amp; Execution<span class="vec-bar"></span><span class="vec-val">––</span></li>
+        </ul>
+      </div>
+
+      <div class="term-block term-block-last">
+        <div class="term-label">AI Activity Feed</div>
+        <div class="feed-row"><span class="feed-dot"></span><span id="feedMsg">AI systems ready. Click 'Initialize Session' to begin.</span></div>
+      </div>
+
+      <button class="begin-btn" id="beginBtn" disabled>Initialize Session →</button>
+      <div class="begin-sub">🔒 Secure &amp; private</div>
+    </div>
+  </aside>
+
 </div>
-<!-- Core Roles Section -->
- <div class="role-panel visible" id="tab-core">
-    <div class="chips">
-        <div class="chip" data-role="Software Engineer">Software Engineer</div>
-        <div class="chip" data-role="Engineering Manager">Engineering Manager</div>
-        <div class="chip" data-role="Product Manager">Product Manager</div>
-        <div class="chip" data-role="Technical Program Manager">Technical Program Manager</div>
-        <div class="chip" data-role="Solutions Architect">Solutions Architect</div>
-        <div class="chip" data-role="Management Consultant">Management Consultant</div>
-        <div class="chip" data-role="Executive Leadership">Executive Leadership</div>
-        <div class="chip" data-role="Custom" data-custom="true">&#9998; Custom...</div>
-    </div>
-</div>
-<!-- AI & Data Roles Section -->
-  <div class="role-panel" id="tab-ai">
-    <div class="chips">
-        <div class="chip" data-role="AI Engineer">AI Engineer</div>
-        <div class="chip" data-role="AI Product Manager">AI Product Manager</div>
-        <div class="chip" data-role="Data Engineer">Data Engineer</div>
-        <div class="chip" data-role="ML Engineer">ML Engineer</div>
-        <div class="chip" data-role="MLOps Engineer">MLOps Engineer</div>
-        <div class="chip" data-role="Research Scientist">Research Scientist</div>
-        <div class="chip" data-role="LLM Engineer">LLM Engineer</div>
-        <div class="chip" data-role="Custom" data-custom="true">&#9998; Custom...</div>
-    </div>
-  </div>
-  <input type="text" class="custom-input" id="roleCustom" placeholder="Type your role and press Enter...">
 
-  <div class="divider"></div>
-
-  <div class="sec-label">Experience Level</div>
-  <div class="chips" id="chips-exp">
-    <div class="chip" data-exp="fresher">&#127807; Fresher (0&#8211;2 yrs)</div>
-    <div class="chip" data-exp="mid">&#9889; Mid-Career (3&#8211;8 yrs)</div>
-    <div class="chip" data-exp="senior">&#128293; Senior (8&#8211;15 yrs)</div>
-    <div class="chip" data-exp="executive">&#128081; Executive (15+ yrs)</div>
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="sec-label">Choose Your Interviewer</div>
-
-  <div class="persona-grid">
-
-
-<div class="persona-card" data-persona="alex_chen" data-voice="voice-alex">
-    <div class="check-dot">&#10003;</div>
-    <div class="p-avatar">AC</div>
-    <div class="p-body">
-      <div class="p-top">
-        <span class="p-name">Alex Chen</span>
-        <span class="difficulty diff-hard">&#128293; Hard</span>
-      </div>
-      <div class="p-title">Senior Principal Engineer &middot; AWS</div>
-      <span class="p-style royal-blue">Technical Excellence</span>
-      <ul class="p-traits">
-        <li>System Design</li>
-        <li>Scalability</li>
-        <li>Technical Judgment</li>
-        <li>Ownership</li>
-      </ul>
-    </div>
-  </div>
-
- <div class="persona-card" data-persona="priya_ramesh" data-voice="voice-priya">
-    <div class="check-dot">&#10003;</div>
-    <div class="p-avatar emerald">PR</div>
-    <div class="p-body">
-      <div class="p-top">
-        <span class="p-name">Priya Ramesh</span>
-        <span class="difficulty diff-elite">&#128142; Elite</span>
-      </div>
-      <div class="p-title">Partner &middot; McKinsey Consulting</div>
-      <span class="p-style emerald">Case-Led Strategy</span>
-      <ul class="p-traits">
-        <li>Case Structuring</li>
-        <li>Strategic Thinking</li>
-        <li>Executive Presence</li>
-        <li>Clear Communication</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="persona-card" data-persona="marcus_webb" data-voice="voice-marcus">
-    <div class="check-dot">&#10003;</div>
-    <div class="p-avatar gold">MW</div>
-    <div class="p-body">
-      <div class="p-top">
-        <span class="p-name">Marcus Webb</span>
-        <span class="difficulty diff-medium">&#9889; Medium</span>
-      </div>
-      <div class="p-title">VP Product &middot; Series B SaaS</div>
-      <span class="p-style gold">Product Leadership</span>
-      <ul class="p-traits">
-        <li>Product Strategy</li>
-        <li>Prioritization</li>
-        <li>Commercial Acumen</li>
-        <li>Customer Insight</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="persona-card" data-persona="sanjeev_nair" data-voice="voice-sanjeev">
-    <div class="check-dot">&#10003;</div>
-    <div class="p-avatar">SN</div>
-    <div class="p-body">
-      <div class="p-top">
-        <span class="p-name">Sanjeev Nair</span>
-        <span class="difficulty diff-hard">&#128293; Hard</span>
-      </div>
-      <div class="p-title">Engineering Director &middot; Global Tech Firm</div>
-      <span class="p-style royal-blue">Engineering Leadership</span>
-      <ul class="p-traits">
-        <li>Engineering Strategy</li>
-        <li>Organizational Leadership</li>
-        <li>Delivery Excellence</li>
-        <li>Technical Vision</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="persona-card" data-persona="sarah_kim" data-voice="voice-sarah">
-    <div class="check-dot">&#10003;</div>
-    <div class="p-avatar emerald">SK</div>
-    <div class="p-body">
-      <div class="p-top">
-        <span class="p-name">Sarah Kim</span>
-        <span class="difficulty diff-hard">&#128293; Hard</span>
-      </div>
-      <div class="p-title">CEO &middot; Pre-Series A Startup</div>
-      <span class="p-style emerald">Founder Mindset</span>
-      <ul class="p-traits">
-        <li>First Principles</li>
-        <li>Speed of Execution</li>
-        <li>Resilience</li>
-        <li>Bias for Action</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="persona-card" data-persona="raj_mehta" data-voice="voice-raj">
-    <div class="check-dot">&#10003;</div>
-    <div class="p-avatar gold">RM</div>
-    <div class="p-body">
-      <div class="p-top">
-        <span class="p-name">Raj Mehta</span>
-        <span class="difficulty diff-elite">&#128142; Elite</span>
-      </div>
-      <div class="p-title">Global Director &middot; GCC Enterprise Network</div>
-      <span class="p-style gold">Executive Leadership</span>
-      <ul class="p-traits">
-        <li>Executive Presence</li>
-        <li>Strategic Judgment</li>
-        <li>Board Readiness</li>
-        <li>Stakeholder Influence</li>
-      </ul>
-    </div>
-  </div>
-</div>
-
-  <div class="sticky-cta">
-  <div class="sticky-inner">
-    <div class="cta-status">
-      <span class="cta-tag" id="cta-role">Role: not selected</span>
-      <span class="cta-tag set" id="cta-exp">Level: Mid-Career</span>
-      <span class="cta-tag" id="cta-persona">Interviewer: not selected</span>
-    </div>
-    <button class="begin-btn" id="beginBtn" disabled>Initialize Session &#8594;</button>
+<!-- ══════════ BOTTOM TRUST BAR ══════════ -->
+<div class="trust">
+  <div class="trust-inner">
+    <div class="trust-item"><span class="trust-ic" style="background:rgba(59,130,246,0.15);color:#3b82f6;">🧠</span><div><div class="trust-t">AI Personalization</div><div class="trust-s">Built for you</div></div></div>
+    <div class="trust-item"><span class="trust-ic" style="background:rgba(167,139,250,0.15);color:#a78bfa;">💼</span><div><div class="trust-t">Role-Specific Interviews</div></div></div>
+    <div class="trust-item"><span class="trust-ic" style="background:rgba(245,158,11,0.15);color:#f59e0b;">✦</span><div><div class="trust-t">Real-time Feedback &amp; Scoring</div></div></div>
+    <div class="trust-item"><span class="trust-ic" style="background:rgba(45,212,191,0.15);color:#2dd4bf;">📋</span><div><div class="trust-t">Industry-Aligned Questions</div></div></div>
+    <div class="trust-item"><span class="trust-ic" style="background:rgba(139,92,246,0.15);color:#8b5cf6;">🛡</span><div><div class="trust-t">Secure &amp; Private</div><div class="trust-s">Enterprise Grade</div></div></div>
   </div>
 </div>
 
@@ -499,39 +529,60 @@ function switchTab(tab) {
 }
 
 (function () {
+  // Same state machine and API payload as the previous version of this page —
+  // { personaId, roleTitle, experienceLevel, vapiVoiceId } → POST /api/interview/sessions
   let state = { role: '', exp: null, persona: null, voice: null };
 
-  document.querySelectorAll('.chip, .persona-card').forEach(el => {
+  const EXP_LABELS = { fresher: 'Fresher (0–2 yrs)', mid: 'Mid-Career (3–8 yrs)', senior: 'Senior (8–15 yrs)', executive: 'Executive (15+ yrs)' };
+  const customInput = document.getElementById('roleCustom');
+
+  document.querySelectorAll('.sel-card').forEach(el => {
     el.addEventListener('click', () => {
-      if(el.classList.contains('chip')) {
-        el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      if (el.classList.contains('persona-card')) {
+        document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
-        if(el.parentElement.id === 'chips-exp') state.exp = el.textContent.trim().split('(')[0];
-        else state.role = el.dataset.role;
-      } else {
-        document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-        state.persona = el.dataset.persona; // Ensure persona ID is captured
+        state.persona = el.dataset.persona;
         state.voice = el.dataset.voice;
+        document.getElementById('ctxPersona').textContent = el.querySelector('.p-name').childNodes[0].textContent.trim();
+        document.getElementById('ctxDiff').textContent = el.dataset.diff || '—';
+      } else if (el.dataset.exp) {
+        el.parentElement.querySelectorAll('.sel-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        state.exp = el.querySelector('.exp-name').textContent.trim();
+        document.getElementById('ctxExp').textContent = EXP_LABELS[el.dataset.exp] || state.exp;
+      } else {
+        // role card (may live in either tab panel)
+        document.querySelectorAll('.role-panel .sel-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        if (el.dataset.custom) {
+          customInput.classList.add('show');
+          customInput.focus();
+          state.role = customInput.value.trim();
+        } else {
+          customInput.classList.remove('show');
+          state.role = el.dataset.role;
+        }
+        document.getElementById('ctxRole').textContent = state.role || 'Custom (type below)';
       }
       sync();
     });
   });
 
-  function sync() {
-    const roleEl = document.getElementById('cta-role');
-    const expEl = document.getElementById('cta-exp');
-    const perEl = document.getElementById('cta-persona');
-    const btn = document.getElementById('beginBtn');
+  customInput.addEventListener('input', () => {
+    state.role = customInput.value.trim();
+    document.getElementById('ctxRole').textContent = state.role || 'Custom (type below)';
+    sync();
+  });
 
-    roleEl.textContent = state.role ? 'Role: ' + state.role : 'Role: not selected';
-    roleEl.classList.toggle('filled', !!state.role);
-    expEl.textContent = state.exp ? 'Level: ' + state.exp : 'Level: not selected';
-    expEl.classList.toggle('filled', !!state.exp);
-    perEl.textContent = state.persona ? 'Interviewer: ' + state.persona : 'Interviewer: not selected';
-    perEl.classList.toggle('filled', !!state.persona);
-    
-    btn.disabled = !(state.role && state.persona && state.exp);
+  function sync() {
+    const ready = !!(state.role && state.persona && state.exp);
+    const btn = document.getElementById('beginBtn');
+    btn.disabled = !ready;
+    document.getElementById('engTitle').textContent = ready ? 'Ready' : 'Waiting';
+    document.getElementById('termStatus').textContent = ready ? 'Ready' : 'Waiting';
+    document.getElementById('feedMsg').textContent = ready
+      ? 'All systems ready. Click \u2018Initialize Session\u2019 to launch.'
+      : 'AI systems ready. Complete steps 1\u20133 to begin.';
   }
 
   document.getElementById('beginBtn').addEventListener('click', async () => {
@@ -541,11 +592,11 @@ function switchTab(tab) {
       const res = await fetch('/api/interview/sessions', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ 
-            personaId: state.persona, 
-            roleTitle: state.role, 
-            experienceLevel: state.exp, 
-            vapiVoiceId: state.voice 
+        body: JSON.stringify({
+            personaId: state.persona,
+            roleTitle: state.role,
+            experienceLevel: state.exp,
+            vapiVoiceId: state.voice
         })
       });
       const data = await res.json();
