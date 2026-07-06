@@ -388,10 +388,7 @@
 
     var note = getStarNote();
     if (note) {
-      if (finalized && progress.status === 'not_addressed') {
-        note.textContent = '✕ Not Addressed — answer was too brief to evaluate for STAR structure';
-        note.className = 'star-skip-note miss';
-      } else if (flagged.length && !finalized) {
+      if (flagged.length && !finalized) {
         note.textContent = '⚠ Skipped so far: ' + flagged.join(', ') + ' — try to cover it before you finish';
         note.className = 'star-skip-note warn';
       } else if (flagged.length && finalized) {
@@ -647,12 +644,6 @@
      is mid-sentence (using partial speech transcripts that we deliberately do
      NOT write into the answer box — only finalized phrases get written). */
   window.MedhaIQ_liveStar = function(text){ paintStarProgress(liveDetectStar(text), false); };
-  /* Voice intents (Bug fix: frozen counter on spoken "skip"). These call the
-     EXACT same submitAnswer used by the on-screen buttons, so the question
-     counter, server-side answeredCount, scoring, and session-end logic all
-     advance identically whether the candidate clicks or speaks. */
-  window.MedhaIQ_requestSkip   = function(){ submitAnswer(true);  };
-  window.MedhaIQ_requestSubmit = function(){ submitAnswer(false); };
 })();
 </script>
 
@@ -807,33 +798,7 @@
         var input = document.getElementById('answerInput');
         if (!input) return;
         if (message.transcriptType === 'final' && message.transcript) {
-          var chunk = String(message.transcript).trim();
-
-          /* ── Spoken intent classifier (Bug fix: sticky counter) ──
-             Detects a standalone control phrase. Anchored ^...$ and capped at
-             6 words, so "I decided to skip the meeting" inside a real answer
-             is NEVER treated as a command — only a bare "skip", "next
-             question", "I don't know", "I'm done" etc. is.
-             Decision rule:
-             - Command + answer box has real content (8+ words) → SUBMIT what
-               they said ("next question" after answering means "I'm done").
-             - Command + answer box empty/near-empty → SKIP, which advances
-               the counter and the server session exactly like the Skip button. */
-          var INTENT_RE = /^(skip( this| it)?( question| one)?( please)?|next( question| one)?( please)?|pass|move on( please)?|i (don'?t|do not) know( the answer)?( to (this|that))?|no idea|i'?m done|that'?s (my answer|all|it)|submit( my answer)?|done)[\s.,!?]*$/i;
-          var isCommand = chunk.split(/\s+/).length <= 6 && INTENT_RE.test(chunk);
-          if (isCommand) {
-            var answerWords = input.value.trim().split(/\s+/).filter(Boolean).length;
-            if (answerWords >= 8 && window.MedhaIQ_requestSubmit) {
-              slog('Voice intent: submit ("'+chunk+'")', 'info');
-              window.MedhaIQ_requestSubmit();
-            } else if (window.MedhaIQ_requestSkip) {
-              slog('Voice intent: skip ("'+chunk+'")', 'info');
-              window.MedhaIQ_requestSkip();
-            }
-            return; // command phrases are never written into the answer
-          }
-
-          input.value = (input.value ? input.value.replace(/\s+$/, '') + ' ' : '') + chunk;
+          input.value = (input.value ? input.value.replace(/\s+$/, '') + ' ' : '') + String(message.transcript).trim();
           input.dispatchEvent(new Event('input', { bubbles: true }));
         } else if (window.MedhaIQ_liveStar) {
           window.MedhaIQ_liveStar((input.value ? input.value + ' ' : '') + (message.transcript || ''));

@@ -394,17 +394,6 @@ async function scoreAnswer(answer, personaId, sessionContext) {
 
 // ── Generate exit report (v0.5 scoreboard format) ───────────────────────────
 const REPORT_SYSTEM = `You are a senior interview debrief analyst. Given the full Q&A transcript and aggregate scores, produce a structured debrief in JSON format.
-
-ENTITY RULES — NEVER violate these:
-- The CANDIDATE is the human being evaluated. Their name/identity is given in the session details as "Candidate". Everything in this report describes THEM.
-- The PERSONA (e.g. Priya Ramesh, Alex Chen) is the AI INTERVIEWER — the evaluator who asked the questions. The persona is NEVER the candidate, is never described as having answered anything, and must never be named as the subject of the evaluation. In persona_verdict, the persona speaks in first person ABOUT the candidate.
-
-EVIDENCE RULES — apply before writing anything:
-- Base every claim ONLY on what the candidate actually said in the transcript. Do not invent strengths, skills, or achievements that do not appear in their answers.
-- An answer that is a greeting, filler ("hi", "yes", "cool"), refusal, "I don't know", or under ~10 words is a NON-ANSWER. It provides zero evidence and must be treated as a skipped question.
-- If half or more of the answers are non-answers, you MUST: set every scoreboard value to 25 or below, set recommendation to "No Hire" or "Lean No Hire", and open the executive_summary by stating that the session did not provide enough substantive answers to evaluate the candidate. Do NOT write generic praise about communication or potential in this case.
-- Never praise "clear communication" or similar unless the transcript actually contains substantive, structured answers.
-
 Return ONLY valid JSON with these keys:
 
 1. scoreboard: { career_intelligence, leadership_readiness, executive_presence, gcc_readiness, promotion_readiness } — each 0-100.
@@ -429,7 +418,7 @@ Return ONLY valid JSON with these keys:
 
 10. next_steps: array of 3 strings — specific next actions for the candidate.`;
 
-async function generateReport({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, qaPairs, scores, candidateName }) {
+async function generateReport({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, qaPairs, scores }) {
   const persona = PERSONAS[personaId];
 
   const avg = (arr, key) => scores.length ? arr.reduce((s, x) => s + (parseFloat(x[key]) || 0), 0) / scores.length : 0;
@@ -440,27 +429,11 @@ async function generateReport({ sessionId, personaId, roleTitle, experienceLevel
   const frictionAvg = avg(scores, 'friction');
   const weightedAvg = avg(scores, 'weighted');
 
-  // ── Deterministic evidence census (Bug 3 guard) ──
-  // Counted in code, not left to the AI's judgment: how many answers actually
-  // contained substance vs. fillers/skips. Drives both the prompt and the
-  // hard clamp applied after the AI responds.
-  const substantiveCount = (qaPairs || []).filter(function (qa) {
-    const a = (qa.answer || '').trim();
-    return a.split(/\s+/).filter(Boolean).length >= 10 && !STAR_TRIVIAL_RE.test(a);
-  }).length;
-  const totalAnswers = (qaPairs || []).length;
-  const lowEvidence = totalAnswers > 0 && (substantiveCount * 2 <= totalAnswers || weightedAvg < 25);
-
   const prompt = `Interview Session Details:
-- Candidate (the person being evaluated — attribute ALL performance to them): ${candidateName || 'Registered platform user (name withheld)'}
-- Interviewer (AI persona — the EVALUATOR, never the candidate): ${persona?.name} (${persona?.title} @ ${persona?.org})
+- Persona: ${persona?.name} (${persona?.title} @ ${persona?.org})
 - Role: ${roleTitle || 'General Professional'}
 - Experience Level: ${experienceLevel || 'mid'}
 - Organisation: ${orgPreset || 'Generic Global Enterprise'}
-
-Evidence census (computed deterministically, trust these numbers):
-- ${substantiveCount} of ${totalAnswers} answers were substantive; ${totalAnswers - substantiveCount} were non-answers (fillers, skips, or under 10 words).
-${lowEvidence ? '- LOW-EVIDENCE SESSION: apply the mandatory low-evidence rules from your instructions.' : ''}
 
 Q&A Transcript:
 ${buildSessionHistory(qaPairs)}
@@ -487,68 +460,29 @@ Produce the structured debrief in valid JSON format.`;
     const lr = Math.round(techAvg);
     const ep = Math.round(execAvg);
     const gr = Math.round(gccAvg);
-    const pr = Math.min(100, Math.round(weightedAvg + (weightedAvg > 0 ? 5 : 0)));
-    // Fallback copy is now conditional on the actual numbers — a failed AI
-    // call must never print praise over a session of skips and "hi"s.
-    const honest = lowEvidence || weightedAvg < 40;
+    const pr = Math.min(100, Math.round(weightedAvg + 5));
     result = {
       scoreboard: { career_intelligence: ci, leadership_readiness: lr, executive_presence: ep, gcc_readiness: gr, promotion_readiness: pr },
-      recommendation: honest ? 'No Hire' : 'Lean Hire',
-      executive_summary: honest
-        ? `This session did not provide enough substantive answers to evaluate the candidate: ${substantiveCount} of ${totalAnswers} responses contained real content. Scores reflect the absence of evidence, not a judgment of ability. A full re-attempt with complete answers is recommended.`
-        : 'The candidate demonstrated clear communication and reasonable structure. Room for improvement in technical depth and quantifiable outcome framing.',
-      strongest_response: honest
-        ? { context: 'Insufficient data', evidence: 'No answer contained enough content to identify a standout response.' }
-        : { context: 'General communication', evidence: 'Clear articulation of a professional challenge.' },
-      weakest_response: honest
-        ? { context: 'Session completion', evidence: 'Most questions were skipped or answered with fillers, leaving the evaluation without usable evidence.' }
-        : { context: 'Specific outcome framing', evidence: 'Answer lacked quantified results and specific ownership details.' },
-      structural_flow: honest ? 'Not assessable — answers were too brief to evaluate structure.' : 'Moderate — logical structure present but could be tightened.',
-      linguistic_nuances: honest ? 'Not assessable from this session.' : 'Some hedging language and filler words detected. Executive vocabulary developing.',
-      priorities: honest
-        ? [
-            { theme: 'Complete the Session', action: 'Answer every question fully — the engine cannot evaluate skipped or one-word responses.' },
-            { theme: 'STAR Structure', action: 'Cover Situation, Task, Action, and Result in each answer.' },
-            { theme: 'Quantified Results', action: 'Anchor answers with a specific number: %, $, headcount, or time saved.' },
-          ]
-        : [
-            { theme: 'STAR Outcome Framing', action: 'Anchor every answer with a specific quantified result: %, $, headcount, latency ms.' },
-            { theme: 'Technical Accuracy', action: 'Validate technical claims with trade-off acknowledgment before stating conclusions.' },
-            { theme: 'Personal Ownership', action: 'Replace collective pronouns with specific personal contributions in every response.' },
-          ],
-      persona_verdict: honest
-        ? 'I was not given enough to work with in this session — most questions went unanswered. I would encourage the candidate to return and complete a full session before any judgment is made.'
-        : 'The candidate showed promise and delivered clear responses. With focused practice on structured outcome framing, they can develop into a strong candidate for this role.',
-      next_steps: honest
-        ? ['Retake the session and answer all questions in full', 'Practice STAR framing with quantified results', 'Aim for 60+ second answers with concrete examples']
-        : ['Practice STAR framing with quantified results', 'Review technical trade-off patterns', 'Audit your answers for personal ownership language'],
+      recommendation: 'Lean Hire',
+      executive_summary: 'The candidate demonstrated clear communication and reasonable structure. Room for improvement in technical depth and quantifiable outcome framing.',
+      strongest_response: { context: 'General communication', evidence: 'Clear articulation of a professional challenge.' },
+      weakest_response: { context: 'Specific outcome framing', evidence: 'Answer lacked quantified results and specific ownership details.' },
+      structural_flow: 'Moderate — logical structure present but could be tightened.',
+      linguistic_nuances: 'Some hedging language and filler words detected. Executive vocabulary developing.',
+      priorities: [
+        { theme: 'STAR Outcome Framing', action: 'Anchor every answer with a specific quantified result: %, $, headcount, latency ms.' },
+        { theme: 'Technical Accuracy', action: 'Validate technical claims with trade-off acknowledgment before stating conclusions.' },
+        { theme: 'Personal Ownership', action: 'Replace collective pronouns with specific personal contributions in every response.' },
+      ],
+      persona_verdict: 'The candidate showed promise and delivered clear responses. With focused practice on structured outcome framing, they can develop into a strong candidate for this role.',
+      next_steps: ['Practice STAR framing with quantified results', 'Review technical trade-off patterns', 'Audit your answers for personal ownership language'],
     };
-  }
-
-  // ── Deterministic post-AI clamp (Bug 3 guard, applies to AI output too) ──
-  // Whatever the AI wrote, a low-evidence session can never publish a high
-  // scoreboard or a hire recommendation. Enforced in code, every time.
-  if (lowEvidence && result && result.scoreboard) {
-    const cap = Math.max(10, Math.round(weightedAvg) + 10);
-    Object.keys(result.scoreboard).forEach(function (k) {
-      const v = parseInt(result.scoreboard[k], 10) || 0;
-      result.scoreboard[k] = Math.min(v, cap, 25);
-    });
-    if (!/no hire/i.test(result.recommendation || '')) {
-      result.recommendation = weightedAvg < 25 ? 'No Hire' : 'Lean No Hire';
-    }
-    const notice = `Note: only ${substantiveCount} of ${totalAnswers} questions received substantive answers, so this evaluation is based on limited evidence. `;
-    if (!(result.executive_summary || '').includes('substantive')) {
-      result.executive_summary = notice + (result.executive_summary || '');
-    }
   }
 
   const sb = result.scoreboard || {};
   const rec = result.recommendation || 'Lean Hire';
 
   const reportMarkdown = `### 📊 MEDHAIQ CAREER INTELLIGENCE SCOREBOARD
-**Candidate:** ${candidateName || 'Registered user'}
-**Evaluated by:** ${persona?.name || 'AI Interviewer'} (${persona?.title || ''}${persona?.org ? ' @ ' + persona.org : ''}) — AI interviewer persona
 * **Career Intelligence:** ${sb.career_intelligence || 0}/100
 * **Leadership Readiness:** ${sb.leadership_readiness || 0}/100
 * **Executive Presence:** ${sb.executive_presence || 0}/100
@@ -581,15 +515,6 @@ ${(result.weakest_response) ? `* **Weakest Response / Friction Point Capture:**
 ${(result.priorities || []).slice(0, 3).map((p, i) => `${i + 1}. **${p.theme}:** ${p.action}`).join('\n')}`;
 
   return {
-    // ── Entity attribution (Bug 1) — the report page should render these
-    // fields, never PNAME/persona fields, as the person who took the session.
-    candidate_name: candidateName || null,
-    interviewer_name: persona?.name || null,
-    interviewer_title: persona ? `${persona.title} @ ${persona.org}` : null,
-    // ── Evidence census (Bug 3) — lets the report page show "3 of 5 answered".
-    substantive_answers: substantiveCount,
-    total_answers: totalAnswers,
-    low_evidence: lowEvidence,
     overall_score: Math.round(weightedAvg * 100) / 100,
     strengths_json: (result.priorities || []).slice(0, 3).map(p => ({ label: p.theme, observation: p.action })),
     improvements_json: (result.priorities || []).map(p => ({ issue: p.theme, fix: p.action })),
@@ -623,41 +548,20 @@ const STAR_PATTERNS = {
 
 const STAR_ORDER = ['situation', 'task', 'action', 'result'];
 
-// Conversational fillers that must NEVER earn a STAR component, regardless of
-// what any pattern or AI says. Mirrors the trivial-answer floor in scoreAnswer.
-const STAR_TRIVIAL_RE = /^(hi|hello|hey|yo|test|testing|idk|i\s*don'?t\s*know|n\/a|none|na|ok|okay|sure|yes|no|cool|nice|thanks|thank you|hmm+|umm+)[\s.!?,]*$/i;
-const STAR_MIN_WORDS = 10;
-
 // aiComponents (optional): per-letter booleans returned by the AI scorer
 // (scoreAnswer → star_components). When provided, a letter counts as present
 // if EITHER the keyword pass OR the AI judged it present — the AI catches
 // phrasings the keywords miss, the keywords guarantee a deterministic floor.
 // Fully backward compatible: existing calls with one argument behave as before.
-//
-// SUBSTANCE GATE (deterministic, runs BEFORE any pattern or AI opinion):
-// if the answer is under STAR_MIN_WORDS words, or is a conversational filler
-// ("hi", "cool", "yes"...), every component is false and status is
-// 'not_addressed'. This is enforced in code so a generous AI can never
-// certify STAR structure from an empty or low-effort input.
 function computeStarProgress(answerText, aiComponents) {
-  const raw = (answerText || '').trim();
-  const wordCount = raw.split(/\s+/).filter(Boolean).length;
-  if (wordCount < STAR_MIN_WORDS || STAR_TRIVIAL_RE.test(raw)) {
-    return {
-      situation: false, task: false, action: false, result: false,
-      stepsComplete: 0, totalSteps: 4,
-      missing: [...STAR_ORDER],
-      status: 'not_addressed',
-    };
-  }
-  const text = raw.toLowerCase();
+  const text = (answerText || '').toLowerCase();
   const progress = {};
   STAR_ORDER.forEach((key) => {
     progress[key] = STAR_PATTERNS[key].test(text) || !!(aiComponents && aiComponents[key] === true);
   });
   const stepsComplete = Object.values(progress).filter(Boolean).length;
   const missing = STAR_ORDER.filter((key) => !progress[key]); // additive — safe for existing consumers
-  return { ...progress, stepsComplete, totalSteps: 4, missing, status: 'evaluated' };
+  return { ...progress, stepsComplete, totalSteps: 4, missing };
 }
 
 module.exports = {
