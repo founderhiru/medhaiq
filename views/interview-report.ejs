@@ -34,12 +34,12 @@
   <div class="report-section scoreboard-section">
     <h3 class="scoreboard-title">📊 MEDHAIQ CAREER INTELLIGENCE SCOREBOARD</h3>
     <div class="scoreboard-grid">
-      <% const scoreboardRows = [
-        { label: 'Career Intelligence', score: starAvg },
-        { label: 'Leadership Readiness', score: technicalAvg },
-        { label: 'Executive Presence', score: executiveAvg },
-        { label: 'GCC Readiness', score: gccAvg },
-        { label: 'Promotion Readiness', score: frictionAvg },
+       <% const scoreboardRows = [
+        { label: 'Structure', score: starAvg },
+        { label: 'Domain Expertise', score: technicalAvg },
+        { label: 'Strategic Thinking', score: executiveAvg },
+        { label: 'Communication', score: frictionAvg },
+        { label: 'Leadership & Execution', score: gccAvg },
       ]; %>
       <% scoreboardRows.forEach(function(row) { %>
         <% const cls = row.score >= 80 ? 'high' : row.score >= 60 ? 'mid' : 'low'; %>
