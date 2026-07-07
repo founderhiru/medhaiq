@@ -315,7 +315,7 @@ Rules:
 - Ask ONE question only — no compound questions.
 - NEVER give feedback during the session.
 - Return ONLY the question text with the [${competency}] prefix. No preamble, no acknowledgment of previous answers.
-${questionCount === 0 ? `- This is the opening question. Use this anchor: "${openingQ}"` : ''}`;
+${questionCount === 0 ? `- This is the OPENING question. Generate a FRESH, session-specific opening question grounded in competency node #1 of layer 6, calibrated to the target role, experience tier, and company context — and to the job description in layer 7 when present. Do NOT use canned or template openings. Style calibration example only — never reuse or lightly reword it: "${openingQ}"` : ''}`;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -357,7 +357,7 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   });
 
   const prompt = questionCount === 0
-    ? 'Generate the opening interview question using the anchor provided.'
+    ? 'Generate a fresh, session-specific opening interview question grounded in the top competency of the matrix — not a canned template.'
     : `Generate the next adaptive interview question targeting the ${competency.replace('_',' ')} competency.`;
 
   const raw = await chat(prompt, { system, maxTokens: 512 });
