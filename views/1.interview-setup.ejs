@@ -297,101 +297,6 @@
       .role-grid, .exp-grid, .persona-grid { grid-template-columns: 1fr; }
       .trust-inner { grid-template-columns: 1fr; }
     }
-    /* ══════════════════════════════════════════════════════════════
-       TAILOR-FOR-A-SPECIFIC-JOB — additive styles only. Uses existing
-       tokens (--card, --border, --blue-hi, --green, --violet). Safe to
-       remove wholesale without affecting any other rule.
-    ══════════════════════════════════════════════════════════════ */
-    .tailor-card{
-      position:relative; background:var(--card);
-      border:1px dashed rgba(139,92,246,.55); border-radius:14px;
-      padding:14px; cursor:pointer; display:flex; flex-direction:column; gap:8px;
-      transition:border-color .15s, box-shadow .15s;
-    }
-    .tailor-card:hover{ border-color:var(--violet); box-shadow:0 0 18px rgba(139,92,246,.25); }
-    .tailor-card .tc-icon{ width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
-      background:rgba(139,92,246,.12); color:var(--violet); }
-    .tailor-card .tc-icon svg{ width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round; }
-    .tailor-card .tc-title{ font-size:13px;font-weight:700; }
-    .tailor-card .tc-desc{ font-size:11px;color:var(--muted);line-height:1.5; }
-    .tc-add-btn{
-      margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:6px;
-      background:transparent; border:1px solid rgba(139,92,246,.5); color:#c4b5fd;
-      font:inherit; font-size:12px; font-weight:600; padding:6px 12px; border-radius:9px; cursor:pointer; transition:.15s;
-    }
-    .tc-add-btn:hover{ background:rgba(139,92,246,.12); }
-
-    /* ── Success state ── */
-    .tailor-card.tc-success{
-      border:1px solid rgba(34,197,94,.55); border-style:solid;
-      box-shadow:0 0 18px rgba(34,197,94,.22);
-    }
-    .tc-company-row{ display:flex; align-items:center; gap:8px; }
-    .tc-check{
-      width:20px;height:20px;border-radius:50%;flex-shrink:0;
-      display:flex;align-items:center;justify-content:center;
-      background:rgba(34,197,94,.15); color:var(--green); font-size:12px; font-weight:800;
-    }
-    .tc-company{ font-size:13px;font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .tc-role-line{ font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .tc-badges{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-    .tc-badge{
-      font-size:10px; font-weight:600; padding:3px 8px; border-radius:6px;
-      border:1px solid rgba(59,130,246,.45); color:#93c5fd; background:rgba(59,130,246,.08);
-    }
-    .tc-badge.ok{ border-color:rgba(34,197,94,.45); color:#86efac; background:rgba(34,197,94,.08); }
-    .tc-metrics{ font-size:11px; color:var(--green); font-weight:600; }
-    .tc-edit-link{
-      margin-top:auto; align-self:flex-start;
-      background:none; border:none; padding:0; cursor:pointer;
-      font:inherit; font-size:11.5px; font-weight:600; color:var(--muted); text-decoration:underline; text-underline-offset:3px;
-    }
-    .tc-edit-link:hover{ color:#e2e8f0; }
-
-    /* ── Modal ── */
-    .tc-overlay{
-      position:fixed; inset:0; z-index:200; display:none;
-      align-items:center; justify-content:center; padding:20px;
-      background:rgba(3,6,14,.72); backdrop-filter:blur(4px);
-    }
-    .tc-overlay.open{ display:flex; }
-    .tc-modal{
-      width:min(440px,100%); max-height:90vh; overflow-y:auto;
-      background:var(--surface); border:1px solid var(--border); border-radius:18px;
-      padding:20px; box-shadow:0 24px 60px rgba(0,0,0,.6);
-    }
-    .tc-m-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-    .tc-m-title{ font-size:16px; font-weight:800; }
-    .tc-m-close{ background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer; }
-    .tc-m-close:hover{ color:#fff; }
-    .tc-field-label{ font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:12px 0 6px; }
-    .tc-field-label .opt{ font-weight:400; text-transform:none; letter-spacing:0; }
-    .tc-input, .tc-textarea{
-      width:100%; background:var(--card); border:1px solid var(--border); border-radius:10px;
-      color:#e2e8f0; font:inherit; font-size:13px; padding:10px 12px; outline:none; transition:border .15s;
-    }
-    .tc-input:focus, .tc-textarea:focus{ border-color:var(--blue-hi); }
-    .tc-textarea{ min-height:130px; resize:vertical; line-height:1.55; }
-    .tc-count{ text-align:right; font-size:11px; color:var(--muted); margin-top:4px; }
-    .tc-levels{ display:flex; flex-wrap:wrap; gap:6px; }
-    .tc-level{
-      background:var(--card); border:1px solid var(--border); color:var(--muted);
-      font:inherit; font-size:11.5px; font-weight:600; padding:5px 11px; border-radius:8px; cursor:pointer; transition:.15s;
-    }
-    .tc-level.active{ border-color:var(--blue-hi); color:#bfdbfe; background:rgba(59,130,246,.12); }
-    .tc-chips{ display:flex; flex-wrap:wrap; gap:6px; min-height:24px; }
-    .tc-chip{
-      font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:7px;
-      border:1px solid rgba(34,197,94,.4); color:#86efac; background:rgba(34,197,94,.07);
-    }
-    .tc-apply{
-      width:100%; margin-top:16px; border:none; cursor:pointer;
-      background:linear-gradient(90deg,#3b82f6,#8b5cf6); color:#fff;
-      font:inherit; font-size:14px; font-weight:700; padding:12px; border-radius:12px;
-      box-shadow:0 8px 24px rgba(99,102,241,.35); transition:filter .15s;
-    }
-    .tc-apply:hover{ filter:brightness(1.1); }
-    .tc-privacy{ margin-top:10px; text-align:center; font-size:11px; color:var(--muted); }
   </style>
 </head>
 <body>
@@ -417,14 +322,6 @@
       <div class="ctx-item"><div class="ctx-icon">👤</div><div><div class="ctx-k">Interviewer</div><div class="ctx-v" id="ctxPersona">Not selected</div></div></div>
       <div class="ctx-item"><div class="ctx-icon">🕐</div><div><div class="ctx-k">Duration</div><div class="ctx-v">~45 minutes</div></div></div>
       <div class="ctx-item"><div class="ctx-icon">✦</div><div><div class="ctx-k">Difficulty</div><div class="ctx-v" id="ctxDiff">—</div></div></div>
-      <div class="ctx-item" id="ctxCompanyWrap" style="display:none">
-        <div class="ctx-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16"/><path d="M14 9h5a1 1 0 0 1 1 1v11"/><path d="M2 21h20"/><path d="M7.5 8h3M7.5 12h3M7.5 16h3M17 13h1M17 17h1"/></svg></div>
-        <div>
-          <div class="ctx-k">Target Company</div>
-          <div class="ctx-v" id="ctxCompany">—</div>
-          <div style="font-size:10.5px;color:var(--green);margin-top:2px" id="ctxCompanyMeta"></div>
-        </div>
-      </div>
     </div>
 
     <div class="panel">
@@ -454,7 +351,7 @@
   <!-- ══════════ CENTER: WIZARD ══════════ -->
   <main class="panel" style="padding:20px;">
     <div class="wizard-header">
-      <h1><span class="spark">✦</span> Build Your <span>Interview Experience</span></h1>
+      <h1><span class="spark">✦</span> Build Your <span>Interview Experience</h1>
       <p>Choose your target role, experience level, and interview persona that best matches your target opportunity</p>
     </div>
 
@@ -473,36 +370,7 @@
         <div class="sel-card chip" data-role="Technical Program Manager"><div class="check">✓</div><div class="rc-icon">🗓</div><div class="rc-title">Technical Program Manager</div><div class="rc-desc">Plan and deliver complex technical programs</div></div>
         <div class="sel-card chip" data-role="Management Consultant"><div class="check">✓</div><div class="rc-icon">📊</div><div class="rc-title">Management Consultant</div><div class="rc-desc">Solve business problems and drive transformation</div></div>
         <div class="sel-card chip" data-role="Executive Leadership"><div class="check">✓</div><div class="rc-icon">👑</div><div class="rc-title">Executive Leadership</div><div class="rc-desc">Set vision and lead at the executive level</div></div>
-
-        <!-- ══ TAILOR FOR A SPECIFIC JOB — replaces the Custom Role tile in
-             this grid. NOT a .sel-card: the role-selection handler must never
-             treat it as a role. Instanced by CLASS (one per tab); a single
-             shared modal + state drives every instance in sync. ══ -->
-        <div class="tailor-card" role="button" tabindex="0" aria-haspopup="dialog">
-          <!-- State A: unselected placeholder -->
-          <div class="tc-state-empty">
-            <div class="tc-icon">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
-            </div>
-            <div class="tc-title">Tailor for a Specific Job</div>
-            <div class="tc-desc">Personalize this interview for a specific role, company, or job opportunity.</div>
-            <button class="tc-add-btn" type="button">＋ Add Context</button>
-          </div>
-          <!-- State B: post-save success (hidden until Apply Context) -->
-          <div class="tc-state-done" style="display:none">
-            <div class="tc-company-row">
-              <span class="tc-check">✓</span>
-              <span class="tc-company tc-company-out">—</span>
-            </div>
-            <div class="tc-role-line tc-role-out"></div>
-            <div class="tc-badges">
-              <span class="tc-badge ok tc-jd-badge" style="display:none">JD Attached</span>
-              <span class="tc-badge tc-level-badge" style="display:none"></span>
-            </div>
-            <div class="tc-metrics tc-metrics-out"></div>
-            <button class="tc-edit-link" type="button">Edit Context…</button>
-          </div>
-        </div>
+        <div class="sel-card chip" data-role="Custom" data-custom="true"><div class="check">✓</div><div class="rc-icon">＋</div><div class="rc-title">Custom Role</div><div class="rc-desc">Define a custom role and expectations</div></div>
       </div>
     </div>
 
@@ -516,33 +384,6 @@
         <div class="sel-card chip" data-role="Research Scientist"><div class="check">✓</div><div class="rc-icon">🔬</div><div class="rc-title">Research Scientist</div><div class="rc-desc">Advance the state of the art with research</div></div>
         <div class="sel-card chip" data-role="LLM Engineer"><div class="check">✓</div><div class="rc-icon">💬</div><div class="rc-title">LLM Engineer</div><div class="rc-desc">Build applications on large language models</div></div>
         <div class="sel-card chip" data-role="Custom" data-custom="true"><div class="check">✓</div><div class="rc-icon">＋</div><div class="rc-title">Custom Role</div><div class="rc-desc">Define a custom role and expectations</div></div>
-
-        <!-- ══ TAILOR FOR A SPECIFIC JOB — second instance (AI & Data tab).
-             Identical markup to the Core tab card; the shared handler keeps
-             both instances' states in sync automatically. ══ -->
-        <div class="tailor-card" role="button" tabindex="0" aria-haspopup="dialog">
-          <div class="tc-state-empty">
-            <div class="tc-icon">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
-            </div>
-            <div class="tc-title">Tailor for a Specific Job</div>
-            <div class="tc-desc">Personalize this interview for a specific role, company, or job opportunity.</div>
-            <button class="tc-add-btn" type="button">＋ Add Context</button>
-          </div>
-          <div class="tc-state-done" style="display:none">
-            <div class="tc-company-row">
-              <span class="tc-check">✓</span>
-              <span class="tc-company tc-company-out">—</span>
-            </div>
-            <div class="tc-role-line tc-role-out"></div>
-            <div class="tc-badges">
-              <span class="tc-badge ok tc-jd-badge" style="display:none">JD Attached</span>
-              <span class="tc-badge tc-level-badge" style="display:none"></span>
-            </div>
-            <div class="tc-metrics tc-metrics-out"></div>
-            <button class="tc-edit-link" type="button">Edit Context…</button>
-          </div>
-        </div>
       </div>
     </div>
     <input type="text" class="custom-input" id="roleCustom" placeholder="Type your role and press Enter...">
@@ -690,10 +531,7 @@ function switchTab(tab) {
 (function () {
   // Same state machine and API payload as the previous version of this page —
   // { personaId, roleTitle, experienceLevel, vapiVoiceId } → POST /api/interview/sessions
-  let state = { role: '', exp: null, persona: null, voice: null, org: null, jdText: '' };
-  // Bridge for the Tailor-context script below (object shared by reference;
-  // its writes to org/jdText are picked up by the POST payload above).
-  window.__miqSetupState = state;
+  let state = { role: '', exp: null, persona: null, voice: null };
 
   const EXP_LABELS = { fresher: 'Fresher (0–2 yrs)', mid: 'Mid-Career (3–8 yrs)', senior: 'Senior (8–15 yrs)', executive: 'Executive (15+ yrs)' };
   const customInput = document.getElementById('roleCustom');
@@ -758,11 +596,7 @@ function switchTab(tab) {
             personaId: state.persona,
             roleTitle: state.role,
             experienceLevel: state.exp,
-            vapiVoiceId: state.voice,
-            // Tailored-context pipeline (optional; backend merges these into
-            // the top-8 competency matrix — see services/competency-matrix.js)
-            orgPreset: state.org || null,
-            jdText: state.jdText || ''
+            vapiVoiceId: state.voice
         })
       });
       const data = await res.json();
@@ -776,201 +610,6 @@ function switchTab(tab) {
       console.error(e);
       btn.textContent = 'Initialize Session →';
     }
-  });
-})();
-</script>
-
-<!-- ══════════════════════════════════════════════════════════════════
-     TAILOR THIS INTERVIEW — modal + handler. Fully self-contained:
-     its own IDs, its own IIFE, zero changes to existing handlers.
-     Writes only two new fields onto the shared `state` object
-     (state.org, state.jdText) which the session POST above sends.
-════════════════════════════════════════════════════════════════════ -->
-<div class="tc-overlay" id="tcOverlay" role="dialog" aria-modal="true" aria-labelledby="tcModalTitle">
-  <div class="tc-modal">
-    <div class="tc-m-head">
-      <div class="tc-m-title" id="tcModalTitle">Tailor This Interview</div>
-      <button class="tc-m-close" type="button" id="tcClose" aria-label="Close">✕</button>
-    </div>
-
-    <div class="tc-field-label">Target Company</div>
-    <input class="tc-input" id="tcCompanyIn" type="text" maxlength="80"
-           placeholder="e.g. Microsoft, Flipkart, a Series B SaaS…" autocomplete="organization">
-
-    <div class="tc-field-label">Target Level <span class="opt">(Optional)</span></div>
-    <div class="tc-levels" id="tcLevels">
-      <button class="tc-level" type="button" data-level="Senior PM">Senior PM</button>
-      <button class="tc-level" type="button" data-level="Principal Engineer">Principal Engineer</button>
-      <button class="tc-level" type="button" data-level="L6">L6</button>
-      <button class="tc-level" type="button" data-level="Staff">Staff</button>
-      <button class="tc-level" type="button" data-level="Director">Director</button>
-    </div>
-
-    <div class="tc-field-label">Paste Job Description <span class="opt">(Optional) — supports markdown</span></div>
-    <textarea class="tc-textarea" id="tcJdIn" maxlength="5000"
-              placeholder="Paste the JD here and MedhaIQ will detect the competencies to probe…"></textarea>
-    <div class="tc-count"><span id="tcCount">0</span> / 5000</div>
-
-    <div class="tc-field-label">AI Detected Focus Areas</div>
-    <div class="tc-chips" id="tcChips"><span style="font-size:11px;color:var(--muted)">Paste a JD above to detect focus areas…</span></div>
-
-    <button class="tc-apply" type="button" id="tcApply">✦ Apply Context</button>
-    <div class="tc-privacy">🔒 Private &amp; secure — used only to personalize your interview.</div>
-  </div>
-</div>
-
-<script>
-(function () {
-  'use strict';
-  // Shared setup state — bridged from the main wizard IIFE above. If the
-  // bridge is ever missing, bail silently rather than break the page.
-  var state = window.__miqSetupState;
-  if (!state) { console.warn('[tailor] setup state bridge missing — feature disabled'); return; }
-  // ── Element handles. Cards are instanced by class (one per tab) and all
-  //    driven in sync; the modal is a single shared element by ID. ─────────
-  var cards    = Array.prototype.slice.call(document.querySelectorAll('.tailor-card'));
-  var overlay  = document.getElementById('tcOverlay');
-  var companyIn= document.getElementById('tcCompanyIn');
-  var jdIn     = document.getElementById('tcJdIn');
-  var countEl  = document.getElementById('tcCount');
-  var chipsEl  = document.getElementById('tcChips');
-  var levelsEl = document.getElementById('tcLevels');
-  var pickedLevel = '';
-
-  // ── Client-side focus-area detection. Display-only preview: mirrors the
-  //    authoritative parser in services/competency-matrix.js on the server. ──
-  var TAXONOMY = [
-    ['System Design',        /\b(system design|architecture|architect|distributed systems|microservices|scalab)/i],
-    ['Cloud Architecture',   /\b(aws|azure|gcp|cloud|kubernetes|docker|devops|ci\/cd|terraform)\b/i],
-    ['Scalability',          /\b(scale|scalab|performance|latency|throughput|reliab)/i],
-    ['Leadership',           /\b(lead|mentor|coach|direct reports|people manage|grow(ing)? (the )?team|hire|hiring)\b/i],
-    ['Mentorship',           /\b(mentor|coach|grow engineers|develop talent)\b/i],
-    ['Performance',          /\b(performance|optimi[sz]|efficien)/i],
-    ['Reliability',          /\b(reliab|uptime|sla|incident|on[- ]call|resilien)/i],
-    ['Security',             /\b(security|compliance|gdpr|soc ?2|privacy)\b/i],
-    ['Stakeholder Comms',    /\b(stakeholder|cross[- ]functional|alignment|executive|influenc)/i],
-    ['Strategic Thinking',   /\b(strateg|roadmap|vision|prioriti[sz]|okr)/i],
-    ['Data-Driven',          /\b(data[- ]driven|metrics|kpi|analytics|experiment)/i],
-    ['Machine Learning',     /\b(machine learning|deep learning|llm|ai model|nlp|mlops)\b/i],
-    ['Product Sense',        /\b(product (sense|thinking)|user (experience|research)|customer)\b/i],
-    ['Delivery Execution',   /\b(deliver|execution|ship|deadline|agile|scrum|sprint)\b/i]
-  ];
-
-  function detectAreas(text) {
-    var out = [];
-    if (!text) return out;
-    for (var i = 0; i < TAXONOMY.length && out.length < 8; i++) {
-      if (TAXONOMY[i][1].test(text)) out.push(TAXONOMY[i][0]);
-    }
-    return out;
-  }
-
-  // Mirrors the server merge (5 role defaults + 2 org traits + JD detected,
-  // deduped, capped at 8) so the count shown matches what the engine builds.
-  function matrixCount(detected, hasCompany) {
-    var base = 5 + (hasCompany ? 2 : 2); // role defaults + trait floor
-    return Math.min(8, base + detected.length);
-  }
-
-  function renderChips() {
-    var areas = detectAreas(jdIn.value);
-    chipsEl.innerHTML = '';
-    if (!areas.length) {
-      chipsEl.innerHTML = '<span style="font-size:11px;color:var(--muted)">Paste a JD above to detect focus areas…</span>';
-      return;
-    }
-    areas.forEach(function (a) {
-      var s = document.createElement('span');
-      s.className = 'tc-chip';
-      s.textContent = a;
-      chipsEl.appendChild(s);
-    });
-  }
-
-  // ── Modal open/close ─────────────────────────────────────────────────────
-  function openModal() {
-    overlay.classList.add('open');
-    companyIn.value = state.org || '';
-    jdIn.value = state.jdText || '';
-    countEl.textContent = jdIn.value.length;
-    renderChips();
-    setTimeout(function(){ companyIn.focus(); }, 50);
-  }
-  function closeModal() { overlay.classList.remove('open'); }
-
-  cards.forEach(function (card) {
-    card.addEventListener('click', function (e) {
-      // The Edit link has its own handler — everything else opens the modal.
-      if (e.target.classList && e.target.classList.contains('tc-edit-link')) return;
-      openModal();
-    });
-    card.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(); }
-    });
-    var edit = card.querySelector('.tc-edit-link');
-    if (edit) edit.addEventListener('click', function (e) { e.stopPropagation(); openModal(); });
-  });
-  document.getElementById('tcClose').addEventListener('click', closeModal);
-  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal(); });
-
-  // ── Level chips (single-select toggle) ───────────────────────────────────
-  levelsEl.addEventListener('click', function (e) {
-    var btn = e.target.closest('.tc-level');
-    if (!btn) return;
-    var was = btn.classList.contains('active');
-    levelsEl.querySelectorAll('.tc-level').forEach(function (b) { b.classList.remove('active'); });
-    if (!was) btn.classList.add('active');
-    pickedLevel = was ? '' : btn.dataset.level;
-  });
-
-  // ── Live JD character count + detection ─────────────────────────────────
-  jdIn.addEventListener('input', function () {
-    countEl.textContent = jdIn.value.length;
-    renderChips();
-  });
-
-  // ── Apply Context: save into the shared state, flip the card, sync sidebar
-  document.getElementById('tcApply').addEventListener('click', function () {
-    var company = companyIn.value.trim();
-    var jd = jdIn.value.trim();
-    if (!company && !jd) { companyIn.focus(); return; }
-
-    // The ONLY writes into shared state — read by the session POST payload.
-    state.org = company || null;
-    state.jdText = jd || '';
-
-    var detected = detectAreas(jd);
-    var total = matrixCount(detected, !!company);
-
-    // Flip EVERY card instance (both tabs) to the success state in sync
-    cards.forEach(function (card) {
-      card.querySelector('.tc-company-out').textContent = company || 'Tailored Interview';
-      card.querySelector('.tc-role-out').textContent =
-        pickedLevel ? pickedLevel + (state.role ? ' · ' + state.role : '') : (state.role || 'Role: pick in Step 1');
-      var jdBadge = card.querySelector('.tc-jd-badge');
-      jdBadge.style.display = jd ? 'inline-block' : 'none';
-      var lvlBadge = card.querySelector('.tc-level-badge');
-      lvlBadge.style.display = pickedLevel ? 'inline-block' : 'none';
-      lvlBadge.textContent = pickedLevel;
-      card.querySelector('.tc-metrics-out').textContent = total + ' AI competencies detected';
-      var stEmpty = card.querySelector('.tc-state-empty');
-      var stDone  = card.querySelector('.tc-state-done');
-      stEmpty.style.display = 'none';
-      stDone.style.display = 'flex';
-      stDone.style.flexDirection = 'column';
-      stDone.style.gap = '8px';
-      stDone.style.height = '100%';
-      card.classList.add('tc-success');
-    });
-
-    // Sidebar live update (Company Name · JD Status · Competency Count)
-    document.getElementById('ctxCompanyWrap').style.display = '';
-    document.getElementById('ctxCompany').textContent = company || 'Tailored';
-    document.getElementById('ctxCompanyMeta').textContent =
-      (jd ? 'JD attached · ' : 'No JD · ') + total + ' competencies';
-
-    closeModal();
   });
 })();
 </script>
