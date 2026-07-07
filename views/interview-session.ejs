@@ -130,6 +130,7 @@
 <!-- ═══════════════════════════════════════════════════════════════
      INTERVIEW OS ENGINE
 ═══════════════════════════════════════════════════════════════ -->
+<script src="/js/interviewOrchestrator.js"></script>
 <script>
 (function() {
   /* ══ Sync engine — fixes the UI/audio desync bug ══
@@ -163,6 +164,9 @@
           pendingAudioUrl = null; // Vapi is speaking now — our own TTS clip (if any) must not fire later
           showQuestion(question, type, competency);
           pendingQuestion = null;
+          // Input gate: uiText is drawn; lock typing until the audio
+          // playback of this same text finishes (speech-end unlocks).
+          if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.lockInput();
           return;
         }
         // instructNext failed (voice flagged live but the call object
@@ -643,10 +647,24 @@
   updateCounter();
   setAIState('CALIBRATING');
   if (INITQ) {
-    // v2 FIX (ghost/vanishing question bug): the canonical opening question
-    // is painted immediately and STAYS — no blank-and-defer, no 7s fallback
-    // timer, and (see the Vapi block) no transcript ever overwrites it.
-    showQuestion({text:INITQ}, QTYPE, null);
+    // v2.0 CALIBRATION GATE (cold-start desync fix): with voice configured,
+    // the question card stays hidden behind a "Calibrating Interviewer
+    // Persona…" loader until Vapi certifies `call-start` (which also injects
+    // the sessionReadyContext — see the Vapi block). A hard 8s fallback
+    // reveals the question regardless, so no candidate is ever stuck.
+    // Text-only sessions (no Vapi keys) reveal instantly, exactly as before.
+    window.MedhaIQ_Q1 = INITQ; // read by the Vapi call-start handshake
+    var HASVOICE = Boolean('<%= vapiPublicKey %>' && '<%= vapiAssistantId %>');
+    var revealQ1 = function(){ showQuestion({text:INITQ}, QTYPE, null); };
+    if (HASVOICE && window.MedhaIQOrchestrator) {
+      document.getElementById('questionCard').style.display = 'none';
+      document.querySelector('.answer-bar-wrap').style.display = 'none';
+      document.getElementById('loadingText').textContent = 'Calibrating Interviewer Persona…';
+      document.getElementById('loadingOverlay').classList.add('show');
+      window.MedhaIQOrchestrator.calibrate({ hasVoice: true, fallbackMs: 8000, onReveal: revealQ1 });
+    } else {
+      revealQ1();
+    }
   }
   slog('Session #'+SID+' initialised', 'ok');
   slog('Persona (internal): '+PNAME, 'info'); /* debug-console only, never shown in candidate UI */
@@ -762,7 +780,7 @@
           message: {
             role: 'system',
             content: lead
-              + 'Now ask the candidate this exact next question, in your own natural delivery, without announcing that it was given to you: "'
+              + 'Now read aloud, verbatim and word for word, exactly this next question — do not paraphrase, reword, shorten, or embellish it, and do not announce that it was given to you: "'
               + String(questionText).replace(/"/g, "'") + '". '
               + 'HARD RULES: do NOT repeat, summarize, praise, or comment on any earlier answer or on anything you said before. Do NOT re-ask or revisit any previous question. Say this one question once, then stop and listen.'
           }
@@ -782,6 +800,31 @@
     vapi.on('call-start', function() {
       setState(STATES.LIVE, 'Voice active — speak your answer');
       window.MedhaIQVoiceLive = true;
+      /* ── v2.0 sessionReadyContext handshake (cold-start amnesia fix) ──
+         The assistant on Vapi's dashboard knows nothing about this session
+         until told. Without this, it cold-opens with discovery questions
+         ("What role are you applying for today?") despite the role being
+         locked at setup. This injection binds it to the session document. */
+      try {
+        vapi.send({
+          type: 'add-message',
+          message: {
+            role: 'system',
+            content:
+              'SESSION READY CONTEXT — the session payload variables are locked and were selected before this call: '
+              + 'role = "' + String(ROLE || '').replace(/"/g, "'") + '", experience level = "' + String(LEVEL || '').replace(/"/g, "'") + '". '
+              + 'You must bypass all raw discovery greetings: never ask what role the candidate is applying for, what they want to practice, or any setup question. '
+              + 'Open with your assigned interviewer persona introduction in ONE short sentence, then read aloud, verbatim and word for word, exactly this Question 1: "'
+              + String(window.MedhaIQ_Q1 || '').replace(/"/g, "'") + '". Then stop and listen.'
+          }
+        });
+      } catch (e) { console.error('[Vapi] sessionReadyContext injection failed', e); }
+      // Certify the calibration gate: the question card reveals now, in
+      // lockstep with the voice actually being connected.
+      if (window.MedhaIQOrchestrator) {
+        window.MedhaIQOrchestrator.voiceConnected();
+        window.MedhaIQOrchestrator.lockInput(); // unlocked on speech-end below
+      }
     });
 
     /* The ONLY source of truth for what appears in the question card
@@ -867,6 +910,8 @@
 
     vapi.on('speech-end', function() {
       sub.textContent = 'Your turn — speak clearly';
+      // Input gate: the question has fully finished playing — unlock.
+      if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.unlockInput();
     });
 
     vapi.on('call-end', function() {

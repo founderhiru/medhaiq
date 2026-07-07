@@ -127,6 +127,12 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     order: nextQuestion.question_order,
     competency: nextQuestion.competency || nextResult.competency || null,
     audio_url: nextResult.audio_url || null,
+    // v2.0 unified single-source-of-truth model: the on-screen text and the
+    // speech synthesizer prompt are the SAME canonical string, delivered in
+    // one object so the two layers can never diverge.
+    questionId: 'Q' + nextQuestion.question_order,
+    uiText: nextQuestion.question_text,
+    audioPrompt: nextQuestion.question_text,
   };
 }
 

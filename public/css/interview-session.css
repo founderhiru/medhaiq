@@ -76,15 +76,24 @@ button{font-family:inherit}
 }
 .tb-end:hover{background:rgba(248,113,113,.1)}
 
-/* ═══ 3-COLUMN GRID — 20% / 55% / 25% ═══ */
+/* ═══ 3-COLUMN GRID — zoom-stable clamped columns (v2.0) ═══
+   clamp() pins each rail between a hard floor and ceiling so browser zoom
+   or viewport resize can never stretch/crush the rails; the center column
+   absorbs all remaining space; max-width keeps ultra-wide screens sane. */
 .os-grid{
   flex:1; min-height:0;
-  display:grid; grid-template-columns:20% minmax(0,1fr) 25%;
+  display:grid;
+  grid-template-columns:clamp(240px, 20vw, 340px) minmax(0, 1fr) clamp(300px, 25vw, 400px);
   gap:12px; padding:12px;
+  width:100%; max-width:1920px; margin:0 auto;
 }
-.col{display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.col{display:flex;flex-direction:column;gap:12px;min-height:0;min-width:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .col::-webkit-scrollbar{width:4px}
 .col::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+/* Overflow isolation: content can never widen its frame or leak off-canvas */
+.card{min-width:0;overflow-wrap:break-word}
+.topbar{min-width:0}
+.tb-session-meta{min-width:0;overflow:hidden}
 
 /* ═══ LEFT SIDEBAR ═══ */
 .ctx-row{display:flex;align-items:center;gap:12px}
@@ -314,8 +323,13 @@ button{font-family:inherit}
 .dbg-entry.info{color:var(--blue-soft)}
 .dbg-hint{padding:8px 14px;border-top:1px solid var(--border);font-size:10px;color:#5B6880;text-align:center}
 
-/* ═══ Narrow screens — allow natural stacking below laptop widths ═══ */
-@media (max-width: 1024px){
+/* ═══ Genuinely small screens only — phones/small tablets. The old 1024px
+   breakpoint was the D.png bug: a laptop zoomed to ~125–150% dropped its
+   effective viewport under 1024px and the whole desktop layout collapsed
+   into the mobile stack. 820px keeps zoomed laptops on the grid layout
+   (the clamped columns above absorb the squeeze), while real phones still
+   get the stacked flow. ═══ */
+@media (max-width: 820px){
   body{overflow:auto;height:auto}
   .os-grid{display:flex;flex-direction:column}
   .video-panel{min-height:300px}

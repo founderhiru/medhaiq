@@ -111,6 +111,10 @@ async function initializeSession(req, res) {
       text: question.question_text,
       audio_url: openingResult.audio_url || null,
       competency_tag: question.competency || openingResult.competency || null,
+      // v2.0 unified single-source-of-truth model (see routes/interview.js)
+      questionId: 'Q' + question.question_order,
+      uiText: question.question_text,
+      audioPrompt: question.question_text,
     });
   } catch (err) {
     console.error('[sessionController.initializeSession]', err);
