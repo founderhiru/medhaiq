@@ -1,5 +1,5 @@
 // Interview AI service — question generation, scoring, and report generation.
-
+// All AI calls go through polsia-ai.js which routes through Polsia proxy.
 
 const { chat, chatJSON } = require('../lib/polsia-ai');
 
