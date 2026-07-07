@@ -139,36 +139,10 @@ function compileWeightedCompetencyMatrix(roleDefaults, companyTraits, jdExtracte
     }
   }
 
-  // ── Ranked sort resolution (v2.1 — hardened determinism) ─────────────────
-  // GAP A FIX: scores are IEEE-754 doubles accumulated via repeated `+=`
-  // across channels. Two competencies that are logically tied can differ by
-  // a sub-nanoscopic float epsilon depending on channel processing order
-  // (e.g. summing 1.00+0.80+0.60+0.30 vs the same four values in a
-  // different order yields 2.6999999999999997 vs 2.7 — not `===`, but
-  // absolutely a tie). A strict `!==` comparison would treat that epsilon
-  // as a meaningful ranking signal and silently reorder entries between
-  // runs/deploys as channel-processing order changes. SCORE_EPSILON makes
-  // "close enough to be the same score" explicit and deterministic.
-  //
-  // Tie-break order once scores are genuinely equal:
-  //   1. case-insensitive alphabetical (the existing, correct rule)
-  //   2. case-SENSITIVE alphabetical fallback — a defensive second key so
-  //      the comparator can never return 0 for two distinct display
-  //      strings. A comparator that returns 0 for non-identical inputs is
-  //      what allows a sort to become order-dependent (input-order-
-  //      sensitive) even on engines with a stable sort, because engines
-  //      only guarantee stability relative to the *original* input order —
-  //      which itself can vary here (Map insertion order follows whichever
-  //      channel — JD, Company, or Role — happened to add the entry
-  //      first). Resolving every possible tie makes the output the same
-  //      for a given input set regardless of channel processing order.
-  const SCORE_EPSILON = 1e-9;
+  // Ranked sort resolution: score desc → alphabetical asc (determinism).
   const ranked = Array.from(tracking.values()).sort((a, b) => {
-    const scoreDelta = b.score - a.score;
-    if (Math.abs(scoreDelta) > SCORE_EPSILON) return scoreDelta;
-    const ciCompare = a.display.toLowerCase().localeCompare(b.display.toLowerCase());
-    if (ciCompare !== 0) return ciCompare;
-    return a.display < b.display ? -1 : (a.display > b.display ? 1 : 0);
+    if (b.score !== a.score) return b.score - a.score;
+    return a.display.toLowerCase().localeCompare(b.display.toLowerCase());
   });
 
   // Architectural ceiling: exactly the top 8.
@@ -188,25 +162,8 @@ function compileWeightedCompetencyMatrix(roleDefaults, companyTraits, jdExtracte
     }
   }
 
-  // ── GAP B FIX: output decoupling ──────────────────────────────────────────
-  // `finalFlatMatrix` is built as its own immutable declaration — a fresh
-  // array of plain strings with no live reference back to `top` or the
-  // internal `tracking` Map. Downstream callers (sessionController.js,
-  // routes/interview.js, the DB layer) receive a value they cannot
-  // accidentally mutate into a shared-state bug, and which can never change
-  // shape out from under them if this function's internals evolve later.
-  const finalFlatMatrix = Object.freeze(top.map((e) => e.display));
-
   return {
-    // response.matrix — finalFlatMatrix: a plain, frozen array of ≤8 display
-    // strings. This is the exact, stable shape the `competency_matrix`
-    // JSONB column and every prompt/dashboard consumer expects — safe to
-    // JSON.stringify() directly for Postgres persistence.
-    matrix: finalFlatMatrix,
-    // response.detailed — execution telemetry ONLY (per-entry compound
-    // score + contributing channel sources). For logs/debugging/audits;
-    // never persisted to the JSONB column and never required by callers
-    // that just need the competency list.
+    matrix: top.map((e) => e.display),
     detailed: top.map((e) => ({
       name: e.display,
       score: Math.round(e.score * 100) / 100,
