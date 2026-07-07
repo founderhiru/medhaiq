@@ -149,18 +149,6 @@ async function runMigrations() {
           `);
         }
       },
-      {
-        name: '003_competency_pipeline',
-        up: async (c) => {
-          // JD-aware sessions: stores the raw pasted job description and the
-          // merged top-8 competency matrix computed at session creation.
-          // NOTE: these ALTERs also exist inside 001 for brand-new installs,
-          // but 001 is already marked applied on production — this dedicated
-          // migration is what actually adds the columns to the live DB.
-          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS jd_text TEXT`);
-          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS competency_matrix JSONB`);
-        }
-      },
     ];
 
     for (const m of migrations) {
