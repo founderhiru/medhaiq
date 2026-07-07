@@ -904,10 +904,6 @@
     });
 
     vapi.on('speech-start', function() {
-      // Hard sync fix: Tell the orchestrator that the speaker audio track has started playing
-      if (window.MedhaIQOrchestrator) {
-        window.MedhaIQOrchestrator.interviewerStartedSpeaking();
-      }
       assistantTranscriptBuf = ''; // fresh buffer — don't carry over last question's text
       sub.textContent = '● AI is speaking…';
     });
@@ -917,7 +913,7 @@
       // Input gate: the question has fully finished playing — unlock.
       if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.unlockInput();
     });
-    
+
     vapi.on('call-end', function() {
       window.MedhaIQVoiceLive = false;
       setState(STATES.IDLE, 'Speak directly with your AI interviewer');
