@@ -1,0 +1,61 @@
+<!-- ══════════════════════════════════════════════════════════════
+     active-question.ejs — CENTER COLUMN (the Focus Zone)
+     Question container sits ABOVE the webcam in markup order, per
+     spec. All question text is dynamic — the only server-rendered
+     text is the very first question (questionText/questionType),
+     used purely as the initial paint before Vapi/API takes over;
+     every question after that is injected live, never hard-coded.
+
+     Expects locals: questionNumber (or answeredCount), questionText,
+     questionType
+════════════════════════════════════════════════════════════════ -->
+<div class="centre-col">
+
+  <!-- Top Slot: dynamic question container -->
+  <div class="question-card" id="questionCard">
+    <div class="qc-top-row">
+      <span class="qc-eyebrow" id="qEyebrow">QUESTION 1 OF 5 · OPENING</span>
+      <a class="qc-report-issue" id="reportIssueLink">Report Issue</a>
+    </div>
+    <div class="qc-text" id="questionText">Connecting to your interviewer...</div>
+    <button class="qc-why-btn" id="whyBtn">Why this question?</button>
+    <div class="qc-why-text" id="qWhyText"></div>
+  </div>
+
+  <!-- Middle Slot: webcam, 16:9, wrapped in an equal-share flex slot so it
+       takes exactly the same vertical share as the Question Container above
+       it (1:1 ratio) — the wrapper grows/shrinks the slot, the aspect-ratio
+       on the card itself keeps the frame true to 16:9 regardless. -->
+  <div class="webcam-slot">
+    <div class="webcam-card" id="webcamHero">
+      <video id="camVideo" autoplay playsinline muted></video>
+      <div class="webcam-placeholder" id="camPlaceholder">
+        <div class="wc-icon">📷</div>
+        <div class="wc-hint">Click "Enable Camera" to start</div>
+      </div>
+      <div class="webcam-badge off" id="camBadge"><div class="wbdot"></div><span id="camBadgeText">CAM OFF</span></div>
+      <button class="webcam-toggle" id="camToggle">Enable Camera</button>
+      <div class="webcam-you-tag">You</div>
+    </div>
+  </div>
+
+  <!-- Bottom Slot: mic + answer input -->
+  <div class="answer-bar-wrap">
+    <div class="answer-bar">
+      <textarea id="answerInput" rows="1" placeholder="Start speaking or type your answer…" maxlength="4000"></textarea>
+      <button class="send-btn" id="submitBtn" disabled title="Submit answer">➤</button>
+      <button class="mic-btn" id="vapiBtn" title="Hold to speak">🎙</button>
+    </div>
+    <div class="answer-bar-meta">
+      <span class="char-count" id="charCount">0 / 4000</span>
+      <button class="skip-link" id="skipBtn">Skip question →</button>
+    </div>
+    <div class="voice-status-line" id="vapiSub">Speak directly with your AI interviewer</div>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="ldots"><span></span><span></span><span></span></div>
+    <div class="ltext" id="loadingText">Analysing your response...</div>
+  </div>
+
+</div><!-- /centre-col -->

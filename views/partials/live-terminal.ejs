@@ -1,110 +1,116 @@
-<!-- ══════════════════════════════════════════════════════════════
-     live-terminal.ejs — RIGHT COLUMN (320px fixed)
-     Visibility logic: the ENTIRE terminal container — both the
-     Tactical (STAR checklist) and Strategic (Intelligence Score)
-     views — is governed by a single header switch. Off by default;
-     switching it "On" reveals both views together. The switch only
-     animates this panel's own content height, so the fixed 3-column
-     grid never reflows.
-════════════════════════════════════════════════════════════════ -->
-<div class="terminal-panel">
+<%# ══════════════════════════════════════════════════════════════════
+    RIGHT PANEL — Live Terminal (tactical + strategic views)
+    TS1 target design. All emoji glyphs replaced with inline SVG —
+    this permanently fixes the corrupted-character bug (â, ü, ,Äì).
+    DO NOT remove these IDs/attributes — the engine script depends on them:
+      aiStatusTitle, aiStatusSub, aiStatusRing,
+      statusChecklist + .status-item[data-step],
+      starNode-situation/task/action/result, starConn-1..3, starSkipNote,
+      ringFill (r=34, dasharray 213), ringLabel, ringStatus, ringStatusSub,
+      mStar/mStarV, mTech/mTechV, mGcc/mGccV, mFric/mFricV, mExec/mExecV
+══════════════════════════════════════════════════════════════════ %>
+<aside class="col col-right">
 
-  <div class="term-header-static">
-    <span class="term-toggle-title">Live Terminal</span>
-  </div>
+  <section class="card">
+    <div class="card-head">
+      <h2 class="panel-title">Live Terminal</h2>
+      <span class="live-pill"><span class="live-dot"></span>Waiting</span>
+    </div>
 
-  <div class="term-content expanded" id="terminalContent">
-
-    <!-- ══ TACTICAL VIEW ══ -->
-    <div class="term-card">
-      <div class="term-card-hdr">
-        <span class="term-card-title">Live Terminal (Tactical View)</span>
+    <p class="sublabel">AI Engine Status</p>
+    <div class="engine-status">
+      <div class="ai-ring-wrap">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="35" fill="none" stroke="#1B2740" stroke-width="5"/>
+          <circle id="aiStatusRing" cx="40" cy="40" r="35" fill="none" stroke="#3B82F6" stroke-width="5"
+                  stroke-linecap="round" stroke-dasharray="220" stroke-dashoffset="187"
+                  transform="rotate(-90 40 40)"/>
+        </svg>
       </div>
-
-      <div class="ai-status-block">
-        <div class="ai-status-ring-wrap">
-          <svg viewBox="0 0 78 78">
-            <circle class="ai-status-ring-bg" cx="39" cy="39" r="35"/>
-            <circle class="ai-status-ring-fill" id="aiStatusRing" cx="39" cy="39" r="35"/>
-          </svg>
-        </div>
-        <div class="ai-status-title" id="aiStatusTitle">Calibrating…</div>
-        <div class="ai-status-sub" id="aiStatusSub">Setting up your session</div>
-      </div>
-
-      <div class="star-progress-lbl">STAR Progress <span>(Real-time Detection)</span></div>
-      <div class="star-rail" id="starRail">
-        <div class="star-node" id="starNode-situation"><div class="star-node-dot">S</div><div class="star-node-lbl">Situation</div></div>
-        <div class="star-connector" id="starConn-1"></div>
-        <div class="star-node" id="starNode-task"><div class="star-node-dot">T</div><div class="star-node-lbl">Task</div></div>
-        <div class="star-connector" id="starConn-2"></div>
-        <div class="star-node" id="starNode-action"><div class="star-node-dot">A</div><div class="star-node-lbl">Action</div></div>
-        <div class="star-connector" id="starConn-3"></div>
-        <div class="star-node" id="starNode-result"><div class="star-node-dot">R</div><div class="star-node-lbl">Result</div></div>
-      </div>
-
-      <div class="status-checklist" id="statusChecklist">
-        <div class="status-item" data-step="captured"><span class="si-dot"></span>Answer captured</div>
-        <div class="status-item" data-step="analyzing"><span class="si-dot"></span>Analyzing response</div>
-        <div class="status-item" data-step="preparing"><span class="si-dot"></span>Preparing next question</div>
+      <div class="engine-status-txt">
+        <b id="aiStatusTitle">Preparing Session…</b>
+        <span id="aiStatusSub">Setting up your next question</span>
       </div>
     </div>
 
-    <!-- ══ STRATEGIC VIEW — gauge is the focal point, 5-vector bars sit
-         directly underneath it ══ -->
-    <div class="term-card">
-      <div class="term-card-hdr">
-        <span class="term-card-title">Overall Intelligence Score (Strategic View)</span>
-        <span class="term-card-live"><span class="dot"></span>LIVE</span>
-      </div>
+    <p class="sublabel">Star Progress <span class="sublabel-note">(Real-time Detection)</span></p>
+    <div class="star-rail">
+      <div class="star-step"><span class="star-node" id="starNode-situation">S</span><small>Situation</small></div>
+      <span class="star-conn" id="starConn-1"></span>
+      <div class="star-step"><span class="star-node" id="starNode-task">T</span><small>Task</small></div>
+      <span class="star-conn" id="starConn-2"></span>
+      <div class="star-step"><span class="star-node" id="starNode-action">A</span><small>Action</small></div>
+      <span class="star-conn" id="starConn-3"></span>
+      <div class="star-step"><span class="star-node" id="starNode-result">R</span><small>Result</small></div>
+    </div>
+    <div id="starSkipNote" class="star-skip-note"></div>
 
-      <div class="lt-score-block">
-        <div class="score-ring-wrap">
-          <svg width="96" height="96" viewBox="0 0 78 78">
-            <circle class="ring-bg" cx="39" cy="39" r="34"/>
-            <circle class="ring-fill" id="ringFill" cx="39" cy="39" r="34"/>
-          </svg>
-          <div class="ring-label" id="ringLabel">—</div>
-        </div>
-        <div class="ring-out-of" id="ringOutOf">/ 100</div>
-        <div class="ring-status" id="ringStatus"></div>
-        <div class="ring-status-sub" id="ringStatusSub"></div>
-      </div>
+    <ul class="status-checklist" id="statusChecklist">
+      <li class="status-item" data-step="captured"><span class="st-dot"></span>Answer captured</li>
+      <li class="status-item" data-step="analyzing"><span class="st-dot"></span>Analyzing response</li>
+      <li class="status-item" data-step="preparing"><span class="st-dot"></span>Preparing next question</li>
+    </ul>
+  </section>
 
-                 <div class="lt-vec-lbl">5-Vector Intelligence</div>
-      <div class="metric-row">
-        <span class="metric-icon">‚ö°</span>
-        <div class="metric-body"><div class="metric-lbl">Structure</div>
-          <div class="metric-track"><div class="metric-fill" id="mStar" style="background:#3b82f6;"></div></div></div>
-        <span class="metric-val" id="mStarV" style="color:#3b82f6;">‚Äî</span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-icon">üß†</span>
-        <div class="metric-body"><div class="metric-lbl">Domain Expertise</div>
-          <div class="metric-track"><div class="metric-fill" id="mTech" style="background:#a78bfa;"></div></div></div>
-        <span class="metric-val" id="mTechV" style="color:#a78bfa;">‚Äî</span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-icon">üëî</span>
-        <div class="metric-body"><div class="metric-lbl">Strategic Thinking</div>
-          <div class="metric-track"><div class="metric-fill" id="mExec" style="background:#22c55e;"></div></div></div>
-        <span class="metric-val" id="mExecV" style="color:#22c55e;">‚Äî</span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-icon">üí¨</span>
-        <div class="metric-body"><div class="metric-lbl">Communication</div>
-          <div class="metric-track"><div class="metric-fill" id="mFric" style="background:#fb923c;"></div></div></div>
-        <span class="metric-val" id="mFricV" style="color:#fb923c;">‚Äî</span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-icon">üåê</span>
-        <div class="metric-body"><div class="metric-lbl">Leadership & Execution</div>
-          <div class="metric-track"><div class="metric-fill" id="mGcc" style="background:#f59e0b;"></div></div></div>
-        <span class="metric-val" id="mGccV" style="color:#f59e0b;">‚Äî</span>
-      </div>
-
-      <div class="lt-footer pulsing" id="ltFooter">‚ö° Analyzing in real-time</div>
+  <section class="card">
+    <div class="card-head head-top">
+      <h3 class="panel-title small">Overall Intelligence Score<br><span class="panel-title-sub">(Strategic View)</span></h3>
+      <span class="live-pill"><span class="live-dot"></span>LIVE</span>
     </div>
 
-  </div><!-- /term-content -->
-</div><!-- /terminal-panel -->
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg width="92" height="92" viewBox="0 0 92 92">
+          <circle cx="46" cy="46" r="34" fill="none" stroke="#1B2740" stroke-width="7"/>
+          <circle id="ringFill" cx="46" cy="46" r="34" fill="none" stroke="#3B82F6" stroke-width="7"
+                  stroke-linecap="round" stroke-dasharray="213" stroke-dashoffset="213"
+                  transform="rotate(-90 46 46)"/>
+        </svg>
+        <span class="ring-label" id="ringLabel">--</span>
+      </div>
+      <span class="ring-max">/100</span>
+      <div class="ring-status" id="ringStatus"></div>
+      <div class="ring-status-sub" id="ringStatusSub"></div>
+    </div>
+
+    <p class="sublabel">5-Vector Intelligence</p>
+    <ul class="vectors">
+      <li>
+        <span class="vec-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 13 9 5 9-5"/></svg></span>
+        <span class="vec-name">Structure</span>
+        <span class="vec-track"><span class="vec-fill" id="mStar"></span></span>
+        <span class="vec-score" id="mStarV">--</span>
+      </li>
+      <li>
+        <span class="vec-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3c1 3-2 4.5-2 7a4 4 0 0 0 8 .5C18 14 20 15 20 17a8 8 0 1 1-16 0c0-3 2-5 3.5-6.5C9 9 10.5 6 12 3Z"/></svg></span>
+        <span class="vec-name">Domain Expertise</span>
+        <span class="vec-track"><span class="vec-fill" id="mTech"></span></span>
+        <span class="vec-score" id="mTechV">--</span>
+      </li>
+      <li>
+        <span class="vec-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 3 3c1.5 0 3-1 3-3V7c0-2-1.5-3-3-3Z"/><path d="M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-3 3c-1.5 0-3-1-3-3V7c0-2 1.5-3 3-3Z"/></svg></span>
+        <span class="vec-name">Strategic Thinking</span>
+        <span class="vec-track"><span class="vec-fill" id="mGcc"></span></span>
+        <span class="vec-score" id="mGccV">--</span>
+      </li>
+      <li>
+        <span class="vec-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5Z"/></svg></span>
+        <span class="vec-name">Communication</span>
+        <span class="vec-track"><span class="vec-fill" id="mFric"></span></span>
+        <span class="vec-score" id="mFricV">--</span>
+      </li>
+      <li>
+        <span class="vec-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2"/><path d="M12 15 9 12c1-4 4-8 10-9-1 6-5 9-9 9l2 3Z"/><path d="M9 12l3 3"/></svg></span>
+        <span class="vec-name">Leadership &amp; Execution</span>
+        <span class="vec-track"><span class="vec-fill" id="mExec"></span></span>
+        <span class="vec-score" id="mExecV">--</span>
+      </li>
+    </ul>
+
+    <p class="sublabel">AI Activity Feed</p>
+    <ul class="activity-feed">
+      <li>Listening to your response...</li>
+    </ul>
+  </section>
+
+</aside>

@@ -1,61 +1,70 @@
-<!-- ══════════════════════════════════════════════════════════════
-     active-question.ejs — CENTER COLUMN (the Focus Zone)
-     Question container sits ABOVE the webcam in markup order, per
-     spec. All question text is dynamic — the only server-rendered
-     text is the very first question (questionText/questionType),
-     used purely as the initial paint before Vapi/API takes over;
-     every question after that is injected live, never hard-coded.
+<%# ══════════════════════════════════════════════════════════════════
+    CENTER WORKSPACE — Question card / Video panel / Answer bar
+    TS1 target design. DO NOT remove these IDs/classes — the engine,
+    webcam, and Vapi scripts in interview-session.ejs depend on them:
+      questionCard, qEyebrow, questionText, whyBtn, qWhyText,
+      loadingOverlay, loadingText,
+      camVideo, camPlaceholder, camBadge, camBadgeText, camToggle,
+      .answer-bar-wrap, answerInput, charCount, submitBtn, skipBtn,
+      vapiBtn, vapiSub
+══════════════════════════════════════════════════════════════════ %>
+<main class="col col-center">
 
-     Expects locals: questionNumber (or answeredCount), questionText,
-     questionType
-════════════════════════════════════════════════════════════════ -->
-<div class="centre-col">
-
-  <!-- Top Slot: dynamic question container -->
-  <div class="question-card" id="questionCard">
-    <div class="qc-top-row">
-      <span class="qc-eyebrow" id="qEyebrow">QUESTION 1 OF 5 · OPENING</span>
-      <a class="qc-report-issue" id="reportIssueLink">Report Issue</a>
+  <!-- Question card (engine sets display:flex / none) -->
+  <section class="card question-card" id="questionCard">
+    <div class="q-head">
+      <p class="eyebrow" id="qEyebrow">QUESTION 1 OF 5 · BEHAVIORAL</p>
+      <span class="q-report">Report Issue</span>
     </div>
-    <div class="qc-text" id="questionText">Connecting to your interviewer...</div>
-    <button class="qc-why-btn" id="whyBtn">Why this question?</button>
-    <div class="qc-why-text" id="qWhyText"></div>
-  </div>
+    <h1 class="q-text" id="questionText"></h1>
+    <button class="btn-why" id="whyBtn" type="button">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+      Why this question?
+    </button>
+    <p class="q-why-text" id="qWhyText"></p>
+  </section>
 
-  <!-- Middle Slot: webcam, 16:9, wrapped in an equal-share flex slot so it
-       takes exactly the same vertical share as the Question Container above
-       it (1:1 ratio) — the wrapper grows/shrinks the slot, the aspect-ratio
-       on the card itself keeps the frame true to 16:9 regardless. -->
-  <div class="webcam-slot">
-    <div class="webcam-card" id="webcamHero">
-      <video id="camVideo" autoplay playsinline muted></video>
-      <div class="webcam-placeholder" id="camPlaceholder">
-        <div class="wc-icon">📷</div>
-        <div class="wc-hint">Click "Enable Camera" to start</div>
-      </div>
-      <div class="webcam-badge off" id="camBadge"><div class="wbdot"></div><span id="camBadgeText">CAM OFF</span></div>
-      <button class="webcam-toggle" id="camToggle">Enable Camera</button>
-      <div class="webcam-you-tag">You</div>
+  <!-- Loading overlay (engine toggles .show) -->
+  <section class="card loading-overlay" id="loadingOverlay">
+    <div class="load-spinner"></div>
+    <p id="loadingText">Analysing...</p>
+  </section>
+
+  <!-- Video panel -->
+  <section class="card video-panel">
+    <video id="camVideo" autoplay muted playsinline></video>
+    <div class="cam-placeholder" id="camPlaceholder">
+      <svg class="ic big" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-5 8-5s6.5 1 8 5"/></svg>
+      <span>Camera starting…</span>
     </div>
-  </div>
+    <div class="overlay ov-live" id="camBadge"><span id="camBadgeText">● LIVE</span></div>
+    <button class="overlay ov-cam" id="camToggle" type="button">Disable Camera</button>
+    <div class="overlay ov-name">
+      <b><%= personaName %></b>
+      <span>AI Interviewer</span>
+    </div>
+    <div class="overlay ov-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </section>
 
-  <!-- Bottom Slot: mic + answer input -->
+  <!-- Answer bar (engine toggles .answer-bar-wrap display) -->
   <div class="answer-bar-wrap">
-    <div class="answer-bar">
-      <textarea id="answerInput" rows="1" placeholder="Start speaking or type your answer…" maxlength="4000"></textarea>
-      <button class="send-btn" id="submitBtn" disabled title="Submit answer">➤</button>
-      <button class="mic-btn" id="vapiBtn" title="Hold to speak">🎙</button>
-    </div>
-    <div class="answer-bar-meta">
-      <span class="char-count" id="charCount">0 / 4000</span>
-      <button class="skip-link" id="skipBtn">Skip question →</button>
-    </div>
-    <div class="voice-status-line" id="vapiSub">Speak directly with your AI interviewer</div>
+    <section class="card answer-card">
+      <div class="answer-row">
+        <textarea id="answerInput" rows="1" maxlength="4000"
+          placeholder="Start speaking or type your answer..."></textarea>
+        <button class="btn-submit" id="submitBtn" type="button" disabled aria-label="Submit answer">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+        <button class="btn-mic" id="vapiBtn" type="button" aria-label="Toggle voice interview">
+          <svg class="ic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        </button>
+      </div>
+      <div class="answer-meta">
+        <span id="charCount">0 / 4000</span>
+        <span class="vapi-sub" id="vapiSub">Speak directly with your AI interviewer</span>
+        <button class="btn-skip" id="skipBtn" type="button">Skip question <span aria-hidden="true">&rarr;</span></button>
+      </div>
+    </section>
   </div>
 
-  <div class="loading-overlay" id="loadingOverlay">
-    <div class="ldots"><span></span><span></span><span></span></div>
-    <div class="ltext" id="loadingText">Analysing your response...</div>
-  </div>
-
-</div><!-- /centre-col -->
+</main>
