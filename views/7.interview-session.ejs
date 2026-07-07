@@ -825,22 +825,7 @@
 
   function initVapi(){
     if(vapi||!window.vapiSDK)return;
-    /* v2.3 — assistantOverrides: suppress the dashboard-configured First
-       Message. Without this, the assistant's own greeting ("Hi! What role
-       are you applying for?") fires the instant the call connects — BEFORE
-       any of our page's injections or say() calls can run — which is the
-       double-greeting / wrong-question-first bug. `firstMessageMode:
-       'assistant-waits-for-user'` tells Vapi to stay silent at call start;
-       our call-start handler then speaks the persona intro + exact Q1 via
-       vapi.say(). If this SDK build ignores assistantOverrides, behavior
-       simply falls back to today's — the key is harmless when unsupported,
-       and the dashboard fix (see deploy notes) covers that case. */
-    vapi=window.vapiSDK.run({
-      apiKey:VKEY,
-      assistant:VAST,
-      assistantOverrides:{ firstMessageMode:'assistant-waits-for-user' },
-      config:{position:'hidden'}
-    });
+    vapi=window.vapiSDK.run({apiKey:VKEY,assistant:VAST,config:{position:'hidden'}});
 
     vapi.on('call-start', function() {
       setState(STATES.LIVE, 'Voice active — speak your answer');
