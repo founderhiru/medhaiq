@@ -29,6 +29,7 @@ const {
   getOrgTraits,
   MAX_JD_TEXT_CHARS,
 } = require('../services/competency-matrix');
+const sessionController = require('../controllers/sessionController');
 
 // ── Auth middleware ────────────────────────────────────────────────────────
 async function requireAuth(req, res, next) {
@@ -41,82 +42,13 @@ async function requireAuth(req, res, next) {
 }
 
 // ── POST /api/interview/sessions — create session + generate opening question
-router.post('/sessions', requireAuth, async (req, res) => {
-  try {
-    const { personaId, roleTitle, experienceLevel, orgPreset, jdText } = req.body;
-
-    if (!personaId || !PERSONAS[personaId]) {
-      return res.status(400).json({ error: 'Valid persona required' });
-    }
-    if (!roleTitle) {
-      return res.status(400).json({ error: 'Role title required' });
-    }
-
-    // ── Competency pipeline ────────────────────────────────────────────────
-    // Merge (role defaults → company traits → JD-parsed), case-insensitive
-    // dedupe, exactly top 8. Deterministic, no AI call — safe on every start.
-    const safeJdText      = (typeof jdText === 'string') ? jdText.slice(0, MAX_JD_TEXT_CHARS) : '';
-    const roleDefaults    = getRoleDefaults(roleTitle);
-    const companyTraits   = getOrgTraits(orgPreset);
-    const jdCompetencies  = parseJdCompetencies(safeJdText);
-    const competencyMatrix = buildCompetencyMatrix(roleDefaults, companyTraits, jdCompetencies, { limit: 8 });
-
-    // 1. Create session record — matrix + raw JD live in session DB state
-    const session = await createSession({
-      userId: req.user.id,
-      personaId,
-      roleTitle,
-      experienceLevel: experienceLevel || 'mid',
-      orgPreset: orgPreset || null,
-      jdText: safeJdText || null,
-      competencyMatrix,
-    });
-
-    // 2. Generate opening question from AI — matrix mapped straight into the
-    //    system prompt context variables
-    const openingResult = await generateNextQuestion({
-      sessionId: session.id,
-      personaId,
-      roleTitle,
-      experienceLevel: experienceLevel || 'mid',
-      orgPreset: orgPreset || null,
-      competencyMatrix,
-      jdText: safeJdText,
-      qaPairs: [],
-      questionCount: 0,
-    });
-
-    // 3. Save question to DB
-    const question = await addQuestion({
-      sessionId: session.id,
-      questionText: openingResult.text,
-      personaId,
-      questionType: 'opening',
-      questionOrder: 0,
-      competency: openingResult.competency,
-    });
-
-    return res.json({
-      success: true,
-      sessionId: session.id,
-      question: {
-        id: question.id,
-        text: question.question_text,
-        type: question.question_type,
-        order: question.question_order,
-        competency: question.competency || openingResult.competency,
-      },
-      // Clean, flat fields the frontend can bind to directly — no digging
-      // through nested question objects required.
-      text: question.question_text,
-      audio_url: openingResult.audio_url || null,
-      competency_tag: question.competency || openingResult.competency || null,
-    });
-  } catch (err) {
-    console.error('[interview/sessions POST]', err);
-    return res.status(500).json({ error: 'Failed to start session. Please try again.' });
-  }
-});
+// ── POST /api/interview/sessions — create session + generate opening question
+// v2.0: the full lifecycle (validation → harmonic alignment → persistence →
+// opening question) now lives in controllers/sessionController.js. The route
+// path and request/response contract are unchanged for the live frontend.
+router.post('/sessions', requireAuth, sessionController.initializeSession);
+// v2 spec alias — same controller, enterprise-style path.
+router.post('/session/initialize', requireAuth, sessionController.initializeSession);
 
 // ── Shared: pick + persist the next question for a session ──────────────────
 // Used by BOTH the REST /answer flow (text-only mode) and the Vapi tool-call

@@ -150,19 +150,19 @@
   var pendingAudioUrl = null;
   var qAudioEl = new Audio();
   var MedhaIQSync = {
-    hold: function(question, type, competency, wasSkipped) {
+    hold: function(question, type, competency) {
       pendingQuestion = { question: question, type: type, competency: competency };
       var voice = window.MedhaIQVoice;
       if (voice && voice.isLive && voice.isLive()) {
-        // v2 FIX (repeat/ghost bugs): the backend's question is the single
-        // source of truth ON SCREEN — painted in full, immediately. Vapi is
-        // instructed to SPEAK this same text (with an explicit no-repeat
-        // directive), but its transcript never overwrites the card again.
-        var instructed = voice.instructNext(question.text, !!wasSkipped);
+        // Show card meta (eyebrow, counter) but leave text EMPTY.
+        // Text is stored in _pendingQText and revealed only on speech-start.
+        showQuestionMeta(question, type, competency);
+        showQuestionText('');
+        window._pendingQText = question.text;
+        var instructed = voice.instructNext(question.text);
+        pendingQuestion = null;
         if (instructed) {
           pendingAudioUrl = null; // Vapi is speaking now — our own TTS clip (if any) must not fire later
-          showQuestion(question, type, competency);
-          pendingQuestion = null;
           return;
         }
         // instructNext failed (voice flagged live but the call object
@@ -611,7 +611,7 @@
       updateCounter();
       var nextQ = { text: data.text || data.question.text, type: data.question.type, id: data.question.id, order: data.question.order };
       pendingAudioUrl = data.audio_url || null;
-      MedhaIQSync.hold(nextQ, data.question.type, data.competency_tag || data.question.competency, skip);
+      MedhaIQSync.hold(nextQ, data.question.type, data.competency_tag || data.question.competency);
       slog('Q'+QN+' ready','info');
     } catch (err) {
       console.error('[MedhaIQ]', err);
@@ -643,10 +643,21 @@
   updateCounter();
   setAIState('CALIBRATING');
   if (INITQ) {
-    // v2 FIX (ghost/vanishing question bug): the canonical opening question
-    // is painted immediately and STAYS — no blank-and-defer, no 7s fallback
-    // timer, and (see the Vapi block) no transcript ever overwrites it.
-    showQuestion({text:INITQ}, QTYPE, null);
+    // Show the question card meta (counter, eyebrow, input reset) immediately
+    // but leave the question TEXT empty until Vapi's speech-start fires.
+    // This eliminates the "ghost text" where the card pre-fills before the
+    // AI has actually spoken a single word.
+    showQuestionMeta({text:INITQ}, QTYPE, null);
+    showQuestionText('');
+    window._pendingQText = INITQ; // picked up by vapi.on('speech-start') below
+    // Text-only fallback: if Vapi is not configured or doesn't speak within
+    // 7 seconds, reveal the question text so the candidate is never stuck.
+    window._pendingQTimer = setTimeout(function() {
+      if (window._pendingQText && window.MedhaIQ_showQuestionText) {
+        window.MedhaIQ_showQuestionText(window._pendingQText);
+        window._pendingQText = null;
+      }
+    }, 7000);
   }
   slog('Session #'+SID+' initialised', 'ok');
   slog('Persona (internal): '+PNAME, 'info'); /* debug-console only, never shown in candidate UI */
@@ -751,20 +762,14 @@
      our backend chose, instead of letting the two AI systems diverge. ── */
   window.MedhaIQVoice = {
     isLive: function(){ return state === STATES.LIVE && !!vapi; },
-    instructNext: function(questionText, wasSkipped){
+    instructNext: function(questionText){
       if (state !== STATES.LIVE || !vapi) return false;
       try {
-        var lead = wasSkipped
-          ? 'The candidate chose to skip the previous question. Acknowledge that in AT MOST one short, neutral sentence (for example: "No problem, let\'s move on.") — nothing more. '
-          : '';
         vapi.send({
           type: 'add-message',
           message: {
             role: 'system',
-            content: lead
-              + 'Now ask the candidate this exact next question, in your own natural delivery, without announcing that it was given to you: "'
-              + String(questionText).replace(/"/g, "'") + '". '
-              + 'HARD RULES: do NOT repeat, summarize, praise, or comment on any earlier answer or on anything you said before. Do NOT re-ask or revisit any previous question. Say this one question once, then stop and listen.'
+            content: 'Ask the candidate this exact next question next, in your own natural delivery, without announcing that it was given to you: "' + String(questionText).replace(/"/g, "'") + '"'
           }
         });
         return true;
@@ -793,19 +798,16 @@
     vapi.on('message', function(message) {
       if (!message || message.type !== 'transcript') return;
 
-      /* ── Assistant speech (v2 FIX) ──
-         The assistant's spoken words are HEARD, not painted: the question
-         card always shows the backend's canonical question text (painted
-         by MedhaIQSync.hold). This is what killed two bugs at once:
-         (a) the opening question no longer vanishes when the AI starts
-             speaking, and
-         (b) conversational filler ("That's fantastic, the $50M pipeline…")
-             and any repeated riffs on earlier answers can no longer appear
-             AS the question. The transcript is still buffered for the
-             staff debug console. */
+      /* ── Assistant speech → question card (unchanged behaviour) ── */
       if (message.role === 'assistant') {
-        if (message.transcriptType === 'final' && message.transcript) {
+        if (!window.MedhaIQ_showQuestionText) return;
+        if (message.transcriptType === 'final') {
           assistantTranscriptBuf = (assistantTranscriptBuf ? assistantTranscriptBuf + ' ' : '') + message.transcript;
+          window.MedhaIQ_showQuestionText(assistantTranscriptBuf.trim());
+        } else {
+          // partial/live caption — show buffer-so-far + the in-progress chunk
+          var preview = (assistantTranscriptBuf ? assistantTranscriptBuf + ' ' : '') + (message.transcript || '');
+          window.MedhaIQ_showQuestionText(preview.trim());
         }
         return;
       }
@@ -863,6 +865,14 @@
     vapi.on('speech-start', function() {
       assistantTranscriptBuf = ''; // fresh buffer — don't carry over last question's text
       sub.textContent = '● AI is speaking…';
+      // Reveal the question text the moment the AI starts talking — not before.
+      // This is the fix for UI Ghosting: text only appears when speech physically begins.
+      if (window._pendingQText && window.MedhaIQ_showQuestionText) {
+        window.MedhaIQ_showQuestionText(window._pendingQText);
+        window._pendingQText = null;
+      }
+      // Cancel the text-only fallback timer since voice is handling it now.
+      if (window._pendingQTimer) { clearTimeout(window._pendingQTimer); window._pendingQTimer = null; }
     });
 
     vapi.on('speech-end', function() {
