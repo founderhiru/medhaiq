@@ -202,6 +202,14 @@
   var ROLE   = '<%= roleTitle %>';
   var LEVEL  = '<%= experienceLevel %>';
   var INITQ  = `<%- questionText.replace(/`/g, '\\`') %>`;
+  /* v2.5 SCOPE BRIDGE — the Vapi script block below is a separate scope and
+     cannot see these engine-block variables. Referencing them bare from the
+     call-start handler threw "ReferenceError: ROLE is not defined", which
+     aborted the handler BEFORE vapi.say() could run — the silent-AI bug.
+     Everything the voice layer needs is published on window. */
+  window.MedhaIQ_ROLE  = ROLE;
+  window.MedhaIQ_LEVEL = LEVEL;
+  window.MedhaIQ_PNAME = PNAME;
 
   /* Persona (PNAME/PTITLE/PINIT/PCOL) is retained purely as internal
      session data for scoring/report generation — it is never rendered.
@@ -863,27 +871,21 @@
             LLM-mediation that caused the 4-5s latency loop and generic-
             question drift. `vapi.say()` forces that speech directly,
             deterministically, with zero generation step in between. ── */
+      /* ── v2.5 hardened handshake ──
+         Two independent steps, each in its own try/catch, SPEECH FIRST:
+         a failure in the context injection can never again abort the
+         say() call (that shared-try ordering was the silent-AI bug).
+         All variables are read from the window bridge — never bare
+         engine-scope identifiers. */
+      var _pname = String(window.MedhaIQ_PNAME || 'your interviewer');
+      var _role  = String(window.MedhaIQ_ROLE  || '');
+      var _level = String(window.MedhaIQ_LEVEL || '');
       try {
-        vapi.send({
-          type: 'add-message',
-          message: {
-            role: 'system',
-            content:
-              'SESSION READY CONTEXT — the session payload variables are locked and were selected before this call: '
-              + 'role = "' + String(ROLE || '').replace(/"/g, "'") + '", experience level = "' + String(LEVEL || '').replace(/"/g, "'") + '". '
-              + 'You must bypass all raw discovery greetings: never ask what role the candidate is applying for, what they want to practice, or any setup question. '
-              + 'You will now be told exactly what to say via direct speech. Do not add anything before or after it.'
-          }
-        });
         if (typeof vapi.say === 'function') {
-          // v2.4 — speak the question that is ON SCREEN RIGHT NOW, never a
-          // stale page-load snapshot. If the candidate already progressed
-          // by text before connecting voice, skip the full introduction
-          // and pick up mid-session instead of restarting from Q1.
           var currentQ = String(window.MedhaIQ_CurrentQ || window.MedhaIQ_Q1 || '');
           var opening = window.MedhaIQ_SessionAdvanced
             ? 'Thanks, voice is on now \u2014 let\u2019s continue. Here\u2019s the current question again: '
-            : ('Hi, I\u2019m ' + String(PNAME || 'your interviewer') + '. Let\u2019s get started. ');
+            : ('Hi, I\u2019m ' + _pname + '. Let\u2019s get started. ');
           vapi.say(opening + currentQ);
         } else {
           console.warn('[Vapi] vapi.say() unavailable on this SDK build — falling back to context injection');
@@ -896,6 +898,19 @@
             }
           });
         }
+      } catch (e) { console.error('[Vapi] opening speech failed', e); }
+      try {
+        vapi.send({
+          type: 'add-message',
+          message: {
+            role: 'system',
+            content:
+              'SESSION READY CONTEXT — the session payload variables are locked and were selected before this call: '
+              + 'role = "' + _role.replace(/"/g, "'") + '", experience level = "' + _level.replace(/"/g, "'") + '". '
+              + 'You must bypass all raw discovery greetings: never ask what role the candidate is applying for, what they want to practice, or any setup question. '
+              + 'You will be told exactly what to say via direct speech. Do not add anything before or after it.'
+          }
+        });
       } catch (e) { console.error('[Vapi] sessionReadyContext injection failed', e); }
       // Certify the calibration gate: the question card reveals now, in
       // lockstep with the voice actually being connected.
