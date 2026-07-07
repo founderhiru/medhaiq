@@ -1,6 +1,28 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // public/js/interviewOrchestrator.js
-// MedhaIQ Session Bootstrap Orchestrator — v2.1 Hardened Sync Edition
+// MedhaIQ Session Bootstrap Orchestrator — v2.0
+//
+// Owns two small, strict state machines that the inline engine scripts in
+// views/interview-session.ejs call into:
+//
+//  1. CALIBRATION GATE (fixes cold-start desync, image A):
+//     BOOT → CALIBRATING → READY.
+//     While CALIBRATING, the question card is hidden and the pulsing
+//     "Calibrating Interviewer Persona…" loader shows. The question is
+//     revealed only when the Vapi socket certifies `call-start`
+//     (voiceConnected()) — with a hard safety valve: a fallback timer
+//     ALWAYS reveals the question after `fallbackMs`, so a candidate with
+//     no mic, a blocked mic, or a Vapi outage is never stuck staring at a
+//     loader. Text-only sessions bypass the gate entirely.
+//
+//  2. INPUT GATE (fixes text/audio misalignment, image B):
+//     The answer box + submit button lock while the interviewer is
+//     speaking a question, and unlock on speech-end — so the candidate
+//     can never answer a question that hasn't finished being read.
+//     Safety valve: auto-unlock after `maxLockMs` in case a speech-end
+//     event is ever missed. Skip/End Session stay usable at all times.
+//
+// No dependencies. Exposes a single global: window.MedhaIQOrchestrator.
 // ═══════════════════════════════════════════════════════════════════════════
 (function () {
   'use strict';
@@ -13,20 +35,14 @@
     CAL.revealed = true;
     CAL.state = 'READY';
     if (CAL.fallbackTimer) { clearTimeout(CAL.fallbackTimer); CAL.fallbackTimer = null; }
-    try { 
-      if (typeof CAL.revealFn === 'function') {
-        CAL.revealFn(reason); 
-      } 
-    } catch (e) { 
-      console.error('[orchestrator] reveal failed', e); 
-    }
+    try { if (typeof CAL.revealFn === 'function') CAL.revealFn(reason); }
+    catch (e) { console.error('[orchestrator] reveal failed', e); }
   }
 
   function inputEls() {
     return {
-      input: document.getElementById('answerInput') || document.getElementById('user-answer-input'),
-      submit: document.getElementById('submitBtn') || document.getElementById('submit-turn-btn'),
-      questionCard: document.getElementById('question-card') || document.querySelector('.question-card-container'),
+      input: document.getElementById('answerInput'),
+      submit: document.getElementById('submitBtn'),
     };
   }
 
@@ -38,51 +54,21 @@
      * @param {Object} opts
      * @param {boolean}  opts.hasVoice   voice configured for this session
      * @param {Function} opts.onReveal   paints the canonical Question 1
-     * @param {number}  [opts.fallbackMs=12000] safety reveal if voice never connects
+     * @param {number}  [opts.fallbackMs=8000] safety reveal if voice never connects
      */
     calibrate: function (opts) {
       opts = opts || {};
       CAL.revealFn = opts.onReveal;
       if (!opts.hasVoice) { reveal('text-only'); return; }
       CAL.state = 'CALIBRATING';
-      
-      // Lock down input field immediately on calibration startup
-      window.MedhaIQOrchestrator.lockInput(15000);
-      var els = inputEls();
-      if (els.input) {
-        els.input.placeholder = 'Calibrating interviewer voice persona... Please wait.';
-      }
-
-      // Fallback safety valve timer increased slightly to allow full socket initialization
       CAL.fallbackTimer = setTimeout(function () {
         console.warn('[orchestrator] voice did not certify in time — revealing via fallback');
         reveal('fallback-timer');
-        window.MedhaIQOrchestrator.unlockInput();
-      }, typeof opts.fallbackMs === 'number' ? opts.fallbackMs : 12000);
+      }, typeof opts.fallbackMs === 'number' ? opts.fallbackMs : 8000);
     },
 
-    /** * Line-by-Line Fix for Bug 1: 
-     * Handshake stage 1: Connection established. We update the state but do NOT 
-     * reveal text until the AI audio playback actually begins speaking word-for-word.
-     */
-    voiceConnected: function () { 
-      console.log('[orchestrator] Voice channel connected. Awaiting active speech streams...');
-      CAL.state = 'CONNECTED_AWAITING_SPEECH';
-      var els = inputEls();
-      if (els.input) {
-        els.input.placeholder = 'Interviewer is preparing to speak...';
-      }
-    },
-
-    /**
-     * Handshake stage 2: Triggered by the frontend when Vapi emits 'speech-start'.
-     * This guarantees the user only sees the text when the audio starts playing.
-     */
-    interviewerStartedSpeaking: function () {
-      console.log('[orchestrator] AI began speaking. Revealing question text synchronously.');
-      reveal('voice-connected');
-      window.MedhaIQOrchestrator.lockInput(35000); // Keep input locked while talking
-    },
+    /** Vapi certified `call-start` — reveal immediately. */
+    voiceConnected: function () { reveal('voice-connected'); },
 
     /** True once the question has been revealed (any path). */
     isReady: function () { return CAL.revealed; },
@@ -117,14 +103,11 @@
       if (els.input) {
         els.input.disabled = false;
         var ph = els.input.getAttribute('data-locked-placeholder');
-        if (ph && ph !== 'Listen to the question…' && ph !== 'Interviewer is preparing to speak...') {
-          els.input.placeholder = ph;
-        } else {
-          els.input.placeholder = 'Start speaking or type your answer here...';
-        }
+        if (ph) els.input.placeholder = ph;
         try { els.input.focus(); } catch (e) {}
       }
-      if (els.submit) els.submit.disabled = false;
+      /* submit stays disabled until there is typed/spoken content —
+         the engine's own input listener manages that, untouched. */
     },
 
     isInputLocked: function () { return GATE.locked; },

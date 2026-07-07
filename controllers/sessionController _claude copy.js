@@ -1,10 +1,23 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // controllers/sessionController.js
-// Session initialization & Turn orchestration controller — MedhaIQ Engine v2.1
+// Session initialization controller — MedhaIQ Harmonic Alignment Engine v2.0.
+//
+// Owns the full lifecycle of POST /api/interview/sessions (and its v2 alias
+// POST /api/interview/session/initialize):
+//
+//   validate payload → fetch role baseline + company vector → AI-extract the
+//   JD → compileWeightedCompetencyMatrix → persist session state → generate
+//   the opening question → respond.
+//
+// CONTRACT GUARANTEE: the request fields and the JSON response shape are
+// byte-compatible with what views/interview-setup.ejs already sends and what
+// views/interview-session.ejs already consumes. v2 field aliases (roleId,
+// experienceTier, interviewerPersonaId, targetCompany, rawJobDescriptionText)
+// are accepted alongside the live field names — nothing breaks.
 // ═══════════════════════════════════════════════════════════════════════════
 
 const { generateNextQuestion, PERSONAS } = require('../services/interview');
-const { createSession, addQuestion, getSessionById, saveConversationTurn } = require('../db/interview'); // Ensure your DB helpers match
+const { createSession, addQuestion } = require('../db/interview');
 const { getRoleDefaults, getOrgTraits, MAX_JD_TEXT_CHARS } = require('../services/competency-matrix');
 const {
   aiExtractJdCompetencies,
@@ -13,6 +26,7 @@ const {
 
 /**
  * POST /api/interview/sessions  (alias: POST /api/interview/session/initialize)
+ * Requires the same requireAuth middleware as before (applied at the route).
  */
 async function initializeSession(req, res) {
   try {
@@ -43,7 +57,7 @@ async function initializeSession(req, res) {
     const extraction = await aiExtractJdCompetencies(jdText);
     console.log(`[harmonic] JD extraction source=${extraction.source} count=${extraction.competencies.length}`);
 
-    // ── 4. Weighted merge → finalized matrix (≤8 strings, floor 5) ────────
+    // ── 4. Weighted compile → finalized matrix (≤8 strings, floor 5) ────────
     const { matrix: finalizedMatrix, detailed } =
       compileWeightedCompetencyMatrix(roleDefaults, companyTraits, extraction.competencies);
     console.log('[harmonic] finalized matrix:', JSON.stringify(detailed));
@@ -81,7 +95,7 @@ async function initializeSession(req, res) {
       competency: openingResult.competency,
     });
 
-    // ── 7. Response Shape ───────────────────────────────────────────────────
+    // ── 7. Response — byte-compatible with the live frontend ────────────────
     return res.json({
       success: true,
       sessionId: session.id,
@@ -92,9 +106,12 @@ async function initializeSession(req, res) {
         order: question.question_order,
         competency: question.competency || openingResult.competency,
       },
+      // Clean, flat fields the frontend can bind to directly — no digging
+      // through nested question objects required.
       text: question.question_text,
       audio_url: openingResult.audio_url || null,
       competency_tag: question.competency || openingResult.competency || null,
+      // v2.0 unified single-source-of-truth model (see routes/interview.js)
       questionId: 'Q' + question.question_order,
       uiText: question.question_text,
       audioPrompt: question.question_text,
@@ -105,58 +122,4 @@ async function initializeSession(req, res) {
   }
 }
 
-/**
- * ── Line-by-Line Fix for Bug 2: Response Quality Validation Gateway ──
- * POST /api/interview/session/submit-answer
- * Validates candidate input metrics before allowing the progress bar to advance.
- */
-async function submitUserAnswer(req, res) {
-  try {
-    const { sessionId, transcriptPayload, currentQuestionText } = req.body;
-
-    if (!sessionId || typeof transcriptPayload !== 'string') {
-      return res.status(400).json({ success: false, error: 'Invalid response structural payload.' });
-    }
-
-    const cleanInput = transcriptPayload.trim().replace(/\s+/g, ' ');
-    const wordCount = cleanInput.split(' ').filter(Boolean).length;
-    
-    // Catch single words or short lazy confirmations (e.g., "yes", "no", "yep", "ok")
-    const dynamicBlacklist = new Set(["yes", "no", "ok", "sure", "yep", "nope", "yeah", "yes.", "no."]);
-    const isSparseInput = wordCount < 5 || dynamicBlacklist.has(cleanInput.toLowerCase());
-
-    // ── SPARSE REJECTION LOOP GATEWAY ──
-    if (isSparseInput) {
-      console.log(`[guardrail] Sparse answer detected ("${cleanInput}"). Blocking progress bar advancement.`);
-      
-      // Keep them on the same question tracker, do not advance step index, generate a contextual nudge
-      const retryFollowUpText = `I see. Could you expand on that with a specific example or walk me through your personal experience regarding that scenario?`;
-
-      return res.json({
-        success: true,
-        advanceProgressBar: false, // UI catches this and keeps progress marker at 1/5
-        uiText: retryFollowUpText,  // Update UI text cleanly
-        audioPrompt: retryFollowUpText, // Direct AI to speak this text word-for-word
-        telemetryLog: "Sparse input intercepted. Repeating loop validation track."
-      });
-    }
-
-    // ── STANDARD PROGRESS TRACK (Valid response length met) ──
-    // This allows your regular generation engine logic to execute forward smoothly
-    return res.json({
-      success: true,
-      advanceProgressBar: true, // Tells UI it is safe to transition to 2/5 now
-      uiText: "Great fallback tracking prompt. Loading next matrix block...",
-      advanceStep: true
-    });
-
-  } catch (err) {
-    console.error('[sessionController.submitUserAnswer]', err);
-    return res.status(500).json({ success: false, error: 'Internal orchestration processing exception.' });
-  }
-}
-
-module.exports = { 
-  initializeSession,
-  submitUserAnswer // Exported safely to be mapped to your router endpoint
-};
+module.exports = { initializeSession };
