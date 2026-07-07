@@ -392,6 +392,14 @@
     }
     .tc-apply:hover{ filter:brightness(1.1); }
     .tc-privacy{ margin-top:10px; text-align:center; font-size:11px; color:var(--muted); }
+    /* Company logo avatar (success state) — img with SVG building fallback */
+    .tc-logo{
+      width:24px;height:24px;border-radius:7px;flex-shrink:0;overflow:hidden;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(255,255,255,.06); border:1px solid var(--border); color:var(--muted);
+    }
+    .tc-logo-img{ width:18px;height:18px;object-fit:contain;border-radius:4px; }
+    .tc-logo-fallback{ width:14px;height:14px; }
   </style>
 </head>
 <body>
@@ -484,7 +492,7 @@
             <div class="tc-icon">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
             </div>
-            <div class="tc-title">Tailor for a Specific Job</div>
+            <div class="tc-title">Tailor your interview</div>
             <div class="tc-desc">Personalize this interview for a specific role, company, or job opportunity.</div>
             <button class="tc-add-btn" type="button">＋ Add Context</button>
           </div>
@@ -492,6 +500,10 @@
           <div class="tc-state-done" style="display:none">
             <div class="tc-company-row">
               <span class="tc-check">✓</span>
+              <span class="tc-logo">
+                <img class="tc-logo-img" alt="" width="18" height="18" style="display:none">
+                <svg class="tc-logo-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16"/><path d="M14 9h5a1 1 0 0 1 1 1v11"/><path d="M2 21h20"/><path d="M7.5 8h3M7.5 12h3M7.5 16h3"/></svg>
+              </span>
               <span class="tc-company tc-company-out">—</span>
             </div>
             <div class="tc-role-line tc-role-out"></div>
@@ -515,7 +527,6 @@
         <div class="sel-card chip" data-role="MLOps Engineer"><div class="check">✓</div><div class="rc-icon">🔁</div><div class="rc-title">MLOps Engineer</div><div class="rc-desc">Operate ML systems reliably at scale</div></div>
         <div class="sel-card chip" data-role="Research Scientist"><div class="check">✓</div><div class="rc-icon">🔬</div><div class="rc-title">Research Scientist</div><div class="rc-desc">Advance the state of the art with research</div></div>
         <div class="sel-card chip" data-role="LLM Engineer"><div class="check">✓</div><div class="rc-icon">💬</div><div class="rc-title">LLM Engineer</div><div class="rc-desc">Build applications on large language models</div></div>
-        <div class="sel-card chip" data-role="Custom" data-custom="true"><div class="check">✓</div><div class="rc-icon">＋</div><div class="rc-title">Custom Role</div><div class="rc-desc">Define a custom role and expectations</div></div>
 
         <!-- ══ TAILOR FOR A SPECIFIC JOB — second instance (AI & Data tab).
              Identical markup to the Core tab card; the shared handler keeps
@@ -525,13 +536,17 @@
             <div class="tc-icon">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
             </div>
-            <div class="tc-title">Tailor for a Specific Job</div>
+            <div class="tc-title">Tailor your interview</div>
             <div class="tc-desc">Personalize this interview for a specific role, company, or job opportunity.</div>
             <button class="tc-add-btn" type="button">＋ Add Context</button>
           </div>
           <div class="tc-state-done" style="display:none">
             <div class="tc-company-row">
               <span class="tc-check">✓</span>
+              <span class="tc-logo">
+                <img class="tc-logo-img" alt="" width="18" height="18" style="display:none">
+                <svg class="tc-logo-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16"/><path d="M14 9h5a1 1 0 0 1 1 1v11"/><path d="M2 21h20"/><path d="M7.5 8h3M7.5 12h3M7.5 16h3"/></svg>
+              </span>
               <span class="tc-company tc-company-out">—</span>
             </div>
             <div class="tc-role-line tc-role-out"></div>
@@ -555,7 +570,7 @@
       <div class="sel-card chip exp-card" data-exp="executive"><div class="check">✓</div><span class="exp-emoji">👑</span><div><div class="exp-name">Executive</div><div class="exp-yrs">15+ yrs</div></div></div>
     </div>
 
-    <div class="step-label">3. Select Interview Persona</div>
+    <div class="step-label">3. Select Interviewer Persona</div>
     <div class="persona-grid">
 
       <div class="sel-card persona-card" data-persona="alex_chen" data-voice="voice-alex" data-diff="Hard (Rigorous)">
@@ -694,6 +709,9 @@ function switchTab(tab) {
   // Bridge for the Tailor-context script below (object shared by reference;
   // its writes to org/jdText are picked up by the POST payload above).
   window.__miqSetupState = state;
+  // Bridge sync() too, so the tailor script can re-validate the CTA after
+  // Apply Context (declaration below is hoisted — safe to reference here).
+  window.__miqSync = function () { sync(); };
 
   const EXP_LABELS = { fresher: 'Fresher (0–2 yrs)', mid: 'Mid-Career (3–8 yrs)', senior: 'Senior (8–15 yrs)', executive: 'Executive (15+ yrs)' };
   const customInput = document.getElementById('roleCustom');
@@ -737,7 +755,9 @@ function switchTab(tab) {
   });
 
   function sync() {
-    const ready = !!(state.role && state.persona && state.exp);
+    // Step 1 is satisfied by EITHER a role card OR an applied "Tailor your
+    // interview" context (state.tailorApplied set by the tailor script).
+    const ready = !!((state.role || state.tailorApplied) && state.persona && state.exp);
     const btn = document.getElementById('beginBtn');
     btn.disabled = !ready;
     document.getElementById('engTitle').textContent = ready ? 'Ready' : 'Waiting';
@@ -756,7 +776,7 @@ function switchTab(tab) {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             personaId: state.persona,
-            roleTitle: state.role,
+            roleTitle: state.role || state.tailorRole || 'General Professional',
             experienceLevel: state.exp,
             vapiVoiceId: state.voice,
             // Tailored-context pipeline (optional; backend merges these into
@@ -939,12 +959,45 @@ function switchTab(tab) {
     // The ONLY writes into shared state — read by the session POST payload.
     state.org = company || null;
     state.jdText = jd || '';
+    // Validation gateway: an applied context is a first-class Step 1 choice.
+    state.tailorApplied = true;
+    state.tailorRole = pickedLevel || '';
+
+    // ── Company logo resolution (favicon service, SVG building fallback) ──
+    var KNOWN_DOMAINS = {
+      google:'google.com', microsoft:'microsoft.com', amazon:'amazon.com', apple:'apple.com',
+      meta:'meta.com', facebook:'meta.com', netflix:'netflix.com', nvidia:'nvidia.com',
+      adobe:'adobe.com', salesforce:'salesforce.com', oracle:'oracle.com', ibm:'ibm.com',
+      intel:'intel.com', walmart:'walmart.com', accenture:'accenture.com', deloitte:'deloitte.com',
+      infosys:'infosys.com', tcs:'tcs.com', wipro:'wipro.com', flipkart:'flipkart.com',
+      uber:'uber.com', airbnb:'airbnb.com', stripe:'stripe.com', 'jpmorgan':'jpmorganchase.com',
+      'goldman sachs':'goldmansachs.com', 'mckinsey':'mckinsey.com', linkedin:'linkedin.com'
+    };
+    function companyDomain(name) {
+      var key = name.toLowerCase().trim();
+      if (KNOWN_DOMAINS[key]) return KNOWN_DOMAINS[key];
+      var slug = key.replace(/[^a-z0-9]/g, '');
+      return slug ? slug + '.com' : '';
+    }
+    var logoUrl = company ? 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(companyDomain(company)) + '&sz=64' : '';
 
     var detected = detectAreas(jd);
     var total = matrixCount(detected, !!company);
 
     // Flip EVERY card instance (both tabs) to the success state in sync
     cards.forEach(function (card) {
+      // Logo: try the favicon; on failure (or no company) show the SVG fallback
+      var img = card.querySelector('.tc-logo-img');
+      var fb  = card.querySelector('.tc-logo-fallback');
+      if (img && fb) {
+        if (logoUrl) {
+          img.onload  = function () { img.style.display = 'block'; fb.style.display = 'none'; };
+          img.onerror = function () { img.style.display = 'none';  fb.style.display = 'block'; };
+          img.src = logoUrl;
+        } else {
+          img.style.display = 'none'; fb.style.display = 'block';
+        }
+      }
       card.querySelector('.tc-company-out').textContent = company || 'Tailored Interview';
       card.querySelector('.tc-role-out').textContent =
         pickedLevel ? pickedLevel + (state.role ? ' · ' + state.role : '') : (state.role || 'Role: pick in Step 1');
@@ -969,6 +1022,16 @@ function switchTab(tab) {
     document.getElementById('ctxCompany').textContent = company || 'Tailored';
     document.getElementById('ctxCompanyMeta').textContent =
       (jd ? 'JD attached · ' : 'No JD · ') + total + ' competencies';
+
+    // If no role card was picked, reflect the tailored track in the sidebar
+    // Role row so the enabled CTA never looks inconsistent.
+    if (!state.role) {
+      var ctxRole = document.getElementById('ctxRole');
+      if (ctxRole) ctxRole.textContent = pickedLevel ? pickedLevel + ' (tailored)' : 'Tailored to JD';
+    }
+
+    // Re-run the master form validation so Initialize Session unlocks.
+    if (window.__miqSync) window.__miqSync();
 
     closeModal();
   });
