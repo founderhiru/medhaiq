@@ -69,12 +69,6 @@ async function runMigrations() {
           )`);
           await c.query(`CREATE INDEX IF NOT EXISTS interview_sessions_user_idx ON interview_sessions (user_id)`);
 
-          // ── Competency pipeline (JD-aware sessions) — idempotent, safe on
-          //    every deploy. Stores the raw pasted JD and the merged top-8
-          //    competency matrix computed at session creation. ──
-          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS jd_text TEXT`);
-          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS competency_matrix JSONB`);
-
           await c.query(`CREATE TABLE IF NOT EXISTS interview_questions (
             id SERIAL PRIMARY KEY,
             session_id INTEGER NOT NULL REFERENCES interview_sessions(id) ON DELETE CASCADE,
