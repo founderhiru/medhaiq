@@ -525,12 +525,6 @@
   function showQuestion(q, type, competency) {
     showQuestionMeta(q, type, competency);
     showQuestionText(q.text);
-    // v2.4 — live snapshot for the voice handshake. The call-start handler
-    // used to read a Q1 snapshot frozen at page load; if the candidate had
-    // already advanced by text before voice connected, the AI then spoke a
-    // STALE question that mismatched the card. Every question paint now
-    // refreshes this, so voice always opens with the question on screen.
-    window.MedhaIQ_CurrentQ = q.text;
   }
   window.MedhaIQ_showQuestionMeta = showQuestionMeta;
   window.MedhaIQ_showQuestionText = showQuestionText;
@@ -621,7 +615,6 @@
       updateCounter();
       var nextQ = { text: data.text || data.question.text, type: data.question.type, id: data.question.id, order: data.question.order };
       pendingAudioUrl = data.audio_url || null;
-      window.MedhaIQ_SessionAdvanced = true; // voice connecting late must not re-open from Q1
       MedhaIQSync.hold(nextQ, data.question.type, data.competency_tag || data.question.competency, skip);
       slog('Q'+QN+' ready','info');
     } catch (err) {
@@ -876,23 +869,16 @@
           }
         });
         if (typeof vapi.say === 'function') {
-          // v2.4 — speak the question that is ON SCREEN RIGHT NOW, never a
-          // stale page-load snapshot. If the candidate already progressed
-          // by text before connecting voice, skip the full introduction
-          // and pick up mid-session instead of restarting from Q1.
-          var currentQ = String(window.MedhaIQ_CurrentQ || window.MedhaIQ_Q1 || '');
-          var opening = window.MedhaIQ_SessionAdvanced
-            ? 'Thanks, voice is on now \u2014 let\u2019s continue. Here\u2019s the current question again: '
-            : ('Hi, I\u2019m ' + String(PNAME || 'your interviewer') + '. Let\u2019s get started. ');
-          vapi.say(opening + currentQ);
+          var introLine = 'Hi, I\u2019m ' + String(PNAME || 'your interviewer') + '. Let\u2019s get started. ';
+          vapi.say(introLine + String(window.MedhaIQ_Q1 || ''));
         } else {
           console.warn('[Vapi] vapi.say() unavailable on this SDK build — falling back to context injection');
           vapi.send({
             type: 'add-message',
             message: {
               role: 'system',
-              content: 'Open with your assigned interviewer persona introduction in ONE short sentence, then read aloud, verbatim and word for word, exactly this question: "'
-                + String(window.MedhaIQ_CurrentQ || window.MedhaIQ_Q1 || '').replace(/"/g, "'") + '". Then stop and listen.'
+              content: 'Open with your assigned interviewer persona introduction in ONE short sentence, then read aloud, verbatim and word for word, exactly this Question 1: "'
+                + String(window.MedhaIQ_Q1 || '').replace(/"/g, "'") + '". Then stop and listen.'
             }
           });
         }
