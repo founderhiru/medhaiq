@@ -492,7 +492,7 @@
             <div class="tc-icon">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
             </div>
-            <div class="tc-title">Tailor your interview</div>
+            <div class="tc-title">Tailor for a specific Job</div>
             <div class="tc-desc">Personalize this interview for a specific role, company, or job opportunity.</div>
             <button class="tc-add-btn" type="button">＋ Add Context</button>
           </div>
@@ -536,7 +536,7 @@
             <div class="tc-icon">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
             </div>
-            <div class="tc-title">Tailor your interview</div>
+            <div class="tc-title">Tailor for a specific Job</div>
             <div class="tc-desc">Personalize this interview for a specific role, company, or job opportunity.</div>
             <button class="tc-add-btn" type="button">＋ Add Context</button>
           </div>
@@ -700,6 +700,9 @@
 function switchTab(tab) {
     document.querySelectorAll('.role-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     document.querySelectorAll('.role-panel').forEach(p => p.classList.toggle('visible', p.id === 'tab-' + tab));
+    // Re-paint Step 1 selections from the single state source so toggling
+    // tabs can never surface stale active classes.
+    if (window.__miqRenderStep1) window.__miqRenderStep1();
 }
 
 (function () {
@@ -731,7 +734,10 @@ function switchTab(tab) {
         state.exp = el.querySelector('.exp-name').textContent.trim();
         document.getElementById('ctxExp').textContent = EXP_LABELS[el.dataset.exp] || state.exp;
       } else {
-        // role card (may live in either tab panel)
+        // role card (may live in either tab panel) — STRICT SINGLE-CHOICE:
+        // selecting a role clears every other role card across BOTH tab
+        // grids AND fully resets the "Tailor" context track.
+        if (window.__miqTailorReset) window.__miqTailorReset();
         document.querySelectorAll('.role-panel .sel-card').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
         if (el.dataset.custom) {
@@ -747,6 +753,17 @@ function switchTab(tab) {
       sync();
     });
   });
+
+  // ── Single source of truth for Step 1 visuals. Called on every tab
+  //    toggle so active states always re-render from state, never from
+  //    stale DOM classes. (Tailor card visuals are owned by its own
+  //    script and are reset at mutation time via __miqTailorReset.) ──
+  function renderStep1() {
+    document.querySelectorAll('.role-panel .sel-card').forEach(c => {
+      c.classList.toggle('active', !!state.role && c.dataset.role === state.role);
+    });
+  }
+  window.__miqRenderStep1 = renderStep1;
 
   customInput.addEventListener('input', () => {
     state.role = customInput.value.trim();
@@ -779,10 +796,10 @@ function switchTab(tab) {
             roleTitle: state.role || state.tailorRole || 'General Professional',
             experienceLevel: state.exp,
             vapiVoiceId: state.voice,
-            // Tailored-context pipeline (optional; backend merges these into
-            // the top-8 competency matrix — see services/competency-matrix.js)
-            orgPreset: state.org || null,
-            jdText: state.jdText || ''
+            // Tailored-context pipeline: packaged ONLY when the tailor track
+            // is the active Step 1 choice (strict single-selection model).
+            orgPreset: state.tailorApplied ? (state.org || null) : null,
+            jdText: state.tailorApplied ? (state.jdText || '') : ''
         })
       });
       const data = await res.json();
@@ -809,7 +826,7 @@ function switchTab(tab) {
 <div class="tc-overlay" id="tcOverlay" role="dialog" aria-modal="true" aria-labelledby="tcModalTitle">
   <div class="tc-modal">
     <div class="tc-m-head">
-      <div class="tc-m-title" id="tcModalTitle">Tailor This Interview</div>
+      <div class="tc-m-title" id="tcModalTitle">Tailor your interview</div>
       <button class="tc-m-close" type="button" id="tcClose" aria-label="Close">✕</button>
     </div>
 
@@ -934,6 +951,29 @@ function switchTab(tab) {
   overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal(); });
 
+  // ── Reset bridge: called by the role-card handler when the user chooses
+  //    the standard track. Fully clears the tailor track — state hooks,
+  //    both card instances' visuals, modal chip selection, sidebar row —
+  //    so exactly ONE Step 1 selection ever exists. ──
+  window.__miqTailorReset = function () {
+    if (!state.tailorApplied && !state.org && !state.jdText && !pickedLevel) return;
+    state.org = null;
+    state.jdText = '';
+    state.tailorApplied = false;
+    state.tailorRole = '';
+    pickedLevel = '';
+    levelsEl.querySelectorAll('.tc-level').forEach(function (b) { b.classList.remove('active'); });
+    cards.forEach(function (card) {
+      card.classList.remove('tc-success');
+      var e = card.querySelector('.tc-state-empty');
+      var d = card.querySelector('.tc-state-done');
+      if (e) e.style.display = '';
+      if (d) d.style.display = 'none';
+    });
+    var wrap = document.getElementById('ctxCompanyWrap');
+    if (wrap) wrap.style.display = 'none';
+  };
+
   // ── Level chips (single-select toggle) ───────────────────────────────────
   levelsEl.addEventListener('click', function (e) {
     var btn = e.target.closest('.tc-level');
@@ -962,6 +1002,12 @@ function switchTab(tab) {
     // Validation gateway: an applied context is a first-class Step 1 choice.
     state.tailorApplied = true;
     state.tailorRole = pickedLevel || '';
+    // STRICT SINGLE-CHOICE: choosing the tailor track clears any standard
+    // role selection across both tab grids (state + visuals + sidebar).
+    state.role = '';
+    document.querySelectorAll('.role-panel .sel-card').forEach(function (c) { c.classList.remove('active'); });
+    var customIn = document.getElementById('roleCustom');
+    if (customIn) { customIn.classList.remove('show'); customIn.value = ''; }
 
     // ── Company logo resolution (favicon service, SVG building fallback) ──
     var KNOWN_DOMAINS = {
@@ -1023,12 +1069,10 @@ function switchTab(tab) {
     document.getElementById('ctxCompanyMeta').textContent =
       (jd ? 'JD attached · ' : 'No JD · ') + total + ' competencies';
 
-    // If no role card was picked, reflect the tailored track in the sidebar
-    // Role row so the enabled CTA never looks inconsistent.
-    if (!state.role) {
-      var ctxRole = document.getElementById('ctxRole');
-      if (ctxRole) ctxRole.textContent = pickedLevel ? pickedLevel + ' (tailored)' : 'Tailored to JD';
-    }
+    // Reflect the tailored track in the sidebar Role row (the standard role
+    // selection was just cleared — one track, one truth).
+    var ctxRole = document.getElementById('ctxRole');
+    if (ctxRole) ctxRole.textContent = pickedLevel ? pickedLevel + ' (tailored)' : 'Tailored to JD';
 
     // Re-run the master form validation so Initialize Session unlocks.
     if (window.__miqSync) window.__miqSync();
