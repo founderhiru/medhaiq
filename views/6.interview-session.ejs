@@ -769,52 +769,22 @@
      our backend chose, instead of letting the two AI systems diverge. ── */
   window.MedhaIQVoice = {
     isLive: function(){ return state === STATES.LIVE && !!vapi; },
-    /* v2.2 FIX — Vapi split-brain / 4-5s latency bug:
-       `vapi.send({type:'add-message', role:'system', ...})` (the previous
-       implementation) only INJECTS CONTEXT — it still requires Vapi's own
-       LLM turn-taking logic to decide when, and whether, to actually speak
-       the instructed text. That LLM-mediation is exactly what produced the
-       symptom: several seconds of latency while it "thought", and
-       occasional drift into a generic/hardcoded question instead of the
-       backend's exact text.
-       Vapi's Web SDK exposes a separate, documented method for this exact
-       case — `vapi.say(text)` — which invokes speech of the given text
-       DIRECTLY, bypassing LLM generation entirely. That is now the primary
-       mechanism. The system add-message is kept, but demoted to a short
-       anti-drift guard only (no longer carrying the question text itself),
-       sent first so it can never delay or precede the forced utterance. */
     instructNext: function(questionText, wasSkipped){
       if (state !== STATES.LIVE || !vapi) return false;
       try {
         var lead = wasSkipped
-          ? 'No problem, let\u2019s move on. '
+          ? 'The candidate chose to skip the previous question. Acknowledge that in AT MOST one short, neutral sentence (for example: "No problem, let\'s move on.") — nothing more. '
           : '';
-        // Anti-drift guard only — no question text here, so there is
-        // nothing left for the LLM to mediate, paraphrase, or delay.
         vapi.send({
           type: 'add-message',
           message: {
             role: 'system',
-            content: 'Do not add any commentary, acknowledgment, or remarks of your own beyond exactly what you are about to be told to say next. Do not repeat, summarize, or reference any earlier question or answer.'
+            content: lead
+              + 'Now read aloud, verbatim and word for word, exactly this next question — do not paraphrase, reword, shorten, or embellish it, and do not announce that it was given to you: "'
+              + String(questionText).replace(/"/g, "'") + '". '
+              + 'HARD RULES: do NOT repeat, summarize, praise, or comment on any earlier answer or on anything you said before. Do NOT re-ask or revisit any previous question. Say this one question once, then stop and listen.'
           }
         });
-        // Force deterministic, immediate speech of the EXACT backend text —
-        // this is the single source of truth for both the on-screen card
-        // and the spoken audio; no LLM step sits between them.
-        if (typeof vapi.say === 'function') {
-          vapi.say(lead + String(questionText));
-        } else {
-          // Defensive fallback only, in case an older SDK build lacks
-          // say() — keeps the session functional rather than silent.
-          console.warn('[Vapi] vapi.say() unavailable on this SDK build — falling back to context injection');
-          vapi.send({
-            type: 'add-message',
-            message: {
-              role: 'system',
-              content: 'Now read aloud, verbatim and word for word, exactly this next question: "' + String(questionText).replace(/"/g, "'") + '". Say it once, then stop and listen.'
-            }
-          });
-        }
         return true;
       } catch (e) {
         console.error('[Vapi] instructNext failed', e);
@@ -830,17 +800,11 @@
     vapi.on('call-start', function() {
       setState(STATES.LIVE, 'Voice active — speak your answer');
       window.MedhaIQVoiceLive = true;
-      /* ── v2.2 sessionReadyContext handshake (cold-start amnesia + latency
-         fix) — two-part, matching the instructNext fix above:
-         1. FACTS the assistant needs to know (role, level, no-discovery-
-            questions rule) are genuinely contextual, not an utterance —
-            these correctly stay as a `system` add-message.
-         2. The exact WORDS the assistant must say (persona intro + Q1,
-            verbatim) are no longer routed through add-message, because that
-            still requires the LLM to decide to speak them — the same
-            LLM-mediation that caused the 4-5s latency loop and generic-
-            question drift. `vapi.say()` forces that speech directly,
-            deterministically, with zero generation step in between. ── */
+      /* ── v2.0 sessionReadyContext handshake (cold-start amnesia fix) ──
+         The assistant on Vapi's dashboard knows nothing about this session
+         until told. Without this, it cold-opens with discovery questions
+         ("What role are you applying for today?") despite the role being
+         locked at setup. This injection binds it to the session document. */
       try {
         vapi.send({
           type: 'add-message',
@@ -850,23 +814,10 @@
               'SESSION READY CONTEXT — the session payload variables are locked and were selected before this call: '
               + 'role = "' + String(ROLE || '').replace(/"/g, "'") + '", experience level = "' + String(LEVEL || '').replace(/"/g, "'") + '". '
               + 'You must bypass all raw discovery greetings: never ask what role the candidate is applying for, what they want to practice, or any setup question. '
-              + 'You will now be told exactly what to say via direct speech. Do not add anything before or after it.'
+              + 'Open with your assigned interviewer persona introduction in ONE short sentence, then read aloud, verbatim and word for word, exactly this Question 1: "'
+              + String(window.MedhaIQ_Q1 || '').replace(/"/g, "'") + '". Then stop and listen.'
           }
         });
-        if (typeof vapi.say === 'function') {
-          var introLine = 'Hi, I\u2019m ' + String(PNAME || 'your interviewer') + '. Let\u2019s get started. ';
-          vapi.say(introLine + String(window.MedhaIQ_Q1 || ''));
-        } else {
-          console.warn('[Vapi] vapi.say() unavailable on this SDK build — falling back to context injection');
-          vapi.send({
-            type: 'add-message',
-            message: {
-              role: 'system',
-              content: 'Open with your assigned interviewer persona introduction in ONE short sentence, then read aloud, verbatim and word for word, exactly this Question 1: "'
-                + String(window.MedhaIQ_Q1 || '').replace(/"/g, "'") + '". Then stop and listen.'
-            }
-          });
-        }
       } catch (e) { console.error('[Vapi] sessionReadyContext injection failed', e); }
       // Certify the calibration gate: the question card reveals now, in
       // lockstep with the voice actually being connected.
