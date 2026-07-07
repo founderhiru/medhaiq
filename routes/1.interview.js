@@ -1,7 +1,4 @@
-// ═══════════════════════════════════════════════════════════════════════════
-// routes/interview.js (or interview (2).js)
-// Interview API routes — Full Session Lifecycle with Quality Guardrails
-// ═══════════════════════════════════════════════════════════════════════════
+// Interview API routes — full session lifecycle.
 const express = require('express');
 const router = express.Router();
 const {
@@ -45,14 +42,30 @@ async function requireAuth(req, res, next) {
 }
 
 // ── POST /api/interview/sessions — create session + generate opening question
+// ── POST /api/interview/sessions — create session + generate opening question
+// v2.0: the full lifecycle (validation → harmonic alignment → persistence →
+// opening question) now lives in controllers/sessionController.js. The route
+// path and request/response contract are unchanged for the live frontend.
 router.post('/sessions', requireAuth, sessionController.initializeSession);
+// v2 spec alias — same controller, enterprise-style path.
 router.post('/session/initialize', requireAuth, sessionController.initializeSession);
 
 // ── Shared: pick + persist the next question for a session ──────────────────
+// Used by BOTH the REST /answer flow (text-only mode) and the Vapi tool-call
+// webhook below (voice mode). Having exactly one function do this is what
+// guarantees the engine only ever decides on ONE next question, no matter
+// which channel triggered it — never two independently-generated questions
+// racing each other.
 async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   const allQuestions = await getSessionQuestions(session.id);
 
-  // Idempotency guard: returns pending questions if they exist
+  // Idempotency guard: if there's already an unanswered question sitting
+  // there — the opening question created at session-start, or a repeat
+  // webhook call for a turn we already handled — return THAT instead of
+  // generating a second, different one. Without this, the very first
+  // voice question would immediately diverge from the opening question
+  // already shown on screen, since that one exists in the DB unanswered
+  // before Vapi ever calls this endpoint.
   const pending = allQuestions.find(q => q.answer_text === null || q.answer_text === undefined);
   if (pending) {
     return {
@@ -87,6 +100,8 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     roleTitle: session.role_title,
     experienceLevel: session.experience_level,
     orgPreset: session.org_preset,
+    // Pulled from session DB state — set once at creation, reused every turn
+    // by BOTH the text /answer flow and the Vapi voice webhook.
     competencyMatrix: session.competency_matrix || null,
     jdText: session.jd_text || '',
     currentAnswer: qaPairs.length ? (qaPairs[qaPairs.length - 1].answer || '') : '',
@@ -112,13 +127,16 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     order: nextQuestion.question_order,
     competency: nextQuestion.competency || nextResult.competency || null,
     audio_url: nextResult.audio_url || null,
+    // v2.0 unified single-source-of-truth model: the on-screen text and the
+    // speech synthesizer prompt are the SAME canonical string, delivered in
+    // one object so the two layers can never diverge.
     questionId: 'Q' + nextQuestion.question_order,
     uiText: nextQuestion.question_text,
     audioPrompt: nextQuestion.question_text,
   };
 }
 
-// ── POST /api/interview/sessions/:id/answer ────────────────────────────────
+// ── POST /api/interview/sessions/:id/answer — submit answer, score it, return next question or end
 router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
   const MAX_QUESTIONS = 5;
   try {
@@ -133,40 +151,11 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
     if (String(session.user_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' });
     if (session.status !== 'active') return res.status(400).json({ error: 'Session is not active' });
 
-    const allQuestions = await getSessionQuestions(sessionId);
-
-    // ── LINE-BY-LINE FIX FOR BUG 2: RESPONSE QUALITY GATEWAY INTERCEPTOR ──
-    const cleanInput = (answerText || '').trim().replace(/\s+/g, ' ');
-    const wordCount = cleanInput.split(' ').filter(Boolean).length;
-    const sparsePhrases = new Set(["yes", "no", "ok", "sure", "yep", "nope", "yeah", "yes.", "no."]);
-    
-    // Intercept if the candidate types/says a simple, non-contextual phrase
-    if (!skip && (wordCount < 5 || sparsePhrases.has(cleanInput.toLowerCase()))) {
-      console.log(`[guardrail] Intercepted sparse answer: "${cleanInput}". Blocking database commit.`);
-      
-      const repromptText = "I see. Could you please expand on that answer with a bit more detail or a specific example from your professional experience?";
-      
-      // Return early: database state is preserved, stopping the progress bar from incrementing
-      return res.json({
-        sessionEnded: false,
-        validationFailed: true, 
-        scores: { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 },
-        star_progress: { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 },
-        intelligence_scores: { overallScore: 0, vectors: { structure: 0, technicalDepth: 0, executivePresence: 0, gccReadiness: 0, communicationClarity: 0 } },
-        text: repromptText,
-        question: {
-          id: questionId, // Keep original question ID active for the retry attempt
-          text: repromptText,
-          type: 'reprompt',
-          order: allQuestions.filter(q => q.answer_text !== null).length
-        },
-        uiText: repromptText,
-        audioPrompt: repromptText,
-        competency_tag: null
-      });
-    }
-
-    // 1. Save valid answer to database
+    // 1. Save the answer — addAnswer returns null if this question was
+    // already answered by a request that won a race against this one
+    // (see migration 002_answer_uniqueness). Never treat that as a new
+    // answer: it's the same reason the session could previously overshoot
+    // past 5 questions when Skip got double-clicked during a slow AI call.
     const savedAnswer = await addAnswer({
       sessionId,
       questionId,
@@ -179,7 +168,16 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
       });
     }
 
-    // 2. Score the validated answer
+    // 2. Score the answer. IMPORTANT: this always runs now, even on skip —
+    // previously skip left `scores` as null and never wrote a row to
+    // interview_scores at all. That meant: (a) the dashboard had no data
+    // to paint for that question, contradicting the comment that used to
+    // sit here ("skip scores 0 across the board" — it didn't, in code),
+    // and (b) qaPairs for THIS question had no .score downstream, so a
+    // skip/non-answer could never correctly trigger a drill-down. Skip is
+    // now just a fast path to an explicit, real, persisted 0 — same
+    // treatment as an "I don't know" that reaches scoreAnswer's own
+    // trivial-answer floor.
     let scores;
     if (!skip && answerText && answerText.trim()) {
       scores = await scoreAnswer(answerText, session.persona_id, {
@@ -202,10 +200,16 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
       weighted: scores.weighted,
     });
 
+    // Tactical: instant, deterministic S/T/A/R detection — no AI round
+    // trip needed, so the Live Terminal can light up immediately. Skip
+    // obviously detected none of the four.
     const starProgress = skip
       ? { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 }
       : computeStarProgress(answerText);
 
+    // Strategic: standardized IntelligenceMetrics shape the frontend
+    // binds to directly (overall gauge + 5-vector bars), decoupled from
+    // whatever shape scoreAnswer() happens to return internally.
     const intelligenceScores = {
       overallScore: scores.weighted,
       vectors: {
@@ -217,14 +221,15 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
       },
     };
 
-    // 3. Recalculate answered counts safely
-    const updatedQuestions = await getSessionQuestions(sessionId);
-    const answeredCount = updatedQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined).length;
+    // 3. Get all answered Q&As so far
+    const allQuestions = await getSessionQuestions(sessionId);
+    const answeredCount = allQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined).length;
 
     // 4. Check if session should end
     if (answeredCount >= MAX_QUESTIONS) {
+      // Generate report
       const allScores = await getSessionScores(sessionId);
-      const qaPairs = updatedQuestions
+      const qaPairs = allQuestions
         .filter(q => q.answer_text !== null && q.answer_text !== undefined)
         .map(q => ({ question: q.question_text, answer: q.answer_text }));
 
@@ -257,6 +262,7 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
 
       await completeSession(sessionId, reportData.overall_score);
 
+      // ── Send report email (non-blocking — never fails the response) ──────────
       try {
         const persona   = PERSONAS[session.persona_id];
         const userEmail = req.user.email || null;
@@ -289,8 +295,11 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
         competency_tag: null,
       });
     }
-
-    // 5. Handle standard voiceMode response paths
+ // 5. Generate next question — UNLESS voice is driving this session, in
+    // which case the Vapi tool-call webhook (below) is the only place the
+    // next question gets picked. Doing it here too would create two
+    // independently-generated "next questions" racing each other, which is
+    // exactly the kind of drift this whole redesign is trying to remove.
     if (voiceMode) {
       return res.json({
         sessionEnded: false,
@@ -305,6 +314,12 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
     }
 
     const picked = await pickAndPersistNextQuestion(session, MAX_QUESTIONS);
+    if (picked.done) {
+      // Shouldn't normally happen here (answeredCount was already checked
+      // above), but handle it defensively rather than send a broken response.
+      return res.json({ sessionEnded: false, scores, star_progress: starProgress, intelligence_scores: intelligenceScores, text: null, question: null });
+    }
+
     return res.json({
       sessionEnded: false,
       scores,
@@ -316,6 +331,9 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
         type: picked.type,
         order: picked.order,
       },
+      // Flat mirror of `question` above so the client never has to guess
+      // which shape came back — fixes the UI/audio desync where the DOM
+      // waited on one shape while Vapi's audio events assumed another.
       text: picked.text,
       audio_url: picked.audio_url,
       competency_tag: picked.competency,
@@ -369,7 +387,27 @@ router.get('/sessions/:id', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/interview/vapi/next-question — Vapi tool-call webhook
+// ── POST /api/interview/vapi/next-question — Vapi tool-call webhook ────────
+// THIS is what actually closes the sync bug, as opposed to the earlier
+// fire-and-forget system-message approach: Vapi's own function/tool-calling
+// mechanism BLOCKS the assistant from speaking until this endpoint responds.
+// It can no longer "beat us to it" by asking its own question, because it
+// is, by design, not allowed to say anything next until it has this result.
+//
+// REQUIRES DASHBOARD SETUP on vapi.ai — this code alone does nothing until
+// you configure it there. See the chat response for exact steps:
+//   1. Create a Function/Tool on your Assistant named e.g. "get_next_question"
+//      with no required parameters, Server URL = this endpoint's full URL.
+//   2. Update the Assistant's system prompt to require calling that
+//      function before every question, and to say ONLY what it returns.
+//   3. Pass metadata:{ sessionId } when starting the call client-side
+//      (already done in interview-session.ejs) so this endpoint knows
+//      which interview session the call belongs to.
+//
+// This is a server-to-server webhook — Vapi calls it directly, not through
+// the candidate's browser, so it can't carry our normal cookie-based auth.
+// It's protected instead by a shared secret you set as VAPI_WEBHOOK_SECRET
+// and configure as a custom header on the Vapi tool (commonly "x-vapi-secret").
 router.post('/vapi/next-question', async (req, res) => {
   try {
     if (process.env.VAPI_WEBHOOK_SECRET) {
@@ -378,8 +416,13 @@ router.post('/vapi/next-question', async (req, res) => {
         console.warn('[vapi webhook] rejected — missing/incorrect secret header');
         return res.status(401).json({ error: 'Invalid webhook secret' });
       }
+    } else {
+      console.warn('[vapi webhook] VAPI_WEBHOOK_SECRET is not set — this endpoint is currently unauthenticated. Set it in Render env vars before going live.');
     }
 
+    // Vapi's exact payload shape has changed across SDK versions, so this
+    // reads defensively from every location metadata/tool-call info has
+    // been seen in their docs, rather than assuming one exact shape.
     const body = req.body || {};
     const message = body.message || body;
     const call = message.call || body.call || {};
@@ -394,6 +437,7 @@ router.post('/vapi/next-question', async (req, res) => {
       10
     );
     if (!sessionId) {
+      console.error('[vapi webhook] no sessionId found in call metadata — was metadata:{sessionId} passed to vapi.start()?');
       return res.status(400).json({ error: 'No sessionId in call metadata' });
     }
 
@@ -401,8 +445,11 @@ router.post('/vapi/next-question', async (req, res) => {
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
     const picked = await pickAndPersistNextQuestion(session);
-    const spokenText = picked.text;
+    const spokenText = picked.done ? picked.text : picked.text;
 
+    // Vapi's documented tool-result response shape. If your Vapi SDK
+    // version expects a different envelope, check their current docs —
+    // this is the part most likely to need a small tweak after a live test.
     return res.json({ results: [{ toolCallId, result: spokenText }] });
   } catch (err) {
     console.error('[vapi webhook]', err);
@@ -410,12 +457,14 @@ router.post('/vapi/next-question', async (req, res) => {
   }
 });
 
-// Deprecated endpoint
+// Legacy route kept for compatibility
 router.post('/start', async (req, res) => {
   res.status(410).json({ error: 'This endpoint is deprecated. Use POST /api/interview/sessions instead.' });
 });
 
-// Text-to-speech utility route
+// Text-to-speech utility route, used to generate the audio_url returned
+// alongside a question so the frontend can play/sync it against the
+// on-screen text (see speech-start handling in interview-session.ejs).
 router.post('/tts', async (req, res) => {
   try {
     const { text } = req.body;
@@ -424,7 +473,7 @@ router.post('/tts', async (req, res) => {
 
     const mp3 = await openai.audio.speech.create({
       model: "tts-1",
-      voice: "shimmer",
+      voice: "shimmer", // Configured TTS voice for the AI interviewer
       input: text,
     });
 
@@ -437,5 +486,4 @@ router.post('/tts', async (req, res) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 });
-
 module.exports = router;
