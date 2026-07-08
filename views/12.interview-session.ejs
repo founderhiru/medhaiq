@@ -1008,40 +1008,27 @@
         if (message.transcriptType === 'final' && message.transcript) {
           var chunk = String(message.transcript).trim();
 
-          /* ── Spoken intent classifier (v3 — sentence-aware) ──
-             v1/v2 required the ENTIRE utterance to be nothing but a bare
-             command phrase ("skip", "next question, please"). Real speech
-             is rarely that clean — people preface it ("I'm not sure I know
-             it") or repeat the command a few times in one breath. That
-             whole-utterance requirement is exactly what failed on:
-               "I'm not sure I know it. Move it to the next question.
-                Move to the next question. Move to the next question."
-             — every clause there was a legitimate skip request, and none
-             matched, so the whole thing landed in the answer box as literal
-             text and the session never advanced.
-             Fix, two parts:
-             1. INTENT_RE now also covers "move (it/this) to (the) next
-                question/one" — a construction ("move TO next") that simply
-                wasn't in the phrase list before (only "move ON" was).
-             2. Instead of testing the whole raw utterance, split it into
-                sentences and test each independently, checking from the
-                LAST sentence backward (the most recent instruction in a
-                repeated/prefaced utterance is what the candidate actually
-                wants acted on). A genuine, substantive answer is extremely
-                unlikely to contain an isolated ≤8-word sentence that exactly
-                equals one of these command phrases, so this doesn't
-                introduce new false positives on real answers. */
-          var INTENT_RE = /^((let'?s |please |can (we|you) )?skip( (this|that|the) (question|one)| it| this| that)?( please)?|(let'?s |please |can (we|you) )?move (it |this )?(on|to( the)? next( question| one)?)( please)?|(let'?s |please |can (we|you) )?next( question| one)?( please)?|pass|i (don'?t|do not) know( the answer)?( to (this|that))?|no idea|i'?m done|that'?s (my answer|all|it)|submit( my answer)?|done)$/i;
-          var sentences = chunk
-            .split(/[.!?]+/)
-            .map(function (s) { return s.replace(/[,;:]+/g, ' ').replace(/\s+/g, ' ').trim(); })
-            .filter(Boolean);
-          var matchedCommand = null;
-          for (var _si = sentences.length - 1; _si >= 0; _si--) {
-            var _s = sentences[_si];
-            if (_s.split(/\s+/).length <= 8 && INTENT_RE.test(_s)) { matchedCommand = _s; break; }
-          }
-          var isCommand = !!matchedCommand;
+          /* ── Spoken intent classifier (Bug fix: sticky counter) ──
+             Detects a standalone control phrase. Anchored ^...$ and capped at
+             6 words, so "I decided to skip the meeting" inside a real answer
+             is NEVER treated as a command — only a bare "skip", "next
+             question", "I don't know", "I'm done" etc. is.
+             Decision rule:
+             - Command + answer box has real content (8+ words) → SUBMIT what
+               they said ("next question" after answering means "I'm done").
+             - Command + answer box empty/near-empty → SKIP, which advances
+               the counter and the server session exactly like the Skip button. */
+          // v2 FIX: transcripts commonly render with commas at natural speech
+          // pauses — "next question, please" — but the regex below matched
+          // "next question please" with NO comma in between. That single
+          // comma silently failed the match, so the whole phrase fell
+          // through into the answer box as literal text instead of being
+          // recognized as a command, and the session never advanced.
+          // `cleaned` strips internal punctuation before testing so commas/
+          // periods/etc. anywhere in the phrase can no longer break the match.
+          var cleaned = chunk.replace(/[,.!?;:]+/g, ' ').replace(/\s+/g, ' ').trim();
+          var INTENT_RE = /^(skip( this| it)?( question| one)?( please)?|next( question| one)?( please)?|pass|move on( please)?|i (don'?t|do not) know( the answer)?( to (this|that))?|no idea|i'?m done|that'?s (my answer|all|it)|submit( my answer)?|done)$/i;
+          var isCommand = cleaned.split(/\s+/).length <= 8 && INTENT_RE.test(cleaned);
           if (isCommand) {
             /* ── Guard block: verbal command mid-speech (v2 — non-blocking) ──
                v1 of this guard swallowed the command entirely whenever
