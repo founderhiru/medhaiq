@@ -629,7 +629,7 @@
       setTimeout(function(){ window.location.href='/interview/report/'+data.reportId; }, redirectDelay);
       return; // isSubmitting intentionally stays true — page is navigating away
     }
-      }
+    
       QID = data.question.id;
       QN = Math.min(QN + 1, MAXQ); // clamp — never display past MAXQ even if something upstream misbehaves
       updateCounter();
