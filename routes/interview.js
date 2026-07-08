@@ -65,6 +65,9 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
       };
     }
 
+    // 🌟 ROBUST COMPATIBILITY POLYFILL (Fixes Bug 1 & Bug 2)
+    // Provides question data both flat AND nested so that neither the 
+    // frontend browser engine nor the Vapi webhook routers can crash.
     return {
       done: false,
       id: pending.id,
@@ -73,6 +76,13 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
       order: pending.question_order,
       competency: pending.competency || null,
       audio_url: null,
+      question: {
+        id: pending.id,
+        text: pending.question_text,
+        type: pending.question_type,
+        order: pending.question_order,
+        competency: pending.competency || null
+      }
     };
   }
 
