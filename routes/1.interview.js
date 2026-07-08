@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// routes/interview.js 
+// routes/interview.js (or interview (2).js)
 // Interview API routes — Full Session Lifecycle with Quality Guardrails
 // ═══════════════════════════════════════════════════════════════════════════
 const express = require('express');
@@ -34,9 +34,6 @@ const {
 } = require('../services/competency-matrix');
 const sessionController = require('../controllers/sessionController');
 
-// 🌟 FIX: Imported the missing engine service dependency
-const harmonicAlignmentEngine = require('../services/harmonicAlignmentEngine');
-
 // ── Auth middleware ────────────────────────────────────────────────────────
 async function requireAuth(req, res, next) {
   const userId = req.cookies?.user_id;
@@ -64,6 +61,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
       return { 
         done: true, 
         text: "That's all five questions — thank you. I'll put together your intelligence report now.",
+        // 🌟 Nesting polyfill prevents routes/vapi.js from throwing a TypeError
         question: {
           id: pending.id || 'session_done',
           text: "That's all five questions — thank you. I'll put together your intelligence report now.",
@@ -99,6 +97,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     return { 
       done: true, 
       text: "That's all five questions — thank you. I'll put together your intelligence report now.",
+      // 🌟 Nesting polyfill prevents routes/vapi.js from throwing a TypeError
       question: {
         id: 'session_done',
         text: "That's all five questions — thank you. I'll put together your intelligence report now.",
@@ -117,7 +116,53 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     ...nextQuestion,
     question: nextQuestion
   };
-} // 🌟 Braces cleanly aligned and old out-of-scope code removed.
+}
+  // 3. Proceed to fetch scores and evaluate next steps normally...
+
+  const qaPairs = allQuestions
+    .filter(q => q.answer_text !== null && q.answer_text !== undefined)
+    .map(q => ({ question: q.question_text, answer: q.answer_text || '' }));
+  if (qaPairs.length && allScores.length) {
+    const lastScoreRow = allScores[allScores.length - 1];
+    if (lastScoreRow) qaPairs[qaPairs.length - 1].score = lastScoreRow.star_score;
+  }
+
+  const nextResult = await generateNextQuestion({
+    sessionId: session.id,
+    personaId: session.persona_id,
+    roleTitle: session.role_title,
+    experienceLevel: session.experience_level,
+    orgPreset: session.org_preset,
+    competencyMatrix: session.competency_matrix || null,
+    jdText: session.jd_text || '',
+    currentAnswer: qaPairs.length ? (qaPairs[qaPairs.length - 1].answer || '') : '',
+    qaPairs,
+    questionCount: answeredCount,
+  });
+
+  const lastScore = qaPairs.length ? qaPairs[qaPairs.length - 1].score : undefined;
+  const nextQuestion = await addQuestion({
+    sessionId: session.id,
+    questionText: nextResult.text,
+    personaId: session.persona_id,
+    questionType: (typeof lastScore === 'number' && lastScore < 60) ? 'drill_down' : 'behavioral',
+    questionOrder: answeredCount,
+    competency: nextResult.competency,
+  });
+
+  return {
+    done: false,
+    id: nextQuestion.id,
+    text: nextQuestion.question_text,
+    type: nextQuestion.question_type,
+    order: nextQuestion.question_order,
+    competency: nextQuestion.competency || nextResult.competency || null,
+    audio_url: nextResult.audio_url || null,
+    questionId: 'Q' + nextQuestion.question_order,
+    uiText: nextQuestion.question_text,
+    audioPrompt: nextQuestion.question_text,
+  };
+}
 
 // ── POST /api/interview/sessions/:id/answer ────────────────────────────────
 router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
@@ -136,16 +181,18 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
 
     const allQuestions = await getSessionQuestions(sessionId);
 
-    // ── RESPONSE QUALITY GATEWAY INTERCEPTOR ──
+    // ── LINE-BY-LINE FIX FOR BUG 2: RESPONSE QUALITY GATEWAY INTERCEPTOR ──
     const cleanInput = (answerText || '').trim().replace(/\s+/g, ' ');
     const wordCount = cleanInput.split(' ').filter(Boolean).length;
     const sparsePhrases = new Set(["yes", "no", "ok", "sure", "yep", "nope", "yeah", "yes.", "no."]);
     
+    // Intercept if the candidate types/says a simple, non-contextual phrase
     if (!skip && (wordCount < 5 || sparsePhrases.has(cleanInput.toLowerCase()))) {
       console.log(`[guardrail] Intercepted sparse answer: "${cleanInput}". Blocking database commit.`);
       
       const repromptText = "I see. Could you please expand on that answer with a bit more detail or a specific example from your professional experience?";
       
+      // Return early: database state is preserved, stopping the progress bar from incrementing
       return res.json({
         sessionEnded: false,
         validationFailed: true, 
@@ -154,7 +201,7 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
         intelligence_scores: { overallScore: 0, vectors: { structure: 0, technicalDepth: 0, executivePresence: 0, gccReadiness: 0, communicationClarity: 0 } },
         text: repromptText,
         question: {
-          id: questionId, 
+          id: questionId, // Keep original question ID active for the retry attempt
           text: repromptText,
           type: 'reprompt',
           order: allQuestions.filter(q => q.answer_text !== null).length
