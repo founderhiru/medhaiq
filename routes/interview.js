@@ -87,7 +87,6 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   }
 
   // 3. Proceed to fetch scores and evaluate next steps normally...
-  const allScores = await getSessionScores(session.id);
 
   const allScores = await getSessionScores(session.id);
   const qaPairs = allQuestions
