@@ -117,10 +117,8 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     question: nextQuestion
   };
 }
-
   // 3. Proceed to fetch scores and evaluate next steps normally...
 
-  const allScores = await getSessionScores(session.id);
   const qaPairs = allQuestions
     .filter(q => q.answer_text !== null && q.answer_text !== undefined)
     .map(q => ({ question: q.question_text, answer: q.answer_text || '' }));
