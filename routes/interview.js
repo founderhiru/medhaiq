@@ -121,12 +121,17 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   // /vapi/next-question below) will see, because both call this one
   // function and both read/write the same interview_questions row.
   const allScores = await getSessionScores(session.id);
-  const scoreByQuestionId = new Map(allScores.map(s => [s.question_id, s.weighted_overall]));
+  const scoreByQuestionId = new Map(allScores.map(s => [s.question_id, Number(s.weighted_overall)]));
   const answeredQuestions = allQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined);
   const qaPairs = answeredQuestions.map(q => ({
     question: q.question_text,
     answer: q.answer_text,
-    score: scoreByQuestionId.get(q.id),
+    // NOTE: score is a real Number here, not the raw Postgres NUMERIC
+    // string — "0.00" is truthy in JS, which previously made a skipped
+    // (0-score) answer look like a valid low score and incorrectly
+    // triggered a drill-down question with no real answer to drill into.
+    score: Number.isFinite(scoreByQuestionId.get(q.id)) ? scoreByQuestionId.get(q.id) : null,
+    wasSkipped: q.answer_text === '',
   }));
 
   let competencyMatrix = session.competency_matrix;

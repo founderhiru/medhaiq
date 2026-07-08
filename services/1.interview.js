@@ -257,7 +257,6 @@ function buildSystemPrompt({
   isDrill,
   openingQ,
   questionCount,
-  wasSkipped,
 }) {
   const matrix = Array.isArray(competencyMatrix) && competencyMatrix.length
     ? competencyMatrix.map((c, i) => `${i + 1}. ${c}`).join('\n')
@@ -266,18 +265,6 @@ function buildSystemPrompt({
   const jdBlock = jdText && jdText.trim()
     ? '```jd\n' + jdText.trim().slice(0, 4000).replace(/```/g, "'''") + '\n```'
     : '(no job description provided for this session)';
-
-  // Three distinct, non-contradictory states for layer 9 — conflating "no
-  // answer because we haven't started" with "no answer because the
-  // candidate skipped" is what previously produced a prompt that told the
-  // model both "this is question 4" and "there is no answer yet, this is
-  // the start" at the same time, which made it break character and
-  // describe the contradiction instead of asking a question.
-  const currentAnswerBlock = wasSkipped
-    ? '(the candidate chose to SKIP the previous question — there is no answer to evaluate or drill into. Move directly to a fresh question on a new competency; do not reference the skipped question.)'
-    : (currentAnswer && currentAnswer.trim())
-      ? currentAnswer.trim().slice(0, 3000)
-      : '(no answer yet — this is the start of the session)';
 
   return `[1 · SYSTEM PERSONA]
 ${SYSTEM_PERSONA_CHARTER}
@@ -308,7 +295,7 @@ ${history}
 
 [9 · CURRENT TURN ANSWER TRANSCRIPT]
 Candidate's most recent answer (the input you are reacting to now):
-${currentAnswerBlock}
+${currentAnswer && currentAnswer.trim() ? currentAnswer.trim().slice(0, 3000) : '(no answer yet — this is the start of the session)'}
 
 EVALUATION DIRECTIVE:
 - Evaluate the candidate's answers turn-by-turn against the active competency nodes in layer 6 — every question you ask must probe at least one of those nodes.
@@ -343,17 +330,8 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   const compPrompt = COMPETENCY_PROMPTS[competency] || '';
 
   // 2. Determine if we need a drill-down (last score was weak)
-  // FIX: lastQA.score can arrive as a Postgres NUMERIC string (e.g. "0.00"),
-  // which is truthy in JS even though it represents zero — that previously
-  // made a SKIPPED answer (score 0) look like a valid weak score and
-  // triggered a drill-down with nothing real to drill into. Coerce to a
-  // real Number and explicitly exclude skipped turns.
-  const lastQA = qaPairs[qaPairs.length - 1];
-  const wasLastSkipped = !!lastQA && (lastQA.wasSkipped === true || lastQA.answer === '');
-  const lastScoreNum = (lastQA && lastQA.score !== null && lastQA.score !== undefined && !wasLastSkipped)
-    ? Number(lastQA.score)
-    : null;
-  const isDrill = questionCount > 0 && !wasLastSkipped && lastScoreNum !== null && !Number.isNaN(lastScoreNum) && lastScoreNum < 60;
+  const lastQA    = qaPairs[qaPairs.length - 1];
+  const isDrill   = questionCount > 0 && lastQA && lastQA.score && lastQA.score < 60;
 
   // 3. Get role-specific opening anchor
   const roleKey   = Object.keys(OPENING_QUESTIONS).includes(roleTitle) ? roleTitle : 'default';
@@ -376,7 +354,6 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     isDrill,
     openingQ,
     questionCount,
-    wasSkipped: wasLastSkipped,
   });
 
   const prompt = questionCount === 0
@@ -384,40 +361,9 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     : `Generate the next adaptive interview question targeting the ${competency.replace('_',' ')} competency.`;
 
   const raw = await chat(prompt, { system, maxTokens: 512 });
-  const text = sanitizeQuestionOutput(raw, competency, roleKey, levelKey);
+  // Strip the [competency] tag from the display text
+  const text = raw.trim().replace(/^\[[\w_]+\]\s*/,'');
   return { text, competency };
-}
-
-// ── Output guardrail ──────────────────────────────────────────────────────
-// Defense-in-depth: even a correct prompt can occasionally get a
-// broken-character response (the model narrating its own instructions,
-// pointing out a prompt contradiction, listing numbered "options" instead
-// of asking a question, etc). Rather than ever showing that raw text to a
-// candidate, detect the obvious signs and fall back to a safe, competency-
-// matched canned question so the session always keeps moving.
-const META_LEAK_PATTERNS = [
-  /system (context|prompt)/i,
-  /\blayer \d/i,
-  /\bconstraint here\b/i,
-  /\bi (have|need to flag|appreciate)\b/i,
-  /\bcannot execute\b/i,
-  /\bdrill-?down directive\b/i,
-  /^\s*\d\.\s*\*\*/m, // a numbered "**Option**" list — never a real question
-];
-function looksLikeMetaLeak(text) {
-  if (!text) return true;
-  if (text.length > 700) return true; // real questions are short; this is not
-  if ((text.match(/\*\*/g) || []).length >= 4) return true; // heavy bold markup = the model is explaining, not asking
-  return META_LEAK_PATTERNS.some((re) => re.test(text));
-}
-function sanitizeQuestionOutput(raw, competency, roleKey, levelKey) {
-  const text = String(raw || '').trim().replace(/^\[[\w_]+\]\s*/, '');
-  if (!looksLikeMetaLeak(text)) return text;
-  console.error('[interview] generateNextQuestion produced a meta/broken-character response — falling back to a safe question. Raw output was:', text.slice(0, 300));
-  const fallbackPool = COMPETENCY_PROMPTS[competency]
-    ? `Tell me about a specific time you had to navigate a difficult trade-off related to ${competency.replace('_', ' ')}. Walk me through the situation, what you decided, and the outcome.`
-    : (OPENING_QUESTIONS[roleKey]?.[levelKey] || OPENING_QUESTIONS.default.mid);
-  return fallbackPool;
 }
 
 

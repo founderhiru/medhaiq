@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// routes/interview.js (or interview (2).js)
+// routes/interview.js 
 // Interview API routes — Full Session Lifecycle with Quality Guardrails
 // ═══════════════════════════════════════════════════════════════════════════
 const express = require('express');
@@ -34,6 +34,14 @@ const {
 } = require('../services/competency-matrix');
 const sessionController = require('../controllers/sessionController');
 
+// NOTE: harmonicAlignmentEngine (services/harmonicAlignmentEngine.js) only
+// builds the JD/company/role competency matrix — it exports
+// aiExtractJdCompetencies() and compileWeightedCompetencyMatrix(), and has
+// never had a "next question" picker. generateNextQuestion() in
+// services/interview.js is the single source of truth for question text —
+// both the text-answer route and the Vapi webhook below call the same
+// pickAndPersistNextQuestion(), which now calls generateNextQuestion().
+
 // ── Auth middleware ────────────────────────────────────────────────────────
 async function requireAuth(req, res, next) {
   const userId = req.cookies?.user_id;
@@ -61,7 +69,6 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
       return { 
         done: true, 
         text: "That's all five questions — thank you. I'll put together your intelligence report now.",
-        // 🌟 Nesting polyfill prevents routes/vapi.js from throwing a TypeError
         question: {
           id: pending.id || 'session_done',
           text: "That's all five questions — thank you. I'll put together your intelligence report now.",
@@ -97,7 +104,6 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     return { 
       done: true, 
       text: "That's all five questions — thank you. I'll put together your intelligence report now.",
-      // 🌟 Nesting polyfill prevents routes/vapi.js from throwing a TypeError
       question: {
         id: 'session_done',
         text: "That's all five questions — thank you. I'll put together your intelligence report now.",
@@ -107,60 +113,63 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     };
   }
 
-  // 3. STRICT HARMONIC ALIGNMENT ENGINE FLOW
+  // 3. Generate the next question — single source of truth.
+  // This is the exact same function that generates the opening question in
+  // controllers/sessionController.js, using the exact same session-stored
+  // jdText / competencyMatrix / roleTitle. Whatever this returns is what BOTH
+  // the frontend text UI (via /sessions/:id/answer) and Vapi (via
+  // /vapi/next-question below) will see, because both call this one
+  // function and both read/write the same interview_questions row.
   const allScores = await getSessionScores(session.id);
-  const nextQuestion = await harmonicAlignmentEngine.getNextAlignedQuestion(session, allQuestions, allScores);
-  
-  return {
-    done: false,
-    ...nextQuestion,
-    question: nextQuestion
-  };
-}
-  // 3. Proceed to fetch scores and evaluate next steps normally...
+  const scoreByQuestionId = new Map(allScores.map(s => [s.question_id, s.weighted_overall]));
+  const answeredQuestions = allQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined);
+  const qaPairs = answeredQuestions.map(q => ({
+    question: q.question_text,
+    answer: q.answer_text,
+    score: scoreByQuestionId.get(q.id),
+  }));
 
-  const qaPairs = allQuestions
-    .filter(q => q.answer_text !== null && q.answer_text !== undefined)
-    .map(q => ({ question: q.question_text, answer: q.answer_text || '' }));
-  if (qaPairs.length && allScores.length) {
-    const lastScoreRow = allScores[allScores.length - 1];
-    if (lastScoreRow) qaPairs[qaPairs.length - 1].score = lastScoreRow.star_score;
+  let competencyMatrix = session.competency_matrix;
+  if (typeof competencyMatrix === 'string') {
+    try { competencyMatrix = JSON.parse(competencyMatrix); } catch (e) { competencyMatrix = []; }
   }
 
-  const nextResult = await generateNextQuestion({
+  const generated = await generateNextQuestion({
     sessionId: session.id,
     personaId: session.persona_id,
     roleTitle: session.role_title,
     experienceLevel: session.experience_level,
     orgPreset: session.org_preset,
-    competencyMatrix: session.competency_matrix || null,
+    competencyMatrix: competencyMatrix || [],
     jdText: session.jd_text || '',
-    currentAnswer: qaPairs.length ? (qaPairs[qaPairs.length - 1].answer || '') : '',
     qaPairs,
-    questionCount: answeredCount,
+    questionCount: answeredQuestions.length,
   });
 
-  const lastScore = qaPairs.length ? qaPairs[qaPairs.length - 1].score : undefined;
-  const nextQuestion = await addQuestion({
+  const questionOrder = answeredQuestions.length; // 0-indexed, matches opening question's order:0
+  const savedQuestion = await addQuestion({
     sessionId: session.id,
-    questionText: nextResult.text,
+    questionText: generated.text,
     personaId: session.persona_id,
-    questionType: (typeof lastScore === 'number' && lastScore < 60) ? 'drill_down' : 'behavioral',
-    questionOrder: answeredCount,
-    competency: nextResult.competency,
+    questionType: 'drill_down',
+    questionOrder,
   });
 
   return {
     done: false,
-    id: nextQuestion.id,
-    text: nextQuestion.question_text,
-    type: nextQuestion.question_type,
-    order: nextQuestion.question_order,
-    competency: nextQuestion.competency || nextResult.competency || null,
-    audio_url: nextResult.audio_url || null,
-    questionId: 'Q' + nextQuestion.question_order,
-    uiText: nextQuestion.question_text,
-    audioPrompt: nextQuestion.question_text,
+    id: savedQuestion.id,
+    text: savedQuestion.question_text,
+    type: savedQuestion.question_type,
+    order: savedQuestion.question_order,
+    competency: generated.competency || null,
+    audio_url: null,
+    question: {
+      id: savedQuestion.id,
+      text: savedQuestion.question_text,
+      type: savedQuestion.question_type,
+      order: savedQuestion.question_order,
+      competency: generated.competency || null,
+    },
   };
 }
 
@@ -181,18 +190,16 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
 
     const allQuestions = await getSessionQuestions(sessionId);
 
-    // ── LINE-BY-LINE FIX FOR BUG 2: RESPONSE QUALITY GATEWAY INTERCEPTOR ──
+    // ── RESPONSE QUALITY GATEWAY INTERCEPTOR ──
     const cleanInput = (answerText || '').trim().replace(/\s+/g, ' ');
     const wordCount = cleanInput.split(' ').filter(Boolean).length;
     const sparsePhrases = new Set(["yes", "no", "ok", "sure", "yep", "nope", "yeah", "yes.", "no."]);
     
-    // Intercept if the candidate types/says a simple, non-contextual phrase
     if (!skip && (wordCount < 5 || sparsePhrases.has(cleanInput.toLowerCase()))) {
       console.log(`[guardrail] Intercepted sparse answer: "${cleanInput}". Blocking database commit.`);
       
       const repromptText = "I see. Could you please expand on that answer with a bit more detail or a specific example from your professional experience?";
       
-      // Return early: database state is preserved, stopping the progress bar from incrementing
       return res.json({
         sessionEnded: false,
         validationFailed: true, 
@@ -201,7 +208,7 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
         intelligence_scores: { overallScore: 0, vectors: { structure: 0, technicalDepth: 0, executivePresence: 0, gccReadiness: 0, communicationClarity: 0 } },
         text: repromptText,
         question: {
-          id: questionId, // Keep original question ID active for the retry attempt
+          id: questionId, 
           text: repromptText,
           type: 'reprompt',
           order: allQuestions.filter(q => q.answer_text !== null).length
