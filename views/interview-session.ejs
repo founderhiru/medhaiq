@@ -850,12 +850,18 @@
        vapi.say(). If this SDK build ignores assistantOverrides, behavior
        simply falls back to today's — the key is harmless when unsupported,
        and the dashboard fix (see deploy notes) covers that case. */
-    vapi=window.vapiSDK.run({
-      apiKey:VKEY,
-      assistant:VAST,
-      assistantOverrides:{ firstMessageMode:'assistant-waits-for-user' },
-      config:{position:'hidden'}
-    });
+    vapi=window.vapiSDK.run({ 
+  apiKey: VKEY, 
+  assistant: VAST, 
+  assistantOverrides: { 
+    firstMessageMode: 'assistant-waits-for-user',
+    // This injects the matching database ID directly into Vapi's call details
+    metadata: {
+      sessionId: '<%= sessionId %>'
+    }
+  }, 
+  config: { position: 'hidden' } 
+});
 
     vapi.on('call-start', function() {
       setState(STATES.LIVE, 'Voice active — speak your answer');
