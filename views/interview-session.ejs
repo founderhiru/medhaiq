@@ -260,6 +260,18 @@
     var cls= 'dbg-entry' + (type==='ok'?' ok':type==='err'?' err':type==='info'?' info':'');
     el.insertAdjacentHTML('afterbegin','<div class="'+cls+'">['+ts+'] '+msg+'</div>');
   }
+  // FIX: slog() was declared with a plain `function` statement inside this
+  // script's own (function(){...})() wrapper, so it was ONLY callable from
+  // code inside this same closure — not from the separate Vapi/orchestrator
+  // <script> block later in the page, which lives in its own IIFE. Every
+  // slog(...) call added there (guard-block logging, instructNext
+  // diagnostics, opening-question diagnostics) was silently a
+  // ReferenceError waiting to happen, and it's exactly what crashed
+  // instructNext(): the QN reference failed first (while building the log
+  // message argument), before the call even reached slog itself — so slog's
+  // own scope bug hadn't been hit yet, but it was there too. Exposing it on
+  // window makes it safely callable from every script block on this page.
+  window.slog = slog;
 
   var compScores = { system_design:0, leadership:0, strategy:0, communication:0, technical:0 };
   function updateCompetency(key, increment) {
@@ -832,7 +844,7 @@
         // and the spoken audio; no LLM step sits between them.
         if (typeof vapi.say === 'function') {
           vapi.say(lead + String(questionText));
-          slog('Forced speech via vapi.say() — question '+QN, 'ok');
+          slog('Forced speech via vapi.say()', 'ok');
         } else {
           // Defensive fallback only, in case an older SDK build lacks
           // say() — keeps the session functional rather than silent.
@@ -845,7 +857,7 @@
           // (window.vapiSDK from html-script-tag), and every question in
           // this session is running on the unreliable fallback path.
           console.warn('[Vapi] vapi.say() unavailable on this SDK build — falling back to context injection');
-          slog('WARNING: vapi.say() unavailable — question '+QN+' sent as a suggestion only, not forced', 'err');
+          slog('WARNING: vapi.say() unavailable — question sent as a suggestion only, not forced', 'err');
           vapi.send({
             type: 'add-message',
             message: {
