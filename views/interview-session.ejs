@@ -617,12 +617,18 @@
       setAIState('GENERATING');
 
       if (data.sessionEnded) {
-        clearInterval(timerInt);
-        setAIState('GENERATING_REPORT');
-        slog('Session complete — generating report...','ok');
-        showLoading('Generating your Career Intelligence Report...');
-        setTimeout(function(){ window.location.href='/interview/report/'+data.reportId; }, 2200);
-        return; // isSubmitting intentionally stays true — page is navigating away
+      clearInterval(timerInt);
+      setAIState('GENERATING_REPORT');
+      slog('Session complete — generating report...','ok');
+      showLoading('Generating your Career Intelligence Report...');
+      
+      // 🌟 Check if voice mode is live. If it is, wait 5.5 seconds so Vapi can say goodbye.
+      // If they are just typing (text mode), redirect in 2.2 seconds like normal.
+      var redirectDelay = window.MedhaIQVoiceLive ? 5500 : 2200;
+      
+      setTimeout(function(){ window.location.href='/interview/report/'+data.reportId; }, redirectDelay);
+      return; // isSubmitting intentionally stays true — page is navigating away
+    }
       }
       QID = data.question.id;
       QN = Math.min(QN + 1, MAXQ); // clamp — never display past MAXQ even if something upstream misbehaves
