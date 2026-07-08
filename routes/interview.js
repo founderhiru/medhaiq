@@ -52,20 +52,17 @@ router.post('/session/initialize', requireAuth, sessionController.initializeSess
 async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   const allQuestions = await getSessionQuestions(session.id);
 
-  // Idempotency guard: if there's already an unanswered question sitting
-  // there — the opening question created at session-start, or a repeat
-  // webhook call for a turn we already handled — return THAT instead of
-  // generating a second, different one.
+  // 1. Idempotency guard: returns pending questions if they exist
   const pending = allQuestions.find(q => q.answer_text === null || q.answer_text === undefined);
   if (pending) {
     
     // 🚨 FINAL QUESTION RACE CONDITION GUARD:
-    // If we have already generated all 5 questions, and the pending one is the last question 
-    // (order === 4), and Vapi triggers this webhook, it means the candidate just finished 
-    // speaking their final answer, but the REST /answer route hasn't finished writing it to the DB yet.
-    // Return the completion text immediately instead of letting Vapi repeat or drift!
+    // Stops Vapi from looping or repeating question 5 at the end of the session
     if (allQuestions.length >= MAX_QUESTIONS && pending.question_order === MAX_QUESTIONS - 1) {
-      return { done: true, text: "That's all five questions — thank you. I'll put together your intelligence report now." };
+      return { 
+        done: true, 
+        text: "That's all five questions — thank you. I'll put together your intelligence report now." 
+      };
     }
 
     return {
@@ -79,31 +76,18 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     };
   }
 
+  // 2. Check if the maximum questions limit has already been met
   const answeredCount = allQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined).length;
 
   if (answeredCount >= MAX_QUESTIONS) {
-    return { done: true, text: "That's all five questions — thank you. I'll put together your intelligence report now." };
-  }
-
-  // Idempotency guard: returns pending questions if they exist
-  const pending = allQuestions.find(q => q.answer_text === null || q.answer_text === undefined);
-  if (pending) {
-    return {
-      done: false,
-      id: pending.id,
-      text: pending.question_text,
-      type: pending.question_type,
-      order: pending.question_order,
-      competency: pending.competency || null,
-      audio_url: null,
+    return { 
+      done: true, 
+      text: "That's all five questions — thank you. I'll put together your intelligence report now." 
     };
   }
 
-  const answeredCount = allQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined).length;
-
-  if (answeredCount >= MAX_QUESTIONS) {
-    return { done: true, text: "That's all five questions — thank you. I'll put together your intelligence report now." };
-  }
+  // 3. Proceed to fetch scores and evaluate next steps normally...
+  const allScores = await getSessionScores(session.id);
 
   const allScores = await getSessionScores(session.id);
   const qaPairs = allQuestions
