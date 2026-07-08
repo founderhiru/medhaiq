@@ -1006,17 +1006,8 @@
                they said ("next question" after answering means "I'm done").
              - Command + answer box empty/near-empty → SKIP, which advances
                the counter and the server session exactly like the Skip button. */
-          // v2 FIX: transcripts commonly render with commas at natural speech
-          // pauses — "next question, please" — but the regex below matched
-          // "next question please" with NO comma in between. That single
-          // comma silently failed the match, so the whole phrase fell
-          // through into the answer box as literal text instead of being
-          // recognized as a command, and the session never advanced.
-          // `cleaned` strips internal punctuation before testing so commas/
-          // periods/etc. anywhere in the phrase can no longer break the match.
-          var cleaned = chunk.replace(/[,.!?;:]+/g, ' ').replace(/\s+/g, ' ').trim();
-          var INTENT_RE = /^(skip( this| it)?( question| one)?( please)?|next( question| one)?( please)?|pass|move on( please)?|i (don'?t|do not) know( the answer)?( to (this|that))?|no idea|i'?m done|that'?s (my answer|all|it)|submit( my answer)?|done)$/i;
-          var isCommand = cleaned.split(/\s+/).length <= 8 && INTENT_RE.test(cleaned);
+          var INTENT_RE = /^(skip( this| it)?( question| one)?( please)?|next( question| one)?( please)?|pass|move on( please)?|i (don'?t|do not) know( the answer)?( to (this|that))?|no idea|i'?m done|that'?s (my answer|all|it)|submit( my answer)?|done)[\s.,!?]*$/i;
+          var isCommand = chunk.split(/\s+/).length <= 6 && INTENT_RE.test(chunk);
           if (isCommand) {
             /* ── Guard block: verbal command mid-speech (v2 — non-blocking) ──
                v1 of this guard swallowed the command entirely whenever
