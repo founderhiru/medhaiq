@@ -46,6 +46,7 @@ app.use('/api/contact',    require('./routes/contact'));
 app.use('/auth',           require('./routes/auth'));
 app.use('/api/interview',  require('./routes/interview'));
 app.use('/api/dashboard',  require('./routes/dashboard'));
+app.use('/api',            require('./routes/vapi'));
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/', (_req, res) => res.render('layout', buildLandingContext()));
