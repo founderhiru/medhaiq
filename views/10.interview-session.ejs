@@ -832,20 +832,10 @@
         // and the spoken audio; no LLM step sits between them.
         if (typeof vapi.say === 'function') {
           vapi.say(lead + String(questionText));
-          slog('Forced speech via vapi.say() — question '+QN, 'ok');
         } else {
           // Defensive fallback only, in case an older SDK build lacks
           // say() — keeps the session functional rather than silent.
-          // IMPORTANT: this fallback is context injection, not forced
-          // speech — the model can still choose to ignore it, paraphrase
-          // it, or ask something else entirely. If you're seeing Vapi ask
-          // a generic/"standard" question that doesn't match the screen,
-          // check the Live Terminal / console for THIS warning — it means
-          // vapi.say() isn't available on the loaded SDK build
-          // (window.vapiSDK from html-script-tag), and every question in
-          // this session is running on the unreliable fallback path.
           console.warn('[Vapi] vapi.say() unavailable on this SDK build — falling back to context injection');
-          slog('WARNING: vapi.say() unavailable — question '+QN+' sent as a suggestion only, not forced', 'err');
           vapi.send({
             type: 'add-message',
             message: {
@@ -917,10 +907,8 @@
             ? 'Thanks, voice is on now \u2014 let\u2019s continue. Here\u2019s the current question again: '
             : ('Hi, I\u2019m ' + _pname + '. Let\u2019s get started. ');
           vapi.say(opening + currentQ);
-          slog('Opening question forced via vapi.say()', 'ok');
         } else {
           console.warn('[Vapi] vapi.say() unavailable on this SDK build — falling back to context injection');
-          slog('WARNING: vapi.say() unavailable — opening question sent as a suggestion only, not forced', 'err');
           vapi.send({
             type: 'add-message',
             message: {
@@ -1009,24 +997,35 @@
           var INTENT_RE = /^(skip( this| it)?( question| one)?( please)?|next( question| one)?( please)?|pass|move on( please)?|i (don'?t|do not) know( the answer)?( to (this|that))?|no idea|i'?m done|that'?s (my answer|all|it)|submit( my answer)?|done)[\s.,!?]*$/i;
           var isCommand = chunk.split(/\s+/).length <= 6 && INTENT_RE.test(chunk);
           if (isCommand) {
-            /* ── Guard block: verbal command mid-speech (v2 — non-blocking) ──
-               v1 of this guard swallowed the command entirely whenever
-               aiIsSpeaking was true and made the candidate repeat it once
-               speech ended. That was wrong: if Vapi's own turn-taking keeps
-               it talking almost continuously (e.g. because vapi.say() isn't
-               reliably taking over the turn on this SDK build — see the
-               warning logged in instructNext()), aiIsSpeaking is true for
-               nearly the entire session, so EVERY command got dropped and
-               the session silently stalled on one question forever with
-               Vapi improvising on its own. Barge-in must always win: the
-               command executes immediately either way. aiIsSpeaking is only
-               used here to log that a barge-in happened, and to note (not
-               act on) that Vapi's own audio is still catching up — the
-               actual "stop the assistant's current utterance" fix belongs
-               server-side, in the assistant's stopSpeakingPlan.interruptionPhrases
-               (see https://docs.vapi.ai/customization/voice-pipeline-configuration). */
+            /* ── Guard block: verbal command mid-speech ──
+               If the candidate says "skip"/"next question" while Vapi is
+               still actively speaking, don't let the two collide: interrupt
+               Vapi's speech first, warn the candidate, and require them to
+               repeat the command once the mic is genuinely theirs. Without
+               the interrupt call, Vapi's own LLM keeps talking right through
+               the warning, which is confusing and can also make the
+               candidate's spoken command bleed into the transcript as if it
+               were an answer. */
             if (aiIsSpeaking) {
-              slog('Barge-in: "'+chunk+'" received while interviewer was still speaking — proceeding anyway', 'info');
+              // IMPORTANT: Vapi's web client SDK does not expose a call that
+              // stops only the assistant's current TTS playback. vapi.stop()
+              // ends the entire call, and setMuted() mutes the CANDIDATE's
+              // mic, not the assistant's voice — neither is what we want
+              // here, so we don't call them. The real interrupt must happen
+              // in the Vapi voice pipeline itself, configured on the
+              // Assistant (dashboard or API) via
+              // stopSpeakingPlan.interruptionPhrases — add "skip", "skip
+              // question", "next question", etc. so Vapi's own pipeline
+              // instantly clears its audio queue the moment it hears them.
+              // See: https://docs.vapi.ai/customization/voice-pipeline-configuration
+              // Until that's configured, the most we can honestly do
+              // client-side is stop treating the overlapping speech as a
+              // command and ask the candidate to repeat it once the mic is
+              // genuinely theirs.
+              aiIsSpeaking = false;
+              sub.textContent = 'Please wait until the interviewer finishes — then say that again';
+              slog('Guard: "'+chunk+'" caught mid-speech — please repeat once the interviewer stops', 'info');
+              return;
             }
             var answerWords = input.value.trim().split(/\s+/).filter(Boolean).length;
             if (answerWords >= 8 && window.MedhaIQ_requestSubmit) {
