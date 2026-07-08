@@ -52,22 +52,25 @@ router.post('/session/initialize', requireAuth, sessionController.initializeSess
 async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   const allQuestions = await getSessionQuestions(session.id);
 
-  // 1. Idempotency guard: returns pending questions if they exist
+  // 1. Idempotency guard: returns current pending question if it exists
   const pending = allQuestions.find(q => q.answer_text === null || q.answer_text === undefined);
   if (pending) {
     
-    // 🚨 FINAL QUESTION RACE CONDITION GUARD:
-    // Stops Vapi from looping or repeating question 5 at the end of the session
+    // 🚨 GUARD 1: FINAL QUESTION RACE CONDITION
     if (allQuestions.length >= MAX_QUESTIONS && pending.question_order === MAX_QUESTIONS - 1) {
       return { 
         done: true, 
-        text: "That's all five questions — thank you. I'll put together your intelligence report now." 
+        text: "That's all five questions — thank you. I'll put together your intelligence report now.",
+        // 🌟 Nesting polyfill prevents routes/vapi.js from throwing a TypeError
+        question: {
+          id: pending.id || 'session_done',
+          text: "That's all five questions — thank you. I'll put together your intelligence report now.",
+          type: 'done',
+          order: MAX_QUESTIONS
+        }
       };
     }
 
-    // 🌟 ROBUST COMPATIBILITY POLYFILL (Fixes Bug 1 & Bug 2)
-    // Provides question data both flat AND nested so that neither the 
-    // frontend browser engine nor the Vapi webhook routers can crash.
     return {
       done: false,
       id: pending.id,
@@ -88,13 +91,32 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
 
   // 2. Check if the maximum questions limit has already been met
   const answeredCount = allQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined).length;
-
+  
+  // 🚨 GUARD 2: MAX QUESTION LIMIT REACHED
   if (answeredCount >= MAX_QUESTIONS) {
     return { 
       done: true, 
-      text: "That's all five questions — thank you. I'll put together your intelligence report now." 
+      text: "That's all five questions — thank you. I'll put together your intelligence report now.",
+      // 🌟 Nesting polyfill prevents routes/vapi.js from throwing a TypeError
+      question: {
+        id: 'session_done',
+        text: "That's all five questions — thank you. I'll put together your intelligence report now.",
+        type: 'done',
+        order: MAX_QUESTIONS
+      }
     };
   }
+
+  // 3. STRICT HARMONIC ALIGNMENT ENGINE FLOW
+  const allScores = await getSessionScores(session.id);
+  const nextQuestion = await harmonicAlignmentEngine.getNextAlignedQuestion(session, allQuestions, allScores);
+  
+  return {
+    done: false,
+    ...nextQuestion,
+    question: nextQuestion
+  };
+}
 
   // 3. Proceed to fetch scores and evaluate next steps normally...
 
