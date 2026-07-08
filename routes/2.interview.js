@@ -34,13 +34,8 @@ const {
 } = require('../services/competency-matrix');
 const sessionController = require('../controllers/sessionController');
 
-// NOTE: harmonicAlignmentEngine (services/harmonicAlignmentEngine.js) only
-// builds the JD/company/role competency matrix — it exports
-// aiExtractJdCompetencies() and compileWeightedCompetencyMatrix(), and has
-// never had a "next question" picker. generateNextQuestion() in
-// services/interview.js is the single source of truth for question text —
-// both the text-answer route and the Vapi webhook below call the same
-// pickAndPersistNextQuestion(), which now calls generateNextQuestion().
+// 🌟 FIX: Imported the missing engine service dependency
+const harmonicAlignmentEngine = require('../services/harmonicAlignmentEngine');
 
 // ── Auth middleware ────────────────────────────────────────────────────────
 async function requireAuth(req, res, next) {
@@ -113,65 +108,16 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     };
   }
 
-  // 3. Generate the next question — single source of truth.
-  // This is the exact same function that generates the opening question in
-  // controllers/sessionController.js, using the exact same session-stored
-  // jdText / competencyMatrix / roleTitle. Whatever this returns is what BOTH
-  // the frontend text UI (via /sessions/:id/answer) and Vapi (via
-  // /vapi/next-question below) will see, because both call this one
-  // function and both read/write the same interview_questions row.
+  // 3. STRICT HARMONIC ALIGNMENT ENGINE FLOW
   const allScores = await getSessionScores(session.id);
-  const scoreByQuestionId = new Map(allScores.map(s => [s.question_id, s.weighted_overall]));
-  const answeredQuestions = allQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined);
-  const qaPairs = answeredQuestions.map(q => ({
-    question: q.question_text,
-    answer: q.answer_text,
-    score: scoreByQuestionId.get(q.id),
-  }));
-
-  let competencyMatrix = session.competency_matrix;
-  if (typeof competencyMatrix === 'string') {
-    try { competencyMatrix = JSON.parse(competencyMatrix); } catch (e) { competencyMatrix = []; }
-  }
-
-  const generated = await generateNextQuestion({
-    sessionId: session.id,
-    personaId: session.persona_id,
-    roleTitle: session.role_title,
-    experienceLevel: session.experience_level,
-    orgPreset: session.org_preset,
-    competencyMatrix: competencyMatrix || [],
-    jdText: session.jd_text || '',
-    qaPairs,
-    questionCount: answeredQuestions.length,
-  });
-
-  const questionOrder = answeredQuestions.length; // 0-indexed, matches opening question's order:0
-  const savedQuestion = await addQuestion({
-    sessionId: session.id,
-    questionText: generated.text,
-    personaId: session.persona_id,
-    questionType: 'drill_down',
-    questionOrder,
-  });
-
+  const nextQuestion = await harmonicAlignmentEngine.getNextAlignedQuestion(session, allQuestions, allScores);
+  
   return {
     done: false,
-    id: savedQuestion.id,
-    text: savedQuestion.question_text,
-    type: savedQuestion.question_type,
-    order: savedQuestion.question_order,
-    competency: generated.competency || null,
-    audio_url: null,
-    question: {
-      id: savedQuestion.id,
-      text: savedQuestion.question_text,
-      type: savedQuestion.question_type,
-      order: savedQuestion.question_order,
-      competency: generated.competency || null,
-    },
+    ...nextQuestion,
+    question: nextQuestion
   };
-}
+} // 🌟 Braces cleanly aligned and old out-of-scope code removed.
 
 // ── POST /api/interview/sessions/:id/answer ────────────────────────────────
 router.post('/sessions/:id/answer', requireAuth, async (req, res) => {

@@ -591,16 +591,9 @@
       if (resp.status === 409 && data.duplicate) {
         // A duplicate/raced submission for a question that's already been
         // answered — expected now and then if a click slipped through
-        // before the button disabled. The winning request already advanced
-        // the session normally, so there's nothing new to render — but we
-        // MUST still unfreeze this losing request's UI, or the candidate is
-        // stuck on "Analyzing..." forever with dead Skip/End buttons.
+        // before the button disabled. Nothing to show the candidate; the
+        // winning request already advanced the session normally.
         slog('Duplicate submission ignored (already answered)', 'info');
-        document.getElementById('loadingOverlay').classList.remove('show');
-        document.getElementById('questionCard').style.display='flex';
-        document.querySelector('.answer-bar-wrap').style.display='block';
-        document.getElementById('submitBtn').disabled = false;
-        document.getElementById('skipBtn').disabled = false;
         return;
       }
       if (!resp.ok) throw new Error(data.error || 'Server error '+resp.status);
@@ -780,7 +773,6 @@
   var STATES={ IDLE:'IDLE',REQUESTING:'REQUESTING',CONNECTING:'CONNECTING',LIVE:'LIVE',STOPPING:'STOPPING' };
   var state=STATES.IDLE, vapi=null;
   var assistantTranscriptBuf = '';
-  var aiIsSpeaking = false; // true between vapi 'speech-start' and 'speech-end' — guards verbal skip/submit commands
 
   function setState(s,msg,isErr){
     state=s;
@@ -997,36 +989,6 @@
           var INTENT_RE = /^(skip( this| it)?( question| one)?( please)?|next( question| one)?( please)?|pass|move on( please)?|i (don'?t|do not) know( the answer)?( to (this|that))?|no idea|i'?m done|that'?s (my answer|all|it)|submit( my answer)?|done)[\s.,!?]*$/i;
           var isCommand = chunk.split(/\s+/).length <= 6 && INTENT_RE.test(chunk);
           if (isCommand) {
-            /* ── Guard block: verbal command mid-speech ──
-               If the candidate says "skip"/"next question" while Vapi is
-               still actively speaking, don't let the two collide: interrupt
-               Vapi's speech first, warn the candidate, and require them to
-               repeat the command once the mic is genuinely theirs. Without
-               the interrupt call, Vapi's own LLM keeps talking right through
-               the warning, which is confusing and can also make the
-               candidate's spoken command bleed into the transcript as if it
-               were an answer. */
-            if (aiIsSpeaking) {
-              // IMPORTANT: Vapi's web client SDK does not expose a call that
-              // stops only the assistant's current TTS playback. vapi.stop()
-              // ends the entire call, and setMuted() mutes the CANDIDATE's
-              // mic, not the assistant's voice — neither is what we want
-              // here, so we don't call them. The real interrupt must happen
-              // in the Vapi voice pipeline itself, configured on the
-              // Assistant (dashboard or API) via
-              // stopSpeakingPlan.interruptionPhrases — add "skip", "skip
-              // question", "next question", etc. so Vapi's own pipeline
-              // instantly clears its audio queue the moment it hears them.
-              // See: https://docs.vapi.ai/customization/voice-pipeline-configuration
-              // Until that's configured, the most we can honestly do
-              // client-side is stop treating the overlapping speech as a
-              // command and ask the candidate to repeat it once the mic is
-              // genuinely theirs.
-              aiIsSpeaking = false;
-              sub.textContent = 'Please wait until the interviewer finishes — then say that again';
-              slog('Guard: "'+chunk+'" caught mid-speech — please repeat once the interviewer stops', 'info');
-              return;
-            }
             var answerWords = input.value.trim().split(/\s+/).filter(Boolean).length;
             if (answerWords >= 8 && window.MedhaIQ_requestSubmit) {
               slog('Voice intent: submit ("'+chunk+'")', 'info');
@@ -1052,12 +1014,10 @@
         window.MedhaIQOrchestrator.interviewerStartedSpeaking();
       }
       assistantTranscriptBuf = ''; // fresh buffer — don't carry over last question's text
-      aiIsSpeaking = true;
       sub.textContent = '● AI is speaking…';
     });
 
     vapi.on('speech-end', function() {
-      aiIsSpeaking = false;
       sub.textContent = 'Your turn — speak clearly';
       // Input gate: the question has fully finished playing — unlock.
       if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.unlockInput();
