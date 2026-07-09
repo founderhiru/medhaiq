@@ -3894,9 +3894,172 @@ button { cursor: pointer; }
   .mh-experience-cards { grid-template-columns: 1fr; }
 }
 
+/* ============================================
+   MEGA MENU — "Platform" nav item
+   Appended block, does not modify any existing rule above.
+   Reuses existing tokens: --navy-*, --blue-bright, --white-border,
+   --font-display, --font-body, --max-w, --radius.
+   ============================================ */
+
+/* Trigger button — same visual weight as a .mh-nav-link, but a <button> */
+.mh-nav-item-mega { position: relative; }
+.mh-nav-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.mh-nav-chevron {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mh-nav-item-mega.mh-mega-open .mh-nav-chevron { transform: rotate(180deg); }
+.mh-nav-item-mega.mh-mega-open .mh-nav-trigger { color: var(--white); background: var(--white-soft); }
+
+/* Panel — frosted glass, drops from the trigger */
+.mh-megamenu {
+  position: absolute;
+  /* Hover dead-zone fix carried forward from the previous round: top: 100%
+     (touching, zero gap) instead of a positive offset. Visual spacing is
+     handled by padding-top on .mh-megamenu-inner instead, so the hit-test
+     area is contiguous from button to panel — combined with this round's
+     150ms hover-bridge delay in the JS, this is now double-covered. */
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  width: 340px;
+  background: rgba(7, 10, 19, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 220ms;
+  z-index: 1000 !important;
+}
+.mh-nav-item-mega.mh-mega-open .mh-megamenu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto !important;
+  transform: translateX(-50%) translateY(0);
+}
+
+.mh-megamenu-inner {
+  padding: 16px;
+  padding-top: 24px; /* replaces the old outer gap — same visual spacing, no dead hover zone */
+  width: 340px;
+}
+.mh-megamenu-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.mh-megamenu-group-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 10px 12px 6px;
+}
+.mh-megamenu-group-label:first-child { padding-top: 4px; }
+
+.mh-megamenu-item {
+  display: block; /* per spec: block-level anchor, not flex, so translateX(4px) reads cleanly */
+  padding: 8px 12px;
+  border-radius: 10px;
+  transition: background 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mh-megamenu-item .mh-megamenu-icon,
+.mh-megamenu-item .mh-megamenu-text {
+  display: inline-block;
+  vertical-align: top;
+}
+.mh-megamenu-item .mh-megamenu-icon { margin-right: 10px; }
+.mh-megamenu-item:hover,
+.mh-megamenu-item:focus-visible {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateX(4px);
+}
+.mh-megamenu-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+.mh-megamenu-text { display: flex; flex-direction: column; gap: 3px; }
+.mh-megamenu-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--white);
+}
+.mh-megamenu-desc {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
 
 /* ============================================
-   /WHY PAGE â€” new section types
+   MOBILE ACCORDION — "Platform" inside the slide-out menu
+   ============================================ */
+.mh-mobile-accordion { border-bottom: 1px solid var(--white-soft); }
+.mh-mobile-accordion-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  border-bottom: none; /* parent .mh-mobile-accordion already has the divider */
+  cursor: pointer;
+  font-family: var(--font-display);
+}
+.mh-mobile-chevron { transition: transform 0.25s ease; color: var(--text-muted); }
+.mh-mobile-accordion-trigger[aria-expanded="true"] .mh-mobile-chevron { transform: rotate(180deg); }
+
+.mh-mobile-accordion-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+.mh-mobile-accordion-panel.mh-mobile-accordion-panel-open {
+  max-height: 260px;
+  padding-bottom: 8px;
+}
+.mh-mobile-group-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 10px 12px 4px;
+}
+.mh-mobile-sublink {
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  color: var(--text-muted);
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.mh-mobile-sublink:hover { color: var(--white); background: var(--white-soft); }
+
+/* Below 1024px (same breakpoint your hamburger already uses), the desktop
+   mega menu never needs to render — nav-links are already display:none there. */
+@media (max-width: 1024px) {
+  .mh-megamenu { display: none; }
+}
+
+
+/* ============================================
+   /WHY PAGE — new section types
    Appended block, does not modify any existing rule.
    Reuses existing tokens throughout: --navy-*, --blue-bright, --white,
    --text-muted, --text-faint, --font-display, --font-body, --max-w,
@@ -3904,10 +4067,10 @@ button { cursor: pointer; }
    matches the exact pattern used by matrix.ejs / proof.ejs / founder.ejs.
    ============================================ */
 
-/* 01 â€” Hero â€” top offset is nav-clearance, a structural need (not a
+/* 01 — Hero — top offset is nav-clearance, a structural need (not a
    parallel spacing scale); bottom uses the same --section-pad-y as
    every other section. Title now reads --hero-h1-size/-tracking
-   directly instead of a separate clamp â€” same scale as the homepage
+   directly instead of a separate clamp — same scale as the homepage
    hero, post density-pass. */
 .mh-why-hero {
   padding: 148px var(--section-pad-x) var(--section-pad-y);
@@ -3925,7 +4088,7 @@ button { cursor: pointer; }
   margin-bottom: 16px;
 }
 
-/* Shared narrow text column â€” used by sections 02, 03, 04, 07 */
+/* Shared narrow text column — used by sections 02, 03, 04, 07 */
 .mh-why-narrow { max-width: 720px; margin: 0 auto; }
 .mh-why-body {
   font-family: var(--font-body);
@@ -3939,19 +4102,19 @@ button { cursor: pointer; }
   font-weight: 600;
 }
 
-/* 02 â€” The Problem */
+/* 02 — The Problem */
 .mh-why-problem {
   padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-rich);
 }
 
-/* 03 â€” The Paradigm Shift */
+/* 03 — The Paradigm Shift */
 .mh-why-shift {
   padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-deep);
 }
 
-/* 04 â€” Core Philosophy (manifesto-style quote) */
+/* 04 — Core Philosophy (manifesto-style quote) */
 .mh-why-philosophy {
   padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-rich);
@@ -3976,7 +4139,7 @@ button { cursor: pointer; }
   margin-bottom: 8px;
 }
 
-/* 05 â€” The Three Pillars */
+/* 05 — The Three Pillars */
 .mh-why-pillars {
   padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-deep);
@@ -4019,15 +4182,15 @@ button { cursor: pointer; }
   margin: 0;
 }
 
-/* 06 â€” Comparison section wrapper. The table itself reuses
-   .mh-matrix-table and friends verbatim from the homepage â€” no new
+/* 06 — Comparison section wrapper. The table itself reuses
+   .mh-matrix-table and friends verbatim from the homepage — no new
    table CSS needed, guaranteeing a pixel-identical look. */
 .mh-why-compare {
   padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-rich);
 }
 
-/* 07 â€” The Manifesto */
+/* 07 — The Manifesto */
 .mh-why-manifesto {
   padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-deep);
