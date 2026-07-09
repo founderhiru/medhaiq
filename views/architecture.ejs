@@ -25,36 +25,35 @@
     </h1>
   </section>
 
-  <!-- Sticky left-nav + right-content hub. Mapping your 5 requested labels
-       against the real content:
-         - "Technical Blueprint" → the section's own overview (its eyebrow
-           already literally reads "Technical Blueprint" — exact match)
-         - "Career Architecture" → Layer 1, "Career Intelligence Engine"
-         - "Core Infrastructure" → Layer 2, "Performance Analytics Layer"
-           (approximate name fit, flagged in chat)
-         - "AI Engine Core" → the Multi-Model Architecture panel (strong
-           fit — it's literally the AI model infrastructure)
-       That's 4 of your 5 labels placed. Layer 3 ("Career OS & Enterprise
-       Sync", marked FUTURE ROADMAP in the real copy) is real content with
-       no good match among your 5 names, so it keeps its own real heading
-       instead of being force-fit under a label that doesn't describe it.
-       "Live Terminal Spec" isn't included as a same-page anchor at all —
-       see the separate note below the nav for why. -->
+  <!-- Sticky left-nav + right-content hub. Per your latest correction:
+       - "Career Architecture" → #journey (partials/timeline.ejs — real
+         eyebrow literally reads "Career Architecture")
+       - "Core Architecture" → #framework (partials/framework.ejs — real
+         eyebrow literally reads "Core Architecture")
+       - "Live Terminal" → #proof (partials/proof.ejs — real eyebrow reads
+         "Live Engine"); now a normal in-page anchor, not an external link
+       - "Core Infrastructure", "AI Engine Core", and "Career OS & Enterprise
+         Sync" nav entries are removed per your instruction. Their content
+         (Layer 2, Layer 3, Multi-Model panel) is NOT deleted — it's part of
+         partials/architecture.ejs, which stays intact under "Technical
+         Blueprint" — just without its own dedicated sidebar entry anymore.
+
+       FLAG: timeline.ejs, framework.ejs, and proof.ejs are currently also
+       live on the homepage (confirmed in layout.ejs). Including them here
+       too means this content now exists in two places — see chat. -->
   <section class="mh-hub reveal">
     <div class="mh-hub-inner">
       <nav class="mh-hub-nav" aria-label="Architecture sections">
         <a href="#technical-blueprint" class="mh-hub-nav-link">Technical Blueprint</a>
-        <a href="#career-architecture" class="mh-hub-nav-link">Career Architecture</a>
-        <a href="#core-architecture" class="mh-hub-nav-link">Core Infrastructure</a>
-        <a href="#arch-layer-3" class="mh-hub-nav-link">Career OS &amp; Enterprise Sync</a>
-        <a href="#ai-engine" class="mh-hub-nav-link">AI Engine Core</a>
-        <a href="/interview" class="mh-hub-nav-link mh-hub-nav-link-external">
-          Live Terminal
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
-        </a>
+        <a href="#journey" class="mh-hub-nav-link">Career Architecture</a>
+        <a href="#framework" class="mh-hub-nav-link">Core Architecture</a>
+        <a href="#proof" class="mh-hub-nav-link">Live Terminal</a>
       </nav>
       <div class="mh-hub-content">
         <%- include('partials/architecture') %>
+        <%- include('partials/timeline') %>
+        <%- include('partials/framework') %>
+        <%- include('partials/proof') %>
       </div>
     </div>
   </section>
@@ -80,13 +79,9 @@
     reveals.forEach(function(el) { observer.observe(el); });
   })();
 
-  // Sticky nav: highlight active section, smooth-scroll on click, no route change.
-  // The "Live Terminal" link points to a real page (/interview), not a hash
-  // anchor — explicitly excluded so it navigates normally instead of being
-  // intercepted as a scroll target.
+  // Sticky nav: highlight active section, smooth-scroll on click, no route change
   (function() {
-    var navLinks = Array.from(document.querySelectorAll('.mh-hub-nav-link'))
-      .filter(function(l) { return l.getAttribute('href').charAt(0) === '#'; });
+    var navLinks = document.querySelectorAll('.mh-hub-nav-link');
     if (!navLinks.length) return;
     navLinks.forEach(function(link) {
       link.addEventListener('click', function(e) {

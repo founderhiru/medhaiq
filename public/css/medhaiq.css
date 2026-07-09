@@ -4087,16 +4087,6 @@ button { cursor: pointer; }
   border-left-color: var(--blue-bright);
   font-weight: 600;
 }
-.mh-hub-nav-link-external {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 10px;
-  padding-top: 19px;
-  border-top: 1px solid var(--navy-border);
-  border-left-color: transparent !important;
-}
-.mh-hub-nav-link-external:hover { color: var(--blue-bright); }
 .mh-hub-content { min-width: 0; }
 
 .mh-hub-content .mh-arch-layout {

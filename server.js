@@ -61,12 +61,13 @@ app.get('/core-architecture',   (_req, res) => res.redirect(301, '/architecture#
 app.get('/ai-engine',           (_req, res) => res.redirect(301, '/architecture#ai-engine'));
 app.get('/vision',              (_req, res) => res.redirect(301, '/about'));
 app.get('/comparison',          (_req, res) => res.redirect(301, '/why#why-compare'));
-
-
-
-
-
-
+app.get('/career-architecture', (_req, res) => res.redirect(301, '/architecture#journey'));
+app.get('/technical-blueprint', (_req, res) => res.redirect(301, '/architecture#technical-blueprint'));
+app.get('/core-architecture',   (_req, res) => res.redirect(301, '/architecture#framework'));
+app.get('/live-terminal',       (_req, res) => res.redirect(301, '/architecture#proof'));
+app.get('/ai-engine',           (_req, res) => res.redirect(301, '/architecture#technical-blueprint'));
+app.get('/vision',              (_req, res) => res.redirect(301, '/about'));
+app.get('/comparison',          (_req, res) => res.redirect(301, '/why#why-compare'));
 app.get('/auth/login',  (_req, res) => res.render('auth-login'));
 app.get('/auth/signup', (_req, res) => res.render('auth-signup'));
 app.get('/login',       (_req, res) => res.redirect('/auth/login'));
