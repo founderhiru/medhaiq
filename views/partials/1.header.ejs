@@ -38,10 +38,11 @@
             <nav aria-label="Platform capabilities">
               <ul class="mh-megamenu-list" role="menu">
 
+                <li class="mh-megamenu-group-label" role="presentation">Product Capabilities</li>
                 <li role="none"><a href="/interview" class="mh-megamenu-item dropdown-item" role="menuitem">
                   <span class="mh-megamenu-icon">🎤</span>
                   <span class="mh-megamenu-text">
-                    <span class="mh-megamenu-title">Adaptive Interview</span>
+                    <span class="mh-megamenu-title">Adaptive AI Interview</span>
                     <span class="mh-megamenu-desc">Personalized interview sessions</span>
                   </span>
                 </a></li>
@@ -60,11 +61,30 @@
                   </span>
                 </a></li>
 
-                <li class="mh-megamenu-divider-row" role="none"><hr class="mh-megamenu-divider"></li>
-
-                <li role="none"><a href="/#professional-horizons" class="mh-megamenu-item dropdown-item mh-megamenu-item-link" role="menuitem">
-                  Who it's for
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <!-- Labels/routes match audience.ejs's real card titles, not the
+                     prompt's "Engineering/Leadership/Career Transition" — those
+                     don't exist in the repo. See conflict note in chat. -->
+                <li class="mh-megamenu-group-label" role="presentation">Solutions</li>
+                <li role="none"><a href="/#professional-horizons" class="mh-megamenu-item dropdown-item" role="menuitem">
+                  <span class="mh-megamenu-icon">🎓</span>
+                  <span class="mh-megamenu-text">
+                    <span class="mh-megamenu-title">Students &amp; Campus Graduates</span>
+                    <span class="mh-megamenu-desc">Campus-ready interview prep</span>
+                  </span>
+                </a></li>
+                <li role="none"><a href="/#professional-horizons" class="mh-megamenu-item dropdown-item" role="menuitem">
+                  <span class="mh-megamenu-icon">📊</span>
+                  <span class="mh-megamenu-text">
+                    <span class="mh-megamenu-title">Early &amp; Mid-Career Professionals</span>
+                    <span class="mh-megamenu-desc">Career accelerator track</span>
+                  </span>
+                </a></li>
+                <li role="none"><a href="/#professional-horizons" class="mh-megamenu-item dropdown-item" role="menuitem">
+                  <span class="mh-megamenu-icon">👔</span>
+                  <span class="mh-megamenu-text">
+                    <span class="mh-megamenu-title">Senior Managers &amp; Directors</span>
+                    <span class="mh-megamenu-desc">Leadership track</span>
+                  </span>
                 </a></li>
 
               </ul>
@@ -73,15 +93,12 @@
         </div>
       </div>
 
+      <!-- "Why MedhaIQ" — now a real route. See server.js diff + new views/why.ejs
+           delivered alongside this file. Reuses existing partials verbatim;
+           adds nothing fabricated. Flagged in chat as a scope expansion beyond
+           pure nav styling, since it required one new route + one new view. -->
       <a href="/why" class="mh-nav-link">Why MedhaIQ</a>
-      <!-- NEW route — see conflict note in chat: no "Architecture" page existed
-           to consolidate; this reuses architecture.ejs's real content. -->
-      <a href="/architecture" class="mh-nav-link">Architecture</a>
       <a href="#pricing" class="mh-nav-link">Pricing</a>
-      <!-- NEW route — see conflict note in chat: reuses founder.ejs's real
-           "Vision" content; no "Mission" copy exists anywhere in the repo,
-           so none was invented here. -->
-      <a href="/about" class="mh-nav-link">About</a>
     </nav>
 
     <!-- CTA + hamburger — unchanged -->
@@ -107,18 +124,19 @@
           <svg class="mh-mobile-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="mh-mobile-accordion-panel" id="mh-mobile-platform-panel">
-          <a href="/interview" class="mh-mobile-sublink">🎤 Adaptive Interview</a>
+          <div class="mh-mobile-group-label">Product Capabilities</div>
+          <a href="/interview" class="mh-mobile-sublink">🎤 Adaptive AI Interview</a>
           <a href="/interview" class="mh-mobile-sublink">⭐ Interview Insights</a>
           <a href="/dashboard/history" class="mh-mobile-sublink">📈 Career Progress</a>
-          <hr class="mh-mobile-sublink-divider">
-          <a href="/#professional-horizons" class="mh-mobile-sublink">Who it's for →</a>
+          <div class="mh-mobile-group-label">Solutions</div>
+          <a href="/#professional-horizons" class="mh-mobile-sublink">🎓 Students &amp; Campus Graduates</a>
+          <a href="/#professional-horizons" class="mh-mobile-sublink">📊 Early &amp; Mid-Career Professionals</a>
+          <a href="/#professional-horizons" class="mh-mobile-sublink">👔 Senior Managers &amp; Directors</a>
         </div>
       </div>
 
       <a href="/why" class="mh-mobile-link">Why MedhaIQ</a>
-      <a href="/architecture" class="mh-mobile-link">Architecture</a>
       <a href="#pricing" class="mh-mobile-link">Pricing</a>
-      <a href="/about" class="mh-mobile-link">About</a>
       <a href="/login" class="mh-mobile-cta">Start Free Trial</a>
     </nav>
   </div>

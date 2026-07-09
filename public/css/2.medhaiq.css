@@ -3957,23 +3957,16 @@ button { cursor: pointer; }
   width: 340px;
 }
 .mh-megamenu-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
-.mh-megamenu-divider-row { padding: 6px 12px; }
-.mh-megamenu-divider {
-  border: none;
-  height: 1px;
-  background: var(--navy-border);
-  margin: 0;
-}
-.mh-megamenu-item-link {
-  display: flex !important;
-  align-items: center;
-  justify-content: space-between;
+.mh-megamenu-group-label {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 10px 12px 6px;
 }
-.mh-megamenu-item-link:hover { color: var(--blue-bright); }
+.mh-megamenu-group-label:first-child { padding-top: 4px; }
 
 .mh-megamenu-item {
   display: block; /* per spec: block-level anchor, not flex, so translateX(4px) reads cleanly */
@@ -4039,11 +4032,14 @@ button { cursor: pointer; }
   max-height: 260px;
   padding-bottom: 8px;
 }
-.mh-mobile-sublink-divider {
-  border: none;
-  height: 1px;
-  background: var(--white-soft);
-  margin: 6px 12px;
+.mh-mobile-group-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 10px 12px 4px;
 }
 .mh-mobile-sublink {
   font-family: var(--font-body);

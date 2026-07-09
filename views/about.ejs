@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About | MedhaIQ.ai</title>
+  <meta name="description" content="About MedhaIQ — the founder, the vision, and the story behind the platform.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0A0F1E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/medhaiq.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/hero-v2.css">
+  <link rel="stylesheet" href="/css/value-footer.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <!-- Minimal page intro. Everything below reuses founder.ejs verbatim,
+       which already contains a real "The Vision" subsection. No "Mission"
+       content exists anywhere in the repo, so none was invented here —
+       see conflict note in chat. -->
+  <section style="padding: 148px var(--section-pad-x) 0; max-width: var(--max-w); margin: 0 auto; text-align: center;">
+    <div class="mh-eyebrow">About</div>
+    <h1 style="font-family: var(--font-display); font-weight: 800; font-size: var(--hero-h1-size); color: var(--white); letter-spacing: var(--hero-h1-tracking); margin: 12px 0;">
+      About MedhaIQ
+    </h1>
+  </section>
+
+  <%- include('partials/founder') %>
+
+  <%- include('partials/cta-banner') %>
+  <%- include('partials/footer') %>
+
+  <script>
+  (function() {
+    var reveals = document.querySelectorAll('.reveal');
+    if (!reveals.length) return;
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          var items = entry.target.querySelectorAll('.reveal-item');
+          items.forEach(function(item, i) {
+            setTimeout(function() { item.classList.add('visible'); }, i * 100);
+          });
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach(function(el) { observer.observe(el); });
+  })();
+  </script>
+</body>
+</html>
