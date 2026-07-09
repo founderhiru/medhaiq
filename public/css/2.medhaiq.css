@@ -46,10 +46,10 @@
   --card-pad-sm: 18px;
   --btn-pad-y: 12px;
   --btn-pad-x: 22px;
-  --hero-h1-size: clamp(36px, 6vw, 48px);   /* was clamp(48px, 6vw, 64px) — final: 48px desktop, per this round */
-  --hero-h1-tracking: -0.04em;
-  --h2-size: clamp(24px, 5vw, 32px);        /* was clamp(32px, 4.5vw, 44px) — final: 32px desktop, per this round */
-  --h2-tracking: -0.03em;
+  --hero-h1-size: clamp(48px, 6vw, 64px);   /* was clamp(40px, 5vw, 58px) — this round asks for 62-64px desktop */
+  --hero-h1-tracking: -0.04em;              /* was -0.03em */
+  --h2-size: clamp(32px, 4.5vw, 44px);      /* was clamp(30px, 3.5vw, 38px) — this round asks for 44px desktop */
+  --h2-tracking: -0.03em;                   /* was -0.02em */
   --eyebrow-size: 13px;
   --eyebrow-tracking: 0.1em;                /* was 0.07em — more aggressive tracking per this round */
   --body-size: 18px;                        /* was 17px */
