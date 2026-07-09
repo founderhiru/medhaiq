@@ -55,6 +55,17 @@ app.get('/terms',   (_req, res) => res.redirect('/'));
 app.get('/architecture', (_req, res) => res.render('architecture'));
 app.get('/about',        (_req, res) => res.render('about'));
 app.get('/why',     (_req, res) => res.render('why'));
+app.get('/career-architecture', (_req, res) => res.redirect(301, '/architecture#career-architecture'));
+app.get('/technical-blueprint', (_req, res) => res.redirect(301, '/architecture#technical-blueprint'));
+app.get('/core-architecture',   (_req, res) => res.redirect(301, '/architecture#core-architecture'));
+app.get('/ai-engine',           (_req, res) => res.redirect(301, '/architecture#ai-engine'));
+app.get('/vision',              (_req, res) => res.redirect(301, '/about'));
+app.get('/comparison',          (_req, res) => res.redirect(301, '/why#why-compare'));
+
+
+
+
+
 
 app.get('/auth/login',  (_req, res) => res.render('auth-login'));
 app.get('/auth/signup', (_req, res) => res.render('auth-signup'));
@@ -73,6 +84,7 @@ app.get('/login',       (_req, res) => res.redirect('/auth/login'));
   app.get('/ai-engine',           (_req, res) => res.redirect(301, '/architecture#arch-multimodel'));
   app.get('/vision',              (_req, res) => res.redirect(301, '/about'));
   app.get('/comparison',          (_req, res) => res.redirect(301, '/why#why-compare'));
+
 
 // Interview setup
 app.get('/interview', (_req, res) => {
