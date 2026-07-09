@@ -40,21 +40,22 @@
      Introduced so the global scale reduction is driven from one place
      instead of 14+ separately hardcoded selectors. Every consuming rule
      below was refactored to reference these instead of a literal value. */
-  --section-pad-y: 76px;   /* was hardcoded 120px on every section, 14 occurrences */
-  --section-pad-x: 40px;   /* unchanged — only vertical rhythm was in scope */
-  --card-pad: 24px;        /* was 32px on frame cards */
-  --card-pad-sm: 18px;     /* was 24px on audience card bodies */
-  --btn-pad-y: 12px;       /* was 14px on primary/outline buttons */
-  --btn-pad-x: 22px;       /* was 28px */
-  --hero-h1-size: clamp(40px, 5vw, 58px);   /* was clamp(44px, 5vw, 72px) */
-  --hero-h1-tracking: -0.03em;              /* was -2.5px */
-  --h2-size: clamp(30px, 3.5vw, 38px);      /* was clamp(28px, 3.5vw, 44px) */
-  --h2-tracking: -0.02em;                   /* was -1.2px */
-  --eyebrow-size: 13px;                     /* was 11px */
-  --eyebrow-tracking: 0.07em;               /* was 0.15em */
-  --body-size: 17px;                        /* no prior sitewide body-text token existed */
+  --section-pad-y: 76px;   /* already in the 72-80px target range from this round's spec — unchanged */
+  --section-pad-x: 40px;
+  --card-pad: 24px;
+  --card-pad-sm: 18px;
+  --btn-pad-y: 12px;
+  --btn-pad-x: 22px;
+  --hero-h1-size: clamp(48px, 6vw, 64px);   /* was clamp(40px, 5vw, 58px) — this round asks for 62-64px desktop */
+  --hero-h1-tracking: -0.04em;              /* was -0.03em */
+  --h2-size: clamp(32px, 4.5vw, 44px);      /* was clamp(30px, 3.5vw, 38px) — this round asks for 44px desktop */
+  --h2-tracking: -0.03em;                   /* was -0.02em */
+  --eyebrow-size: 13px;
+  --eyebrow-tracking: 0.1em;                /* was 0.07em — more aggressive tracking per this round */
+  --body-size: 18px;                        /* was 17px */
   --body-line: 1.6;
-  --table-pad: 12px 16px;                   /* was 16px 20px on matrix th/cell */
+  --table-pad: 12px 16px;
+  --hero-sub-color: rgba(255, 255, 255, 0.92);  /* NEW — hero subtitle brightness per this round's spec */
 }
 
 /* Reset */
@@ -305,7 +306,7 @@ button { cursor: pointer; }
   display: flex;
   align-items: center;
   overflow: hidden;
-  padding: 56px 32px 24px;
+  padding: 56px 32px 24px; /* NOT changed — see conflict flag in chat: hero.ejs was explicitly locked to zero changes earlier in this conversation */
   background: var(--navy-deep);
 }
 
@@ -382,9 +383,11 @@ button { cursor: pointer; }
 
 .mh-hero-h2 {
   font-family: var(--font-body);
-  font-weight: 400;
+  font-weight: 500; /* spec asked for 450 or 500 — using 500 since Inter is loaded at
+                       fixed weights (400/500/600/700/800), not as a variable font;
+                       450 would silently fall back to 400 and render no different */
   font-size: 20px;
-  color: var(--text-muted);
+  color: var(--hero-sub-color);
   margin-bottom: 8px;
   line-height: 1.5;
 }
@@ -729,7 +732,7 @@ button { cursor: pointer; }
 .mh-eyebrow {
   font-family: var(--font-body);
   font-size: var(--eyebrow-size);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: var(--eyebrow-tracking);
   text-transform: uppercase;
   color: var(--blue-bright);
@@ -749,7 +752,7 @@ button { cursor: pointer; }
   font-size: 16px;
   color: var(--text-muted);
   line-height: 1.6;
-  max-width: 560px;
+  max-width: 700px; /* was 560px — widened per this round's "tweet-width" fix */
   margin: 0 auto;
 }
 
@@ -4077,7 +4080,7 @@ button { cursor: pointer; }
    directly instead of a separate clamp — same scale as the homepage
    hero, post density-pass. */
 .mh-why-hero {
-  padding: 148px var(--section-pad-x) var(--section-pad-y);
+  padding: 104px var(--section-pad-x) 53px; /* was 148px .. 76px — top/bottom reduced ~30% per this round's spec */
   background: var(--navy-deep);
   text-align: center;
 }
@@ -4096,7 +4099,7 @@ button { cursor: pointer; }
 .mh-why-narrow { max-width: 720px; margin: 0 auto; }
 .mh-why-body {
   font-family: var(--font-body);
-  font-size: 17px;
+  font-size: var(--body-size); /* was hardcoded 17px — now tracks the 18px global token */
   line-height: 1.7;
   color: var(--text-muted);
   margin: 0 0 18px;
@@ -4210,7 +4213,7 @@ button { cursor: pointer; }
 }
 
 @media (max-width: 900px) {
-  .mh-why-hero { padding: 150px 24px 70px; }
+  .mh-why-hero { padding: 105px 24px 49px; }
   .mh-why-problem, .mh-why-shift, .mh-why-philosophy,
   .mh-why-pillars, .mh-why-compare, .mh-why-manifesto {
     padding-left: 24px;

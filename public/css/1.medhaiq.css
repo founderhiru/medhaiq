@@ -34,6 +34,27 @@
   --radius: 12px;
   --radius-lg: 20px;
   --radius-xl: 24px;
+
+  /* ============================================
+     DENSITY PASS — new tokens, none existed before.
+     Introduced so the global scale reduction is driven from one place
+     instead of 14+ separately hardcoded selectors. Every consuming rule
+     below was refactored to reference these instead of a literal value. */
+  --section-pad-y: 76px;   /* was hardcoded 120px on every section, 14 occurrences */
+  --section-pad-x: 40px;   /* unchanged — only vertical rhythm was in scope */
+  --card-pad: 24px;        /* was 32px on frame cards */
+  --card-pad-sm: 18px;     /* was 24px on audience card bodies */
+  --btn-pad-y: 12px;       /* was 14px on primary/outline buttons */
+  --btn-pad-x: 22px;       /* was 28px */
+  --hero-h1-size: clamp(40px, 5vw, 58px);   /* was clamp(44px, 5vw, 72px) */
+  --hero-h1-tracking: -0.03em;              /* was -2.5px */
+  --h2-size: clamp(30px, 3.5vw, 38px);      /* was clamp(28px, 3.5vw, 44px) */
+  --h2-tracking: -0.02em;                   /* was -1.2px */
+  --eyebrow-size: 13px;                     /* was 11px */
+  --eyebrow-tracking: 0.07em;               /* was 0.15em */
+  --body-size: 17px;                        /* no prior sitewide body-text token existed */
+  --body-line: 1.6;
+  --table-pad: 12px 16px;                   /* was 16px 20px on matrix th/cell */
 }
 
 /* Reset */
@@ -352,9 +373,9 @@ button { cursor: pointer; }
 .mh-hero-h1 {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(44px, 5vw, 72px);
+  font-size: var(--hero-h1-size);
   line-height: 1.0;
-  letter-spacing: -2.5px;
+  letter-spacing: var(--hero-h1-tracking);
   color: var(--white);
   margin-bottom: 14px;
 }
@@ -392,7 +413,7 @@ button { cursor: pointer; }
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 15px;
-  padding: 14px 28px;
+  padding: var(--btn-pad-y) var(--btn-pad-x);
   border-radius: 40px;
   border: none;
   cursor: pointer;
@@ -415,7 +436,7 @@ button { cursor: pointer; }
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 15px;
-  padding: 14px 28px;
+  padding: var(--btn-pad-y) var(--btn-pad-x);
   border-radius: 40px;
   border: 1.5px solid var(--white-border);
   cursor: pointer;
@@ -695,7 +716,7 @@ button { cursor: pointer; }
    CAREER JOURNEY TIMELINE — Section 3
    ============================================ */
 .mh-timeline {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-rich);
 }
 .mh-timeline-inner {
@@ -707,20 +728,20 @@ button { cursor: pointer; }
 }
 .mh-eyebrow {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: var(--eyebrow-size);
   font-weight: 600;
-  letter-spacing: 0.15em;
+  letter-spacing: var(--eyebrow-tracking);
   text-transform: uppercase;
   color: var(--blue-bright);
   margin-bottom: 14px;
 }
 .mh-section-title {
   font-family: var(--font-display);
-  font-size: clamp(28px, 3.5vw, 44px);
+  font-size: var(--h2-size);
   font-weight: 700;
   color: var(--white);
   line-height: 1.15;
-  letter-spacing: -1.2px;
+  letter-spacing: var(--h2-tracking);
   margin-bottom: 12px;
 }
 .mh-section-sub {
@@ -832,7 +853,7 @@ button { cursor: pointer; }
    PLATFORM ARCHITECTURE — Section 4
    ============================================ */
 .mh-arch {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-deep);
 }
 .mh-arch-inner {
@@ -980,7 +1001,7 @@ button { cursor: pointer; }
    AI CAREER SCORE — Section 5
    ============================================ */
 .mh-score {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--light-surface);
 }
 .mh-score-inner {
@@ -1250,7 +1271,7 @@ button { cursor: pointer; }
    INTEGRATIONS GRID — Section 6
    ============================================ */
 .mh-integrations {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-deep);
 }
 .mh-integrations-inner {
@@ -1322,7 +1343,7 @@ button { cursor: pointer; }
    AUDIENCE RADAR MATRIX — Section 7
    ============================================ */
 .mh-audience {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-rich);
 }
 .mh-audience-inner {
@@ -1379,7 +1400,7 @@ button { cursor: pointer; }
 }
 
 .mh-audience-body {
-  padding: 24px;
+  padding: var(--card-pad-sm);
 }
 .mh-audience-badge {
   display: inline-block;
@@ -1413,7 +1434,7 @@ button { cursor: pointer; }
    RECRUITER PORTAL & ANALYTICS — Section 8
    ============================================ */
 .mh-recruiter {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-deep);
 }
 .mh-recruiter-inner {
@@ -1677,7 +1698,7 @@ button { cursor: pointer; }
    INTELLIGENCE FRAMEWORK — Section 9
    ============================================ */
 .mh-framework {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: #ffffff;
 }
 .mh-framework-inner {
@@ -1695,7 +1716,7 @@ button { cursor: pointer; }
   margin-top: 64px;
 }
 .mh-frame-card {
-  padding: 40px 32px;
+  padding: 30px var(--card-pad);
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: var(--radius-lg);
@@ -1744,7 +1765,7 @@ button { cursor: pointer; }
    PRODUCT PROOF GRID — Section 10
    ============================================ */
 .mh-proof {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-rich);
 }
 .mh-proof-inner {
@@ -2528,7 +2549,7 @@ button { cursor: pointer; }
    SECTION 11 — CERTIFICATIONS & COMMUNITY
    ============================================ */
 .mh-certs {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-deep);
 }
 .mh-certs-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -2777,7 +2798,7 @@ button { cursor: pointer; }
    SECTION 12 — COMPETITIVE MATRIX
    ============================================ */
 .mh-matrix {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-rich);
 }
 .mh-matrix-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -2798,7 +2819,7 @@ button { cursor: pointer; }
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  padding: 16px 20px;
+  padding: var(--table-pad);
   border-bottom: 1px solid var(--navy-border);
   text-align: left;
 }
@@ -2820,7 +2841,7 @@ button { cursor: pointer; }
 .mh-matrix-row:nth-child(even) { background: var(--navy-rich); }
 .mh-matrix-row-last { border-bottom: none; }
 .mh-matrix-cell {
-  padding: 16px 20px;
+  padding: var(--table-pad);
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.5;
@@ -2854,7 +2875,7 @@ button { cursor: pointer; }
    SECTION 13 — RESEARCH CENTER
    ============================================ */
 .mh-research {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--light-surface);
 }
 .mh-research-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -2978,7 +2999,7 @@ button { cursor: pointer; }
    SECTION 15 — SECURITY & TRUST
    ============================================ */
 .mh-security {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-deep);
 }
 .mh-security-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -3038,7 +3059,7 @@ button { cursor: pointer; }
    SECTION 16 — PRICING MATRIX
    ============================================ */
 .mh-pricing {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--white);
 }
 .mh-pricing-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -3546,7 +3567,7 @@ button { cursor: pointer; }
    SECTION 17 — FOUNDER BLOCK
    ============================================ */
 .mh-founder {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: #0A0F1E;
 }
 .mh-founder-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -3873,15 +3894,14 @@ button { cursor: pointer; }
   .mh-experience-cards { grid-template-columns: 1fr; }
 }
 
-
 /* ============================================
-   MEGA MENU â€” "Platform" nav item
+   MEGA MENU — "Platform" nav item
    Appended block, does not modify any existing rule above.
    Reuses existing tokens: --navy-*, --blue-bright, --white-border,
    --font-display, --font-body, --max-w, --radius.
    ============================================ */
 
-/* Trigger button â€” same visual weight as a .mh-nav-link, but a <button> */
+/* Trigger button — same visual weight as a .mh-nav-link, but a <button> */
 .mh-nav-item-mega { position: relative; }
 .mh-nav-trigger {
   display: inline-flex;
@@ -3898,13 +3918,13 @@ button { cursor: pointer; }
 .mh-nav-item-mega.mh-mega-open .mh-nav-chevron { transform: rotate(180deg); }
 .mh-nav-item-mega.mh-mega-open .mh-nav-trigger { color: var(--white); background: var(--white-soft); }
 
-/* Panel â€” frosted glass, drops from the trigger */
+/* Panel — frosted glass, drops from the trigger */
 .mh-megamenu {
   position: absolute;
   /* Hover dead-zone fix carried forward from the previous round: top: 100%
      (touching, zero gap) instead of a positive offset. Visual spacing is
      handled by padding-top on .mh-megamenu-inner instead, so the hit-test
-     area is contiguous from button to panel â€” combined with this round's
+     area is contiguous from button to panel — combined with this round's
      150ms hover-bridge delay in the JS, this is now double-covered. */
   top: 100%;
   left: 50%;
@@ -3933,20 +3953,27 @@ button { cursor: pointer; }
 
 .mh-megamenu-inner {
   padding: 16px;
-  padding-top: 24px; /* replaces the old outer gap â€” same visual spacing, no dead hover zone */
+  padding-top: 24px; /* replaces the old outer gap — same visual spacing, no dead hover zone */
   width: 340px;
 }
 .mh-megamenu-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
-.mh-megamenu-group-label {
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  padding: 10px 12px 6px;
+.mh-megamenu-divider-row { padding: 6px 12px; }
+.mh-megamenu-divider {
+  border: none;
+  height: 1px;
+  background: var(--navy-border);
+  margin: 0;
 }
-.mh-megamenu-group-label:first-child { padding-top: 4px; }
+.mh-megamenu-item-link {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--white);
+}
+.mh-megamenu-item-link:hover { color: var(--blue-bright); }
 
 .mh-megamenu-item {
   display: block; /* per spec: block-level anchor, not flex, so translateX(4px) reads cleanly */
@@ -3984,7 +4011,7 @@ button { cursor: pointer; }
 }
 
 /* ============================================
-   MOBILE ACCORDION â€” "Platform" inside the slide-out menu
+   MOBILE ACCORDION — "Platform" inside the slide-out menu
    ============================================ */
 .mh-mobile-accordion { border-bottom: 1px solid var(--white-soft); }
 .mh-mobile-accordion-trigger {
@@ -4012,14 +4039,11 @@ button { cursor: pointer; }
   max-height: 260px;
   padding-bottom: 8px;
 }
-.mh-mobile-group-label {
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  padding: 10px 12px 4px;
+.mh-mobile-sublink-divider {
+  border: none;
+  height: 1px;
+  background: var(--white-soft);
+  margin: 6px 12px;
 }
 .mh-mobile-sublink {
   font-family: var(--font-body);
@@ -4032,14 +4056,14 @@ button { cursor: pointer; }
 .mh-mobile-sublink:hover { color: var(--white); background: var(--white-soft); }
 
 /* Below 1024px (same breakpoint your hamburger already uses), the desktop
-   mega menu never needs to render â€” nav-links are already display:none there. */
+   mega menu never needs to render — nav-links are already display:none there. */
 @media (max-width: 1024px) {
   .mh-megamenu { display: none; }
 }
 
 
 /* ============================================
-   /WHY PAGE â€” new section types
+   /WHY PAGE — new section types
    Appended block, does not modify any existing rule.
    Reuses existing tokens throughout: --navy-*, --blue-bright, --white,
    --text-muted, --text-faint, --font-display, --font-body, --max-w,
@@ -4047,24 +4071,28 @@ button { cursor: pointer; }
    matches the exact pattern used by matrix.ejs / proof.ejs / founder.ejs.
    ============================================ */
 
-/* 01 â€” Hero */
+/* 01 — Hero — top offset is nav-clearance, a structural need (not a
+   parallel spacing scale); bottom uses the same --section-pad-y as
+   every other section. Title now reads --hero-h1-size/-tracking
+   directly instead of a separate clamp — same scale as the homepage
+   hero, post density-pass. */
 .mh-why-hero {
-  padding: 180px 40px 100px;
+  padding: 148px var(--section-pad-x) var(--section-pad-y);
   background: var(--navy-deep);
   text-align: center;
 }
 .mh-why-hero-inner { max-width: var(--max-w); margin: 0 auto; }
 .mh-why-hero-title {
   font-family: var(--font-display);
-  font-size: clamp(36px, 5vw, 56px);
+  font-size: var(--hero-h1-size);
   font-weight: 800;
   color: var(--white);
   line-height: 1.1;
-  letter-spacing: -1.5px;
+  letter-spacing: var(--hero-h1-tracking);
   margin-bottom: 16px;
 }
 
-/* Shared narrow text column â€” used by sections 02, 03, 04, 07 */
+/* Shared narrow text column — used by sections 02, 03, 04, 07 */
 .mh-why-narrow { max-width: 720px; margin: 0 auto; }
 .mh-why-body {
   font-family: var(--font-body);
@@ -4078,21 +4106,21 @@ button { cursor: pointer; }
   font-weight: 600;
 }
 
-/* 02 â€” The Problem */
+/* 02 — The Problem */
 .mh-why-problem {
-  padding: 100px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-rich);
 }
 
-/* 03 â€” The Paradigm Shift */
+/* 03 — The Paradigm Shift */
 .mh-why-shift {
-  padding: 100px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-deep);
 }
 
-/* 04 â€” Core Philosophy (manifesto-style quote) */
+/* 04 — Core Philosophy (manifesto-style quote) */
 .mh-why-philosophy {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-rich);
 }
 .mh-why-quote {
@@ -4115,9 +4143,9 @@ button { cursor: pointer; }
   margin-bottom: 8px;
 }
 
-/* 05 â€” The Three Pillars */
+/* 05 — The Three Pillars */
 .mh-why-pillars {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-deep);
 }
 .mh-why-pillars-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -4131,7 +4159,7 @@ button { cursor: pointer; }
   background: var(--navy-card);
   border: 1px solid var(--navy-border);
   border-radius: var(--radius-lg);
-  padding: 32px 28px;
+  padding: var(--card-pad);
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 .mh-why-pillar-card:hover {
@@ -4158,17 +4186,17 @@ button { cursor: pointer; }
   margin: 0;
 }
 
-/* 06 â€” Comparison section wrapper. The table itself reuses
-   .mh-matrix-table and friends verbatim from the homepage â€” no new
+/* 06 — Comparison section wrapper. The table itself reuses
+   .mh-matrix-table and friends verbatim from the homepage — no new
    table CSS needed, guaranteeing a pixel-identical look. */
 .mh-why-compare {
-  padding: 120px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-rich);
 }
 
-/* 07 â€” The Manifesto */
+/* 07 — The Manifesto */
 .mh-why-manifesto {
-  padding: 140px 40px;
+  padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-deep);
 }
 .mh-why-manifesto-text {
