@@ -3901,17 +3901,15 @@ button { cursor: pointer; }
 /* Panel â€” frosted glass, drops from the trigger */
 .mh-megamenu {
   position: absolute;
-  /* THE FIX: top: 100% (touching, zero gap) instead of calc(100% + 12px).
-     The old 12px gap sat outside megaWrap's hoverable box, so moving the
-     mouse from the button toward the panel fired mouseleave and closed
-     it before a click on any link inside could register. Visual spacing
-     is now handled by padding-top on .mh-megamenu-inner instead, so the
-     hit-test area is contiguous from button to panel with no dead zone. */
+  /* Hover dead-zone fix carried forward from the previous round: top: 100%
+     (touching, zero gap) instead of a positive offset. Visual spacing is
+     handled by padding-top on .mh-megamenu-inner instead, so the hit-test
+     area is contiguous from button to panel â€” combined with this round's
+     150ms hover-bridge delay in the JS, this is now double-covered. */
   top: 100%;
   left: 50%;
   transform: translateX(-50%) translateY(-6px);
-  max-width: 560px;
-  width: 560px;
+  width: 340px;
   background: rgba(7, 10, 19, 0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -3935,49 +3933,52 @@ button { cursor: pointer; }
 
 .mh-megamenu-inner {
   padding: 16px;
-  padding-top: 28px; /* replaces the old outer 12px gap â€” same visual spacing, no dead hover zone */
-  width: 560px;
-  max-width: 560px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  padding-top: 24px; /* replaces the old outer gap â€” same visual spacing, no dead hover zone */
+  width: 340px;
 }
-.mh-megamenu-col { display: flex; flex-direction: column; gap: 2px; }
-.mh-megamenu-col-label {
+.mh-megamenu-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.mh-megamenu-group-label {
   font-family: var(--font-display);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-faint);
-  padding: 4px 12px 8px;
+  padding: 10px 12px 6px;
 }
+.mh-megamenu-group-label:first-child { padding-top: 4px; }
 
 .mh-megamenu-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px;
+  display: block; /* per spec: block-level anchor, not flex, so translateX(4px) reads cleanly */
+  padding: 8px 12px;
   border-radius: 10px;
-  transition: background 0.15s ease;
+  transition: background 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.mh-megamenu-item:hover { background: rgba(255, 255, 255, 0.06); }
+.mh-megamenu-item .mh-megamenu-icon,
+.mh-megamenu-item .mh-megamenu-text {
+  display: inline-block;
+  vertical-align: top;
+}
+.mh-megamenu-item .mh-megamenu-icon { margin-right: 10px; }
+.mh-megamenu-item:hover,
+.mh-megamenu-item:focus-visible {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateX(4px);
+}
 .mh-megamenu-icon {
   font-size: 18px;
   line-height: 1;
-  flex-shrink: 0;
-  margin-top: 1px;
 }
 .mh-megamenu-text { display: flex; flex-direction: column; gap: 3px; }
 .mh-megamenu-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 13.5px;
+  font-size: 0.95rem;
   color: var(--white);
 }
 .mh-megamenu-desc {
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 0.82rem;
   color: var(--text-muted);
   line-height: 1.4;
 }

@@ -52,6 +52,7 @@ app.use('/api',            require('./routes/vapi'));
 app.get('/', (_req, res) => res.render('layout', buildLandingContext()));
 app.get('/privacy', (_req, res) => res.redirect('/'));
 app.get('/terms',   (_req, res) => res.redirect('/'));
+app.get('/why',     (_req, res) => res.render('why'));
 
 app.get('/auth/login',  (_req, res) => res.render('auth-login'));
 app.get('/auth/signup', (_req, res) => res.render('auth-signup'));

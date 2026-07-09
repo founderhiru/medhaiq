@@ -33,71 +33,71 @@
           <svg class="mh-nav-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
 
-        <div class="mh-megamenu" id="mh-megamenu" role="menu" aria-label="Platform capabilities">
+        <div class="mh-megamenu" id="mh-megamenu" aria-label="Platform capabilities">
           <div class="mh-megamenu-inner">
+            <nav aria-label="Platform capabilities">
+              <ul class="mh-megamenu-list" role="menu">
 
-            <!-- Column A: Product Capabilities -->
-            <div class="mh-megamenu-col">
-              <div class="mh-megamenu-col-label">Product Capabilities</div>
-              <a href="/interview" class="mh-megamenu-item" role="menuitem">
-                <span class="mh-megamenu-icon">🎤</span>
-                <span class="mh-megamenu-text">
-                  <span class="mh-megamenu-title">Adaptive AI Interview</span>
-                  <span class="mh-megamenu-desc">Personalized interview sessions</span>
-                </span>
-              </a>
-              <a href="/interview" class="mh-megamenu-item" role="menuitem">
-                <span class="mh-megamenu-icon">⭐</span>
-                <span class="mh-megamenu-text">
-                  <span class="mh-megamenu-title">Interview Insights</span>
-                  <span class="mh-megamenu-desc">Executive summaries, STAR analysis &amp; coaching</span>
-                </span>
-              </a>
-              <a href="/dashboard/history" class="mh-megamenu-item" role="menuitem">
-                <span class="mh-megamenu-icon">📈</span>
-                <span class="mh-megamenu-text">
-                  <span class="mh-megamenu-title">Career Progress</span>
-                  <span class="mh-megamenu-desc">History, trends and improvement tracking</span>
-                </span>
-              </a>
-            </div>
+                <li class="mh-megamenu-group-label" role="presentation">Product Capabilities</li>
+                <li role="none"><a href="/interview" class="mh-megamenu-item dropdown-item" role="menuitem">
+                  <span class="mh-megamenu-icon">🎤</span>
+                  <span class="mh-megamenu-text">
+                    <span class="mh-megamenu-title">Adaptive AI Interview</span>
+                    <span class="mh-megamenu-desc">Personalized interview sessions</span>
+                  </span>
+                </a></li>
+                <li role="none"><a href="/interview" class="mh-megamenu-item dropdown-item" role="menuitem">
+                  <span class="mh-megamenu-icon">⭐</span>
+                  <span class="mh-megamenu-text">
+                    <span class="mh-megamenu-title">Interview Insights</span>
+                    <span class="mh-megamenu-desc">Executive summaries, STAR analysis &amp; coaching</span>
+                  </span>
+                </a></li>
+                <li role="none"><a href="/dashboard/history" class="mh-megamenu-item dropdown-item" role="menuitem">
+                  <span class="mh-megamenu-icon">📈</span>
+                  <span class="mh-megamenu-text">
+                    <span class="mh-megamenu-title">Career Progress</span>
+                    <span class="mh-megamenu-desc">History, trends and improvement tracking</span>
+                  </span>
+                </a></li>
 
-            <!-- Column B: Solutions — labels match audience.ejs's real card titles,
-                 not the prompt's "Engineering/Leadership/Career Transition" (those
-                 don't exist in the repo — see conflict note in chat). -->
-            <div class="mh-megamenu-col">
-              <div class="mh-megamenu-col-label">Solutions</div>
-              <a href="/#professional-horizons" class="mh-megamenu-item" role="menuitem">
-                <span class="mh-megamenu-icon">🎓</span>
-                <span class="mh-megamenu-text">
-                  <span class="mh-megamenu-title">Students &amp; Campus Graduates</span>
-                  <span class="mh-megamenu-desc">Campus-ready interview prep</span>
-                </span>
-              </a>
-              <a href="/#professional-horizons" class="mh-megamenu-item" role="menuitem">
-                <span class="mh-megamenu-icon">📊</span>
-                <span class="mh-megamenu-text">
-                  <span class="mh-megamenu-title">Early &amp; Mid-Career Professionals</span>
-                  <span class="mh-megamenu-desc">Career accelerator track</span>
-                </span>
-              </a>
-              <a href="/#professional-horizons" class="mh-megamenu-item" role="menuitem">
-                <span class="mh-megamenu-icon">👔</span>
-                <span class="mh-megamenu-text">
-                  <span class="mh-megamenu-title">Senior Managers &amp; Directors</span>
-                  <span class="mh-megamenu-desc">Leadership track</span>
-                </span>
-              </a>
-            </div>
+                <!-- Labels/routes match audience.ejs's real card titles, not the
+                     prompt's "Engineering/Leadership/Career Transition" — those
+                     don't exist in the repo. See conflict note in chat. -->
+                <li class="mh-megamenu-group-label" role="presentation">Solutions</li>
+                <li role="none"><a href="/#professional-horizons" class="mh-megamenu-item dropdown-item" role="menuitem">
+                  <span class="mh-megamenu-icon">🎓</span>
+                  <span class="mh-megamenu-text">
+                    <span class="mh-megamenu-title">Students &amp; Campus Graduates</span>
+                    <span class="mh-megamenu-desc">Campus-ready interview prep</span>
+                  </span>
+                </a></li>
+                <li role="none"><a href="/#professional-horizons" class="mh-megamenu-item dropdown-item" role="menuitem">
+                  <span class="mh-megamenu-icon">📊</span>
+                  <span class="mh-megamenu-text">
+                    <span class="mh-megamenu-title">Early &amp; Mid-Career Professionals</span>
+                    <span class="mh-megamenu-desc">Career accelerator track</span>
+                  </span>
+                </a></li>
+                <li role="none"><a href="/#professional-horizons" class="mh-megamenu-item dropdown-item" role="menuitem">
+                  <span class="mh-megamenu-icon">👔</span>
+                  <span class="mh-megamenu-text">
+                    <span class="mh-megamenu-title">Senior Managers &amp; Directors</span>
+                    <span class="mh-megamenu-desc">Leadership track</span>
+                  </span>
+                </a></li>
 
+              </ul>
+            </nav>
           </div>
         </div>
       </div>
 
-      <!-- "Why MedhaIQ" — NO /why route exists in the repo. Standing in with
-           #matrix (matrix.ejs, "A Paradigm Shift in Career Engineering") until
-           you confirm a real destination — see conflict note in chat. -->
-      <a href="/#matrix" class="mh-nav-link">Why MedhaIQ</a>
+      <!-- "Why MedhaIQ" — now a real route. See server.js diff + new views/why.ejs
+           delivered alongside this file. Reuses existing partials verbatim;
+           adds nothing fabricated. Flagged in chat as a scope expansion beyond
+           pure nav styling, since it required one new route + one new view. -->
+      <a href="/why" class="mh-nav-link">Why MedhaIQ</a>
       <a href="#pricing" class="mh-nav-link">Pricing</a>
     </nav>
 
@@ -135,7 +135,7 @@
         </div>
       </div>
 
-      <a href="/#matrix" class="mh-mobile-link">Why MedhaIQ</a>
+      <a href="/why" class="mh-mobile-link">Why MedhaIQ</a>
       <a href="#pricing" class="mh-mobile-link">Pricing</a>
       <a href="/login" class="mh-mobile-cta">Start Free Trial</a>
     </nav>
@@ -189,38 +189,68 @@
     megaTrigger.setAttribute('aria-expanded', 'false');
   }
 
-  megaWrap.addEventListener('mouseenter', openMega);
-  megaWrap.addEventListener('mouseleave', closeMega);
+  // Hover-bridge delay: closing is deferred 150ms so the cursor can travel
+  // from the trigger into the panel without the menu closing mid-transit.
+  // A new mouseenter anywhere in megaWrap (trigger OR panel) cancels the
+  // pending close. This replaces a hard mouseleave-closes-instantly model.
+  var closeTimer = null;
+
+  function scheduleClose() {
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(closeMega, 150);
+  }
+  function cancelScheduledClose() {
+    clearTimeout(closeTimer);
+  }
+
+  megaWrap.addEventListener('mouseenter', function() {
+    cancelScheduledClose();
+    openMega();
+  });
+  megaWrap.addEventListener('mouseleave', scheduleClose);
 
   // Click/tap toggles — covers touch devices where hover doesn't fire
   megaTrigger.addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation(); // prevent the document click-outside listener below from immediately re-closing what this click just opened
+    cancelScheduledClose();
     if (megaWrap.classList.contains('mh-mega-open')) { closeMega(); }
     else { openMega(); }
   });
 
-  // Keyboard: Tab into the menu opens it, Tab out closes it
-  megaWrap.addEventListener('focusin', openMega);
+  // Keyboard: Tab into the menu opens it, Tab out closes it immediately
+  // (no delay needed for keyboard — there's no "transit" to bridge)
+  megaWrap.addEventListener('focusin', function() {
+    cancelScheduledClose();
+    openMega();
+  });
   megaWrap.addEventListener('focusout', function(e) {
     if (!megaWrap.contains(e.relatedTarget)) { closeMega(); }
   });
 
-  // Escape closes and returns focus to the trigger — required by spec
+  // Escape closes immediately (no delay) and returns focus to the trigger
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && megaWrap.classList.contains('mh-mega-open')) {
+      cancelScheduledClose();
       closeMega();
       megaTrigger.focus();
     }
   });
 
-  // NEW: click anywhere outside the menu closes it — this was missing
-  // entirely before, which is part of why "click" felt broken (nothing
-  // closed it predictably, so state got confusing after a stray click).
+  // Click anywhere outside the menu closes it immediately
   document.addEventListener('click', function(e) {
     if (megaWrap.classList.contains('mh-mega-open') && !megaWrap.contains(e.target)) {
+      cancelScheduledClose();
       closeMega();
     }
+  });
+
+  // Clicking/activating any menu item closes the panel immediately
+  megaWrap.querySelectorAll('.mh-megamenu-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      cancelScheduledClose();
+      closeMega();
+    });
   });
 
   /* ---- NEW: mobile Platform accordion ---- */
