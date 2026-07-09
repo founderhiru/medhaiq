@@ -4048,66 +4048,6 @@ button { cursor: pointer; }
   background: var(--white-soft);
   margin: 6px 12px;
 }
-
-/* ============================================
-   HUB LAYOUT — sticky left-nav + right content panel
-   Used by /architecture. Generic — works with however many
-   real sections a hub actually has (currently 4 on /architecture).
-   ============================================ */
-.mh-hub { padding: var(--section-pad-y) var(--section-pad-x); }
-.mh-hub-inner {
-  max-width: var(--max-w);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 48px;
-  align-items: start;
-}
-.mh-hub-nav {
-  position: sticky;
-  top: 88px; /* clears the 68px fixed nav + breathing room */
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.mh-hub-nav-link {
-  font-family: var(--font-body);
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--text-muted);
-  padding: 9px 14px;
-  border-radius: var(--radius);
-  border-left: 2px solid transparent;
-  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
-}
-.mh-hub-nav-link:hover { color: var(--white); background: var(--white-soft); }
-.mh-hub-nav-link.active {
-  color: var(--blue-bright);
-  background: var(--blue-glow);
-  border-left-color: var(--blue-bright);
-  font-weight: 600;
-}
-.mh-hub-content { min-width: 0; }
-
-@media (max-width: 900px) {
-  .mh-hub-inner { grid-template-columns: 1fr; }
-  .mh-hub-nav {
-    position: static;
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 8px;
-    padding-bottom: 8px;
-    margin-bottom: 24px;
-    border-bottom: 1px solid var(--navy-border);
-  }
-  .mh-hub-nav-link {
-    white-space: nowrap;
-    border-left: none;
-    border-bottom: 2px solid transparent;
-  }
-  .mh-hub-nav-link.active { border-left-color: transparent; border-bottom-color: var(--blue-bright); }
-}
-
 .mh-mobile-sublink {
   font-family: var(--font-body);
   font-size: 14.5px;

@@ -60,6 +60,20 @@ app.get('/auth/login',  (_req, res) => res.render('auth-login'));
 app.get('/auth/signup', (_req, res) => res.render('auth-signup'));
 app.get('/login',       (_req, res) => res.redirect('/auth/login'));
 
+ // Defensive 301s — none of these old paths were ever real routes in this
+  // repo (verified: no matching app.get() existed before this addition), so
+  // there's nothing currently broken. Adding them anyway only helps if one
+  // of these URLs is linked externally somewhere (an old ad, a bookmark, a
+  // backlink) that isn't visible from inside the codebase. Zero downside to
+  // having them; they simply won't be exercised unless such a link exists.
+
+  app.get('/career-architecture', (_req, res) => res.redirect(301, '/architecture#arch-layer-1'));
+  app.get('/technical-blueprint', (_req, res) => res.redirect(301, '/architecture'));
+  app.get('/core-architecture',   (_req, res) => res.redirect(301, '/architecture'));
+  app.get('/ai-engine',           (_req, res) => res.redirect(301, '/architecture#arch-multimodel'));
+  app.get('/vision',              (_req, res) => res.redirect(301, '/about'));
+  app.get('/comparison',          (_req, res) => res.redirect(301, '/why#why-compare'));
+
 // Interview setup
 app.get('/interview', (_req, res) => {
   const userId = _req.cookies?.user_id;
