@@ -3901,14 +3901,21 @@ button { cursor: pointer; }
 /* Panel â€” frosted glass, drops from the trigger */
 .mh-megamenu {
   position: absolute;
-  top: calc(100% + 12px);
+  /* THE FIX: top: 100% (touching, zero gap) instead of calc(100% + 12px).
+     The old 12px gap sat outside megaWrap's hoverable box, so moving the
+     mouse from the button toward the panel fired mouseleave and closed
+     it before a click on any link inside could register. Visual spacing
+     is now handled by padding-top on .mh-megamenu-inner instead, so the
+     hit-test area is contiguous from button to panel with no dead zone. */
+  top: 100%;
   left: 50%;
   transform: translateX(-50%) translateY(-6px);
+  max-width: 560px;
   width: 560px;
-  background: rgba(6, 9, 17, 0.96);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--navy-border);
+  background: rgba(7, 10, 19, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   opacity: 0;
@@ -3917,26 +3924,35 @@ button { cursor: pointer; }
   transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1),
               transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
               visibility 220ms;
-  z-index: 110;
+  z-index: 1000 !important;
 }
 .mh-nav-item-mega.mh-mega-open .mh-megamenu {
   opacity: 1;
   visibility: visible;
-  pointer-events: auto;
+  pointer-events: auto !important;
   transform: translateX(-50%) translateY(0);
 }
 
 .mh-megamenu-inner {
   padding: 16px;
-  width: 340px;
+  padding-top: 28px; /* replaces the old outer 12px gap â€” same visual spacing, no dead hover zone */
+  width: 560px;
+  max-width: 560px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.mh-megamenu-col { display: flex; flex-direction: column; gap: 2px; }
+.mh-megamenu-col-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 4px 12px 8px;
 }
 
-/* Stacked list â€” matches the approved single-column structure, not a 2x2 grid */
-.mh-megamenu-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
 .mh-megamenu-item {
   display: flex;
   align-items: flex-start;
@@ -3945,7 +3961,7 @@ button { cursor: pointer; }
   border-radius: 10px;
   transition: background 0.15s ease;
 }
-.mh-megamenu-item:hover { background: var(--white-soft); }
+.mh-megamenu-item:hover { background: rgba(255, 255, 255, 0.06); }
 .mh-megamenu-icon {
   font-size: 18px;
   line-height: 1;
@@ -3965,42 +3981,6 @@ button { cursor: pointer; }
   color: var(--text-muted);
   line-height: 1.4;
 }
-
-/* Divider + Featured/Start Free Trial row â€” matches the approved reference image */
-.mh-megamenu-divider {
-  height: 1px;
-  background: var(--navy-border);
-  margin: 10px 12px;
-}
-.mh-megamenu-cta-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 12px 4px;
-}
-.mh-megamenu-cta-label {
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-.mh-megamenu-featured-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--royal-blue);
-  color: var(--white);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 12.5px;
-  padding: 9px 14px;
-  border-radius: 30px;
-  transition: background 0.15s ease, transform 0.15s ease;
-  white-space: nowrap;
-}
-.mh-megamenu-featured-cta:hover { background: #2563eb; transform: translateY(-1px); }
 
 /* ============================================
    MOBILE ACCORDION â€” "Platform" inside the slide-out menu
@@ -4030,6 +4010,15 @@ button { cursor: pointer; }
 .mh-mobile-accordion-panel.mh-mobile-accordion-panel-open {
   max-height: 260px;
   padding-bottom: 8px;
+}
+.mh-mobile-group-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 10px 12px 4px;
 }
 .mh-mobile-sublink {
   font-family: var(--font-body);
