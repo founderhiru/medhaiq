@@ -4036,3 +4036,157 @@ button { cursor: pointer; }
 @media (max-width: 1024px) {
   .mh-megamenu { display: none; }
 }
+
+
+/* ============================================
+   /WHY PAGE â€” new section types
+   Appended block, does not modify any existing rule.
+   Reuses existing tokens throughout: --navy-*, --blue-bright, --white,
+   --text-muted, --text-faint, --font-display, --font-body, --max-w,
+   --radius, --radius-lg. Section rhythm (padding, alternating background)
+   matches the exact pattern used by matrix.ejs / proof.ejs / founder.ejs.
+   ============================================ */
+
+/* 01 â€” Hero */
+.mh-why-hero {
+  padding: 180px 40px 100px;
+  background: var(--navy-deep);
+  text-align: center;
+}
+.mh-why-hero-inner { max-width: var(--max-w); margin: 0 auto; }
+.mh-why-hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin-bottom: 16px;
+}
+
+/* Shared narrow text column â€” used by sections 02, 03, 04, 07 */
+.mh-why-narrow { max-width: 720px; margin: 0 auto; }
+.mh-why-body {
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  margin: 0 0 18px;
+}
+.mh-why-body-emphasis {
+  color: var(--white);
+  font-weight: 600;
+}
+
+/* 02 â€” The Problem */
+.mh-why-problem {
+  padding: 100px 40px;
+  background: var(--navy-rich);
+}
+
+/* 03 â€” The Paradigm Shift */
+.mh-why-shift {
+  padding: 100px 40px;
+  background: var(--navy-deep);
+}
+
+/* 04 â€” Core Philosophy (manifesto-style quote) */
+.mh-why-philosophy {
+  padding: 120px 40px;
+  background: var(--navy-rich);
+}
+.mh-why-quote {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(26px, 3.2vw, 38px);
+  line-height: 1.35;
+  color: var(--white);
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 40px;
+  position: relative;
+}
+.mh-why-quote-mark {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 64px;
+  color: var(--blue-bright);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+/* 05 â€” The Three Pillars */
+.mh-why-pillars {
+  padding: 120px 40px;
+  background: var(--navy-deep);
+}
+.mh-why-pillars-inner { max-width: var(--max-w); margin: 0 auto; }
+.mh-why-pillar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 56px;
+}
+.mh-why-pillar-card {
+  background: var(--navy-card);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.mh-why-pillar-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-4px);
+}
+.mh-why-pillar-icon {
+  font-size: 28px;
+  margin-bottom: 18px;
+  color: var(--blue-bright);
+}
+.mh-why-pillar-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--white);
+  margin: 0 0 10px;
+}
+.mh-why-pillar-desc {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* 06 â€” Comparison section wrapper. The table itself reuses
+   .mh-matrix-table and friends verbatim from the homepage â€” no new
+   table CSS needed, guaranteeing a pixel-identical look. */
+.mh-why-compare {
+  padding: 120px 40px;
+  background: var(--navy-rich);
+}
+
+/* 07 â€” The Manifesto */
+.mh-why-manifesto {
+  padding: 140px 40px;
+  background: var(--navy-deep);
+}
+.mh-why-manifesto-text {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(20px, 2.4vw, 28px);
+  line-height: 1.5;
+  color: var(--white);
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .mh-why-hero { padding: 150px 24px 70px; }
+  .mh-why-problem, .mh-why-shift, .mh-why-philosophy,
+  .mh-why-pillars, .mh-why-compare, .mh-why-manifesto {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .mh-why-pillar-grid { grid-template-columns: 1fr; }
+}
