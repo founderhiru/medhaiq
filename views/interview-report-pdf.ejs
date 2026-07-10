@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MedhaIQ Career Intelligence Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!--
+  REDESIGNED v2 — 3-page executive report (was 7 pages). Rendered by
+  /interview/report/:id/pdf in server.js, converted to PDF by
+  services/pdf-report.js. views/interview-report.ejs (on-screen report)
+  and all scoring/backend logic are untouched — this is a template +
+  route-level data-shaping change only.
+
+  PAGE 1 — Executive Career Intelligence Summary: score, recommendation,
+    Leadership Potential, Confidence Level, executive summary, 5-Vector
+    radar, Top 3 Strengths, Top 3 Development Areas.
+  PAGE 2 — Interview Intelligence: STAR Assessment (reuses
+    computeStarProgress() exactly — see server.js comment) + a condensed
+    all-questions score table + two REAL highlighted callouts
+    (strongest_response / weakest_response) instead of fabricated
+    per-question feedback (no backend change = no way to generate real
+    per-question text yet; flagged explicitly, not invented).
+  PAGE 3 — Career Roadmap: simplified Candidate Model (5 of 8 dimensions
+    shown — the other 3 still power the engine internally, per spec),
+    30/60/90 roadmap, quick-reference Key Strengths / Development
+    Priorities, and a single Practice Focus.
+
+  DATA CONTRACT: candidateName, report, personaName, roleTitle,
+  experienceLevel, formattedDate, starAvg/technicalAvg/executiveAvg/
+  gccAvg/frictionAvg, radarPolygonPoints, radarPoints, qaCards,
+  promotionReadiness/leadershipPotential/confidenceLevel, nextSteps,
+  vectorBreakdown, candidateModel, evidenceMaturity, leadershipReadiness,
+  starCounts ({situation,task,action,result} counts), starTotal,
+  topStrengths, topDevelopmentAreas (both ranked vectorBreakdown slices),
+  practiceFocus (single item)
+-->
+
+<style>
+  @page { size: 8.5in 11in; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 8.5in; background: #E7E9EE; }
+  body { font-family: 'Inter', -apple-system, sans-serif; color: #1E2433; -webkit-font-smoothing: antialiased; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+
+  .page { width: 8.5in; height: 11in; background: #FFFFFF; position: relative; overflow: hidden; page-break-after: always; break-after: page; }
+  .page:last-of-type { page-break-after: auto; break-after: auto; }
+  .avoid-break { page-break-inside: avoid; break-inside: avoid; }
+  @media print { html, body { background: #FFFFFF; } .page { box-shadow: none !important; } }
+  @media screen { body { padding: 24px 0; } .page { margin: 0 auto 24px; box-shadow: 0 4px 24px rgba(15,23,42,0.12); } }
+
+  :root {
+    --ink: #0A0F1E; --slate-900: #0F172A; --signal: #3B82F6; --signal-dark:#2563EB;
+    --emerald: #10B981; --amber: #F59E0B; --paper: #FAFAF9; --line: #E2E5EC;
+    --gray-500: #64748B; --gray-700: #334155;
+  }
+  .font-display { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
+  .eyebrow { font-family:'Inter'; font-size:9.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--signal); }
+  .eyebrow.on-dark { color:#8FB3FF; }
+  h1.report-title { font-size:28px; font-weight:800; line-height:1.1; color:#fff; }
+  h2.page-title { font-size:19px; font-weight:800; color:var(--ink); }
+  h3.card-title { font-size:12.5px; font-weight:700; color:var(--ink); }
+  .text-body { font-size:11.5px; line-height:1.55; color:var(--gray-700); }
+  .text-caption { font-size:9.5px; color:var(--gray-500); }
+
+  .flex { display:flex; } .flex-col { display:flex; flex-direction:column; }
+  .items-center { align-items:center; } .items-start { align-items:flex-start; }
+  .justify-between { justify-content:space-between; }
+  .gap-8{gap:8px;} .gap-12{gap:12px;} .gap-16{gap:16px;} .gap-24{gap:24px;}
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; }
+  .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; }
+  .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); }
+  .rounded-lg{border-radius:10px;} .rounded-xl{border-radius:14px;}
+  .p-16{padding:16px;} .p-20{padding:20px;} .px-48{padding-left:48px;padding-right:48px;}
+
+  .cover { background: linear-gradient(160deg, var(--ink) 0%, var(--slate-900) 62%, #101B33 100%); }
+  .cover-topbar { display:flex; align-items:center; justify-content:space-between; padding:26px 48px 0; }
+  .brand-mark { display:flex; align-items:center; gap:8px; }
+  .brand-name { font-family:'Plus Jakarta Sans'; font-weight:800; font-size:15px; color:#fff; }
+  .brand-name span { color:var(--signal); }
+  .badge { display:inline-flex; align-items:center; gap:5px; padding:5px 11px; border-radius:999px; font-size:9.5px; font-weight:700; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); color:#E7ECFB; }
+  .badge-dot { width:6px; height:6px; border-radius:999px; flex-shrink:0; }
+  .exec-summary-box { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-left:3px solid var(--signal); }
+  .rec-pill { display:inline-block; padding:6px 14px; border-radius:999px; font-weight:800; font-size:11px; font-family:'Plus Jakarta Sans'; }
+
+  .page-header { display:flex; align-items:center; justify-content:space-between; padding:22px 48px 14px; border-bottom:1px solid var(--line); }
+  .page-footer { position:absolute; bottom:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between; padding:12px 48px; border-top:1px solid var(--line); font-size:8.5px; color:var(--gray-500); }
+
+  .sw-card { border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .sw-card + .sw-card { margin-top:10px; }
+  .sw-vector { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--signal-dark); margin-bottom:3px; }
+  .sw-text { font-size:11px; line-height:1.5; color:var(--gray-700); }
+
+  .star-ring { width:64px; height:64px; border-radius:999px; border:5px solid var(--line); display:flex; align-items:center; justify-content:center; position:relative; }
+  .star-ring.is-filled { border-color: var(--signal); }
+  .star-ring-label { font-size:20px; font-weight:800; font-family:'Plus Jakarta Sans'; color:var(--ink); }
+  .star-letter { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--gray-500); margin-top:6px; text-align:center; }
+
+  .qa-table { width:100%; border-collapse:collapse; }
+  .qa-table th { text-align:left; font-size:8.5px; text-transform:uppercase; letter-spacing:.03em; color:var(--gray-500); padding:6px 8px; border-bottom:1px solid var(--line); }
+  .qa-table td { font-size:10.5px; padding:7px 8px; border-bottom:1px solid var(--line); color:var(--gray-700); vertical-align:top; }
+  .qa-table td.num { text-align:center; font-weight:700; color:var(--signal-dark); font-family:'Plus Jakarta Sans'; }
+
+  .callout { border-radius:10px; padding:14px; }
+  .callout.strong { background:#F0FDF4; border-left:3px solid var(--emerald); }
+  .callout.weak { background:#FFFBEB; border-left:3px solid var(--amber); }
+
+  .cm-card { border:1px solid var(--line); border-radius:10px; padding:10px; text-align:center; }
+  .cm-num { font-family:'Plus Jakarta Sans'; font-weight:800; font-size:19px; color:var(--signal-dark); }
+  .cm-label { font-size:8.5px; color:var(--gray-500); margin-top:3px; text-transform:uppercase; letter-spacing:.03em; }
+
+  .timeline-rail { position:relative; padding-left:28px; }
+  .timeline-rail::before { content:''; position:absolute; left:7px; top:4px; bottom:4px; width:2px; background:var(--line); }
+  .timeline-item { position:relative; padding-bottom:16px; }
+  .timeline-item:last-child { padding-bottom:0; }
+  .timeline-dot { position:absolute; left:-28px; top:1px; width:16px; height:16px; border-radius:999px; background:#fff; border:3px solid var(--signal); }
+  .practice-focus-box { background:#EFF6FF; border:1px solid #BFDBFE; border-radius:10px; padding:14px; }
+</style>
+</head>
+<body>
+
+<%
+  function recColor(rec) {
+    if (/strong hire|^hire$/i.test(rec || '')) return { bg: '#DCFCE7', fg: '#15803D' };
+    if (/lean hire/i.test(rec || '')) return { bg: '#FEF9C3', fg: '#A16207' };
+    return { bg: '#FEE2E2', fg: '#B91C1C' };
+  }
+  var recStyle = recColor(report.recommendation);
+  var vectors = [
+    { key: 'structure', label: 'Structure (STAR)', score: starAvg },
+    { key: 'technical', label: 'Technical Depth', score: technicalAvg },
+    { key: 'executive', label: 'Executive Presence', score: executiveAvg },
+    { key: 'gcc', label: 'GCC Readiness', score: gccAvg },
+    { key: 'communication', label: 'Communication Clarity', score: frictionAvg },
+  ];
+  function vectorLabel(key) { var m = vectors.filter(function(v){ return v.key === key; }); return m.length ? m[0].label : key; }
+%>
+
+<!-- ══════════════════ PAGE 1 — EXECUTIVE CAREER INTELLIGENCE SUMMARY ══════════════════ -->
+<section class="page cover">
+  <div class="cover-topbar">
+    <div class="brand-mark">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+        <path d="M3 3 L10 3 L10 10 L17 10" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="10" cy="10" r="1.6" fill="#3B82F6"/><circle cx="3" cy="3" r="1.6" fill="#3B82F6"/><circle cx="17" cy="10" r="1.6" fill="#3B82F6"/>
+      </svg>
+      <span class="brand-name">Medha<span>IQ</span>.ai</span>
+    </div>
+    <div class="eyebrow on-dark">EXECUTIVE CAREER INTELLIGENCE REPORT</div>
+  </div>
+
+  <div style="padding:16px 48px 0;">
+    <div class="text-caption" style="color:#8291B3;"><%= candidateName %> · <%= roleTitle %> · <%= formattedDate %> · Interviewed by <%= personaName %></div>
+  </div>
+
+  <div class="flex items-center gap-24" style="padding:16px 48px 0;">
+    <div style="position:relative; width:150px; height:150px; flex-shrink:0;">
+      <svg width="150" height="150" viewBox="0 0 150 150">
+        <circle cx="75" cy="75" r="63" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="11"/>
+        <% var circumference = 2 * Math.PI * 63; var dash = circumference * (Math.max(0, Math.min(100, report.overall_score)) / 100); %>
+        <circle cx="75" cy="75" r="63" fill="none" stroke="#3B82F6" stroke-width="11" stroke-linecap="round"
+                stroke-dasharray="<%= dash.toFixed(1) %> <%= circumference.toFixed(1) %>" transform="rotate(-90 75 75)"/>
+      </svg>
+      <div class="flex-col items-center" style="position:absolute; top:0; left:0; width:150px; height:150px; justify-content:center;">
+        <div style="font-family:'Plus Jakarta Sans'; font-weight:800; font-size:42px; color:#fff; line-height:1;"><%= Math.round(report.overall_score) %></div>
+        <div style="font-size:11px; color:#93A3C4; font-weight:600;">out of 100</div>
+      </div>
+    </div>
+
+    <div class="flex-col gap-8" style="flex:1;">
+      <div class="eyebrow on-dark">OVERALL CAREER INTELLIGENCE SCORE</div>
+      <div><span class="rec-pill" style="background:<%= recStyle.bg %>; color:<%= recStyle.fg %>;">HIRING RECOMMENDATION: <%= report.recommendation %></span></div>
+      <div class="flex gap-8" style="flex-wrap:wrap; margin-top:2px;">
+        <span class="badge"><span class="badge-dot" style="background:#3B82F6;"></span>Leadership Potential: <%= leadershipPotential %></span>
+        <span class="badge"><span class="badge-dot" style="background:#F59E0B;"></span>Confidence Level: <%= confidenceLevel %></span>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:16px 48px 0;">
+    <div class="exec-summary-box rounded-lg p-16">
+      <div class="eyebrow on-dark" style="margin-bottom:6px;">EXECUTIVE SUMMARY</div>
+      <p style="font-size:11.5px; line-height:1.6; color:#D6DEF2;"><%= report.executive_summary %></p>
+    </div>
+  </div>
+
+  <div class="flex gap-16" style="padding:16px 48px 0;">
+    <div style="flex:1;">
+      <div class="eyebrow on-dark" style="margin-bottom:8px;">5-VECTOR INTELLIGENCE</div>
+      <div class="rounded-xl" style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); padding:14px; display:flex; justify-content:center;">
+        <svg width="200" height="192" viewBox="0 0 300 290">
+          <polygon points="150,62 226,111 198,199 102,199 74,111" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+          <polygon points="150,84 205,122 184,187 116,187 95,122" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+          <polygon points="150,106 183,133 170,175 130,175 117,133" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+          <polygon points="150,128 162,144 156,163 144,163 138,144" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+          <line x1="150" y1="150" x2="150" y2="40" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+          <line x1="150" y1="150" x2="234" y2="107" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+          <line x1="150" y1="150" x2="203" y2="204" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+          <line x1="150" y1="150" x2="97" y2="204" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+          <line x1="150" y1="150" x2="66" y2="107" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+          <polygon points="<%= radarPolygonPoints %>" fill="rgba(59,130,246,0.25)" stroke="#60A5FA" stroke-width="2.5" stroke-linejoin="round"/>
+          <% radarPoints.forEach(function(pt) { %><circle cx="<%= pt.x %>" cy="<%= pt.y %>" r="3.5" fill="#60A5FA"/><% }); %>
+          <text x="150" y="30" text-anchor="middle" font-size="10" font-family="Inter" fill="#B9C4E0">Structure</text>
+          <text x="250" y="104" text-anchor="start" font-size="10" font-family="Inter" fill="#B9C4E0">Technical</text>
+          <text x="215" y="222" text-anchor="middle" font-size="10" font-family="Inter" fill="#B9C4E0">Executive</text>
+          <text x="85" y="222" text-anchor="middle" font-size="10" font-family="Inter" fill="#B9C4E0">GCC</text>
+          <text x="50" y="104" text-anchor="end" font-size="10" font-family="Inter" fill="#B9C4E0">Communication</text>
+        </svg>
+      </div>
+    </div>
+
+    <div style="flex:1;">
+      <div class="eyebrow on-dark" style="margin-bottom:8px;">TOP 3 STRENGTHS</div>
+      <% topStrengths.forEach(function(s) { %>
+        <div class="sw-card avoid-break" style="background:rgba(16,185,129,.08); border-color:rgba(16,185,129,.25);">
+          <div class="sw-vector" style="color:#6EE7B7;"><%= vectorLabel(s.vector) %></div>
+          <div class="sw-text" style="color:#D6DEF2;"><%= s.strength %></div>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+
+  <div style="padding:14px 48px 0;">
+    <div class="eyebrow on-dark" style="margin-bottom:8px;">DEVELOPMENT AREAS</div>
+    <div class="<%= topDevelopmentAreas.length >= 3 ? 'grid-3' : 'grid-2' %> gap-8" style="max-width:<%= topDevelopmentAreas.length >= 3 ? '100%' : '66%' %>;">
+      <% topDevelopmentAreas.forEach(function(d) { %>
+        <div class="sw-card avoid-break" style="background:rgba(245,158,11,.08); border-color:rgba(245,158,11,.25); margin-top:0;">
+          <div class="sw-vector" style="color:#FCD34D;"><%= vectorLabel(d.vector) %></div>
+          <div class="sw-text" style="color:#D6DEF2;"><%= d.recommendation %></div>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+
+  <div class="page-footer" style="border-top-color:rgba(255,255,255,0.1); color:#7E8FB5;">
+    <span>MedhaIQ.ai · Confidential Career Intelligence Report</span>
+    <span>Page 1 of 3</span>
+  </div>
+</section>
+
+
+<!-- ══════════════════ PAGE 2 — INTERVIEW INTELLIGENCE ══════════════════ -->
+<section class="page">
+  <div class="page-header">
+    <div><div class="eyebrow">SECTION 02</div><h2 class="page-title font-display">Interview Intelligence</h2></div>
+    <svg width="22" height="22" viewBox="0 0 100 100" style="opacity:.35;"><polygon points="50,4 95,36 78,90 22,90 5,36" fill="none" stroke="#3B82F6" stroke-width="4"/></svg>
+  </div>
+
+  <div class="px-48" style="padding-top:18px;">
+    <!-- STAR Assessment — same 4-component framework (Situation/Task/Action/
+         Result) and same detection function used during the live interview.
+         Each ring shows % of answered questions where that component was
+         present; overall STAR score is the same Structure vector average
+         shown on page 1, not a separately invented number. -->
+    <h3 class="card-title" style="margin-bottom:2px;">STAR Assessment</h3>
+    <div class="text-caption" style="margin-bottom:12px;">Same Situation / Task / Action / Result framework used during Interview Setup and the Live Interview.</div>
+    <div class="flex items-center" style="justify-content:space-between;">
+      <% ['situation','task','action','result'].forEach(function(letter) {
+           var count = starCounts[letter]; var pct = starTotal ? Math.round((count / starTotal) * 100) : 0;
+           var filled = pct >= 60; %>
+        <div class="flex-col items-center">
+          <div class="star-ring<%= filled ? ' is-filled' : '' %>"><div class="star-ring-label"><%= pct %>%</div></div>
+          <div class="star-letter"><%= letter %></div>
+          <div class="text-caption"><%= count %>/<%= starTotal %> answers</div>
+        </div>
+      <% }); %>
+      <div class="flex-col items-center" style="border-left:1px solid var(--line); padding-left:24px;">
+        <div style="font-family:'Plus Jakarta Sans'; font-weight:800; font-size:30px; color:var(--signal-dark);"><%= Math.round(starAvg) %></div>
+        <div class="star-letter">Overall STAR Score</div>
+      </div>
+    </div>
+
+    <!-- Condensed question table — one page, no per-question cards -->
+    <h3 class="card-title" style="margin-top:20px; margin-bottom:8px;">Key Interview Questions &amp; Scores</h3>
+    <table class="qa-table avoid-break">
+      <tr><th>#</th><th>Question</th><th>Structure</th><th>Technical</th><th>Executive</th><th>GCC</th><th>Comm.</th></tr>
+      <% qaCards.forEach(function(qa) { %>
+        <tr>
+          <td><%= qa.index %></td>
+          <td><%= qa.questionText.length > 70 ? qa.questionText.slice(0, 70) + '…' : qa.questionText %></td>
+          <% if (qa.scores) { %>
+            <td class="num"><%= Math.round(qa.scores.star_score) %></td>
+            <td class="num"><%= Math.round(qa.scores.technical_depth) %></td>
+            <td class="num"><%= Math.round(qa.scores.executive_presence) %></td>
+            <td class="num"><%= Math.round(qa.scores.gcc_readiness) %></td>
+            <td class="num"><%= Math.round(qa.scores.core_friction) %></td>
+          <% } else { %>
+            <td class="num" colspan="5" style="color:var(--gray-500); font-weight:400;">Skipped</td>
+          <% } %>
+        </tr>
+      <% }); %>
+    </table>
+
+    <!-- Real AI feedback that already exists — NOT fabricated per-question
+         text. strongest_response/weakest_response are genuine outputs from
+         the same report-generation AI call, each with an actual quote from
+         the transcript. -->
+    <div class="grid-2 gap-16" style="margin-top:18px;">
+      <% if (report.strongest_response) { %>
+        <div class="callout strong avoid-break">
+          <h3 class="card-title" style="margin-bottom:4px;">Highlighted Response</h3>
+          <div class="text-caption" style="margin-bottom:6px;"><%= report.strongest_response.context %></div>
+          <div class="text-body">"<%= report.strongest_response.evidence %>"</div>
+        </div>
+      <% } %>
+      <% if (report.weakest_response) { %>
+        <div class="callout weak avoid-break">
+          <h3 class="card-title" style="margin-bottom:4px;">Growth Opportunity</h3>
+          <div class="text-caption" style="margin-bottom:6px;"><%= report.weakest_response.context %></div>
+          <div class="text-body">"<%= report.weakest_response.evidence %>"</div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="page-footer"><span>MedhaIQ.ai · Confidential Career Intelligence Report</span><span>Page 2 of 3</span></div>
+</section>
+
+
+<!-- ══════════════════ PAGE 3 — CAREER ROADMAP ══════════════════ -->
+<section class="page">
+  <div class="page-header">
+    <div><div class="eyebrow">SECTION 03</div><h2 class="page-title font-display">Career Roadmap</h2></div>
+    <svg width="22" height="22" viewBox="0 0 100 100" style="opacity:.35;"><polygon points="50,4 95,36 78,90 22,90 5,36" fill="none" stroke="#3B82F6" stroke-width="4"/></svg>
+  </div>
+
+  <div class="px-48" style="padding-top:16px;">
+    <!-- Simplified Candidate Model — only the 5 most meaningful dimensions
+         are shown here. Ownership, Learning Agility, and Technical Depth
+         are still computed and still power the interview engine's
+         Difficulty Controller / question routing — they're just not
+         displayed in this report by design. -->
+    <% if (candidateModel) { %>
+      <h3 class="card-title" style="margin-bottom:8px;">Candidate Model</h3>
+      <div class="grid-3 gap-8" style="margin-bottom:6px;">
+        <div class="cm-card"><div class="cm-num"><%= candidateModel.confidence %></div><div class="cm-label">Confidence</div></div>
+        <div class="cm-card"><div class="cm-num"><%= candidateModel.communication %></div><div class="cm-label">Communication</div></div>
+        <div class="cm-card"><div class="cm-num"><%= candidateModel.leadership %></div><div class="cm-label">Leadership</div></div>
+      </div>
+      <div class="grid-2 gap-8">
+        <div class="cm-card"><div class="cm-num"><%= candidateModel.decisionMaking %></div><div class="cm-label">Decision-Making</div></div>
+        <div class="cm-card"><div class="cm-num"><%= candidateModel.businessThinking %></div><div class="cm-label">Business Thinking</div></div>
+      </div>
+    <% } %>
+
+    <div class="grid-2 gap-16" style="margin-top:18px;">
+      <div>
+        <h3 class="card-title" style="margin-bottom:8px;">Key Strengths</h3>
+        <% topStrengths.forEach(function(s) { %>
+          <div class="text-body" style="margin-bottom:4px;">✓ <%= vectorLabel(s.vector) %></div>
+        <% }); %>
+      </div>
+      <div>
+        <h3 class="card-title" style="margin-bottom:8px;">Development Priorities</h3>
+        <% topDevelopmentAreas.forEach(function(d) { %>
+          <div class="text-body" style="margin-bottom:4px;">→ <%= vectorLabel(d.vector) %></div>
+        <% }); %>
+      </div>
+    </div>
+
+    <% if (practiceFocus) { %>
+      <div class="practice-focus-box avoid-break" style="margin-top:16px;">
+        <div class="eyebrow" style="margin-bottom:4px;">NEXT RECOMMENDED PRACTICE FOCUS</div>
+        <h3 class="card-title" style="margin-bottom:4px;"><%= vectorLabel(practiceFocus.vector) %></h3>
+        <div class="text-body"><%= practiceFocus.recommendation %></div>
+      </div>
+    <% } %>
+
+    <h3 class="card-title" style="margin-top:20px; margin-bottom:10px;">Growth Roadmap</h3>
+    <div class="timeline-rail">
+      <% var windows = ['0–30 Days', '30–60 Days', '60–90 Days']; %>
+      <% windows.forEach(function(label, i) { %>
+        <% if (nextSteps[i]) { %>
+          <div class="timeline-item avoid-break">
+            <div class="timeline-dot"></div>
+            <div class="eyebrow" style="margin-bottom:2px;"><%= label.toUpperCase() %></div>
+            <p class="text-body"><%= nextSteps[i] %></p>
+          </div>
+        <% } %>
+      <% }); %>
+    </div>
+  </div>
+
+  <div class="page-footer"><span>MedhaIQ.ai · Confidential Career Intelligence Report</span><span>Page 3 of 3</span></div>
+</section>
+
+</body>
+</html>
