@@ -21,6 +21,9 @@
   "devDependencies": {
     "dotenv": "^16.4.5"
   },
+  "allowScripts": {
+    "puppeteer": true
+  },
   "engines": {
     "node": ">=18.0.0"
   }
