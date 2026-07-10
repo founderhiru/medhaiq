@@ -8,16 +8,16 @@
     "build": "npm run migrate",
     "migrate": "node migrate.js"
   },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.65.0",
-    "bcryptjs": "^2.4.3",
-    "ejs": "^3.1.10",
-    "express": "^4.18.2",
-    "pg": "^8.11.3",
-    "passport": "^0.7.0",
-    "passport-google-oauth20": "^2.0.0"
-    "puppeteer": "^25.3.0"
-  },
+ "dependencies": {
+  "@anthropic-ai/sdk": "^0.65.0",
+  "bcryptjs": "^2.4.3",
+  "ejs": "^3.1.10",
+  "express": "^4.18.2",
+  "pg": "^8.11.3",
+  "passport": "^0.7.0",
+  "passport-google-oauth20": "^2.0.0",
+  "puppeteer": "^25.3.0"
+}
   "devDependencies": {
     "dotenv": "^16.4.5"
   },
