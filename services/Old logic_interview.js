@@ -205,493 +205,29 @@ const COMPETENCY_PROMPTS = {
   technical:      'Focus this question on domain-specific technical knowledge, implementation depth, debugging approaches, or engineering best practices.',
 };
 
-// ═══════════════════════════════════════════════════════════════════
-// EXPERIENCE CALIBRATION & FEEDBACK SYSTEM (additive layer, v0.7)
-// Does not replace roleTitle/experienceLevel/COMPETENCY_PROMPTS above —
-// this sits alongside them as extra calibration context injected into
-// the COMPETENCY ROUTING DIRECTIVE section of the prompt only. Layer 3
-// (raw experienceLevel display) and COMPETENCY_PROMPTS text are both
-// left completely untouched.
-// ═══════════════════════════════════════════════════════════════════
+// ── selectNextCompetency — picks the least-covered area ──────────
+function selectNextCompetency(roleTitle, qaPairs, questionCount) {
+  const roleKey  = Object.keys(COMPETENCY_MAP).includes(roleTitle) ? roleTitle : 'default';
+  const priority = COMPETENCY_MAP[roleKey];
+  const counts   = {};
+  priority.forEach(c => counts[c] = 0);
 
-// ── L1–L7 Career Stage Mapping Matrix ─────────────────────────────
-// NOTE: only 'fresher' | 'mid' | 'senior' | 'executive' are ever sent
-// by the UI (views/interview-setup.ejs EXP_LABELS) — 'junior', 'staff',
-// and 'principal' are intentionally unreachable from the front-end and
-// only ever produced internally by the escalation/de-escalation loop
-// below, so a candidate can be nudged one level up/down from whichever
-// of the four tiers they picked without exposing 7 tiers in the UI.
-const CAREER_STAGES = {
-  fresher:   { level: 'L1', stage: 'Student/Fresher', style: 'Fundamentals & Applied Basics', scope: 'Individual task execution with clear guardrails' },
-  junior:    { level: 'L2', stage: 'Junior Engineer', style: 'Independent Execution', scope: 'Feature ownership, component design, independent delivery' },
-  mid:       { level: 'L3', stage: 'Mid-Level', style: 'Ownership & Core Execution', scope: 'System ownership, managing local tradeoffs, mid-scale features' },
-  senior:    { level: 'L4', stage: 'Senior', style: 'Architecture & Alignment', scope: 'Cross-functional systems, service boundaries, team alignment' },
-  staff:     { level: 'L5', stage: 'Staff / Lead', style: 'Cross-Team Influence', scope: 'Multi-team systems, technical roadmapping, organization tradeoffs' },
-  principal: { level: 'L6', stage: 'Principal', style: 'Organization-Wide Strategy', scope: 'Company-wide infrastructure, systemic risk mitigation, executive translation' },
-  executive: { level: 'L7', stage: 'Director / VP', style: 'Business Strategy & Vision', scope: 'Board-level alignment, massive cross-border matrix systems, margin optimization' },
-};
-
-// ── Domain-Specific AI & Big Data Scaling Modifiers ───────────────
-// Only applied when the AI/Data Topic Interceptor (below) detects a
-// relevant keyword in the competency/roleTitle/jdText — additive on
-// top of whatever COMPETENCY_PROMPTS[competency] already contributed.
-const DATA_AI_CALIBRATION = {
-  L1: 'PROMPT REQUIREMENT: Emphasize basic syntax, standard libraries (Pandas/Scikit-Learn), and basic SQL syntax. Avoid distributed computing or model-serving architecture concepts.',
-  L2: 'PROMPT REQUIREMENT: Focus on fundamental feature engineering, data validation basics, and local model evaluation metrics (Precision/Recall, F1).',
-  L3: 'PROMPT REQUIREMENT: Focus on data engineering pipelines, handling data drift, selecting appropriate storage schemas, and standard deployment challenges (API wrappers around models).',
-  L4: 'PROMPT REQUIREMENT: Enforce architectural tradeoffs — e.g., RAG vs Fine-Tuning, batch vs streaming processing, horizontal scaling of data warehouses, and cost per inference.',
-  L5: 'PROMPT REQUIREMENT: Target large-scale distributed computing systems (e.g., Ray, Spark), custom vector infrastructure, enterprise model governance, and pipeline orchestration at scale.',
-  L6: 'PROMPT REQUIREMENT: Focus on org-wide data strategies, multi-million dollar compute budgeting, regulatory compliance policies (GDPR/AI Act), and building core foundations for company-wide ML platforms.',
-  L7: 'PROMPT REQUIREMENT: Evaluate on corporate margins vs AI infrastructure spend, global IP risk mitigation, organizational AI transformation strategy, and long-term capital investments.',
-};
-
-// ═══════════════════════════════════════════════════════════════════
-// PSYCHOLOGICAL INTERVIEWER MODEL (additive layer, v1.0)
-// Wraps the existing L1–L7 calibration loop / AI-Data interceptor /
-// Consulting-Coding format loops above — does not replace, reorder, or
-// remove any of it. Adds: (a) a qualitative evidence-maturity read on
-// the current competency derived from qaPairs, (b) a least-validated
-// subskill picker to steer *what* gets asked next within whatever
-// competency selectNextCompetency already chose, and (c) a seniority
-// style calibration line layered on top of the CAREER_STAGES style/scope
-// text that already exists in the blueprint.
-// ═══════════════════════════════════════════════════════════════════
-
-// ── Qualitative Evidence Maturity Levels ──
-const EVIDENCE_TIERS = {
-  NONE:     { level: 0, label: 'No Evidence',       weight: 0.0,  needsVerification: true },
-  WEAK:     { level: 1, label: 'Weak Evidence',     weight: 0.25, needsVerification: true },
-  MODERATE: { level: 2, label: 'Moderate Evidence', weight: 0.60, needsVerification: true },
-  STRONG:   { level: 3, label: 'Strong Evidence',   weight: 0.85, needsVerification: false },
-  VERIFIED: { level: 4, label: 'Verified Maturity', weight: 1.00, needsVerification: false },
-};
-
-// ── Multi-Dimensional Subskill Structural Core Matrix ──
-const SUBSKILL_MATRIX = {
-  system_design:  ['Architecture', 'Scalability', 'Tradeoffs', 'Reliability', 'Observability', 'Performance'],
-  technical:      ['Fundamentals', 'Applied Basics', 'Debugging', 'Optimization', 'Data Structures'],
-  leadership:     ['Influence', 'Conflict Resolution', 'Mentoring', 'Ownership', 'Team Growth'],
-  communication:  ['Clarity', 'Stakeholder Alignment', 'Synthesis', 'Active Listening'],
-  strategy:       ['Business Vision', 'Margin Optimization', 'Risk Mitigation', 'Portfolio Governance', 'Transformation'],
-  default:        ['Core Knowledge', 'Problem Solving', 'Execution', 'Collaboration'],
-};
-
-// ── Contextual Style Requirements per Career Bracket ──
-// NOTE: this map only has the 4 UI-selectable tiers (fresher/mid/senior/
-// executive), same as CAREER_STAGES' UI surface. styleKeyForLevel() below
-// folds the escalation loop's 7 internal tiers (L1–L7) down onto these 4
-// buckets so this stays additive without needing 7 new style entries.
-const EXPERIENCE_STYLE_MAP = {
-  fresher:   'Target individual contributor execution. Focus on concrete personal, recent academic, or standalone implementation details.',
-  mid:       'Target applied operational execution. Drill into functional edge cases, peer-level collaboration, and immediate engineering trade-offs.',
-  senior:    'Target systemic ambiguity. Drill into macro architectural trade-offs, multi-team alignment friction, and organizational risk mitigation.',
-  executive: 'Target enterprise strategy. Drill into capital optimization, portfolio vision, structural governance, and cross-organization change management.',
-};
-
-function styleKeyForLevel(levelNum) {
-  if (levelNum <= 2) return 'fresher';   // L1 Student/Fresher, L2 Junior
-  if (levelNum === 3) return 'mid';      // L3 Mid-Level
-  if (levelNum <= 5) return 'senior';    // L4 Senior, L5 Staff/Lead
-  return 'executive';                    // L6 Principal, L7 Director/VP
-}
-
-// ── The universe of real competency values this app ever produces
-// (mirrors COMPETENCY_MAP's possible outputs) — used to build the
-// GLOBAL maturity picture the Cognitive Strategy Engine needs, not just
-// the single competency selectNextCompetency picked for this turn.
-const COMPETENCY_UNIVERSE = Object.keys(SUBSKILL_MATRIX).filter(k => k !== 'default');
-
-// ── A. The Coverage & Memory Engine ──
-// Attributes each qaPair to a competency using a 3-layer fallback, since
-// the bracket tag a question is generated with never survives to the DB
-// (sanitizeQuestionOutput strips it before save, and db/interview.js's
-// addQuestion() has no competency column — a pre-existing gap flagged
-// and deliberately deferred in an earlier round):
-//   1. Metadata (safest): an explicit qa.competency / qa.metadata.competency
-//      field, if the qa object ever carries one (it doesn't today via the
-//      DB-backed qaPairs built in routes/interview.js, but this stays
-//      forward-compatible and costs nothing to check first).
-//   2. Keyword/subskill heuristic (tested in the previous round): does the
-//      question/answer text mention one of this competency's subskills?
-//   3. Raw bracket tag: in case this ever runs against un-sanitized text
-//      evaluated in-memory before it hits the DB.
-// Layers only cascade when the prior layer gives NO signal at all — if
-// metadata is present but names a different competency, that's treated
-// as authoritative and layers 2/3 are skipped for that qa/comp pair.
-function textMentionsSubskill(qa, subskill) {
-  const haystack = `${qa?.question || ''} ${qa?.answer || ''}`.toLowerCase();
-  return haystack.includes(String(subskill).toLowerCase());
-}
-
-function qaBelongsToCompetency(qa, comp) {
-  const metaComp = String(qa?.competency || qa?.metadata?.competency || '').toLowerCase().trim();
-  if (metaComp) return metaComp === comp.toLowerCase();
-
-  const subskills = SUBSKILL_MATRIX[comp] || SUBSKILL_MATRIX.default;
-  if (subskills.some(sub => textMentionsSubskill(qa, sub))) return true;
-
-  return Boolean(qa?.question && qa.question.toLowerCase().includes('[' + comp.toLowerCase() + ']'));
-}
-
-function runCoverageAndMemoryEngine(competencyPriority, qaPairs, currentTurn) {
-  const profile = {};
-  competencyPriority.forEach(comp => {
-    profile[comp] = { totalQuestionsAsked: 0, scores: [], observedSubskills: new Set(), lastAskedTurn: -1 };
-  });
-
-  (Array.isArray(qaPairs) ? qaPairs : []).forEach((qa, turnIdx) => {
-    if (!qa || !qa.question) return;
-    competencyPriority.forEach(comp => {
-      if (qaBelongsToCompetency(qa, comp)) {
-        profile[comp].totalQuestionsAsked++;
-        profile[comp].lastAskedTurn = turnIdx;
-        if (qa.score !== null && qa.score !== undefined && !qa.wasSkipped) {
-          profile[comp].scores.push(Number(qa.score));
-        }
-        const subskills = SUBSKILL_MATRIX[comp] || SUBSKILL_MATRIX.default;
-        subskills.forEach(sub => {
-          const token = sub.toLowerCase();
-          if (qa.question.toLowerCase().includes(token) || (qa.answer && qa.answer.toLowerCase().includes(token))) {
-            profile[comp].observedSubskills.add(sub);
-          }
-        });
-      }
+  // Count how many previous questions targeted each competency
+  // We embed the competency in a comment at the end of each stored question
+  qaPairs.forEach(function(qa) {
+    priority.forEach(function(c) {
+      if (qa.question && qa.question.toLowerCase().includes('['+c+']')) counts[c]++;
     });
   });
-  return profile;
-}
 
-// ── B. The Hypothesis & Evidence Engine ──
-// Returns STRUCTURED DATA ONLY (per production-readiness audit item 2/7)
-// — no hard-coded English sentences here. The sentence that used to be
-// built here (objectiveHypothesis) is now assembled, with identical
-// wording, inside the Prompt Composer (composePrompt / 
-// buildObjectiveHypothesisText below) — this function just measures.
-function runHypothesisEngine(comp, compData) {
-  const subskills = SUBSKILL_MATRIX[comp] || SUBSKILL_MATRIX.default;
-  const scoreCount = compData.scores.length;
-  const avgScore = scoreCount ? (compData.scores.reduce((a, b) => a + b, 0) / scoreCount) : 0;
-  const coverageRatio = subskills.length ? (compData.observedSubskills.size / subskills.length) : 0;
-
-  let evidenceTier = EVIDENCE_TIERS.NONE;
-  if (scoreCount >= 3 && avgScore >= 80 && coverageRatio >= 0.75) evidenceTier = EVIDENCE_TIERS.VERIFIED;
-  else if (scoreCount >= 2 && avgScore >= 70 && coverageRatio >= 0.50) evidenceTier = EVIDENCE_TIERS.STRONG;
-  else if (scoreCount >= 1 && avgScore >= 50) evidenceTier = EVIDENCE_TIERS.MODERATE;
-  else if (scoreCount >= 1) evidenceTier = EVIDENCE_TIERS.WEAK;
-
-  let leastValidatedSubskill = subskills[0];
-  let lowestObservationCount = Infinity;
-  subskills.forEach(sub => {
-    let subObservations = compData.observedSubskills.has(sub) ? 1 : 0;
-    if (subObservations < lowestObservationCount) {
-      lowestObservationCount = subObservations;
-      leastValidatedSubskill = sub;
-    }
+  // Find the competency with the lowest coverage
+  let selected = priority[questionCount % priority.length]; // fallback round-robin
+  let minCount = Infinity;
+  priority.forEach(function(c) {
+    if ((counts[c] || 0) < minCount) { minCount = counts[c]; selected = c; }
   });
-
-  return { evidenceTier, leastValidatedSubskill, coverageRatio, avgScore, needsVerification: evidenceTier.needsVerification };
+  return selected;
 }
-
-// ── C. The Cognitive Strategy Engine ──
-function runCognitiveStrategyEngine(currentTurn, globalMaturityTiers) {
-  const unverifiedNodesCount = globalMaturityTiers.filter(node => node.needsVerification).length;
-  let phase = 'Discovering Baseline', mode = 'Discovery';
-  let operationalDirective = 'Establish fundamental structural baselines and Past-Project execution scope boundaries.';
-
-  if (unverifiedNodesCount === 0) {
-    phase = 'Stress Testing';
-    if (currentTurn % 2 === 0) {
-      mode = 'Challenge';
-      operationalDirective = 'Introduce highly conflicting business constraints, resource limitations, or severe operational ambiguity.';
-    } else {
-      mode = 'Defend';
-      operationalDirective = 'Force the candidate to explicitly justify architectural trade-offs, internal design patterns, and structural choices.';
-    }
-  } else if (currentTurn >= 2) {
-    phase = 'Calibrating Depth';
-    if (currentTurn % 2 === 0) {
-      mode = 'Apply';
-      operationalDirective = 'Present an active, real-world scenario problem statement targeting functional ownership metrics.';
-    } else {
-      mode = 'Explain';
-      operationalDirective = 'Evaluate deep conceptual paradigms, trade-off reasoning models, and foundational definitions.';
-    }
-  }
-  return { phase, mode, operationalDirective };
-}
-
-// ── D. InterviewSnapshot ──
-// Parses qaPairs ONCE per generateNextQuestion call and feeds every other
-// engine below from the result — this is what selectNextCompetency and
-// the calibration logic used to compute independently (runCoverageAnd-
-// MemoryEngine ran twice per turn on identical input). Fixes the
-// duplicated-calculation gap flagged in the production-readiness audit.
-function buildInterviewSnapshot({ roleTitle, qaPairs, questionCount }) {
-  const roleKey = Object.keys(COMPETENCY_MAP).includes(roleTitle) ? roleTitle : 'default';
-  const priority = COMPETENCY_MAP[roleKey];
-  const currentTurn = Array.isArray(qaPairs) ? qaPairs.length : (questionCount || 0);
-
-  const memoryMap = runCoverageAndMemoryEngine(priority, qaPairs, currentTurn);
-  const hypothesisMap = {};
-  priority.forEach(c => { hypothesisMap[c] = runHypothesisEngine(c, memoryMap[c]); });
-  const globalMaturityTiers = priority.map(c => hypothesisMap[c]);
-
-  return { roleKey, priority, currentTurn, memoryMap, hypothesisMap, globalMaturityTiers };
-}
-
-// ── E. Candidate Model Engine ──
-// Shifts from "score this answer" to "understand this candidate."
-// Entirely deterministic — text-pattern and score-trend heuristics over
-// data already in qaPairs/snapshot, no LLM call, no new DB fields.
-// Reuses snapshot.hypothesisMap's avgScore (computed once above) instead
-// of re-scanning qaPairs per competency.
-function runCandidateModelEngine(qaPairs, snapshot) {
-  const NEUTRAL = 50; // "no data yet" baseline — distinct from a real low score
-  const pairs = (Array.isArray(qaPairs) ? qaPairs : []).filter(qa => qa && qa.answer);
-
-  // Confidence: hedging-language density across all answers so far.
-  const HEDGE_PATTERNS = [/\bi think\b/i, /\bi guess\b/i, /\bmaybe\b/i, /\bnot sure\b/i, /\bprobably\b/i, /\bsort of\b/i, /\bkind of\b/i];
-  let hedgeHits = 0;
-  pairs.forEach(qa => { HEDGE_PATTERNS.forEach(re => { if (re.test(String(qa.answer))) hedgeHits++; }); });
-  const confidence = pairs.length ? Math.max(0, Math.min(100, Math.round(85 - hedgeHits * 8))) : NEUTRAL;
-
-  // Ownership: first-person agentive phrasing ("I led/decided/built") vs
-  // collective/passive framing ("we decided", "it was decided").
-  const AGENTIVE_PATTERNS = [/\bi led\b/i, /\bi decided\b/i, /\bi built\b/i, /\bi designed\b/i, /\bi chose\b/i, /\bi implemented\b/i, /\bi owned\b/i, /\bi drove\b/i];
-  const COLLECTIVE_PATTERNS = [/\bwe decided\b/i, /\bthe team\b/i, /\bit was decided\b/i, /\bwas decided\b/i];
-  let agentiveHits = 0, collectiveHits = 0;
-  pairs.forEach(qa => {
-    const text = String(qa.answer);
-    AGENTIVE_PATTERNS.forEach(re => { if (re.test(text)) agentiveHits++; });
-    COLLECTIVE_PATTERNS.forEach(re => { if (re.test(text)) collectiveHits++; });
-  });
-  const ownership = pairs.length ? Math.max(0, Math.min(100, Math.round(NEUTRAL + agentiveHits * 10 - collectiveHits * 8))) : NEUTRAL;
-
-  // Competency-grounded dimensions — read snapshot.hypothesisMap, don't recompute.
-  const avg = (comp) => {
-    const h = snapshot.hypothesisMap[comp];
-    return (h && h.avgScore) ? Math.round(h.avgScore) : NEUTRAL;
-  };
-  const communication = avg('communication');
-  const leadership = avg('leadership');
-  const businessThinking = avg('strategy');
-  const technicalDepth = Math.round((avg('system_design') + avg('technical')) / 2);
-  // Decision-making: no per-question scenario-format tag is persisted
-  // today (same DB gap flagged in earlier rounds), so this is a documented
-  // approximation via system_design + strategy performance, not a direct
-  // measurement of case/scenario answers specifically.
-  const decisionMaking = Math.round((avg('system_design') + avg('strategy')) / 2);
-
-  // Learning agility: score trend, second half of the session vs first half.
-  const scored = pairs.filter(qa => qa.score !== null && qa.score !== undefined && !qa.wasSkipped).map(qa => Number(qa.score)).filter(n => !Number.isNaN(n));
-  let learningAgility = NEUTRAL;
-  if (scored.length >= 4) {
-    const mid = Math.floor(scored.length / 2);
-    const firstHalfAvg = scored.slice(0, mid).reduce((a, b) => a + b, 0) / mid;
-    const secondHalfAvg = scored.slice(mid).reduce((a, b) => a + b, 0) / (scored.length - mid);
-    learningAgility = Math.max(0, Math.min(100, Math.round(NEUTRAL + (secondHalfAvg - firstHalfAvg))));
-  }
-
-  return { confidence, ownership, communication, technicalDepth, leadership, decisionMaking, learningAgility, businessThinking };
-}
-
-// ── F. Difficulty Controller ──
-// A faster-reacting, PER-QUESTION difficulty signal — distinct from the
-// L1–L7 seniority tier (which only moves on two consecutive extreme
-// scores). GUARDRAIL: this never changes the seniority tier itself; it
-// only labels how hard the next question should be WITHIN whatever tier
-// the (untouched) escalation loop already selected — composePrompt makes
-// this explicit to the model too, so a fresher's "Advanced" question is
-// the hardest fresher-appropriate question, never a senior-scoped one.
-function determineDifficulty({ snapshot, competency, qaPairs }) {
-  const scored = (Array.isArray(qaPairs) ? qaPairs : [])
-    .filter(qa => qa && qa.score !== null && qa.score !== undefined && !qa.wasSkipped)
-    .map(qa => Number(qa.score))
-    .filter(n => !Number.isNaN(n));
-  const lastScore = scored.length ? scored[scored.length - 1] : null;
-  const hypothesis = snapshot.hypothesisMap[competency] || snapshot.hypothesisMap[snapshot.priority[0]];
-  const tier = hypothesis.evidenceTier;
-
-  if (lastScore !== null && lastScore < 40) return 'Recovery';
-  if (lastScore !== null && lastScore >= 80 && (tier === EVIDENCE_TIERS.STRONG || tier === EVIDENCE_TIERS.VERIFIED)) return 'Advanced';
-  if (lastScore !== null && lastScore >= 70 && tier.level >= EVIDENCE_TIERS.MODERATE.level) return 'Stretch';
-  return 'Standard';
-}
-
-
-// ── G. Prompt Composer support: buildCalibrationState ──
-// The original L1–L7 escalation loop, AI/Data interceptor, and strict
-// consulting/coding checks — UNCHANGED math, but now returns STRUCTURED
-// TAGS (scenarioFormatTag, isAiDataDomain, activeLevelKey, etc.) instead
-// of pre-built sentences. This is the "separate reasoning from prompt
-// generation" split (audit item 7) — all wording now lives exclusively
-// in composePrompt() below. Two field-name bugs from an earlier pasted
-// draft remain fixed here (documented inline), unchanged from before.
-function buildCalibrationState({ experienceLevel, competency, roleTitle, jdText, qaPairs }) {
-  // ── 1. ORIGINAL L1–L7 ESCALATION ENGINE (unchanged from prior rounds) ──
-  const stageKey = CAREER_STAGES[experienceLevel] ? experienceLevel : 'mid';
-  const baseStage = CAREER_STAGES[stageKey];
-  let adjustedLevelNum = parseInt(baseStage.level.replace('L', ''), 10);
-
-  if (Array.isArray(qaPairs) && qaPairs.length >= 2) {
-    const validScores = qaPairs
-      .filter(qa => qa && qa.score !== null && qa.score !== undefined && qa.wasSkipped !== true)
-      .map(qa => Number(qa.score))
-      .filter(n => !Number.isNaN(n));
-    if (validScores.length >= 2) {
-      const lastScore = validScores[validScores.length - 1];
-      const prevScore = validScores[validScores.length - 2];
-      if (lastScore < 45 && prevScore < 45) {
-        adjustedLevelNum = Math.max(1, adjustedLevelNum - 1);
-      } else if (lastScore > 85 && prevScore > 85) {
-        adjustedLevelNum = Math.min(7, adjustedLevelNum + 1);
-      }
-    }
-  }
-
-  const activeLevelKey = `L${adjustedLevelNum}`;
-  const activeStageSchema = Object.values(CAREER_STAGES).find(s => s.level === activeLevelKey) || baseStage;
-
-  const structuralCompetency = String(competency || '').toLowerCase();
-  const roleContext = String(roleTitle || '').toLowerCase();
-  const matchContent = `${structuralCompetency} ${roleContext} ${jdText || ''}`.toLowerCase();
-  const hasWord = (text, kw) => new RegExp(`\\b${kw.replace(/[_ ]/g, '[_ ]')}\\b`, 'i').test(text);
-
-  // ── 2. ORIGINAL AI/DATA TOPIC INTERCEPTOR (unchanged) ──
-  const AI_DATA_KEYWORDS = ['ai', 'machine learning', 'machine_learning', 'data engineering', 'data_engineering', 'analytics', 'llm', 'data science', 'data_science', 'nlp', 'big data', 'big_data'];
-  const isAiDataDomain = AI_DATA_KEYWORDS.some(kw => hasWord(matchContent, kw));
-
-  // ── 3. STRICT CONSULTING/CODING FORMATTING CHECKS (unchanged logic —
-  // now returns a tag instead of the final sentence) ──
-  const isConsultingCase = roleContext === 'management consultant'; // clean, exact match only — no fuzzy 'mbb'/'case study' terms
-  const CODING_KEYWORDS = ['coding', 'algorithm', 'data_structure', 'data structure', 'programming', 'leetcode'];
-  const isCodingChallenge = CODING_KEYWORDS.some(kw => matchContent.includes(kw));
-
-  let scenarioFormatTag = 'analytical';
-  let caseTierBand = null;
-  if (isConsultingCase) {
-    scenarioFormatTag = 'consulting_case';
-    caseTierBand = adjustedLevelNum <= 3 ? 'junior' : 'senior';
-  } else if (isCodingChallenge) {
-    scenarioFormatTag = 'coding_challenge';
-  } else if (['leadership', 'communication', 'strategy'].some(c => structuralCompetency.includes(c))) {
-    scenarioFormatTag = 'behavioral';
-  } else if (['system_design', 'technical'].some(c => structuralCompetency.includes(c))) {
-    scenarioFormatTag = 'system_design';
-  }
-
-  // ── 4. Seniority Style Calibration (unchanged — styleKeyForLevel fold) ──
-  const experienceStyle = EXPERIENCE_STYLE_MAP[styleKeyForLevel(adjustedLevelNum)];
-
-  return { adjustedLevelNum, activeLevelKey, activeStageSchema, isAiDataDomain, scenarioFormatTag, caseTierBand, experienceStyle };
-}
-
-// ── H. Prompt Composer ──
-// THE ONLY place natural-language prompt text gets assembled (audit item
-// 7). Every upstream engine hands this structured data/tags; this module
-// converts them to the exact wording previously shipped, plus two new
-// additive sections (Candidate Model Signals, Difficulty Mode).
-const SCENARIO_FORMAT_TEXT = {
-  consulting_case: (caseTierBand) => `Management Consulting Case Interview style (MBB/Big 4).\n${caseTierBand === 'senior' ? '- For L4-L7: Provide an ambiguous macro-strategy shift, a cross-border acquisition scenario, or a structural operating-model crisis.' : '- For L1-L3: Provide a quantitative market sizing or profitability drop scenario.'}\nDemand an explicit, MECE-compliant framework before proposing a solution.`,
-  coding_challenge: () => 'Algorithmic challenge framework. Require explicit Big-O time/space complexity statements and explicit handling of critical edge cases (null values, memory leaks, integer overflows).',
-  behavioral: () => "Past-Behavioral blueprint structure (STAR method). Force the candidate to unpack a real historical timeline — 'Tell me about a specific time when...'.",
-  system_design: () => 'Active, scenario-based architecture problem statement. Force the candidate to reason out architectural trade-offs live.',
-  analytical: () => 'Present the challenge as a focused analytical scenario problem statement.',
-};
-
-function buildObjectiveHypothesisText(comp, evidenceTier, leastValidatedSubskill) {
-  if (evidenceTier === EVIDENCE_TIERS.STRONG || evidenceTier === EVIDENCE_TIERS.VERIFIED) {
-    return 'Competency highly validated. Transition to high-friction systemic trade-offs or monitor for architectural boundaries.';
-  }
-  if (evidenceTier === EVIDENCE_TIERS.MODERATE) {
-    return `Candidate demonstrates standard execution competency. Push deep validation testing on real-world execution edge-cases for [${leastValidatedSubskill}].`;
-  }
-  return `Verify foundational capacity and baseline familiarity with [${String(comp).toUpperCase()} -> ${leastValidatedSubskill}].`;
-}
-
-function composePrompt({ competency, calibrationState, evidenceProfile, strategy, candidateModel, difficulty }) {
-  const { activeLevelKey, activeStageSchema, isAiDataDomain, scenarioFormatTag, caseTierBand, experienceStyle } = calibrationState;
-
-  const scenarioFormat = (SCENARIO_FORMAT_TEXT[scenarioFormatTag] || SCENARIO_FORMAT_TEXT.analytical)(caseTierBand);
-  const aiDataDirective = (isAiDataDomain && DATA_AI_CALIBRATION[activeLevelKey]) ? `\n• Domain Requirement: ${DATA_AI_CALIBRATION[activeLevelKey]}` : '';
-  const objectiveHypothesis = buildObjectiveHypothesisText(competency, evidenceProfile.evidenceTier, evidenceProfile.leastValidatedSubskill);
-
-  const candidateModelLine = `Confidence ${candidateModel.confidence}/100 · Ownership ${candidateModel.ownership}/100 · Communication ${candidateModel.communication}/100 · Technical Depth ${candidateModel.technicalDepth}/100 · Leadership ${candidateModel.leadership}/100 · Decision-Making ${candidateModel.decisionMaking}/100 · Learning Agility ${candidateModel.learningAgility}/100 · Business Thinking ${candidateModel.businessThinking}/100`;
-
-  return `[INTERVIEWER ARCHETYPE EVALUATION STATE]
-• Target Capability: [${String(competency || '').toUpperCase()}]
-• Focus Vector: ${evidenceProfile.leastValidatedSubskill}
-• Core Hypothesis: ${objectiveHypothesis}
-• Strategy Phase: ${strategy.phase} (${strategy.mode} Mode)
-• Adjusted Caliber Tier: ${activeLevelKey} (${activeStageSchema.stage})${aiDataDirective}
-
-[CANDIDATE MODEL SIGNALS] (derived from prior answers — informs tone/framing only, never scope)
-${candidateModelLine}
-
-[MANDATORY GENERATION CONSTRAINTS]
-- Target Execution Style: ${activeStageSchema.style}
-- Expected Scope Boundaries: ${activeStageSchema.scope}
-- Seniority Profile Context: ${experienceStyle}
-- Framing Format: ${scenarioFormat}
-- Difficulty Mode: ${difficulty} — the hardest/easiest appropriate question WITHIN the Adjusted Caliber Tier above; never raise the seniority scope itself.
-- Action Directive: ${strategy.operationalDirective}
-
-[INTERNAL REASONING ENGINE CHAIN]
-Before generating the next question, you must step through this explicit reasoning sequence internally:
-1. What is the current interview hypothesis?
-2. What evidence already exists?
-3. What evidence is still missing?
-4. Is there any material semantic contradiction or timeline friction across prior answers to investigate?
-5. What is the candidate's current career stage?
-6. What is the appropriate cognitive mode?
-7. Generate exactly ONE concise question that collects the highest-value missing evidence for [${evidenceProfile.leastValidatedSubskill}].
-
-Do not append meta-commentary, introductory remarks, or structural summaries. Output ONLY the raw interview question text.`;
-}
-
-// ── selectNextCompetency — least-covered area, with a division-by-zero-
-// safe recency guard (turnsSinceEvaluated === 0 is hard-suppressed rather
-// than dividing by zero). ─────────────────────────────────────────────
-// ── selectNextCompetency — least-covered area, now reading from the
-// InterviewSnapshot (module 1) instead of recomputing runCoverageAndMemory-
-// Engine/runHypothesisEngine a second time per turn. Division-by-zero-safe
-// recency guard unchanged (turnsSinceEvaluated === 0 hard-suppressed).
-function selectNextCompetency(snapshot, questionCount) {
-  const { priority, memoryMap, hypothesisMap } = snapshot;
-
-  let targetedCompetency = null;
-  let maximumUncertaintyWeight = -1;
-
-  priority.forEach(comp => {
-    const data = memoryMap[comp];
-    const hypothesis = hypothesisMap[comp];
-
-    let uncertaintyScore = 100;
-    if (hypothesis.evidenceTier === EVIDENCE_TIERS.VERIFIED) uncertaintyScore = 10;
-    else if (hypothesis.evidenceTier === EVIDENCE_TIERS.STRONG) uncertaintyScore = 30;
-    else if (hypothesis.evidenceTier === EVIDENCE_TIERS.MODERATE) uncertaintyScore = 60;
-    else if (hypothesis.evidenceTier === EVIDENCE_TIERS.WEAK) uncertaintyScore = 90;
-
-    // Recency guard: penalize re-asking a topic that was just covered.
-    // turnsSinceEvaluated === 0 is hard-suppressed rather than dividing
-    // by zero (70 / 0 would be -Infinity).
-    const turnsSinceEvaluated = data.lastAskedTurn === -1 ? 99 : (questionCount - data.lastAskedTurn);
-    if (turnsSinceEvaluated > 0 && turnsSinceEvaluated <= 2) {
-      uncertaintyScore -= (70 / turnsSinceEvaluated);
-    } else if (turnsSinceEvaluated === 0) {
-      uncertaintyScore -= 70;
-    }
-
-    if (uncertaintyScore > maximumUncertaintyWeight) {
-      maximumUncertaintyWeight = uncertaintyScore;
-      targetedCompetency = comp;
-    }
-  });
-
-  return targetedCompetency || priority[questionCount % priority.length];
-}
-
-
 
 // ═══════════════════════════════════════════════════════════════════
 // SYSTEM PROMPT TEMPLATE — v0.6 competency-aware pipeline.
@@ -717,7 +253,6 @@ function buildSystemPrompt({
   history,
   currentAnswer,
   compPrompt,
-  calibrationBlueprint,
   competency,
   isDrill,
   openingQ,
@@ -782,8 +317,6 @@ EVALUATION DIRECTIVE:
 
 COMPETENCY ROUTING DIRECTIVE:
 ${compPrompt}
-${calibrationBlueprint ? `
-${calibrationBlueprint}` : ''}
 ${isDrill ? `
 DRILL-DOWN REQUIRED: The candidate's previous answer scored below 60 on the STAR rubric.
 Ask a targeted follow-up that directly challenges the weakest aspect of their last response.
@@ -805,14 +338,8 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   const persona = PERSONAS[personaId];
   if (!persona) throw new Error(`Unknown persona: ${personaId}`);
 
-  // 0. InterviewSnapshot (module 1) — parses qaPairs ONCE, feeds every
-  // engine below. Eliminates the duplicated runCoverageAndMemoryEngine
-  // call that previously ran once inside selectNextCompetency and again
-  // inside the calibration step.
-  const snapshot = buildInterviewSnapshot({ roleTitle, qaPairs, questionCount });
-
   // 1. Select which competency to probe next
-  const competency = selectNextCompetency(snapshot, questionCount);
+  const competency = selectNextCompetency(roleTitle, qaPairs, questionCount);
   const compPrompt = COMPETENCY_PROMPTS[competency] || '';
 
   // 2. Determine if we need a drill-down (last score was weak)
@@ -834,18 +361,6 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   const openingQ  = OPENING_QUESTIONS[roleKey]?.[levelKey] || OPENING_QUESTIONS.default.mid;
   const history   = buildSessionHistory(qaPairs);
 
-  // 3b. Calibration state (module: escalation/AI-Data/Consulting-Coding —
-  // unchanged math, structured tags) → Candidate Model Engine (module 2)
-  // → Difficulty Controller (module 3, reads snapshot's evidence tier for
-  // the active competency — never touches the seniority tier itself) →
-  // Prompt Composer (module 4) assembles the final blueprint text.
-  const calibrationState = buildCalibrationState({ experienceLevel, competency, roleTitle, jdText, qaPairs });
-  const evidenceProfile = snapshot.hypothesisMap[competency] || snapshot.hypothesisMap[snapshot.priority[0]];
-  const strategy = runCognitiveStrategyEngine(snapshot.currentTurn, snapshot.globalMaturityTiers);
-  const candidateModel = runCandidateModelEngine(qaPairs, snapshot);
-  const difficulty = determineDifficulty({ snapshot, competency, qaPairs });
-  const calibrationBlueprint = composePrompt({ competency, calibrationState, evidenceProfile, strategy, candidateModel, difficulty });
-
   // 4. Assemble the ordered production prompt (see buildSystemPrompt above)
   const system = buildSystemPrompt({
     persona,
@@ -857,7 +372,6 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     history,
     currentAnswer: currentAnswer || (lastQA ? lastQA.answer : ''),
     compPrompt,
-    calibrationBlueprint,
     competency,
     isDrill,
     openingQ,
@@ -870,39 +384,7 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     : `Generate the next adaptive interview question targeting the ${competency.replace('_',' ')} competency.`;
 
   const raw = await chat(prompt, { system, maxTokens: 512 });
-  let text = sanitizeQuestionOutput(raw, competency, roleKey, levelKey);
-
-  // ── Question Repetition & Similarity Loop Intercept (max 2 retries) ──
-  // Compares against the SANITIZED text (matches what's actually persisted
-  // in qaPairs on later turns, not the raw pre-sanitize model output).
-  let attempts = 0;
-  while (attempts < 2) {
-    let isRepetitive = false;
-    const normalizedNewQuestion = text.toLowerCase();
-    for (const pastTurn of qaPairs) {
-      if (!pastTurn.question) continue;
-      const pastQ = pastTurn.question.toLowerCase();
-      if (pastQ === normalizedNewQuestion ||
-          (pastQ.includes(competency.toLowerCase()) && normalizedNewQuestion.includes(competency.toLowerCase()) &&
-           pastQ.slice(0, 30) === normalizedNewQuestion.slice(0, 30))) {
-        isRepetitive = true;
-        break;
-      }
-    }
-    if (!isRepetitive) break;
-    // BUGFIX vs pasted draft: chat()'s real signature is chat(prompt, { system,
-    // maxTokens }) — not chat(systemPrompt, userTranscriptPayload). Neither of
-    // those two identifiers exist in this file; the real ones are `prompt` and
-    // `system`. Re-sanitize the retry output too, so a second pass through this
-    // loop (or the final return below) compares/returns clean text.
-    const retryRaw = await chat(prompt, {
-      system: system + '\n\n[CRITICAL WARNING: Your previous generation was flagged as repetitive or semantically identical to a question already asked in this session history. You MUST completely vary the scenario, switch the underlying subskill angle, and formulate a fresh, distinct operational direction.]',
-      maxTokens: 512,
-    });
-    text = sanitizeQuestionOutput(retryRaw, competency, roleKey, levelKey);
-    attempts++;
-  }
-
+  const text = sanitizeQuestionOutput(raw, competency, roleKey, levelKey);
   return { text, competency };
 }
 
