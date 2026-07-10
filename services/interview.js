@@ -400,12 +400,16 @@ function runCognitiveStrategyEngine(currentTurn, globalMaturityTiers) {
 
   if (unverifiedNodesCount === 0) {
     phase = 'Stress Testing';
-    if (currentTurn % 2 === 0) {
+    const rotation = currentTurn % 3;
+    if (rotation === 0) {
       mode = 'Challenge';
       operationalDirective = 'Introduce highly conflicting business constraints, resource limitations, or severe operational ambiguity.';
-    } else {
+    } else if (rotation === 1) {
       mode = 'Defend';
       operationalDirective = 'Force the candidate to explicitly justify architectural trade-offs, internal design patterns, and structural choices.';
+    } else {
+      mode = 'Reflect';
+      operationalDirective = 'Ask the candidate to step back and synthesize across their own prior answers this session — what they would do differently with the benefit of hindsight, and why.';
     }
   } else if (currentTurn >= 2) {
     phase = 'Calibrating Depth';
