@@ -161,38 +161,6 @@ async function runMigrations() {
           await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS competency_matrix JSONB`);
         }
       },
-      {
-        name: '004_cost_analytics',
-        up: async (c) => {
-          // Founder cost dashboard ledger — one row per interview, upserted as
-          // Vapi call cost and/or the async Claude report cost land.
-          await c.query(`CREATE TABLE IF NOT EXISTS cost_analytics (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-            interview_id INTEGER REFERENCES interview_sessions(id) ON DELETE SET NULL,
-            duration_minutes NUMERIC(10,2) DEFAULT 0,
-            vapi_cost NUMERIC(10,4) DEFAULT 0,
-            claude_cost NUMERIC(10,4) DEFAULT 0,
-            user_plan VARCHAR(50),
-            created_at TIMESTAMPTZ DEFAULT NOW(),
-            updated_at TIMESTAMPTZ DEFAULT NOW()
-          )`);
-          // One ledger row per interview — enables upsert on interview_id.
-          await c.query(`
-            CREATE UNIQUE INDEX IF NOT EXISTS cost_analytics_interview_id_unique_idx
-            ON cost_analytics (interview_id)
-          `);
-          // Today's-cost queries filter/sort on created_at.
-          await c.query(`
-            CREATE INDEX IF NOT EXISTS cost_analytics_created_at_idx
-            ON cost_analytics (created_at)
-          `);
-          await c.query(`
-            CREATE INDEX IF NOT EXISTS cost_analytics_user_id_idx
-            ON cost_analytics (user_id)
-          `);
-        }
-      },
     ];
 
     for (const m of migrations) {
