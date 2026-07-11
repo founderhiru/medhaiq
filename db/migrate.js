@@ -255,7 +255,7 @@ async function runMigrations() {
         }
       },
       {
-        {
+
         name: '007_activity_logs',
         up: async (c) => {
           await c.query(`CREATE TABLE IF NOT EXISTS user_activity_logs (
@@ -284,7 +284,7 @@ async function runMigrations() {
           await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_user_id_idx ON user_activity_logs (user_id)`);
           await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_created_at_idx ON user_activity_logs (created_at)`);
           await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_action_idx ON user_activity_logs (action)`);
-        }
+        
       },
       },
     ];
