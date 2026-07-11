@@ -222,6 +222,38 @@ async function runMigrations() {
           await c.query(`ALTER TABLE invitations ALTER COLUMN status SET DEFAULT 'pending'`);
         }
       },
+      {
+        name: '006_profile_bootstrap',
+        up: async (c) => {
+          await c.query(`CREATE TABLE IF NOT EXISTS profiles (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          )`);
+          await c.query(`CREATE TABLE IF NOT EXISTS preferences (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            theme VARCHAR(20) DEFAULT 'dark',
+            email_notifications BOOLEAN DEFAULT true,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          )`);
+          await c.query(`CREATE TABLE IF NOT EXISTS workspaces (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            name VARCHAR(255) DEFAULT 'My Workspace',
+            is_default BOOLEAN DEFAULT true,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          )`);
+          await c.query(`CREATE TABLE IF NOT EXISTS career_profiles (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            current_role VARCHAR(255),
+            target_role VARCHAR(255),
+            experience_level VARCHAR(50),
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          )`);
+        }
+      },
     ];
 
     for (const m of migrations) {
