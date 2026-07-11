@@ -1,13 +1,7 @@
 // Auth routes — magic link email login, no passwords.
 const express = require('express');
 const passport = require('passport');
-const {
-  findOrCreateUser, getUserById, getUserByEmail, getUserByEmailAndPassword,
-  createUserWithPassword, hashPassword, createToken, validateToken,
-} = require('../db/auth');
-const { getValidInvitation, acceptInvitation } = require('../db/invitations');
-const { ensureUserBootstrap } = require('../db/profile-bootstrap');
-const { logUserActivity } = require('../services/activity-logger');
+const { findOrCreateUser, getUserById, getUserByEmailAndPassword, createUserWithPassword, hashPassword, createToken, validateToken } = require('../db/auth');
 const { sendMagicLinkEmail } = require('../services/email');
 const router = express.Router();
 
@@ -21,21 +15,13 @@ router.get('/google', (req, res, next) => {
 
 // GET /auth/google/callback — Google OAuth callback
 router.get('/google/callback',
-  (req, res, next) => {
-    passport.authenticate('google', (err, user, info) => {
-      if (err) return res.redirect('/auth/login?error=google-auth-failed');
-      if (!user) return res.redirect('/auth/login?error=no-invite');
-      req.user = user;
-      next();
-    })(req, res, next);
-  },
+  passport.authenticate('google', { failureRedirect: '/auth/login?error=google-auth-failed' }),
   (req, res) => {
     res.cookie('user_id', req.user.id, {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
       sameSite: 'lax',
     });
-    logUserActivity({ userId: req.user.id, action: 'login_google', page: '/auth/google/callback', req });
     res.redirect('/dashboard/history');
   }
 );
@@ -47,31 +33,14 @@ router.post('/login', async (req, res) => {
   if (!trimmed || !/^[^\n\r@]+@[^\n\r@]+\.[^\n\r@]+$/.test(trimmed)) {
     return res.status(400).json({ error: 'Valid email required' });
   }
-  const cleanEmail = trimmed.toLowerCase();
 
   try {
-    const existingUser = await getUserByEmail(cleanEmail);
-    const isNewUser = !existingUser;
-
-    if (isNewUser) {
-      const invite = await getValidInvitation(cleanEmail);
-      if (!invite) {
-        return res.status(403).json({ error: 'This email does not have an active private beta invitation.' });
-      }
-    }
-
-    const user = await findOrCreateUser(cleanEmail, name?.trim() || null);
-
-    if (isNewUser) {
-      await acceptInvitation(cleanEmail);
-      await ensureUserBootstrap(user.id);
-    }
-
+    const user = await findOrCreateUser(email.trim().toLowerCase(), name?.trim() || null);
     const token = await createToken(user.id, 1);
-    const magicUrl = `${process.env.APP_URL || 'https://www.medhaiq.ai'}/auth/verify?token=${token}`;
-    await sendMagicLinkEmail(cleanEmail, magicUrl);
 
-    logUserActivity({ userId: user.id, action: isNewUser ? 'signup_magic_link' : 'login_magic_link_requested', page: '/auth/login', req });
+    const magicUrl = `${process.env.APP_URL || 'https://medhaiq.polsia.app'}/auth/verify?token=${token}`;
+
+    await sendMagicLinkEmail(email.trim().toLowerCase(), magicUrl);
 
     return res.json({ success: true, message: 'Magic link sent. Check your email.' });
   } catch (err) {
@@ -92,7 +61,7 @@ router.post('/password-login', async (req, res) => {
   }
 
   try {
-    const user = await getUserByEmailAndPassword(trimmed.toLowerCase(), password);
+    const user = await getUserByEmailAndPassword(email.trim().toLowerCase(), password);
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
@@ -102,8 +71,6 @@ router.post('/password-login', async (req, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       sameSite: 'lax',
     });
-
-    logUserActivity({ userId: user.id, action: 'login_password', page: '/auth/password-login', req });
 
     return res.json({ success: true });
   } catch (err) {
@@ -122,27 +89,16 @@ router.post('/signup', async (req, res) => {
   if (!password || password.length < 8) {
     return res.status(400).json({ error: 'Password must be at least 8 characters' });
   }
-  const cleanEmail = trimmed.toLowerCase();
 
   try {
-    const invite = await getValidInvitation(cleanEmail);
-    if (!invite) {
-      return res.status(403).json({ error: 'This email does not have an active private beta invitation.' });
-    }
-
     const hash = await hashPassword(password);
-    const user = await createUserWithPassword(cleanEmail, name?.trim() || null, hash);
-
-    await acceptInvitation(cleanEmail);
-    await ensureUserBootstrap(user.id);
+    const user = await createUserWithPassword(email.trim().toLowerCase(), name?.trim() || null, hash);
 
     res.cookie('user_id', user.id, {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
       sameSite: 'lax',
     });
-
-    logUserActivity({ userId: user.id, action: 'signup_password', page: '/auth/signup', req });
 
     return res.json({ success: true });
   } catch (err) {
@@ -168,8 +124,6 @@ router.get('/verify', async (req, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       sameSite: 'lax',
     });
-
-    logUserActivity({ userId, action: 'login_magic_link_verified', page: '/auth/verify', req });
 
     return res.redirect('/interview');
   } catch (err) {
