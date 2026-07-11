@@ -212,6 +212,16 @@ async function runMigrations() {
           `);
         }
       },
+      {
+        name: '005b_invitations_fix_columns',
+        up: async (c) => {
+          await c.query(`ALTER TABLE invitations ADD COLUMN IF NOT EXISTS invite_token VARCHAR(255) UNIQUE`);
+          await c.query(`ALTER TABLE invitations ADD COLUMN IF NOT EXISTS invited_by INTEGER REFERENCES users(id) ON DELETE SET NULL`);
+          await c.query(`ALTER TABLE invitations ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ`);
+          await c.query(`ALTER TABLE invitations ADD COLUMN IF NOT EXISTS accepted_at TIMESTAMPTZ`);
+          await c.query(`ALTER TABLE invitations ALTER COLUMN status SET DEFAULT 'pending'`);
+        }
+      },
     ];
 
     for (const m of migrations) {
