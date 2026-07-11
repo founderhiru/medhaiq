@@ -193,6 +193,25 @@ async function runMigrations() {
           `);
         }
       },
+      {
+        name: '005_invitations',
+        up: async (c) => {
+          await c.query(`CREATE TABLE IF NOT EXISTS invitations (
+            id SERIAL PRIMARY KEY,
+            email VARCHAR(255) NOT NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'pending',
+            invite_token VARCHAR(255) UNIQUE,
+            invited_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            accepted_at TIMESTAMPTZ,
+            expires_at TIMESTAMPTZ
+          )`);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS invitations_email_unique_idx
+            ON invitations (LOWER(email))
+          `);
+        }
+      },
     ];
 
     for (const m of migrations) {
