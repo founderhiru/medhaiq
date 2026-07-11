@@ -2,6 +2,7 @@
 const express = require('express');
 const path = require('path');
 const { buildLandingContext } = require('./lib/landing-context');
+require('./config/passport');
 
 // Fail fast if DATABASE_URL is missing
 if (!process.env.DATABASE_URL) {
@@ -19,6 +20,8 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const passport = require('passport');
+app.use(passport.initialize());
 
 // Minimal cookie parser — no extra dependencies
 app.use((req, _res, next) => {
