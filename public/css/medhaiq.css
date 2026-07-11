@@ -24,6 +24,78 @@
   --text-faint:   #475569;
   --light-surface: #F8FAFC;
 
+  /* ============================================================
+   BRAND TOKENS â€” v3 (fixed-asset icon + live wordmark)
+   Append inside the existing :root block in BOTH
+   public/css/medhaiq.css and public/css/interview.css.
+   Purely additive â€” no existing token is removed or renamed.
+   ============================================================ */
+:root {
+  /* Wordmark "IQ" gradient â€” exact stops as specified */
+  --brand-iq-gradient: linear-gradient(
+    135deg,
+    #3B82F6 0%,
+    #4F6CF8 35%,
+    #6C5CF5 70%,
+    #8B5CF6 100%
+  );
+
+  /* Icon â†” wordmark gap */
+  --brand-logo-gap: 11px; /* mid-point of the 10â€“12px spec */
+
+  /* Sizing scale (icon height in px; wordmark font-size derives from this at 0.56x) */
+  --brand-size-xs: 24px;
+  --brand-size-sm: 28px;
+  --brand-size-md: 36px;
+  --brand-size-lg: 44px;
+  --brand-size-xl: 56px;
+}
+
+/* ============================================================
+   COMPONENT STYLES
+   ============================================================ */
+.brand-logo {
+  display: inline-flex;
+  align-items: center;      /* optically centered against the wordmark cap-height */
+  gap: var(--brand-logo-gap);
+  text-decoration: none;
+  line-height: 1;
+}
+
+.brand-logo__icon {
+  flex-shrink: 0;
+  display: block;
+  object-fit: contain;      /* never stretch, never crop */
+}
+
+.brand-logo__wordmark {
+  font-family: var(--font-display);
+  font-weight: 600;         /* font-semibold, per spec */
+  letter-spacing: -0.02em;  /* tracking-tight */
+  color: var(--white);
+  white-space: nowrap;
+}
+
+.brand-logo__iq {
+  background: var(--brand-iq-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent; /* Safari */
+}
+
+/* ============================================================
+   RESPONSIVE â€” icon-only below 640px for any .brand-logo that
+   hasn't been explicitly given variant="icon" server-side.
+   This is the CSS-level fallback; the EJS `variant` param is the
+   authoritative per-instance control described in brand-logo.ejs.
+   ============================================================ */
+@media (max-width: 640px) {
+  .brand-logo--full .brand-logo__wordmark {
+    display: none;
+  }
+}
+
   /* Typography */
   --font-display: 'Plus Jakarta Sans', sans-serif;
   --font-body:    'Inter', sans-serif;

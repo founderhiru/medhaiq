@@ -1,0 +1,46 @@
+<%
+/* ============================================================
+   <MedhaIQLogo /> — EJS equivalent (this project has no React/JSX runtime).
+   THE ONLY branding markup in the app. Every nav/footer/session-bar
+   logo instance must include this partial — never duplicate the
+   <img>/wordmark markup inline anywhere else.
+
+   Props (passed as locals):
+     size          'xs' | 'sm' | 'md' | 'lg' | 'xl'   (default 'md')
+     variant       'icon' | 'full'                     (default 'full')
+     href          link target                         (default '/')
+     suffix        appended after "MedhaIQ", e.g. '.ai' (default '')
+     eager         true to skip lazy-loading (use for above-the-fold
+                   nav instances; default false = loading="lazy")
+
+   Usage:
+     <%- include('partials/brand-logo', { size: 'md', variant: 'full', href: '/', eager: true }) %>
+   ================================================================ */
+
+const _sizeMap = { xs: 24, sm: 28, md: 36, lg: 44, xl: 56 };
+const _size    = _sizeMap[typeof size !== 'undefined' ? size : 'md'] || 36;
+const _variant = typeof variant !== 'undefined' ? variant : 'full';
+const _href    = typeof href !== 'undefined' ? href : '/';
+const _suffix  = typeof suffix !== 'undefined' ? suffix : '';
+const _eager   = typeof eager !== 'undefined' ? eager : false;
+
+/* Icon's native crop is 245x167 (~1.467:1) — height drives the box,
+   width auto-scales so the asset is never stretched or cropped. */
+const _iconH = _size;
+const _iconW = Math.round(_size * (245 / 167));
+%>
+<a href="<%= _href %>" class="brand-logo brand-logo--<%= _variant %>" aria-label="MedhaIQ<%= _suffix %> home">
+  <img
+    src="/assets/branding/medhaiq-icon.png"
+    alt="MedhaIQ"
+    class="brand-logo__icon"
+    width="<%= _iconW %>"
+    height="<%= _iconH %>"
+    style="height:<%= _iconH %>px;width:<%= _iconW %>px;"
+    loading="<%= _eager ? 'eager' : 'lazy' %>"
+    decoding="async"
+  />
+  <% if (_variant === 'full') { %>
+    <span class="brand-logo__wordmark" style="font-size:<%= Math.round(_size * 0.56) %>px;">Medha<span class="brand-logo__iq">IQ</span><%= _suffix %></span>
+  <% } %>
+</a>
