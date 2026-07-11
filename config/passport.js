@@ -4,7 +4,7 @@ const { findOrCreateUserFromGoogle } = require('../db/auth');
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const CALLBACK_URL = `https://hirable-2nwo.polsia.app/auth/google/callback`;
+const CALLBACK_URL = `${process.env.APP_URL || 'https://www.medhaiq.ai'}/auth/google/callback`;
 
 if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
   passport.use(new GoogleOAuth2Strategy({
