@@ -9,6 +9,21 @@ const PLAN_PRICES = {
   leadership: 35,
 };
 
+// Fixed monthly infrastructure costs — flat bills that exist regardless of
+// usage volume. Deliberately separate from AI cost (Vapi/Claude), which is
+// usage-metered and already tracked per-interview in cost_analytics.
+//
+// NOTE: Claude API spend is NOT listed here. The $20 Anthropic console
+// balance is prepaid credit funding the same token usage already captured
+// in cost_analytics.claude_cost — listing it again here would double-count
+// it. Only list something here if it's billed regardless of usage.
+// Vapi is pay-as-you-go (confirmed) — no fixed line for it either.
+const FIXED_MONTHLY_COSTS = {
+  render: 7,
+  supabase: 0,
+};
+const TOTAL_FIXED_MONTHLY = Object.values(FIXED_MONTHLY_COSTS).reduce((a, b) => a + b, 0);
+
 // Insert or update today's ledger row for an interview. Safe to call multiple
 // times for the same interview_id (e.g. Vapi cost lands first, Claude report
 // cost lands later) — upserts on interview_id.
@@ -90,8 +105,17 @@ async function getFounderDashboardStats() {
   const revenueToday = monthlyRevenue / 30;
 
   const todaysTotalAiCost = ledger.todays_vapi_cost + ledger.todays_claude_cost;
+  const fixedCostsToday = TOTAL_FIXED_MONTHLY / 30;
+
+  // Gross profit/margin stays AI-cost-only — this is the number you're used
+  // to reading, unaffected by fixed overhead.
   const grossProfit = revenueToday - todaysTotalAiCost;
   const todayProfitMarginPct = revenueToday > 0 ? (grossProfit / revenueToday) * 100 : 0;
+
+  // Separate ROI view — same profit, minus fixed monthly overhead. Kept as
+  // its own set of fields so it never gets mixed into the headline numbers.
+  const trueProfitToday = grossProfit - fixedCostsToday;
+  const trueMarginPct = revenueToday > 0 ? (trueProfitToday / revenueToday) * 100 : 0;
 
   return {
     revenue_today: revenueToday,
@@ -109,7 +133,12 @@ async function getFounderDashboardStats() {
     avg_cost_per_interview: ledger.avg_cost_per_interview,
     most_expensive_interview_cost: ledger.most_expensive_interview_cost,
     today_profit_margin_pct: todayProfitMarginPct,
+    // Separate ROI block — fixed overhead included, kept apart from the
+    // AI-only numbers above.
+    fixed_costs_today: fixedCostsToday,
+    true_profit_today: trueProfitToday,
+    true_margin_pct: trueMarginPct,
   };
 }
 
-module.exports = { upsertCostEntry, getFounderDashboardStats, PLAN_PRICES };
+module.exports = { upsertCostEntry, getFounderDashboardStats, PLAN_PRICES, FIXED_MONTHLY_COSTS };

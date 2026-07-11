@@ -79,9 +79,16 @@
     </section>
 
     <!-- 3. Granular Spends & Flags -->
-    <section>
+    <section class="mb-10">
       <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">3. Granular Spends & Flags</h2>
       <div id="spendGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-5"></div>
+    </section>
+
+    <!-- 4. Overall ROI (fixed costs included) — kept separate on purpose -->
+    <section>
+      <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">4. Overall ROI</h2>
+      <p class="text-xs text-gray-600 mb-4">Includes fixed monthly overhead (Render, Supabase) — separate from the AI-only numbers above.</p>
+      <div id="roiGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-5"></div>
     </section>
 
   </div>
@@ -94,6 +101,7 @@
   const financialGrid = document.getElementById('financialGrid');
   const volumeGrid = document.getElementById('volumeGrid');
   const spendGrid = document.getElementById('spendGrid');
+  const roiGrid = document.getElementById('roiGrid');
   const errorBanner = document.getElementById('errorBanner');
   const authPrompt = document.getElementById('authPrompt');
   const asOfLabel = document.getElementById('asOfLabel');
@@ -127,12 +135,14 @@
     financialGrid.innerHTML = skeletonCards(3);
     volumeGrid.innerHTML = skeletonCards(3);
     spendGrid.innerHTML = skeletonCards(2);
+    roiGrid.innerHTML = skeletonCards(3);
   }
 
   function renderStats(d) {
     const marginClass = d.today_profit_margin_pct >= 0 ? 'text-good' : 'text-bad';
+    const trueMarginClass = d.true_margin_pct >= 0 ? 'text-good' : 'text-bad';
 
-    // 1. The Financial Core
+    // 1. The Financial Core — AI cost only, unaffected by fixed overhead.
     financialGrid.innerHTML = [
       cardTemplate({
         label: "Today's revenue",
@@ -140,9 +150,9 @@
         sub: `${money(d.monthly_revenue)} MRR ÷ 30`,
       }),
       cardTemplate({
-        label: "Today's cost",
+        label: "Today's AI cost",
         value: money(d.todays_total_ai_cost),
-        sub: 'Sum of direct API usage today',
+        sub: `Vapi ${money(d.todays_vapi_cost)} · Claude ${money(d.todays_claude_cost)}`,
         accentClass: 'text-warn',
       }),
       cardTemplate({
@@ -205,6 +215,27 @@
       })}
     `;
 
+    // 4. Overall ROI — fixed costs live only here.
+    roiGrid.innerHTML = [
+      cardTemplate({
+        label: 'Fixed costs (today)',
+        value: money(d.fixed_costs_today),
+        sub: 'Render + Supabase, daily slice',
+      }),
+      cardTemplate({
+        label: 'True profit',
+        value: money(d.true_profit_today),
+        sub: 'Gross profit minus fixed overhead',
+        accentClass: d.true_profit_today >= 0 ? 'text-good' : 'text-bad',
+      }),
+      cardTemplate({
+        label: 'True margin',
+        value: `${num(d.true_margin_pct, 1)}%`,
+        sub: 'Includes fixed overhead',
+        accentClass: trueMarginClass,
+      }),
+    ].join('');
+
     asOfLabel.textContent = `As of ${new Date().toLocaleTimeString()}`;
   }
 
@@ -233,6 +264,7 @@
         financialGrid.innerHTML = '';
         volumeGrid.innerHTML = '';
         spendGrid.innerHTML = '';
+        roiGrid.innerHTML = '';
         return;
       }
 
@@ -243,6 +275,7 @@
         financialGrid.innerHTML = '';
         volumeGrid.innerHTML = '';
         spendGrid.innerHTML = '';
+        roiGrid.innerHTML = '';
         return;
       }
 
@@ -253,6 +286,7 @@
       financialGrid.innerHTML = '';
       volumeGrid.innerHTML = '';
       spendGrid.innerHTML = '';
+      roiGrid.innerHTML = '';
     }
   }
 
