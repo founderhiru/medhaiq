@@ -10,15 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/interview.css">
   <style>
-    /* Force every native form control to inherit the page font instead of the
-       browser's default system font (Arial/Segoe UI/etc.) — this is the #1
-       cause of buttons/inputs rendering in a different typeface than headings.
-       Kept as a bare element selector (low specificity) so the more specific
-       .authv2-cta / .authv2-google-btn font-family rules below still win. */
-    button, input, textarea, select {
-      font-family: 'Inter', system-ui, sans-serif;
-    }
-
     /* ── Auth v2 — Split Screen (uses --navy/--card/--royal/--bright/--emerald tokens from interview.css) ── */
     .authv2-page {
       min-height: 100vh;
@@ -143,7 +134,7 @@
     }
     .authv2-card h2 {
       font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      font-weight: 800;
+      font-weight: 700;
       font-size: 30px;
       color: var(--white);
       text-align: center;
