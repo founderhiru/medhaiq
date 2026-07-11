@@ -283,7 +283,21 @@ async function runMigrations() {
           await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()`);
           await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_user_id_idx ON user_activity_logs (user_id)`);
           await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_created_at_idx ON user_activity_logs (created_at)`);
-          await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_action_idx ON user_activity_logs (action)`);
+         await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_action_idx ON user_activity_logs (action)`);
+        }
+      },
+      {
+        name: '007c_activity_logs_new_user_id_column',
+        up: async (c) => {
+          // The pre-existing "user_id" column on this table is UUID (left over
+          // from earlier work), but this app's real users.id is an integer.
+          // Rather than alter/drop a column something else might depend on,
+          // give our activity logging its own correctly-typed column.
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS app_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL`);
+          await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_app_user_id_idx ON user_activity_logs (app_user_id)`);
+        }
+      },
+    ];
         
       },
       },
