@@ -255,13 +255,14 @@ async function runMigrations() {
         }
       },
       {
+        {
         name: '007_activity_logs',
         up: async (c) => {
           await c.query(`CREATE TABLE IF NOT EXISTS user_activity_logs (
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
             session_id VARCHAR(255),
-            action VARCHAR(100) NOT NULL,
+            action VARCHAR(100),
             page VARCHAR(255),
             feature VARCHAR(100),
             target_id VARCHAR(255),
@@ -270,14 +271,6 @@ async function runMigrations() {
             user_agent TEXT,
             created_at TIMESTAMPTZ DEFAULT NOW()
           )`);
-          await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_user_id_idx ON user_activity_logs (user_id)`);
-          await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_created_at_idx ON user_activity_logs (created_at)`);
-          await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_action_idx ON user_activity_logs (action)`);
-        }
-      },
-      {
-        name: '007b_activity_logs_fix_columns',
-        up: async (c) => {
           await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL`);
           await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS session_id VARCHAR(255)`);
           await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS action VARCHAR(100)`);
@@ -292,6 +285,7 @@ async function runMigrations() {
           await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_created_at_idx ON user_activity_logs (created_at)`);
           await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_action_idx ON user_activity_logs (action)`);
         }
+      },
       },
     ];
 
