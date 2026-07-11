@@ -254,6 +254,27 @@ async function runMigrations() {
           )`);
         }
       },
+      {
+        name: '007_activity_logs',
+        up: async (c) => {
+          await c.query(`CREATE TABLE IF NOT EXISTS user_activity_logs (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+            session_id VARCHAR(255),
+            action VARCHAR(100) NOT NULL,
+            page VARCHAR(255),
+            feature VARCHAR(100),
+            target_id VARCHAR(255),
+            metadata JSONB DEFAULT '{}',
+            ip_address VARCHAR(64),
+            user_agent TEXT,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          )`);
+          await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_user_id_idx ON user_activity_logs (user_id)`);
+          await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_created_at_idx ON user_activity_logs (created_at)`);
+          await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_action_idx ON user_activity_logs (action)`);
+        }
+      },
     ];
 
     for (const m of migrations) {
