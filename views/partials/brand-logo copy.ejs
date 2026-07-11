@@ -5,8 +5,8 @@ const _variant = typeof variant !== 'undefined' ? variant : 'full';
 const _href    = typeof href !== 'undefined' ? href : '/';
 const _suffix  = typeof suffix !== 'undefined' ? suffix : '';
 const _eager   = typeof eager !== 'undefined' ? eager : false;
-const _iconH = Math.round(_size * 0.88); /* 12% smaller for better optical balance vs the wordmark */
-const _iconW = Math.round(_iconH * (245 / 167));
+const _iconH = _size;
+const _iconW = Math.round(_size * (245 / 167));
 %>
 <a href="<%= _href %>" class="brand-logo brand-logo--<%= _variant %>" aria-label="MedhaIQ<%= _suffix %> home">
   <img
