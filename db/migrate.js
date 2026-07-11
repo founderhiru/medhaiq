@@ -297,6 +297,17 @@ async function runMigrations() {
           await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_app_user_id_idx ON user_activity_logs (app_user_id)`);
         }
       },
+      {
+        name: '007d_activity_logs_relax_action_type',
+        up: async (c) => {
+          // Legacy column from earlier work: NOT NULL with no default, and
+          // our activity logger never populates it (we write to the newer
+          // "action" column instead). Relaxing this is additive/safe — it
+          // only permits more inserts, it can't break anything that already
+          // depends on this column being required.
+          await c.query(`ALTER TABLE user_activity_logs ALTER COLUMN action_type DROP NOT NULL`);
+        }
+      },
     ];
 
     for (const m of migrations) {
