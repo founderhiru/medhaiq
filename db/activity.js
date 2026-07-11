@@ -2,9 +2,9 @@
 const { pool } = require('./index');
 
 async function insertActivityLog(entry) {
-  await pool.query(
+ await pool.query(
     `INSERT INTO user_activity_logs
-       (user_id, session_id, action, page, feature, target_id, metadata, ip_address, user_agent)
+       (app_user_id, session_id, action, page, feature, target_id, metadata, ip_address, user_agent)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
     [
       entry.userId || null,
