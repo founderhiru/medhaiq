@@ -275,6 +275,24 @@ async function runMigrations() {
           await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_action_idx ON user_activity_logs (action)`);
         }
       },
+      {
+        name: '007b_activity_logs_fix_columns',
+        up: async (c) => {
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL`);
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS session_id VARCHAR(255)`);
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS action VARCHAR(100)`);
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS page VARCHAR(255)`);
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS feature VARCHAR(100)`);
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS target_id VARCHAR(255)`);
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'`);
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS ip_address VARCHAR(64)`);
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS user_agent TEXT`);
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()`);
+          await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_user_id_idx ON user_activity_logs (user_id)`);
+          await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_created_at_idx ON user_activity_logs (created_at)`);
+          await c.query(`CREATE INDEX IF NOT EXISTS user_activity_logs_action_idx ON user_activity_logs (action)`);
+        }
+      },
     ];
 
     for (const m of migrations) {
