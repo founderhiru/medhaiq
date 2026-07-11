@@ -247,7 +247,7 @@ async function runMigrations() {
           await c.query(`CREATE TABLE IF NOT EXISTS career_profiles (
             id SERIAL PRIMARY KEY,
             user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-            current_role VARCHAR(255),
+            current_role_title VARCHAR(255),,
             target_role VARCHAR(255),
             experience_level VARCHAR(50),
             created_at TIMESTAMPTZ DEFAULT NOW()
