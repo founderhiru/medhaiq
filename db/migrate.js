@@ -298,10 +298,6 @@ async function runMigrations() {
         }
       },
     ];
-        
-      },
-      },
-    ];
 
     for (const m of migrations) {
       if (done.has(m.name)) {
