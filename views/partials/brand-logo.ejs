@@ -1,5 +1,4 @@
 <%
-// 1. We scale down 'md' specifically for the Navbar standard, keeping 'lg' and 'xl' large for login pages.
 const _sizeMap = { xs: 18, sm: 22, md: 35, lg: 56, xl: 80 }; 
 const _size    = _sizeMap[typeof size !== 'undefined' ? size : 'md'] || 35;
 const _variant = typeof variant !== 'undefined' ? variant : 'full';
@@ -7,7 +6,6 @@ const _href    = typeof href !== 'undefined' ? href : '/';
 const _suffix  = typeof suffix !== 'undefined' ? suffix : '';
 const _eager   = typeof eager !== 'undefined' ? eager : false;
 
-// 2. This maps the 'md' icon height to ~24px and the text size to ~20px automatically
 const _iconH   = Math.round(_size * 0.68); 
 const _iconW   = Math.round(_iconH * 1.467);
 const _textS   = Math.round(_size * 0.57);
@@ -24,10 +22,8 @@ const _textS   = Math.round(_size * 0.57);
     decoding="async"
   />
   <% if (_variant === 'full') { %>
-    {/* 3. We use font-weight 500 (Medium) and tracking-tight to perfectly match premium nav typography */}
-    <span class="brand-logo__wordmark" style="font-size: <%= _textS %>px; font-weight: 500; letter-spacing: -0.04em; display: inline-flex; align-items: center; line-height: 1;">
+      <span class="brand-logo__wordmark" style="font-size: <%= _textS %>px; font-weight: 500; letter-spacing: -0.04em; display: inline-flex; align-items: center; line-height: 1;">
       <span style="color: #ffffff;">Medha</span>
-      {/* 4. Shifted the gradient stops slightly to make the 'IQ' punchier on dark backgrounds */}
       <span style="background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 40%, #6C5CF5 75%, #8B5CF6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">IQ</span>
     </span>
   <% } %>
