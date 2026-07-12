@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/brand-logo.css">
   <style>
     :root {
       --bg:       #070b14;
@@ -56,9 +57,6 @@
       padding: 0 24px;
       justify-content: space-between;
     }
-    .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
-    .nav-logo span { font-family:'Plus Jakarta Sans',system-ui,sans-serif; font-size:15px; font-weight:700; color:#fff; }
-    .nav-logo span em { color: var(--blue-hi); font-style: normal; }
     .nav-actions { display: flex; align-items: center; gap: 10px; }
     .nav-link { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; padding: 5px 10px; border-radius: 6px; transition: color 0.15s; }
     .nav-link:hover { color: var(--white); }
@@ -414,10 +412,7 @@
 <body>
 
 <nav class="nav">
-<a href="/" class="nav-logo">
-    <img src="/assets/branding/medhaiq-icon.png" alt="MedhaIQ" style="height:16px;width:auto;display:block;">
-    <span>Medha<em>IQ</em>.ai</span>
-  </a>
+<%- include('partials/brand-logo', { size: 'md', eager: true }) %>
   <div class="nav-actions">
     <a href="/dashboard/history" class="nav-link">History</a>
   </div>

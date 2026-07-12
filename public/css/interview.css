@@ -883,55 +883,47 @@ h1, h2, h3, h4, h5 {
 }
 
 /* ============================================================
-   BRAND TOKENS â€” v3 (fixed-asset icon + live wordmark)
-   Append inside the existing :root block in BOTH
-   public/css/medhaiq.css and public/css/interview.css.
-   Purely additive â€” no existing token is removed or renamed.
+   BRAND LOGO — tokenized architecture, contextual sizing via
+   .brand-logo--sm/md/lg modifiers (no inline styles, no per-instance
+   aspect-ratio math — mirrors medhaiq.css / brand-logo.css exactly).
    ============================================================ */
 :root {
-  /* Wordmark "IQ" gradient â€” exact stops as specified */
   --brand-iq-gradient: linear-gradient(
     135deg,
-    #3B82F6 0%,
-    #4F6CF8 35%,
-    #6C5CF5 70%,
+    #3D8BFF 0%,
+    #4F74FF 38%,
+    #6D5CF5 72%,
     #8B5CF6 100%
   );
-
-  /* Icon â†” wordmark gap */
-  --brand-logo-gap: 11px; /* mid-point of the 10â€“12px spec */
-
-  /* Sizing scale (icon height in px; wordmark font-size derives from this at 0.56x) */
-  --brand-size-xs: 24px;
-  --brand-size-sm: 28px;
-  --brand-size-md: 36px;
-  --brand-size-lg: 44px;
-  --brand-size-xl: 56px;
 }
 
-/* ============================================================
-   COMPONENT STYLES
-   ============================================================ */
 .brand-logo {
   display: inline-flex;
-  align-items: center;      /* optically centered against the wordmark cap-height */
-  gap: var(--brand-logo-gap);
+  align-items: center;
   text-decoration: none;
   line-height: 1;
+  transition: opacity 0.2s ease;
 }
+.brand-logo:hover { opacity: 0.9; }
 
 .brand-logo__icon {
+  height: auto;
+  width: auto;
+  max-width: none;
   flex-shrink: 0;
   display: block;
-  object-fit: contain;      /* never stretch, never crop */
+  object-fit: contain;
 }
 
-.brand-logo__wordmark {
+.brand-logo__text {
+  font-weight: 700;
+  letter-spacing: -0.04em;
   font-family: var(--font-display);
-  font-weight: 600;         /* font-semibold, per spec */
-  letter-spacing: -0.02em;  /* tracking-tight */
   color: var(--white);
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 .brand-logo__iq {
@@ -939,17 +931,23 @@ h1, h2, h3, h4, h5 {
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  -webkit-text-fill-color: transparent; /* Safari */
+  -webkit-text-fill-color: transparent;
 }
 
-/* ============================================================
-   RESPONSIVE â€” icon-only below 640px for any .brand-logo that
-   hasn't been explicitly given variant="icon" server-side.
-   This is the CSS-level fallback; the EJS `variant` param is the
-   authoritative per-instance control described in brand-logo.ejs.
-   ============================================================ */
+.brand-logo--sm { gap: 8px; }
+.brand-logo--sm .brand-logo__icon { height: 20px; }
+.brand-logo--sm .brand-logo__text { font-size: 16px; }
+
+.brand-logo--md { gap: 10px; }
+.brand-logo--md .brand-logo__icon { height: 26px; }
+.brand-logo--md .brand-logo__text { font-size: 20px; }
+
+.brand-logo--lg { gap: 11px; }
+.brand-logo--lg .brand-logo__icon { height: 28px; }
+.brand-logo--lg .brand-logo__text { font-size: 22px; }
+
 @media (max-width: 640px) {
-  .brand-logo--full .brand-logo__wordmark {
+  .brand-logo--full .brand-logo__text {
     display: none;
   }
 }
