@@ -113,15 +113,15 @@
    (default), lg: login/auth first-impression screens */
 .brand-logo--sm { gap: 8px; }
 .brand-logo--sm .brand-logo__icon { height: 20px; }
-.brand-logo--sm .brand-logo__text { font-size: 17px; }
+.brand-logo--sm .brand-logo__text { font-size: 18px; }
 
 .brand-logo--md { gap: 10px; }
 .brand-logo--md .brand-logo__icon { height: 26px; }
-.brand-logo--md .brand-logo__text { font-size: 20px; }
+.brand-logo--md .brand-logo__text { font-size: 21px; }
 
 .brand-logo--lg { gap: 11px; }
 .brand-logo--lg .brand-logo__icon { height: 30px; }
-.brand-logo--lg .brand-logo__text { font-size: 22px; }
+.brand-logo--lg .brand-logo__text { font-size: 23px; }
 
 @media (max-width: 640px) {
   .brand-logo--full .brand-logo__text {
