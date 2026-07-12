@@ -102,7 +102,7 @@
   gap: 14px;
   margin-bottom: 14px;
 }
-.pair-row--activity { grid-template-columns: 9fr 3fr; }
+.pair-row--activity { grid-template-columns: 1fr 1.05fr; }
 
 .panel {
   background: var(--card);
@@ -175,8 +175,8 @@
 
 /* Quick Actions — card style */
 .qa-panel { display: flex; flex-direction: column; }
-.quick-actions { display: flex; flex-direction: row; gap: 12px; margin-top: 16px; flex: 1; }
-.qa-card { flex: 1; display: flex; flex-direction: column; aspect-ratio: 1 / 1; }
+.quick-actions { display: flex; flex-direction: row; align-items: flex-start; gap: 12px; margin-top: 16px; }
+.qa-card { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .qa-card {
   display: block;
   position: relative;
