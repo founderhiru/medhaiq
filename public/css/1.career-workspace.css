@@ -72,7 +72,7 @@
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
-.readiness-ring-center .num { font-size: 48px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; }
+.readiness-ring-center .num { font-size: 36px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; }
 .readiness-ring-center .of100 { font-size: 13px; color: var(--dim); }
 .readiness-chart-col { flex: 1; min-width: 220px; }
 
@@ -98,7 +98,7 @@
 /* Two-column pairing */
 .pair-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 0.85fr 1.15fr;
   gap: 14px;
   margin-bottom: 14px;
 }
@@ -110,9 +110,6 @@
   border-radius: var(--radius);
   padding: 22px 24px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  min-width: 0; /* lets the panel shrink gracefully instead of overflowing
-                   at intermediate window widths, before the 900px
-                   stacked-layout breakpoint kicks in */
 }
 .panel h3 {
   font-size: 17px;
@@ -176,7 +173,7 @@
 /* Quick Actions — card style */
 .qa-panel { display: flex; flex-direction: column; }
 .quick-actions { display: flex; flex-direction: row; gap: 12px; margin-top: 16px; flex: 1; }
-.qa-card { flex: 1; display: flex; flex-direction: column; aspect-ratio: 1 / 1; }
+.qa-card { flex: 1; display: flex; flex-direction: column; }
 .qa-card {
   display: block;
   position: relative;
@@ -211,12 +208,6 @@
 .qa-card.blue { border-color: rgba(59,130,246,0.3); background: rgba(29,78,216,0.06); }
 .qa-card.blue .qa-icon { background: rgba(29,78,216,0.25); color: #60A5FA; }
 .qa-card.blue .qa-arrow { border-color: rgba(59,130,246,0.35); color: #60A5FA; }
-
-@media (max-width: 1200px) {
-  .workspace-content { max-width: 100%; padding: 32px 24px 60px; }
-  .ai-tip-col { display: none; } /* reclaim space before things get cramped;
-                                     tips are supplementary, not essential */
-}
 
 @media (max-width: 900px) {
   .overview-strip { grid-template-columns: repeat(2, 1fr); }
