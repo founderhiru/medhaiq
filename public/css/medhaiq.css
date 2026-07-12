@@ -40,22 +40,96 @@
      Introduced so the global scale reduction is driven from one place
      instead of 14+ separately hardcoded selectors. Every consuming rule
      below was refactored to reference these instead of a literal value. */
-  --section-pad-y: 76px;   /* already in the 72-80px target range from this round's spec — unchanged */
+  --section-pad-y: 76px;
   --section-pad-x: 40px;
   --card-pad: 24px;
   --card-pad-sm: 18px;
   --btn-pad-y: 12px;
   --btn-pad-x: 22px;
-  --hero-h1-size: clamp(36px, 6vw, 48px);   /* was clamp(48px, 6vw, 64px) — final: 48px desktop, per this round */
+  --hero-h1-size: clamp(36px, 6vw, 48px);
   --hero-h1-tracking: -0.04em;
-  --h2-size: clamp(24px, 5vw, 32px);        /* was clamp(32px, 4.5vw, 44px) — final: 32px desktop, per this round */
+  --h2-size: clamp(24px, 5vw, 32px);
   --h2-tracking: -0.03em;
   --eyebrow-size: 13px;
-  --eyebrow-tracking: 0.1em;                /* was 0.07em — more aggressive tracking per this round */
-  --body-size: 18px;                        /* was 17px */
+  --eyebrow-tracking: 0.1em;
+  --body-size: 18px;
   --body-line: 1.6;
   --table-pad: 12px 16px;
-  --hero-sub-color: rgba(255, 255, 255, 0.92);  /* NEW — hero subtitle brightness per this round's spec */
+  --hero-sub-color: rgba(255, 255, 255, 0.92);
+
+  /* Brand tokens — logo gradient */
+  --brand-iq-gradient: linear-gradient(
+    135deg,
+    #3D8BFF 0%,
+    #4F74FF 38%,
+    #6D5CF5 72%,
+    #8B5CF6 100%
+  );
+}
+
+/* ============================================
+   BRAND LOGO COMPONENT — tokenized, contextual sizing
+   via .brand-logo--sm/md/lg modifiers (no inline styles,
+   no per-instance aspect-ratio math).
+   ============================================ */
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  line-height: 1;
+  transition: opacity 0.2s ease;
+}
+.brand-logo:hover { opacity: 0.9; }
+
+.brand-logo__icon {
+  height: auto;
+  width: auto;
+  max-width: none;
+  max-height: 40px; /* hard ceiling — if a page's stylesheet link ever
+     fails to load, this still prevents the icon from rendering at its
+     full natural size and spilling over surrounding content */
+  flex-shrink: 0;
+  display: block;
+  object-fit: contain;
+}
+
+.brand-logo__text {
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-family: var(--font-display);
+  color: var(--white);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.brand-logo__iq {
+  background: var(--brand-iq-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Contextual sizing — sm: footer watermark, md: navbars/dashboards
+   (default), lg: login/auth first-impression screens */
+.brand-logo--sm { gap: 8px; }
+.brand-logo--sm .brand-logo__icon { height: 20px; }
+.brand-logo--sm .brand-logo__text { font-size: 16px; }
+
+.brand-logo--md { gap: 10px; }
+.brand-logo--md .brand-logo__icon { height: 26px; }
+.brand-logo--md .brand-logo__text { font-size: 20px; }
+
+.brand-logo--lg { gap: 11px; }
+.brand-logo--lg .brand-logo__icon { height: 28px; }
+.brand-logo--lg .brand-logo__text { font-size: 22px; }
+
+@media (max-width: 640px) {
+  .brand-logo--full .brand-logo__text {
+    display: none;
+  }
 }
 
 /* Reset */
@@ -182,7 +256,7 @@ button { cursor: pointer; }
 .mh-nav-link {
   font-family: var(--font-body);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-muted);
   padding: 8px 14px;
   border-radius: 8px;
@@ -4089,18 +4163,6 @@ button { cursor: pointer; }
 }
 .mh-hub-content { min-width: 0; }
 
-/* PART 3 fix: destination headings were rendering underneath the fixed
-   68px nav on click. scroll-margin-top gives the browser's native scroll
-   target (and the existing scrollIntoView() call in the JS below, which
-   already respects this CSS property) a clearance offset — no JS change
-   needed. 68px nav + ~32px breathing room. */
-#technical-blueprint,
-#journey,
-#framework,
-#proof {
-  scroll-margin-top: 100px;
-}
-
 .mh-hub-content .mh-arch-layout {
   grid-template-columns: 1fr; /* fixes the reported rendering defect: this diagram's
     1fr/320px split assumed full page width; nested inside the hub's narrower right
@@ -4108,6 +4170,17 @@ button { cursor: pointer; }
     not just below the sitewide 1024px breakpoint */
 }
 .mh-hub-content .mh-arch-panel { position: static; }
+/* PART 3 fix: destination headings were rendering underneath the fixed
+      68px nav on click. scroll-margin-top gives the browser's native scroll
+      target (and the existing scrollIntoView() call in the JS below, which
+      already respects this CSS property) a clearance offset — no JS change
+      needed. 68px nav + ~32px breathing room. */
+   #technical-blueprint,
+   #journey,
+   #framework,
+   #proof {
+     scroll-margin-top: 100px;
+   }
 
 @media (max-width: 900px) {
   .mh-hub-inner { grid-template-columns: 1fr; }
@@ -4160,16 +4233,20 @@ button { cursor: pointer; }
    directly instead of a separate clamp — same scale as the homepage
    hero, post density-pass. */
 .mh-why-hero {
-  padding: 96px var(--section-pad-x) 32px; /* was 104px .. 53px — tightened since the
-    heading below now matches Pricing's smaller section-title scale, not the old
-    hero scale; less trailing space needed to stay optically balanced */
+  padding: 104px var(--section-pad-x) 53px; /* was 148px .. 76px — top/bottom reduced ~30% per this round's spec */
   background: var(--navy-deep);
   text-align: center;
 }
 .mh-why-hero-inner { max-width: var(--max-w); margin: 0 auto; }
-/* .mh-why-hero-title removed — the H1 now reuses .mh-section-title directly,
-   the same class Pricing's own heading uses, so they're pixel-identical by
-   construction rather than kept in sync by hand. */
+.mh-why-hero-title {
+  font-family: var(--font-display);
+  font-size: var(--hero-h1-size);
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.1;
+  letter-spacing: var(--hero-h1-tracking);
+  margin-bottom: 16px;
+}
 
 /* Shared narrow text column — used by sections 02, 03, 04, 07 */
 .mh-why-narrow { max-width: 720px; margin: 0 auto; }
@@ -4289,7 +4366,7 @@ button { cursor: pointer; }
 }
 
 @media (max-width: 900px) {
-  .mh-why-hero { padding: 88px 24px 28px; }
+  .mh-why-hero { padding: 105px 24px 49px; }
   .mh-why-problem, .mh-why-shift, .mh-why-philosophy,
   .mh-why-pillars, .mh-why-compare, .mh-why-manifesto {
     padding-left: 24px;
