@@ -171,7 +171,7 @@ router.get('/verify', async (req, res) => {
 
     logUserActivity({ userId, action: 'login_magic_link_verified', page: '/auth/verify', req });
 
-    return res.redirect('/dashboard/history');
+    return res.redirect('/interview');
   } catch (err) {
     console.error('[auth] verify error:', err);
     return res.redirect('/?error=verify-failed');

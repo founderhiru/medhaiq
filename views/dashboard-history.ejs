@@ -1,91 +1,168 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Session History — MedhaIQ</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/interview.css">
-</head>
-<body>
+<%- include('partials/workspace-shell-top', { pageTitle: 'Career Workspace — MedhaIQ', activeNav: 'dashboard', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'] }) %>
 
-<%- include('partials/interview-header') %>
-
-<div class="dashboard-page">
-  <h1>Your Interview History</h1>
-  <p class="subtitle">Review past sessions, track your progress, and identify areas to improve.</p>
-
-  <% if (trend && trend.length > 1) { %>
-  <div class="trend-section">
-    <h3>Score Trend</h3>
-    <svg class="score-trend-svg" viewBox="0 0 <%= trendWidth %> 80" preserveAspectRatio="none" id="trendSvg">
-      <defs>
-        <linearGradient id="trendGrad" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stop-color="rgba(59,130,246,0.25)"/>
-          <stop offset="100%" stop-color="rgba(59,130,246,0)"/>
-        </linearGradient>
-      </defs>
-      <!-- Area fill -->
-      <polygon class="trend-fill" points="<%= trendPointsFill %>"/>
-      <!-- Line -->
-      <polyline class="trend-line" points="<%= trendPoints %>"/>
-      <!-- Dots -->
-      <% trend.forEach(function(score, i) { %>
-        <% const x = trendX(i); const y = trendY(score); %>
-        <circle class="trend-dot" cx="<%= x %>" cy="<%= y %>" r="4"/>
-      <% }); %>
-    </svg>
-    <% if (trend.length > 0) { %>
-    <p style="font-size:12px;color:var(--dim);margin-top:8px;">Latest: <strong style="color:var(--bright)"><%= trend[trend.length-1] %></strong> · Average: <strong style="color:var(--muted)"><%= (trend.reduce((a,b)=>a+b,0)/trend.length).toFixed(1) %></strong></p>
-    <% } %>
-  </div>
-  <% } %>
-
-  <% if (history && history.length > 0) { %>
-  <div class="report-section" style="padding:0;">
-    <table class="session-table" style="padding:24px;">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Interviewer</th>
-          <th>Role</th>
-          <th>Score</th>
-          <th>Status</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% history.forEach(function(s) { %>
-          <% const scoreClass = s.overallScore >= 80 ? 'high' : s.overallScore >= 60 ? 'mid' : 'low'; %>
-          <% const personaNames = {alex_chen:'Alex Chen',priya_ramesh:'Priya Ramesh',marcus_webb:'Marcus Webb',sanjeev_nair:'Sanjeev Nair',sarah_kim:'Sarah Kim',raj_mehta:'Raj Mehta'}; %>
-          <tr>
-            <td style="color:var(--muted);font-size:13px;"><%= new Date(s.startedAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) %></td>
-            <td><strong style="font-size:14px;"><%= personaNames[s.personaId] || s.personaId %></strong></td>
-            <td style="color:var(--muted);font-size:13px;"><%= s.roleTitle || '—' %></td>
-            <td class="score-cell <%= scoreClass %>"><%= s.overallScore !== null ? s.overallScore : '—' %></td>
-            <td><span class="status-badge <%= s.status %>"><%= s.status.replace('_',' ') %></span></td>
-            <td>
-              <% if (s.status === 'completed' && s.overallScore !== null) { %>
-                <a href="/interview/report/<%= s.id %>" class="view-link">View Report →</a>
-              <% } else { %>
-                <span style="color:var(--dim);font-size:13px;">—</span>
-              <% } %>
-            </td>
-          </tr>
-        <% }); %>
-      </tbody>
-    </table>
-  </div>
-  <% } else { %>
-  <div class="empty-state">
-    <h3>No sessions yet</h3>
-    <p>Complete your first mock interview to see your history here.</p>
-    <a href="/interview" class="cta-btn primary" style="display:inline-block;margin-top:24px;">Start Your First Interview</a>
-  </div>
-  <% } %>
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+  <h1>Career Workspace</h1>
 </div>
+<p class="subtitle">Track your interview progress, review feedback, and continue preparing for your next opportunity.</p>
 
-</body>
-</html>
+<% if (!history || history.length === 0) { %>
+  <!-- First-time user / no history yet: action-oriented empty state,
+       per the flow spec — no fabricated numbers, no gauge, no insights. -->
+  <div class="report-section" style="text-align:center; padding:48px 32px;">
+    <h3 style="margin-bottom:10px;">Let's get your first read on where you stand</h3>
+    <p style="color:var(--muted); font-size:14px; max-width:440px; margin:0 auto 24px;">
+      Run one interview and this page fills in with your readiness score, your strengths, and where to focus next.
+    </p>
+    <a href="/interview" class="cta-btn primary" style="display:inline-block;">＋ Configure your first interview</a>
+  </div>
+<% } else { %>
+
+  <!-- Activity Overview Strip -->
+  <div class="overview-strip">
+    <div class="overview-stat">
+      <div class="icon-sq gold">◎</div>
+      <div>
+        <div class="num"><%= readinessScore !== null ? readinessScore : '—' %><% if (readinessScore !== null) { %><span style="font-size:13px;color:var(--dim);font-weight:600;"> /100</span><% } %></div>
+        <div class="label">Interview Readiness</div>
+      </div>
+    </div>
+    <div class="overview-stat">
+      <div class="icon-sq violet">📅</div>
+      <div><div class="num"><%= interviewsCompletedCount %></div><div class="label">Interviews completed</div></div>
+    </div>
+    <div class="overview-stat">
+      <div class="icon-sq green">🕐</div>
+      <div><div class="num"><%= practiceTimeLabel %></div><div class="label">Total practice time</div></div>
+    </div>
+    <div class="overview-stat">
+      <div class="icon-sq blue">📄</div>
+      <div><div class="num"><%= reportsGeneratedCount %></div><div class="label">Reports generated</div></div>
+    </div>
+  </div>
+
+  <!-- Interview Readiness + Interview Insights, paired -->
+  <div class="pair-row">
+    <div class="panel">
+      <h3>Interview Readiness</h3>
+      <% if (trend && trend.length > 1) { %>
+        <div class="readiness-score"><span class="num"><%= readinessScore %></span><span class="of5">/ 100</span></div>
+        <% if (readinessDeltaVsFirst !== null) { %>
+          <div class="readiness-delta"><%= readinessDeltaVsFirst >= 0 ? '↑' : '↓' %> <%= Math.abs(readinessDeltaVsFirst) %> pts since your first interview</div>
+        <% } %>
+        <svg class="score-trend-svg" viewBox="0 0 <%= trendWidth %> 80" preserveAspectRatio="none" id="trendSvg">
+          <defs>
+            <linearGradient id="trendGrad" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="rgba(59,130,246,0.25)"/>
+              <stop offset="100%" stop-color="rgba(59,130,246,0)"/>
+            </linearGradient>
+          </defs>
+          <polygon class="trend-fill" points="<%= trendPointsFill %>"/>
+          <polyline class="trend-line" points="<%= trendPoints %>"/>
+          <% trend.forEach(function(score, i) { %>
+            <% const x = trendX(i); const y = trendY(score); %>
+            <circle class="trend-dot" cx="<%= x %>" cy="<%= y %>" r="4"/>
+          <% }); %>
+        </svg>
+        <p style="font-size:12px;color:var(--dim);margin-top:8px;">Calculated from your last <%= trend.length %> completed interviews.</p>
+      <% } else { %>
+        <p style="color:var(--dim); font-size:13px;">Complete one more interview to unlock your readiness trend.</p>
+      <% } %>
+    </div>
+
+    <div class="panel">
+      <h3>Interview Insights</h3>
+      <!-- Labels here are the SAME ones already shown on the per-session
+           Report page (interview-report.ejs) — Structure / Domain Expertise /
+           Strategic Thinking / Communication / Leadership & Execution —
+           just averaged across all sessions instead of one. Flagged
+           separately: these don't match the "STAR Structure / Leadership &
+           Influence / Business Thinking / Executive Presence" terminology
+           from the original spec, since that terminology isn't what the
+           report page (or the underlying DB columns) actually use today. -->
+      <% if (aggregateScores && (aggregateScores.starAvg !== null)) {
+        const metrics = [
+          { key: 'star', label: 'Structure', val: aggregateScores.starAvg, icon: '✦', color: 'violet' },
+          { key: 'technical', label: 'Domain Expertise', val: aggregateScores.technicalAvg, icon: '👥', color: 'blue' },
+          { key: 'strategic', label: 'Strategic Thinking', val: aggregateScores.executiveAvg, icon: '💬', color: 'green' },
+          { key: 'comms', label: 'Communication', val: aggregateScores.frictionAvg, icon: '🎯', color: 'orange' },
+          { key: 'leadership', label: 'Leadership & Execution', val: aggregateScores.gccAvg, icon: '👤', color: 'gold' },
+        ];
+      %>
+      <div class="score-bars">
+        <% metrics.forEach(function(m) { %>
+          <% const pct = m.val !== null ? Math.max(0, Math.min(100, m.val)) : 0; %>
+          <% const cls = pct >= 80 ? 'high' : pct >= 60 ? 'mid' : 'low'; %>
+          <div class="score-bar-row">
+            <div class="score-bar-label-wrap"><div class="icon-sq sm <%= m.color %>"><%= m.icon %></div><div class="score-bar-label"><%= m.label %></div></div>
+            <div class="score-bar-track"><div class="score-bar-fill <%= cls %>" style="width:<%= pct %>%"></div></div>
+            <div class="score-bar-val <%= cls %>"><%= m.val !== null ? m.val.toFixed(1) : '—' %></div>
+          </div>
+        <% }); %>
+      </div>
+      <% } else { %>
+        <p style="color:var(--dim); font-size:13px;">Insights appear once your first interview is scored.</p>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Recent Activity + Quick Actions, paired (9:3 — Activity is the
+       primary continuation point) -->
+  <div class="pair-row pair-row--activity">
+    <div class="panel">
+      <h3>Recent Activity</h3>
+      <div class="activity-feed">
+        <% const personaNames = {alex_chen:'Alex Chen',priya_ramesh:'Priya Ramesh',marcus_webb:'Marcus Webb',sanjeev_nair:'Sanjeev Nair',sarah_kim:'Sarah Kim',raj_mehta:'Raj Mehta'}; %>
+        <% history.forEach(function(s) { %>
+          <% const isInterrupted = s.status === 'in_progress'; %>
+          <div class="activity-row <%= isInterrupted ? 'interrupted' : '' %>">
+            <div class="icon-sq sm <%= isInterrupted ? 'blue' : (s.overallScore !== null && s.overallScore >= 80 ? 'violet' : 'orange') %>">
+              <%= isInterrupted ? '▶' : '✓' %>
+            </div>
+            <div class="activity-main">
+              <div class="title"><%= personaNames[s.personaId] || s.personaId %><% if (s.roleTitle) { %> · <%= s.roleTitle %><% } %></div>
+              <div class="meta">
+                <%= new Date(s.startedAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) %>
+                <% if (s.status === 'completed' && s.overallScore !== null) { %> · Score <%= s.overallScore %><% } %>
+              </div>
+            </div>
+            <span class="status-badge <%= s.status %>"><%= s.status.replace('_',' ') %></span>
+            <% if (isInterrupted) { %>
+              <a href="/interview/session/<%= s.id %>" class="activity-cta resume">Resume Session ▷</a>
+            <% } else if (s.status === 'completed' && s.overallScore !== null) { %>
+              <a href="/interview/report/<%= s.id %>" class="activity-cta view">View report</a>
+            <% } else { %>
+              <span style="color:var(--dim);font-size:12.5px;">—</span>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Quick Actions</h3>
+      <div class="quick-actions">
+        <a href="/interview" class="qa-card violet">
+          <div class="qa-icon">🎙</div>
+          <div class="qa-title">Start Interview</div>
+          <div class="qa-desc">Practice with AI interviewer and get instant feedback</div>
+          <div class="qa-arrow">→</div>
+        </a>
+        <a href="/interview" class="qa-card green">
+          <div class="qa-icon">📄</div>
+          <div class="qa-title">Upload Resume</div>
+          <div class="qa-desc">Keep your resume updated for better AI insights</div>
+          <div class="qa-arrow">→</div>
+        </a>
+        <a href="/dashboard/history" class="qa-card blue">
+          <div class="qa-icon">📊</div>
+          <div class="qa-title">View Reports</div>
+          <div class="qa-desc">Review your interview reports and track trends</div>
+          <div class="qa-arrow">→</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+<% } %>
+
+<%- include('partials/workspace-shell-bottom') %>

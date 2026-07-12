@@ -1,0 +1,32 @@
+<%- include('partials/workspace-shell-top', { pageTitle: 'Settings — MedhaIQ', activeNav: 'settings', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'] }) %>
+
+<h1>Settings</h1>
+<p class="subtitle">Manage your profile, subscription, and preferences.</p>
+
+<div class="panel" style="margin-bottom:16px;">
+  <h3>Profile</h3>
+  <p style="font-size:14px; margin-bottom:6px;"><strong>Name:</strong> <%= shellUser.name || '—' %></p>
+  <p style="font-size:14px; color:var(--muted);"><strong style="color:var(--white);">Email:</strong> <%= shellUser.email || '—' %></p>
+</div>
+
+<div class="panel" style="margin-bottom:16px;">
+  <h3>Account (Subscription &amp; Billing)</h3>
+  <p style="font-size:14px; margin-bottom:6px;">
+    <strong>Plan:</strong> <%= shellUser.subscription_plan || 'Free' %>
+  </p>
+  <p style="font-size:14px; color:var(--muted);">
+    <strong style="color:var(--white);">Status:</strong>
+    <%= shellUser.subscription_status || '—' %>
+  </p>
+  <p style="font-size:12.5px; color:var(--dim); margin-top:14px;">
+    This is the only place subscription/plan information appears in the app —
+    it's intentionally not shown on the Dashboard or in the sidebar.
+  </p>
+</div>
+
+<div class="panel">
+  <h3>Preferences</h3>
+  <p style="font-size:13px; color:var(--dim);">Notification and interview-experience preferences will live here.</p>
+</div>
+
+<%- include('partials/workspace-shell-bottom') %>

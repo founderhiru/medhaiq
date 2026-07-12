@@ -7,6 +7,12 @@ try {
 }
 const crypto = require('crypto');
 
+async function getUserByEmail(email) {
+  const cleanEmail = email.trim().toLowerCase();
+  const res = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1 LIMIT 1', [cleanEmail]);
+  return res.rows[0] || null;
+}
+
 async function getUserByEmailAndPassword(email, password) {
   const cleanEmail = email.trim().toLowerCase();
   const res = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1 LIMIT 1', [cleanEmail]);
@@ -30,14 +36,12 @@ async function getUserById(id) {
 
 async function findOrCreateUser(email, name) {
   const cleanEmail = email.trim().toLowerCase();
-  // Try to find existing user
   const existing = await pool.query(
     'SELECT * FROM users WHERE LOWER(email) = $1 LIMIT 1',
     [cleanEmail]
   );
   if (existing.rows.length > 0) return existing.rows[0];
 
-  // Create new user (magic-link users have no password)
   const res = await pool.query(
     `INSERT INTO users (email, name) VALUES ($1, $2) RETURNING *`,
     [cleanEmail, name || null]
@@ -47,7 +51,6 @@ async function findOrCreateUser(email, name) {
 
 async function createUserWithPassword(email, name, passwordHash) {
   const cleanEmail = email.trim().toLowerCase();
-  // Check if user already exists
   const existing = await pool.query(
     'SELECT * FROM users WHERE LOWER(email) = $1 LIMIT 1',
     [cleanEmail]
@@ -58,6 +61,25 @@ async function createUserWithPassword(email, name, passwordHash) {
   const res = await pool.query(
     `INSERT INTO users (email, name, password_hash) VALUES ($1, $2, $3) RETURNING *`,
     [cleanEmail, name || null, passwordHash]
+  );
+  return res.rows[0];
+}
+
+async function findOrCreateUserFromGoogle(profile) {
+  const email = profile?.emails?.[0]?.value;
+  if (!email) throw new Error('Google profile did not return an email address');
+  const cleanEmail = email.trim().toLowerCase();
+  const name = profile?.displayName || null;
+
+  const existing = await pool.query(
+    'SELECT * FROM users WHERE LOWER(email) = $1 LIMIT 1',
+    [cleanEmail]
+  );
+  if (existing.rows.length > 0) return existing.rows[0];
+
+  const res = await pool.query(
+    `INSERT INTO users (email, name) VALUES ($1, $2) RETURNING *`,
+    [cleanEmail, name]
   );
   return res.rows[0];
 }
@@ -83,16 +105,17 @@ async function validateToken(token) {
   );
   if (res.rows.length === 0) return null;
   const row = res.rows[0];
-  // Mark as used
   await pool.query(`UPDATE auth_tokens SET used_at = NOW() WHERE id = $1`, [row.id]);
   return row.user_id;
 }
 
 module.exports = {
+  getUserByEmail,
   getUserByEmailAndPassword,
   getUserById,
   findOrCreateUser,
   createUserWithPassword,
+  findOrCreateUserFromGoogle,
   hashPassword,
   createToken,
   validateToken,

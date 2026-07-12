@@ -1,0 +1,102 @@
+/* ============================================================
+   WORKSPACE SHELL — persistent sidebar wrapping every authenticated
+   page (Career Workspace, Interview Setup, Live Interview, Reports).
+
+   This file is purely ADDITIVE: it reads --navy/--card/--bright/etc.
+   from interview.css (already loaded before this file — see
+   workspace-shell-top.ejs) and does not redefine or override any of
+   those tokens. interview.css itself is untouched by this feature.
+
+   --font-display is referenced by interview.css's existing
+   .brand-logo__wordmark rule (line ~930) but was never actually
+   defined there — on interview.css-only pages the wordmark has been
+   silently falling back to the body font instead of Plus Jakarta
+   Sans. Defining it here is a pure bugfix with no visual risk: it
+   makes an already-existing rule work as originally intended,
+   without editing interview.css itself.
+   ============================================================ */
+:root {
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.shell-nav {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--slate);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.shell-nav .brand-logo { padding: 4px 8px 28px; }
+
+.shell-links { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.shell-link {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+.shell-link:hover { background: rgba(255,255,255,0.04); color: var(--white); }
+.shell-link.active {
+  background: rgba(59,130,246,0.12);
+  color: var(--bright);
+  font-weight: 600;
+}
+.shell-link .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.7; }
+
+.shell-footer {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.shell-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--card-hover);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--bright);
+  flex-shrink: 0;
+}
+.shell-user { flex: 1; min-width: 0; }
+.shell-user .name {
+  font-size: 13px; font-weight: 600; color: var(--white);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.shell-logout { font-size: 12px; color: var(--dim); text-decoration: none; flex-shrink: 0; }
+.shell-logout:hover { color: var(--muted); }
+
+.workspace-content {
+  flex: 1;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 48px 32px 80px;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .shell { flex-direction: column; }
+  .shell-nav {
+    width: 100%; height: auto; position: static;
+    flex-direction: row; align-items: center; padding: 12px 16px;
+    overflow-x: auto;
+  }
+  .shell-nav .brand-logo { padding: 4px 12px 4px 0; }
+  .shell-links { flex-direction: row; }
+  .shell-footer { display: none; }
+  .workspace-content { padding: 24px 16px 60px; }
+}

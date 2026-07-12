@@ -1,0 +1,145 @@
+/* ============================================================
+   CAREER WORKSPACE (Dashboard) — page-specific styles.
+   Reuses --navy/--card/--bright/--muted/--dim/--radius etc. from
+   interview.css; does not redefine them. Loaded only on the
+   dashboard-history.ejs page via extraStylesheets, so nothing
+   here affects Interview Setup, Live Interview, or Reports.
+   ============================================================ */
+
+.subtitle { color: var(--muted); margin-bottom: 32px; font-size: 14.5px; }
+
+/* Shared color-icon system — circular, matches the founder-approved
+   reference screenshots for Overview / Insights / Recent Activity */
+.icon-sq {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+}
+.icon-sq.violet { background: #6D28D9; color: #FFFFFF; }
+.icon-sq.green  { background: #059669; color: #FFFFFF; }
+.icon-sq.blue   { background: #1D4ED8; color: #FFFFFF; }
+.icon-sq.gold   { background: #A16207; color: #FFFFFF; }
+.icon-sq.orange { background: #C2410C; color: #FFFFFF; }
+.icon-sq.sm { width: 32px; height: 32px; font-size: 14px; }
+
+/* Activity Overview Strip */
+.overview-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.overview-stat {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.overview-stat .num { font-size: 24px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
+.overview-stat .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+/* Two-column pairing */
+.pair-row {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.pair-row--activity { grid-template-columns: 9fr 3fr; }
+
+.panel {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  padding: 28px;
+}
+.panel h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.readiness-score { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.readiness-score .num { font-size: 40px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--gold); }
+.readiness-score .of5 { font-size: 15px; color: var(--dim); }
+.readiness-delta { font-size: 12.5px; color: #6EE7B7; margin-bottom: 18px; }
+
+/* Interview Insights */
+.score-bars { display: flex; flex-direction: column; gap: 14px; }
+.score-bar-row { display: flex; align-items: center; gap: 14px; }
+.score-bar-label-wrap { display: flex; align-items: center; gap: 10px; min-width: 190px; }
+.score-bar-label { font-size: 13.5px; color: var(--white); font-weight: 600; }
+.score-bar-track { flex: 1; height: 8px; background: var(--slate); border-radius: 4px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 4px; }
+.score-bar-fill.high { background: var(--emerald); }
+.score-bar-fill.mid  { background: var(--gold); }
+.score-bar-fill.low  { background: var(--danger); }
+.score-bar-val { font-size: 13px; font-weight: 700; min-width: 34px; text-align: right; }
+.score-bar-val.high { color: #6EE7B7; }
+.score-bar-val.mid  { color: #FCD34D; }
+.score-bar-val.low  { color: #FCA5A5; }
+
+/* Recent Activity feed */
+.activity-feed { display: flex; flex-direction: column; }
+.activity-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.activity-row:first-child { border-top: none; padding-top: 0; }
+.activity-row.interrupted { background: rgba(59,130,246,0.05); border-radius: 10px; padding: 14px; border-top: none; margin-bottom: 4px; }
+.activity-main { flex: 1; min-width: 0; }
+.activity-main .title { font-size: 13.5px; font-weight: 600; }
+.activity-main .meta { font-size: 12px; color: var(--dim); margin-top: 2px; }
+.activity-cta {
+  font-size: 12.5px; font-weight: 700; text-decoration: none;
+  padding: 6px 14px; border-radius: 8px; white-space: nowrap;
+}
+.activity-cta.resume { background: var(--bright); color: var(--white); box-shadow: 0 0 0 3px rgba(59,130,246,0.18); }
+.activity-cta.view { background: transparent; color: var(--bright); border: 1px solid var(--bright); }
+
+/* Quick Actions — card style */
+.quick-actions { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.qa-card {
+  display: block;
+  position: relative;
+  border-radius: var(--radius);
+  border: 1px solid;
+  padding: 20px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.qa-card .qa-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+.qa-card .qa-title { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 6px; font-family: 'Plus Jakarta Sans', sans-serif; }
+.qa-card .qa-desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; max-width: 85%; }
+.qa-card .qa-arrow {
+  position: absolute; right: 18px; bottom: 18px;
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 1px solid;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+.qa-card.violet { border-color: rgba(139,124,246,0.35); background: rgba(124,58,237,0.06); }
+.qa-card.violet .qa-icon { background: rgba(124,58,237,0.25); color: #A78BFA; }
+.qa-card.violet .qa-arrow { border-color: rgba(139,124,246,0.4); color: #A78BFA; }
+.qa-card.green { border-color: rgba(16,185,129,0.3); background: rgba(5,150,105,0.05); }
+.qa-card.green .qa-icon { background: rgba(5,150,105,0.22); color: #34D399; }
+.qa-card.green .qa-arrow { border-color: rgba(16,185,129,0.35); color: #34D399; }
+.qa-card.blue { border-color: rgba(59,130,246,0.3); background: rgba(29,78,216,0.06); }
+.qa-card.blue .qa-icon { background: rgba(29,78,216,0.25); color: #60A5FA; }
+.qa-card.blue .qa-arrow { border-color: rgba(59,130,246,0.35); color: #60A5FA; }
+
+@media (max-width: 900px) {
+  .overview-strip { grid-template-columns: repeat(2, 1fr); }
+  .pair-row, .pair-row--activity { grid-template-columns: 1fr; }
+}

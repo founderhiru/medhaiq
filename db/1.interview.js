@@ -81,35 +81,6 @@ async function getSessionScores(sessionId) {
   return result.rows;
 }
 
-// New for the Career Workspace (Home) page's Interview Insights panel.
-// Same 5 columns interview-report.ejs already averages per-session
-// (star_score, technical_depth, executive_presence, gcc_readiness,
-// core_friction) — this just averages them across ALL of a user's
-// sessions instead of one. No schema change; additive query only.
-async function getUserAggregateScores(userId) {
-  const result = await pool.query(
-    `SELECT
-       AVG(sc.star_score)::float          AS star_avg,
-       AVG(sc.technical_depth)::float     AS technical_avg,
-       AVG(sc.executive_presence)::float  AS executive_avg,
-       AVG(sc.gcc_readiness)::float       AS gcc_avg,
-       AVG(sc.core_friction)::float       AS friction_avg
-     FROM interview_scores sc
-     JOIN interview_sessions s ON s.id = sc.session_id
-     WHERE s.user_id = $1`,
-    [userId]
-  );
-  const row = result.rows[0] || {};
-  const toNum = (v) => (v === null || v === undefined) ? null : Number(v);
-  return {
-    starAvg: toNum(row.star_avg),
-    technicalAvg: toNum(row.technical_avg),
-    executiveAvg: toNum(row.executive_avg),
-    gccAvg: toNum(row.gcc_avg),
-    frictionAvg: toNum(row.friction_avg),
-  };
-}
-
 async function addQuestion({ sessionId, questionText, personaId, questionType, questionOrder }) {
   const result = await pool.query(
     `INSERT INTO interview_questions (session_id, question_text, persona_id, question_type, question_order)
@@ -184,7 +155,7 @@ async function getReport(sessionId) {
 
 module.exports = {
   createSession, getSession, getUserSessions, completeSession, abandonSession,
-  getSessionQuestions, getSessionScores, getUserAggregateScores,
+  getSessionQuestions, getSessionScores,
   addQuestion, addAnswer, addScore,
   saveReport, getReport,
 };

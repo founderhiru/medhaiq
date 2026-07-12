@@ -356,16 +356,14 @@ app.get('/interview/report/:id/pdf', async (req, res) => {
   }
 });
 
-// Dashboard history (rendered as the Career Workspace / persistent shell's
-// Dashboard page — same route, same URL, per founder decision not to
-// introduce a new route for this)
+// Dashboard history
 app.get('/dashboard/history', async (req, res) => {
   try {
     const userId = req.cookies?.user_id;
     if (!userId) return res.redirect('/auth/login');
 
     const { getUserById } = require('./db/auth');
-    const { getUserSessions, getUserAggregateScores } = require('./db/interview');
+    const { getUserSessions } = require('./db/interview');
     const user = await getUserById(userId);
     if (!user) return res.redirect('/auth/login');
 
@@ -411,53 +409,9 @@ app.get('/dashboard/history', async (req, res) => {
     const trendLatest = trend.length ? trend[trend.length - 1] : null;
     const trendAvg = trend.length ? (trend.reduce((a, b) => a + b, 0) / trend.length) : null;
 
-    // ---- Added for the Career Workspace layout (Activity Overview,
-    // Interview Insights, Recent Activity resume row). All derived from
-    // data already fetched above — no new queries except aggregateScores. ----
-    const completedSessions = history.filter(s => s.status === 'completed');
-    const interviewsCompletedCount = completedSessions.length;
-    const reportsGeneratedCount = completedSessions.filter(s => s.overallScore !== null).length;
-    const totalPracticeMinutes = completedSessions.reduce((mins, s) => {
-      if (!s.startedAt || !s.endedAt) return mins;
-      const diffMs = new Date(s.endedAt) - new Date(s.startedAt);
-      return mins + (diffMs > 0 ? diffMs / 60000 : 0);
-    }, 0);
-    const practiceTimeLabel = (() => {
-      const total = Math.round(totalPracticeMinutes);
-      const h = Math.floor(total / 60), m = total % 60;
-      return h > 0 ? `${h}h ${m}m` : `${m}m`;
-    })();
-    const readinessScore = trendAvg !== null ? Math.round(trendAvg) : null;
-    const readinessDeltaVsFirst = (trend.length > 1) ? Math.round(trend[trend.length - 1] - trend[0]) : null;
-    const interruptedSession = history.find(s => s.status === 'in_progress') || null;
-    const aggregateScores = await getUserAggregateScores(userId);
-
-    res.render('dashboard-history', {
-      shellUser: user,
-      history, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY, trendLatest, trendAvg,
-      interviewsCompletedCount, reportsGeneratedCount, practiceTimeLabel,
-      readinessScore, readinessDeltaVsFirst, interruptedSession, aggregateScores,
-    });
+    res.render('dashboard-history', { history, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY, trendLatest, trendAvg });
   } catch (err) {
     console.error('[dashboard/history]', err);
-    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
-  }
-});
-
-// Settings — new, minimal (Profile / Account / Preferences). No page
-// existed at this route before; same auth pattern as dashboard/history.
-app.get('/settings', async (req, res) => {
-  try {
-    const userId = req.cookies?.user_id;
-    if (!userId) return res.redirect('/auth/login');
-
-    const { getUserById } = require('./db/auth');
-    const user = await getUserById(userId);
-    if (!user) return res.redirect('/auth/login');
-
-    res.render('settings', { shellUser: user });
-  } catch (err) {
-    console.error('[settings]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });
