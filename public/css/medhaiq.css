@@ -236,7 +236,7 @@ button { cursor: pointer; }
 .mh-nav-link {
   font-family: var(--font-body);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-muted);
   padding: 8px 14px;
   border-radius: 8px;
