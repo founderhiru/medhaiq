@@ -1,0 +1,25 @@
+<%
+const _sizeMap = { xs: 24, sm: 28, md: 36, lg: 44, xl: 56 };
+const _size    = _sizeMap[typeof size !== 'undefined' ? size : 'md'] || 36;
+const _variant = typeof variant !== 'undefined' ? variant : 'full';
+const _href    = typeof href !== 'undefined' ? href : '/';
+const _suffix  = typeof suffix !== 'undefined' ? suffix : '';
+const _eager   = typeof eager !== 'undefined' ? eager : false;
+const _iconH = Math.round(_size * 0.88); /* 12% smaller for better optical balance vs the wordmark */
+const _iconW = Math.round(_iconH * (245 / 167));
+%>
+<a href="<%= _href %>" class="brand-logo brand-logo--<%= _variant %>" aria-label="MedhaIQ<%= _suffix %> home">
+  <img
+    src="/assets/branding/medhaiq-icon.png"
+    alt="MedhaIQ"
+    class="brand-logo__icon"
+    width="<%= _iconW %>"
+    height="<%= _iconH %>"
+    style="height:<%= _iconH %>px;width:<%= _iconW %>px;"
+    loading="<%= _eager ? 'eager' : 'lazy' %>"
+    decoding="async"
+  />
+  <% if (_variant === 'full') { %>
+    <span class="brand-logo__wordmark" style="font-size:<%= Math.round(_size * 0.56) %>px;">Medha<span class="brand-logo__iq">IQ</span><%= _suffix %></span>
+  <% } %>
+</a>

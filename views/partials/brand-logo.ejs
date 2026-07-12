@@ -1,14 +1,16 @@
 <%
-const _sizeMap = { xs: 24, sm: 28, md: 36, lg: 44, xl: 56 };
-const _size    = _sizeMap[typeof size !== 'undefined' ? size : 'md'] || 36;
+const _sizeMap = { xs: 24, sm: 28, md: 56, lg: 68, xl: 80 }; 
+const _size    = _sizeMap[typeof size !== 'undefined' ? size : 'md'] || 56;
 const _variant = typeof variant !== 'undefined' ? variant : 'full';
 const _href    = typeof href !== 'undefined' ? href : '/';
 const _suffix  = typeof suffix !== 'undefined' ? suffix : '';
 const _eager   = typeof eager !== 'undefined' ? eager : false;
-const _iconH = Math.round(_size * 0.88); /* 12% smaller for better optical balance vs the wordmark */
-const _iconW = Math.round(_iconH * (245 / 167));
+
+// This calculates an explicit 36px height for the icon when base size is 56 (56 * 0.64 = 35.84)
+const _iconH   = Math.round(_size * 0.64); 
+const _iconW   = Math.round(_iconH * (245 / 167));
 %>
-<a href="<%= _href %>" class="brand-logo brand-logo--<%= _variant %>" aria-label="MedhaIQ<%= _suffix %> home">
+  <a href="<%= _href %>" class="brand-logo brand-logo-<%= _variant %>" style="display: inline-flex; alignItems: center; gap: 10px;" aria-label="MedhaIQ<%= _suffix %> home"></a>
   <img
     src="/assets/branding/medhaiq-icon.png"
     alt="MedhaIQ"
@@ -20,6 +22,5 @@ const _iconW = Math.round(_iconH * (245 / 167));
     decoding="async"
   />
   <% if (_variant === 'full') { %>
-    <span class="brand-logo__wordmark" style="font-size:<%= Math.round(_size * 0.56) %>px;">Medha<span class="brand-logo__iq">IQ</span><%= _suffix %></span>
-  <% } %>
+  <span class="brand-logo__wordmark" style="font-size: <%= Math.round(_size * 0.57) %>px;">Medha<span class="brand-logo__gradient">IQ</span></span>
 </a>
