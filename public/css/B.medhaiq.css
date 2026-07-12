@@ -85,9 +85,6 @@
   height: auto;
   width: auto;
   max-width: none;
-  max-height: 40px; /* hard ceiling — if a page's stylesheet link ever
-     fails to load, this still prevents the icon from rendering at its
-     full natural size and spilling over surrounding content */
   flex-shrink: 0;
   display: block;
   object-fit: contain;

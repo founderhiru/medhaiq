@@ -1,0 +1,80 @@
+/* ============================================================
+   BRAND LOGO — canonical component styles.
+   Mirrors the same rules in public/css/medhaiq.css and
+   public/css/interview.css exactly (kept in sync there so
+   .brand-logo renders identically regardless of which stylesheet
+   a page loads). This small file exists for pages that load neither
+   of those larger stylesheets — e.g. interview-setup.ejs, which is
+   fully self-contained and shouldn't pull in unrelated CSS just to
+   get the logo lockup right.
+
+   Tokenized architecture: sizing/gap live in .brand-logo--sm/md/lg
+   modifier classes, not inline styles or per-instance JS math.
+   ============================================================ */
+:root {
+  --brand-iq-gradient: linear-gradient(
+    135deg,
+    #3D8BFF 0%,
+    #4F74FF 38%,
+    #6D5CF5 72%,
+    #8B5CF6 100%
+  );
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  line-height: 1;
+  transition: opacity 0.2s ease;
+}
+.brand-logo:hover { opacity: 0.9; }
+
+.brand-logo__icon {
+  height: auto;
+  width: auto;
+  max-width: none;
+  max-height: 40px; /* hard ceiling — if a page's stylesheet link ever
+     fails to load, this still prevents the icon from rendering at its
+     full natural size and spilling over surrounding content */
+  flex-shrink: 0;
+  display: block;
+  object-fit: contain;
+}
+
+.brand-logo__text {
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  color: #FFFFFF;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.brand-logo__iq {
+  background: var(--brand-iq-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-logo--sm { gap: 8px; }
+.brand-logo--sm .brand-logo__icon { height: 20px; }
+.brand-logo--sm .brand-logo__text { font-size: 16px; }
+
+.brand-logo--md { gap: 10px; }
+.brand-logo--md .brand-logo__icon { height: 26px; }
+.brand-logo--md .brand-logo__text { font-size: 20px; }
+
+.brand-logo--lg { gap: 11px; }
+.brand-logo--lg .brand-logo__icon { height: 28px; }
+.brand-logo--lg .brand-logo__text { font-size: 22px; }
+
+@media (max-width: 640px) {
+  .brand-logo--full .brand-logo__text {
+    display: none;
+  }
+}

@@ -54,6 +54,7 @@ button{font-family:inherit}
 .topbar{
   flex-shrink:0; display:flex; align-items:center; gap:14px;
   padding:10px 20px; border-bottom:1px solid #111B30;
+  overflow:hidden;
 }
 .tb-brand-lockup{display:flex;align-items:center;gap:10px;text-decoration:none}
 .tb-logo-mark{
