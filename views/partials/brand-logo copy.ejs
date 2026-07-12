@@ -1,0 +1,30 @@
+<%
+const _sizeMap = { xs: 18, sm: 22, md: 35, lg: 56, xl: 80 }; 
+const _size    = _sizeMap[typeof size !== 'undefined' ? size : 'md'] || 35;
+const _variant = typeof variant !== 'undefined' ? variant : 'full';
+const _href    = typeof href !== 'undefined' ? href : '/';
+const _suffix  = typeof suffix !== 'undefined' ? suffix : '';
+const _eager   = typeof eager !== 'undefined' ? eager : false;
+
+const _iconH   = Math.round(_size * 0.68); 
+const _iconW   = Math.round(_iconH * 1.467);
+const _textS   = Math.round(_size * 0.57);
+%>
+<a href="<%= _href %>" class="brand-logo brand-logo-<%= _variant %>" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;" aria-label="MedhaIQ<%= _suffix %> home">
+  <img
+    src="/assets/branding/medhaiq-icon.png"
+    alt="MedhaIQ"
+    class="brand-logo__icon"
+    width="<%= _iconW %>"
+    height="<%= _iconH %>"
+    style="height: <%= _iconH %>px; width: <%= _iconW %>px; object-fit: contain; flex-shrink: 0;"
+    loading="<%= _eager ? 'eager' : 'lazy' %>"
+    decoding="async"
+  />
+  <% if (_variant === 'full') { %>
+      <span class="brand-logo__wordmark" style="font-size: <%= _textS %>px; font-weight: 500; letter-spacing: -0.04em; display: inline-flex; align-items: center; line-height: 1;">
+      <span style="color: #ffffff;">Medha</span>
+      <span style="background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 40%, #6C5CF5 75%, #8B5CF6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">IQ</span>
+    </span>
+  <% } %>
+</a>
