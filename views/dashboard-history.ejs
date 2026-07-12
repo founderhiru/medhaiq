@@ -128,13 +128,23 @@
           <% const stars5 = m.val !== null ? Math.max(0, Math.min(5, m.val / 20)) : 0; %>
           <% const full = Math.floor(stars5); const half = (stars5 - full) >= 0.5 ? 1 : 0; const empty = 5 - full - half; %>
           <div class="star-row">
-            <div class="star-row-label-wrap"><div class="icon-sq sm <%= m.color %>"><%= m.icon %></div><div class="star-row-label"><%= m.label %></div></div>
-            <div class="star-icons">
-              <% for (let i = 0; i < full; i++) { %><span class="filled">★</span><% } %>
-              <% if (half) { %><span class="filled">⯨</span><% } %>
-              <% for (let i = 0; i < empty; i++) { %><span class="empty">★</span><% } %>
+            <div class="star-row-main">
+              <div class="star-row-label-wrap"><div class="icon-sq sm <%= m.color %>"><%= m.icon %></div><div class="star-row-label"><%= m.label %></div></div>
+              <div class="star-icons">
+                <% for (let i = 0; i < full; i++) { %><span class="filled">★</span><% } %>
+                <% if (half) { %><span class="filled">⯨</span><% } %>
+                <% for (let i = 0; i < empty; i++) { %><span class="empty">★</span><% } %>
+              </div>
+              <div class="star-val"><%= m.val !== null ? stars5.toFixed(1) : '—' %> / 5</div>
             </div>
-            <div class="star-val"><%= m.val !== null ? stars5.toFixed(1) : '—' %> / 5</div>
+            <!-- No backend field stores per-metric coaching text yet, so
+                 this is an honest "coming soon" placeholder — not a
+                 fabricated tip — reserving the row structure/column as
+                 requested. -->
+            <div class="ai-tip-col">
+              <span class="ai-tip-label">AI Tip</span>
+              <span class="ai-tip-text">Coming soon</span>
+            </div>
           </div>
         <% }); %>
       </div>
@@ -180,7 +190,7 @@
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel qa-panel">
       <h3>Quick Actions</h3>
       <div class="quick-actions">
         <a href="/interview" class="qa-card violet">

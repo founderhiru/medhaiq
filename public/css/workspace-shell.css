@@ -90,9 +90,9 @@
 
 .workspace-content {
   flex: 1;
-  max-width: 1080px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 32px 32px 60px;
+  padding: 32px 40px 60px;
   width: 100%;
 }
 
