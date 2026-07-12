@@ -4170,6 +4170,17 @@ button { cursor: pointer; }
     not just below the sitewide 1024px breakpoint */
 }
 .mh-hub-content .mh-arch-panel { position: static; }
+/* PART 3 fix: destination headings were rendering underneath the fixed
+      68px nav on click. scroll-margin-top gives the browser's native scroll
+      target (and the existing scrollIntoView() call in the JS below, which
+      already respects this CSS property) a clearance offset — no JS change
+      needed. 68px nav + ~32px breathing room. */
+   #technical-blueprint,
+   #journey,
+   #framework,
+   #proof {
+     scroll-margin-top: 100px;
+   }
 
 @media (max-width: 900px) {
   .mh-hub-inner { grid-template-columns: 1fr; }
