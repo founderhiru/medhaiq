@@ -1,0 +1,27 @@
+<%
+// Tokenized architecture: sizing/gap now live entirely in CSS via
+// .brand-logo--sm/md/lg modifier classes (see the .brand-logo__* rules
+// in medhaiq.css / interview.css / brand-logo.css) — no inline styles,
+// no per-render pixel math. Contextual mapping:
+//   sm = footer / in-session compact watermark
+//   md = global navbars & dashboards (default)
+//   lg = login & auth screens (high-impact first impression)
+const _validSizes = ['sm', 'md', 'lg'];
+const _size    = _validSizes.includes(typeof size !== 'undefined' ? size : '') ? size : 'md';
+const _variant = typeof variant !== 'undefined' ? variant : 'full';
+const _href    = typeof href !== 'undefined' ? href : '/';
+const _suffix  = typeof suffix !== 'undefined' ? suffix : '';
+const _eager   = typeof eager !== 'undefined' ? eager : false;
+%>
+<a href="<%= _href %>" class="brand-logo brand-logo--<%= _variant %> brand-logo--<%= _size %>" aria-label="MedhaIQ<%= _suffix %> home">
+  <img
+    src="/assets/branding/medhaiq-icon.png"
+    alt="MedhaIQ"
+    class="brand-logo__icon"
+    loading="<%= _eager ? 'eager' : 'lazy' %>"
+    decoding="async"
+  />
+  <% if (_variant === 'full') { %>
+    <span class="brand-logo__text">Medha<span class="brand-logo__iq">IQ</span><%= _suffix %></span>
+  <% } %>
+</a>
