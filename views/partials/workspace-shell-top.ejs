@@ -39,6 +39,17 @@ const _firstInitial = (_shellUser.name || '?').trim().charAt(0).toUpperCase() ||
 <div class="shell">
   <nav class="shell-nav">
     <%- include('brand-logo', { size: 'md', eager: true, href: '/dashboard/history' }) %>
+
+    <div class="shell-profile">
+      <div class="shell-profile-avatar"><%= _firstInitial %></div>
+      <div class="shell-profile-name"><%= _shellUser.name || 'Your account' %></div>
+    </div>
+    <% if (typeof preparingForRole !== 'undefined' && preparingForRole) { %>
+    <div class="shell-preparing">
+      <div class="shell-preparing-label">Preparing For</div>
+      <a href="/dashboard/history" class="shell-preparing-badge">◎ <%= preparingForRole %></a>
+    </div>
+    <% } %>
     <div class="shell-links">
       <a href="/dashboard/history" class="shell-link <%= _activeNav === 'dashboard' ? 'active' : '' %>"><span class="dot"></span> Dashboard</a>
       <a href="/interview" class="shell-link <%= _activeNav === 'interview' ? 'active' : '' %>"><span class="dot"></span> New Interview</a>
@@ -50,10 +61,6 @@ const _firstInitial = (_shellUser.name || '?').trim().charAt(0).toUpperCase() ||
       <a href="/settings" class="shell-link <%= _activeNav === 'settings' ? 'active' : '' %>"><span class="dot"></span> Settings</a>
     </div>
     <div class="shell-footer">
-      <div class="shell-avatar"><%= _firstInitial %></div>
-      <div class="shell-user">
-        <div class="name"><%= _shellUser.name || 'Your account' %></div>
-      </div>
       <a href="/auth/logout" class="shell-logout">Log out</a>
     </div>
   </nav>

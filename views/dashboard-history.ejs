@@ -23,14 +23,14 @@
   <!-- Activity Overview Strip -->
   <div class="overview-strip">
     <div class="overview-stat">
-      <div class="icon-sq gold">◎</div>
+      <div class="icon-sq square gold">◎</div>
       <div>
         <div class="num"><%= readinessScore !== null ? readinessScore : '—' %><% if (readinessScore !== null) { %><span style="font-size:13px;color:var(--dim);font-weight:600;"> /100</span><% } %></div>
         <div class="label">Interview Readiness</div>
       </div>
     </div>
     <div class="overview-stat">
-      <div class="icon-sq violet">📅</div>
+      <div class="icon-sq square violet">📅</div>
       <div>
         <div class="num"><%= interviewsCompletedCount %></div>
         <div class="label">Interviews completed</div>
@@ -38,7 +38,7 @@
       </div>
     </div>
     <div class="overview-stat">
-      <div class="icon-sq green">🕐</div>
+      <div class="icon-sq square green">🕐</div>
       <div>
         <div class="num"><%= practiceTimeLabel %></div>
         <div class="label">Total practice time</div>
@@ -46,7 +46,7 @@
       </div>
     </div>
     <div class="overview-stat">
-      <div class="icon-sq blue">📄</div>
+      <div class="icon-sq square blue">📄</div>
       <div>
         <div class="num"><%= reportsGeneratedCount %></div>
         <div class="label">Reports generated</div>
@@ -148,10 +148,10 @@
        primary continuation point) -->
   <div class="pair-row pair-row--activity">
     <div class="panel">
-      <h3>Recent Activity</h3>
+      <div class="panel-header-row"><h3>Recent Activity</h3><a href="/dashboard/history" class="view-all-link">View all →</a></div>
       <div class="activity-feed">
         <% const personaNames = {alex_chen:'Alex Chen',priya_ramesh:'Priya Ramesh',marcus_webb:'Marcus Webb',sanjeev_nair:'Sanjeev Nair',sarah_kim:'Sarah Kim',raj_mehta:'Raj Mehta'}; %>
-        <% history.slice(0, 4).forEach(function(s) { %>
+        <% history.slice(0, 3).forEach(function(s) { %>
           <% const isInterrupted = s.status === 'in_progress'; %>
           <div class="activity-row <%= isInterrupted ? 'interrupted' : '' %>">
             <div class="icon-sq sm <%= isInterrupted ? 'blue' : (s.overallScore !== null && s.overallScore >= 80 ? 'violet' : 'orange') %>">
@@ -193,12 +193,6 @@
           <div class="qa-icon">📄</div>
           <div class="qa-title">Upload Resume</div>
           <div class="qa-desc">Keep your resume updated for better AI insights</div>
-          <div class="qa-arrow">→</div>
-        </a>
-        <a href="/dashboard/history" class="qa-card blue">
-          <div class="qa-icon">📊</div>
-          <div class="qa-title">View Reports</div>
-          <div class="qa-desc">Review your interview reports and track trends</div>
           <div class="qa-arrow">→</div>
         </a>
       </div>

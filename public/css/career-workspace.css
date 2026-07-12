@@ -6,15 +6,23 @@
    here affects Interview Setup, Live Interview, or Reports.
    ============================================================ */
 
-.subtitle { color: var(--muted); margin-bottom: 32px; font-size: 14.5px; }
+.workspace-content h1 {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.subtitle { color: var(--muted); margin-bottom: 24px; font-size: 14px; }
 
-/* Shared color-icon system — circular, matches the founder-approved
-   reference screenshots for Overview / Insights / Recent Activity */
+/* Shared color-icon system.
+   Overview strip uses rounded squares (.square variant); Interview
+   Insights and Recent Activity use full circles — matches T.png, where
+   these two icon shapes are visually distinct. */
 .icon-sq {
   width: 40px; height: 40px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 17px; flex-shrink: 0;
 }
+.icon-sq.square { border-radius: 12px; width: 44px; height: 44px; font-size: 19px; }
 .icon-sq.violet { background: #6D28D9; color: #FFFFFF; }
 .icon-sq.green  { background: #059669; color: #FFFFFF; }
 .icon-sq.blue   { background: #1D4ED8; color: #FFFFFF; }
@@ -22,22 +30,25 @@
 .icon-sq.orange { background: #C2410C; color: #FFFFFF; }
 .icon-sq.sm { width: 32px; height: 32px; font-size: 14px; }
 
-/* Activity Overview Strip */
+/* Activity Overview Strip — single bordered container with internal
+   dividers between cards, matching T.png (rather than 4 separate cards) */
 .overview-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 28px;
-}
-.overview-stat {
+  gap: 0;
+  margin-bottom: 24px;
   background: var(--card);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: var(--radius);
-  padding: 18px 20px;
-  display: flex; gap: 14px; align-items: flex-start;
 }
-.overview-stat .num { font-size: 24px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
-.overview-stat .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.overview-stat {
+  padding: 20px 24px;
+  display: flex; gap: 14px; align-items: flex-start;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+.overview-stat:last-child { border-right: none; }
+.overview-stat .num { font-size: 22px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
+.overview-stat .label { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .overview-stat .sublabel { font-size: 11.5px; color: var(--dim); margin-top: 8px; }
 
 /* Page header row with top-right CTA button */
@@ -78,8 +89,8 @@
 .pair-row {
   display: grid;
   grid-template-columns: 1fr 1.3fr;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 .pair-row--activity { grid-template-columns: 9fr 3fr; }
 
@@ -87,7 +98,7 @@
   background: var(--card);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: var(--radius);
-  padding: 28px;
+  padding: 22px 24px;
 }
 .panel h3 {
   font-size: 17px;
@@ -96,6 +107,10 @@
   font-weight: 700;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
+.panel-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.panel-header-row h3 { margin-bottom: 0; }
+.view-all-link { font-size: 13px; font-weight: 600; color: var(--bright); text-decoration: none; }
+.view-all-link:hover { color: var(--white); }
 
 .readiness-score { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
 .readiness-score .num { font-size: 40px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--gold); }
@@ -151,12 +166,12 @@
   position: relative;
   border-radius: var(--radius);
   border: 1px solid;
-  padding: 20px;
+  padding: 16px 18px;
   text-decoration: none;
   transition: background 0.15s;
 }
 .qa-card .qa-icon {
-  width: 40px; height: 40px;
+  width: 36px; height: 36px;
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   font-size: 17px;
