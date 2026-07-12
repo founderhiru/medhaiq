@@ -1,0 +1,37 @@
+<%
+// Explicit per-variant {icon height, wordmark font-size} pairs — replaces
+// the old single-"size"-times-ratio formula. 'md' is the primary nav
+// lockup used by header.ejs, workspace-shell-top.ejs, and auth-login.ejs,
+// now set to the canonical spec exactly: 26px icon / 24px wordmark.
+// Other variants scale down/up from that same anchor for footer (sm)
+// and in-session compact (sm) placements.
+const _dims = {
+  xs: { iconH: 18, fontSize: 15 },
+  sm: { iconH: 22, fontSize: 17 },
+  md: { iconH: 26, fontSize: 22 },
+  lg: { iconH: 32, fontSize: 26 },
+  xl: { iconH: 40, fontSize: 33 },
+};
+const _d       = _dims[typeof size !== 'undefined' ? size : 'md'] || _dims.md;
+const _variant = typeof variant !== 'undefined' ? variant : 'full';
+const _href    = typeof href !== 'undefined' ? href : '/';
+const _suffix  = typeof suffix !== 'undefined' ? suffix : '';
+const _eager   = typeof eager !== 'undefined' ? eager : false;
+const _iconH = _d.iconH;
+const _iconW = Math.round(_iconH * (245 / 167)); /* preserve source asset aspect ratio */
+%>
+<a href="<%= _href %>" class="brand-logo brand-logo--<%= _variant %>" aria-label="MedhaIQ<%= _suffix %> home">
+  <img
+    src="/assets/branding/medhaiq-icon.png"
+    alt="MedhaIQ"
+    class="brand-logo__icon"
+    width="<%= _iconW %>"
+    height="<%= _iconH %>"
+    style="height:<%= _iconH %>px;width:<%= _iconW %>px;"
+    loading="<%= _eager ? 'eager' : 'lazy' %>"
+    decoding="async"
+  />
+  <% if (_variant === 'full') { %>
+    <span class="brand-logo__wordmark" style="font-size:<%= _d.fontSize %>px;">Medha<span class="brand-logo__iq">IQ</span><%= _suffix %></span>
+  <% } %>
+</a>
