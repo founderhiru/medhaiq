@@ -23,14 +23,14 @@
   <!-- Activity Overview Strip -->
   <div class="overview-strip">
     <div class="overview-stat">
-      <div class="icon-sq square gold">◎</div>
+      <div class="icon-sq square gold"><%- include('partials/icon', { name: 'target', svgSize: 20 }) %></div>
       <div>
         <div class="num"><%= readinessScore !== null ? readinessScore : '—' %><% if (readinessScore !== null) { %><span style="font-size:13px;color:var(--dim);font-weight:600;"> /100</span><% } %></div>
         <div class="label">Interview Readiness</div>
       </div>
     </div>
     <div class="overview-stat">
-      <div class="icon-sq square violet">📅</div>
+      <div class="icon-sq square violet"><%- include('partials/icon', { name: 'calendar', svgSize: 20 }) %></div>
       <div>
         <div class="num"><%= interviewsCompletedCount %></div>
         <div class="label">Interviews completed</div>
@@ -38,7 +38,7 @@
       </div>
     </div>
     <div class="overview-stat">
-      <div class="icon-sq square green">🕐</div>
+      <div class="icon-sq square green"><%- include('partials/icon', { name: 'clock', svgSize: 20 }) %></div>
       <div>
         <div class="num"><%= practiceTimeLabel %></div>
         <div class="label">Total practice time</div>
@@ -46,7 +46,7 @@
       </div>
     </div>
     <div class="overview-stat">
-      <div class="icon-sq square blue">📄</div>
+      <div class="icon-sq square blue"><%- include('partials/icon', { name: 'document', svgSize: 20 }) %></div>
       <div>
         <div class="num"><%= reportsGeneratedCount %></div>
         <div class="label">Reports generated</div>
@@ -116,11 +116,11 @@
         // Converted to a 0-5 star scale for display only — same numbers,
         // just a different presentation, matching the star-rating format.
         const metrics = [
-          { key: 'star', label: 'Structure', val: aggregateScores.starAvg, icon: '✦', color: 'violet' },
-          { key: 'technical', label: 'Domain Expertise', val: aggregateScores.technicalAvg, icon: '👥', color: 'blue' },
-          { key: 'strategic', label: 'Strategic Thinking', val: aggregateScores.executiveAvg, icon: '💬', color: 'green' },
-          { key: 'comms', label: 'Communication', val: aggregateScores.frictionAvg, icon: '🎯', color: 'orange' },
-          { key: 'leadership', label: 'Leadership & Execution', val: aggregateScores.gccAvg, icon: '👤', color: 'gold' },
+          { key: 'star', label: 'Structure', val: aggregateScores.starAvg, icon: 'sparkle', color: 'violet' },
+          { key: 'technical', label: 'Domain Expertise', val: aggregateScores.technicalAvg, icon: 'users', color: 'blue' },
+          { key: 'strategic', label: 'Strategic Thinking', val: aggregateScores.executiveAvg, icon: 'chat', color: 'green' },
+          { key: 'comms', label: 'Communication', val: aggregateScores.frictionAvg, icon: 'target', color: 'orange' },
+          { key: 'leadership', label: 'Leadership & Execution', val: aggregateScores.gccAvg, icon: 'person', color: 'gold' },
         ];
       %>
       <div class="score-bars">
@@ -129,7 +129,7 @@
           <% const full = Math.floor(stars5); const half = (stars5 - full) >= 0.5 ? 1 : 0; const empty = 5 - full - half; %>
           <div class="star-row">
             <div class="star-row-main">
-              <div class="star-row-label-wrap"><div class="icon-sq sm <%= m.color %>"><%= m.icon %></div><div class="star-row-label"><%= m.label %></div></div>
+              <div class="star-row-label-wrap"><div class="icon-sq sm <%= m.color %>"><%- include('partials/icon', { name: m.icon, svgSize: 15 }) %></div><div class="star-row-label"><%= m.label %></div></div>
               <div class="star-icons">
                 <% for (let i = 0; i < full; i++) { %><span class="filled">★</span><% } %>
                 <% if (half) { %><span class="filled">⯨</span><% } %>
@@ -165,7 +165,7 @@
           <% const isInterrupted = s.status === 'in_progress'; %>
           <div class="activity-row <%= isInterrupted ? 'interrupted' : '' %>">
             <div class="icon-sq sm <%= isInterrupted ? 'blue' : (s.overallScore !== null && s.overallScore >= 80 ? 'violet' : 'orange') %>">
-              <%= isInterrupted ? '▶' : '✓' %>
+              <%- include('partials/icon', { name: isInterrupted ? 'play' : 'check', svgSize: 15 }) %>
             </div>
             <div class="activity-main">
               <div class="title"><%= personaNames[s.personaId] || s.personaId %><% if (s.roleTitle) { %> · <%= s.roleTitle %><% } %></div>
@@ -194,13 +194,13 @@
       <h3>Quick Actions</h3>
       <div class="quick-actions">
         <a href="/interview" class="qa-card violet">
-          <div class="qa-icon">🎙</div>
+          <div class="qa-icon"><%- include('partials/icon', { name: 'mic', svgSize: 20 }) %></div>
           <div class="qa-title">Start Interview</div>
           <div class="qa-desc">Practice with AI interviewer and get instant feedback</div>
           <div class="qa-arrow">→</div>
         </a>
         <a href="/interview" class="qa-card green">
-          <div class="qa-icon">📄</div>
+          <div class="qa-icon"><%- include('partials/icon', { name: 'upload', svgSize: 20 }) %></div>
           <div class="qa-title">Upload Resume</div>
           <div class="qa-desc">Keep your resume updated for better AI insights</div>
           <div class="qa-arrow">→</div>

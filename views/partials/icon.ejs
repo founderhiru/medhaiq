@@ -1,0 +1,24 @@
+<%
+/* Shared icon set — simple 20x20 stroke-based line icons (currentColor),
+   matching T.jpg's clean icon style. Replaces emoji glyphs, which render
+   inconsistently across operating systems/browsers (this is what made
+   the microphone icon look broken/odd instead of like a clean mic).
+   Usage: include partials/icon with a name param, e.g. name:'mic'
+*/
+const _icons = {
+  target: '<circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.5"/><circle cx="10" cy="10" r="0.6" fill="currentColor" stroke="none"/>',
+  calendar: '<rect x="3" y="4.5" width="14" height="12.5" rx="1.5"/><line x1="3" y1="8.5" x2="17" y2="8.5"/><line x1="7" y1="2.5" x2="7" y2="5.5"/><line x1="13" y1="2.5" x2="13" y2="5.5"/>',
+  clock: '<circle cx="10" cy="10" r="7.25"/><path d="M10 5.5v4.8l3.2 1.9" stroke-linecap="round" stroke-linejoin="round"/>',
+  document: '<path d="M6 2.75h5.5L15 6.25V17a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3.75a1 1 0 0 1 1-1Z"/><path d="M11 2.75V6.5h3.5" stroke-linejoin="round"/>',
+  sparkle: '<path d="M10 3v3.2M10 13.8V17M3 10h3.2M13.8 10H17M5.5 5.5l2.2 2.2M12.3 12.3l2.2 2.2M14.5 5.5l-2.2 2.2M7.7 12.3l-2.2 2.2" stroke-linecap="round"/>',
+  users: '<circle cx="7.2" cy="7" r="2.6"/><path d="M2.5 16.2c0-2.6 2.1-4.2 4.7-4.2s4.7 1.6 4.7 4.2" stroke-linecap="round"/><circle cx="14" cy="7.6" r="2.1"/><path d="M12.8 11.8c1.9.2 3.7 1.6 3.7 4" stroke-linecap="round"/>',
+  chat: '<path d="M3 4.5h14v9H8.5L5 16.5v-2.5H3v-9Z" stroke-linejoin="round"/>',
+  person: '<circle cx="10" cy="6.8" r="3"/><path d="M3.5 17c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5" stroke-linecap="round"/>',
+  check: '<path d="M4.5 10.5l3.2 3.2 7-8" stroke-linecap="round" stroke-linejoin="round"/>',
+  play: '<path d="M6 4.2v11.6a1 1 0 0 0 1.53.85l9.2-5.8a1 1 0 0 0 0-1.7l-9.2-5.8A1 1 0 0 0 6 4.2Z" stroke-linejoin="round"/>',
+  mic: '<rect x="7.3" y="2.5" width="5.4" height="9.5" rx="2.7"/><path d="M4.5 9.5a5.5 5.5 0 0 0 11 0" stroke-linecap="round"/><line x1="10" y1="15" x2="10" y2="17.5" stroke-linecap="round"/><line x1="7" y1="17.5" x2="13" y2="17.5" stroke-linecap="round"/>',
+  upload: '<path d="M6 2.75h5.5L15 6.25V17a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3.75a1 1 0 0 1 1-1Z"/><path d="M11 2.75V6.5h3.5" stroke-linejoin="round"/><path d="M10 9.5v4.5M8 11.3l2-2 2 2" stroke-linecap="round" stroke-linejoin="round"/>',
+};
+const _iconName = typeof name !== 'undefined' ? name : 'sparkle';
+const _svgSize = typeof svgSize !== 'undefined' ? svgSize : 18;
+%><svg width="<%= _svgSize %>" height="<%= _svgSize %>" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><%- _icons[_iconName] || _icons.sparkle %></svg>

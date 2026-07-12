@@ -7,8 +7,8 @@
    workspace-shell-top.ejs) and does not redefine or override any of
    those tokens. interview.css itself is untouched by this feature.
 
-   --font-display is referenced by interview.css's existing
-   .brand-logo__wordmark rule (line ~930) but was never actually
+   --font-display is referenced by interview.css's .brand-logo__text
+   rule (formerly .brand-logo__wordmark) but was never actually
    defined there — on interview.css-only pages the wordmark has been
    silently falling back to the body font instead of Plus Jakarta
    Sans. Defining it here is a pure bugfix with no visual risk: it
@@ -35,6 +35,7 @@
   position: sticky;
   top: 0;
   height: 100vh;
+  overflow-y: auto;
 }
 
 .shell-nav .brand-logo { padding: 4px 8px 20px; }
