@@ -135,7 +135,7 @@
                 <% if (half) { %><span class="filled">⯨</span><% } %>
                 <% for (let i = 0; i < empty; i++) { %><span class="empty">★</span><% } %>
               </div>
-              <div class="star-val"><span class="star-val-num"><%= m.val !== null ? stars5.toFixed(1) : '—' %></span><span class="star-val-denom"> / 5</span></div>
+              <div class="star-val"><%= m.val !== null ? stars5.toFixed(1) : '—' %> / 5</div>
             </div>
             <!-- No backend field stores per-metric coaching text yet, so
                  this is an honest "coming soon" placeholder — not a
