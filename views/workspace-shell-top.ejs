@@ -1,0 +1,67 @@
+<%
+/* Shared authenticated-app shell. Included at the top of every authenticated
+   page (Career Workspace / Interview Setup / Live Interview / Reports) so
+   nav, sidebar, and identity are identical everywhere and only live in one
+   place. Pair with partials/workspace-shell-bottom.ejs.
+
+   Expected locals (all optional, safe defaults below):
+   - pageTitle:  string, used in <title>
+   - activeNav:  one of 'dashboard' | 'interview' | 'reports' | 'settings'
+   - shellUser:  { name, email } — pass the logged-in user object through
+   - extraHead:  raw string of any extra <link>/<style> tags a page needs
+   - extraStylesheets: array of extra stylesheet hrefs specific to a page
+     (e.g. interview-session.css) so each page keeps its own styling on
+     top of the shared interview.css base.
+*/
+const _pageTitle = typeof pageTitle !== 'undefined' ? pageTitle : 'MedhaIQ';
+const _activeNav = typeof activeNav !== 'undefined' ? activeNav : '';
+const _shellUser = typeof shellUser !== 'undefined' && shellUser ? shellUser : { name: '' };
+const _extraStylesheets = typeof extraStylesheets !== 'undefined' ? extraStylesheets : [];
+const _firstInitial = (_shellUser.name || '?').trim().charAt(0).toUpperCase() || '?';
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= _pageTitle %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/interview.css">
+  <% _extraStylesheets.forEach(function(href) { %>
+  <link rel="stylesheet" href="<%= href %>">
+  <% }); %>
+  <link rel="stylesheet" href="/css/workspace-shell.css">
+  <% if (typeof extraHead !== 'undefined' && extraHead) { %><%- extraHead %><% } %>
+</head>
+<body>
+<div class="shell">
+  <nav class="shell-nav">
+    <%- include('brand-logo', { size: 'md', eager: true, href: '/dashboard/history' }) %>
+
+    <div class="shell-profile">
+      <div class="shell-profile-avatar"><%= _firstInitial %></div>
+      <div class="shell-profile-name"><%= _shellUser.name || 'Your account' %></div>
+    </div>
+    <% if (typeof preparingForRole !== 'undefined' && preparingForRole) { %>
+    <div class="shell-preparing">
+      <div class="shell-preparing-label">Preparing For</div>
+      <a href="/dashboard/history" class="shell-preparing-badge">◎ <%= preparingForRole %></a>
+    </div>
+    <% } %>
+    <div class="shell-links">
+      <a href="/dashboard/history" class="shell-link <%= _activeNav === 'dashboard' ? 'active' : '' %>"><span class="dot"></span> Dashboard</a>
+      <a href="/interview" class="shell-link <%= _activeNav === 'interview' ? 'active' : '' %>"><span class="dot"></span> New Interview</a>
+      <a href="/dashboard/history" class="shell-link <%= _activeNav === 'reports' ? 'active' : '' %>"><span class="dot"></span> Reports</a>
+      <!-- Resume: intentionally not rendered yet — no page/route exists
+           behind it. Re-add this one line once it does:
+      <a href="/resume" class="shell-link"><span class="dot"></span> Resume</a>
+      -->
+      <a href="/settings" class="shell-link <%= _activeNav === 'settings' ? 'active' : '' %>"><span class="dot"></span> Settings</a>
+    </div>
+    <div class="shell-footer">
+      <a href="/auth/logout" class="shell-logout">Log out</a>
+    </div>
+  </nav>
+  <main class="workspace-content">

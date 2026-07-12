@@ -1,9 +1,12 @@
 <%- include('partials/workspace-shell-top', { pageTitle: 'Career Workspace — MedhaIQ', activeNav: 'dashboard', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'] }) %>
 
-<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-  <h1>Career Workspace</h1>
+<div class="page-header-row">
+  <div>
+    <h1>Career Workspace</h1>
+    <p class="subtitle">Track your interview progress, review feedback, and continue preparing for your next opportunity.</p>
+  </div>
+  <a href="/interview" class="new-interview-btn">＋ New Interview</a>
 </div>
-<p class="subtitle">Track your interview progress, review feedback, and continue preparing for your next opportunity.</p>
 
 <% if (!history || history.length === 0) { %>
   <!-- First-time user / no history yet: action-oriented empty state,
@@ -28,15 +31,27 @@
     </div>
     <div class="overview-stat">
       <div class="icon-sq violet">📅</div>
-      <div><div class="num"><%= interviewsCompletedCount %></div><div class="label">Interviews completed</div></div>
+      <div>
+        <div class="num"><%= interviewsCompletedCount %></div>
+        <div class="label">Interviews completed</div>
+        <div class="sublabel"><%= lastInterviewLabel %></div>
+      </div>
     </div>
     <div class="overview-stat">
       <div class="icon-sq green">🕐</div>
-      <div><div class="num"><%= practiceTimeLabel %></div><div class="label">Total practice time</div></div>
+      <div>
+        <div class="num"><%= practiceTimeLabel %></div>
+        <div class="label">Total practice time</div>
+        <div class="sublabel"><%= lastSessionLabel %></div>
+      </div>
     </div>
     <div class="overview-stat">
       <div class="icon-sq blue">📄</div>
-      <div><div class="num"><%= reportsGeneratedCount %></div><div class="label">Reports generated</div></div>
+      <div>
+        <div class="num"><%= reportsGeneratedCount %></div>
+        <div class="label">Reports generated</div>
+        <div class="sublabel"><%= lastReportLabel %></div>
+      </div>
     </div>
   </div>
 
@@ -44,25 +59,42 @@
   <div class="pair-row">
     <div class="panel">
       <h3>Interview Readiness</h3>
-      <% if (trend && trend.length > 1) { %>
-        <div class="readiness-score"><span class="num"><%= readinessScore %></span><span class="of5">/ 100</span></div>
+      <% if (trend && trend.length > 1) {
+        const circR = 76, circCircumference = 2 * Math.PI * circR;
+        const circOffset = circCircumference - ((readinessScore || 0) / 100) * circCircumference;
+      %>
         <% if (readinessDeltaVsFirst !== null) { %>
           <div class="readiness-delta"><%= readinessDeltaVsFirst >= 0 ? '↑' : '↓' %> <%= Math.abs(readinessDeltaVsFirst) %> pts since your first interview</div>
         <% } %>
-        <svg class="score-trend-svg" viewBox="0 0 <%= trendWidth %> 80" preserveAspectRatio="none" id="trendSvg">
-          <defs>
-            <linearGradient id="trendGrad" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stop-color="rgba(59,130,246,0.25)"/>
-              <stop offset="100%" stop-color="rgba(59,130,246,0)"/>
-            </linearGradient>
-          </defs>
-          <polygon class="trend-fill" points="<%= trendPointsFill %>"/>
-          <polyline class="trend-line" points="<%= trendPoints %>"/>
-          <% trend.forEach(function(score, i) { %>
-            <% const x = trendX(i); const y = trendY(score); %>
-            <circle class="trend-dot" cx="<%= x %>" cy="<%= y %>" r="4"/>
-          <% }); %>
-        </svg>
+        <div class="readiness-row">
+          <div class="readiness-ring-wrap">
+            <svg viewBox="0 0 180 180" width="180" height="180">
+              <circle class="readiness-ring-track" cx="90" cy="90" r="<%= circR %>"/>
+              <circle class="readiness-ring-fill" cx="90" cy="90" r="<%= circR %>"
+                stroke-dasharray="<%= circCircumference %>" stroke-dashoffset="<%= circOffset %>"/>
+            </svg>
+            <div class="readiness-ring-center">
+              <div class="num"><%= readinessScore %></div>
+              <div class="of100">/100</div>
+            </div>
+          </div>
+          <div class="readiness-chart-col">
+            <svg class="score-trend-svg" viewBox="0 0 <%= trendWidth %> 80" preserveAspectRatio="none" id="trendSvg">
+              <defs>
+                <linearGradient id="trendGrad" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(59,130,246,0.25)"/>
+                  <stop offset="100%" stop-color="rgba(59,130,246,0)"/>
+                </linearGradient>
+              </defs>
+              <polygon class="trend-fill" points="<%= trendPointsFill %>"/>
+              <polyline class="trend-line" points="<%= trendPoints %>"/>
+              <% trend.forEach(function(score, i) { %>
+                <% const x = trendX(i); const y = trendY(score); %>
+                <circle class="trend-dot" cx="<%= x %>" cy="<%= y %>" r="4"/>
+              <% }); %>
+            </svg>
+          </div>
+        </div>
         <p style="font-size:12px;color:var(--dim);margin-top:8px;">Calculated from your last <%= trend.length %> completed interviews.</p>
       <% } else { %>
         <p style="color:var(--dim); font-size:13px;">Complete one more interview to unlock your readiness trend.</p>
@@ -74,12 +106,15 @@
       <!-- Labels here are the SAME ones already shown on the per-session
            Report page (interview-report.ejs) — Structure / Domain Expertise /
            Strategic Thinking / Communication / Leadership & Execution —
-           just averaged across all sessions instead of one. Flagged
-           separately: these don't match the "STAR Structure / Leadership &
-           Influence / Business Thinking / Executive Presence" terminology
-           from the original spec, since that terminology isn't what the
-           report page (or the underlying DB columns) actually use today. -->
+           just averaged across all sessions instead of one. Not renamed to
+           "STAR Structure / Leadership & Influence / Business Thinking /
+           Executive Presence" pending confirmation, since that would
+           relabel real measured data with different terminology than the
+           Report page already shows for the same numbers. -->
       <% if (aggregateScores && (aggregateScores.starAvg !== null)) {
+        // Real scores are 0-100 (see services/interview.js scoreboard).
+        // Converted to a 0-5 star scale for display only — same numbers,
+        // just a different presentation, matching the star-rating format.
         const metrics = [
           { key: 'star', label: 'Structure', val: aggregateScores.starAvg, icon: '✦', color: 'violet' },
           { key: 'technical', label: 'Domain Expertise', val: aggregateScores.technicalAvg, icon: '👥', color: 'blue' },
@@ -90,12 +125,16 @@
       %>
       <div class="score-bars">
         <% metrics.forEach(function(m) { %>
-          <% const pct = m.val !== null ? Math.max(0, Math.min(100, m.val)) : 0; %>
-          <% const cls = pct >= 80 ? 'high' : pct >= 60 ? 'mid' : 'low'; %>
-          <div class="score-bar-row">
-            <div class="score-bar-label-wrap"><div class="icon-sq sm <%= m.color %>"><%= m.icon %></div><div class="score-bar-label"><%= m.label %></div></div>
-            <div class="score-bar-track"><div class="score-bar-fill <%= cls %>" style="width:<%= pct %>%"></div></div>
-            <div class="score-bar-val <%= cls %>"><%= m.val !== null ? m.val.toFixed(1) : '—' %></div>
+          <% const stars5 = m.val !== null ? Math.max(0, Math.min(5, m.val / 20)) : 0; %>
+          <% const full = Math.floor(stars5); const half = (stars5 - full) >= 0.5 ? 1 : 0; const empty = 5 - full - half; %>
+          <div class="star-row">
+            <div class="star-row-label-wrap"><div class="icon-sq sm <%= m.color %>"><%= m.icon %></div><div class="star-row-label"><%= m.label %></div></div>
+            <div class="star-icons">
+              <% for (let i = 0; i < full; i++) { %><span class="filled">★</span><% } %>
+              <% if (half) { %><span class="filled">⯨</span><% } %>
+              <% for (let i = 0; i < empty; i++) { %><span class="empty">★</span><% } %>
+            </div>
+            <div class="star-val"><%= m.val !== null ? stars5.toFixed(1) : '—' %> / 5</div>
           </div>
         <% }); %>
       </div>
@@ -112,7 +151,7 @@
       <h3>Recent Activity</h3>
       <div class="activity-feed">
         <% const personaNames = {alex_chen:'Alex Chen',priya_ramesh:'Priya Ramesh',marcus_webb:'Marcus Webb',sanjeev_nair:'Sanjeev Nair',sarah_kim:'Sarah Kim',raj_mehta:'Raj Mehta'}; %>
-        <% history.forEach(function(s) { %>
+        <% history.slice(0, 4).forEach(function(s) { %>
           <% const isInterrupted = s.status === 'in_progress'; %>
           <div class="activity-row <%= isInterrupted ? 'interrupted' : '' %>">
             <div class="icon-sq sm <%= isInterrupted ? 'blue' : (s.overallScore !== null && s.overallScore >= 80 ? 'violet' : 'orange') %>">
@@ -122,10 +161,13 @@
               <div class="title"><%= personaNames[s.personaId] || s.personaId %><% if (s.roleTitle) { %> · <%= s.roleTitle %><% } %></div>
               <div class="meta">
                 <%= new Date(s.startedAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) %>
-                <% if (s.status === 'completed' && s.overallScore !== null) { %> · Score <%= s.overallScore %><% } %>
               </div>
             </div>
-            <span class="status-badge <%= s.status %>"><%= s.status.replace('_',' ') %></span>
+            <% if (s.status === 'completed' && s.overallScore !== null) { %>
+              <span class="activity-score <%= s.overallScore >= 80 ? 'high' : s.overallScore >= 60 ? 'mid' : 'low' %>"><%= s.overallScore %><span class="of100">/100</span></span>
+            <% } else { %>
+              <span class="activity-status-text <%= s.status %>"><%= s.status.replace('_',' ') %></span>
+            <% } %>
             <% if (isInterrupted) { %>
               <a href="/interview/session/<%= s.id %>" class="activity-cta resume">Resume Session ▷</a>
             <% } else if (s.status === 'completed' && s.overallScore !== null) { %>

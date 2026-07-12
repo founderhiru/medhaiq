@@ -432,11 +432,33 @@ app.get('/dashboard/history', async (req, res) => {
     const interruptedSession = history.find(s => s.status === 'in_progress') || null;
     const aggregateScores = await getUserAggregateScores(userId);
 
+    // ---- Relative-time labels for the overview cards ("Last interview
+    // yesterday", etc.) — real dates from `history`, just formatted. ----
+    const relativeDayLabel = (date) => {
+      if (!date) return null;
+      const diffDays = Math.floor((Date.now() - new Date(date).getTime()) / 86400000);
+      if (diffDays <= 0) return 'today';
+      if (diffDays === 1) return 'yesterday';
+      if (diffDays < 7) return `${diffDays} days ago`;
+      return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+    const lastCompleted = completedSessions[0] || null; // history is already DESC by started_at
+    const lastInterviewLabel = lastCompleted ? `Last interview ${relativeDayLabel(lastCompleted.startedAt)}` : 'No interviews yet';
+    const lastSessionLabel = history[0] ? `Last session ${relativeDayLabel(history[0].startedAt)}` : 'No sessions yet';
+    const lastReportLabel = lastCompleted ? `Last report ${relativeDayLabel(lastCompleted.startedAt)}` : 'No reports yet';
+
+    // "Preparing For" — real data: the in-progress session's role if one
+    // exists, otherwise the most recent session's role. Not fabricated;
+    // null (and hidden in the view) if there's no session at all yet.
+    const preparingForSession = interruptedSession || history[0] || null;
+    const preparingForRole = preparingForSession ? (preparingForSession.roleTitle || 'Mock Interview') : null;
+
     res.render('dashboard-history', {
       shellUser: user,
       history, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY, trendLatest, trendAvg,
       interviewsCompletedCount, reportsGeneratedCount, practiceTimeLabel,
       readinessScore, readinessDeltaVsFirst, interruptedSession, aggregateScores,
+      lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
     });
   } catch (err) {
     console.error('[dashboard/history]', err);
