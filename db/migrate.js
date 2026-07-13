@@ -298,7 +298,7 @@ async function runMigrations() {
         }
       },
       {
-  {
+  
         name: '007d_activity_logs_relax_action_type',
         up: async (c) => {
           // Legacy column from earlier work: NOT NULL with no default, and
