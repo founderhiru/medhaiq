@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Who It's For | MedhaIQ.ai</title>
+  <meta name="description" content="MedhaIQ is designed for scale across every professional horizon — students, early and mid-career professionals, and senior leaders.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0A0F1E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/medhaiq.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/hero-v2.css">
+  <link rel="stylesheet" href="/css/value-footer.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <!-- No separate page hero here on purpose: partials/audience.ejs already
+       carries its own eyebrow ("Built for Everyone"), heading, and subtitle —
+       adding another hero above it would duplicate that title verbatim.
+       Reused exactly as it rendered on the homepage. -->
+  <%- include('partials/audience') %>
+
+  <%- include('partials/cta-banner') %>
+  <%- include('partials/footer') %>
+
+  <script>
+  (function() {
+    var reveals = document.querySelectorAll('.reveal');
+    if (!reveals.length) return;
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          var items = entry.target.querySelectorAll('.reveal-item');
+          items.forEach(function(item, i) {
+            setTimeout(function() { item.classList.add('visible'); }, i * 100);
+          });
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach(function(el) { observer.observe(el); });
+  })();
+  </script>
+</body>
+</html>
