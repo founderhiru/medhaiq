@@ -80,10 +80,15 @@
       <a href="/about" class="mh-nav-link">About</a>
     </nav>
 
-    <!-- CTA + hamburger — unchanged -->
-    <div class="mh-nav-actions">
-      <a href="/login" class="mh-nav-cta" style="margin-right: 8px;">Start Free Trial</a>
-      <button class="mh-hamburger" id="mh-hamburger" aria-label="Toggle menu" aria-expanded="false">
+    <!-- CTA + hamburger.
+        Sign In (existing users) and Start Free Trial (new users) are now
+        separate actions — previously only "Start Free Trial" existed and
+        it doubled as the login entry point. /auth/login and /auth/signup
+        are pre-existing routes; no new auth routes were added. -->
+   <div class="mh-nav-actions">
+     <a href="/auth/login" class="mh-nav-signin">Sign In</a>
+     <a href="/auth/signup" class="mh-nav-cta">Start Free Trial</a>
+     <button class="mh-hamburger" id="mh-hamburger" aria-label="Toggle menu" aria-expanded="false">
         <span></span>
         <span></span>
         <span></span>
@@ -116,7 +121,8 @@
       <a href="/architecture" class="mh-mobile-link">Architecture</a>
       <a href="/#pricing" class="mh-mobile-link">Pricing</a>
       <a href="/about" class="mh-mobile-link">About</a>
-      <a href="/login" class="mh-mobile-cta">Start Free Trial</a>
+      <a href="/auth/login" class="mh-mobile-link mh-mobile-signin">Sign In</a>
+      <a href="/auth/signup" class="mh-mobile-cta">Start Free Trial</a>
     </nav>
   </div>
 </header>
