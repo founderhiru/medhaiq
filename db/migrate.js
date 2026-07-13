@@ -305,7 +305,28 @@ async function runMigrations() {
           // "action" column instead). Relaxing this is additive/safe — it
           // only permits more inserts, it can't break anything that already
           // depends on this column being required.
-          await c.query(`ALTER TABLE user_activity_logs ALTER COLUMN action_type DROP NOT NULL`);
+        await c.query(`ALTER TABLE user_activity_logs ALTER COLUMN action_type DROP NOT NULL`);
+        }
+      },
+      {
+        name: '008_resume_intelligence',
+        up: async (c) => {
+          // Persistent store — one resume per user, lives on the existing
+          // career_profiles row (already unique on user_id, already
+          // bootstrapped for every user via db/profile-bootstrap.js).
+          // Parsed ONCE on upload/replace — never re-parsed by interview
+          // setup or session creation.
+          await c.query(`ALTER TABLE career_profiles ADD COLUMN IF NOT EXISTS resume_raw_text TEXT`);
+          await c.query(`ALTER TABLE career_profiles ADD COLUMN IF NOT EXISTS resume_competencies JSONB`);
+          await c.query(`ALTER TABLE career_profiles ADD COLUMN IF NOT EXISTS resume_context JSONB`);
+          await c.query(`ALTER TABLE career_profiles ADD COLUMN IF NOT EXISTS resume_parsed_at TIMESTAMPTZ`);
+
+          // Per-session immutable snapshot — same precedent as this table's
+          // existing jd_text / competency_matrix columns: copied in once at
+          // session creation so a later resume update never rewrites the
+          // history of a past interview/report.
+          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS resume_competencies JSONB`);
+          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS resume_context JSONB`);
         }
       },
     ];
