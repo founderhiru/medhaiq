@@ -727,6 +727,7 @@ function buildSystemPrompt({
   openingQ,
   questionCount,
   wasSkipped,
+  resumeContext, // NEW — Resume Intelligence, personalization-only. See Layer 10 below.
 }) {
   const matrix = Array.isArray(competencyMatrix) && competencyMatrix.length
     ? competencyMatrix.map((c, i) => `${i + 1}. ${c}`).join('\n')
@@ -744,9 +745,37 @@ function buildSystemPrompt({
   // describe the contradiction instead of asking a question.
   const currentAnswerBlock = wasSkipped
     ? '(the candidate chose to SKIP the previous question — there is no answer to evaluate or drill into. Move directly to a fresh question on a new competency; do not reference the skipped question.)'
-    : (currentAnswer && currentAnswer.trim())
+   : (currentAnswer && currentAnswer.trim())
       ? currentAnswer.trim().slice(0, 3000)
       : '(no answer yet — this is the start of the session)';
+
+  // ── Layer 10 — RESUME CONTEXT (personalization-only, NEW) ─────────────────
+  // Appended AFTER layer 9, never inserted between 1-9. This keeps the
+  // frozen layer 1-9 prefix byte-for-byte identical for every session —
+  // including every session with no resume on file, where this whole block
+  // collapses to a single "(none)" line. resume_context never touches
+  // competency selection, weighting, or scoring — it exists only so the
+  // model can phrase questions against real companies/products/scope
+  // instead of generic placeholders.
+  const rc = resumeContext && typeof resumeContext === 'object' ? resumeContext : null;
+  const hasResumeContext = !!(rc && (
+    rc.summary || rc.career_level && rc.career_level !== 'Unknown' || (rc.industries && rc.industries.length) ||
+    (rc.companies && rc.companies.length) || (rc.customers && rc.customers.length) ||
+    (rc.products && rc.products.length) || (rc.leadership_scope && rc.leadership_scope !== 'Not explicitly stated') ||
+    (rc.top_achievements && rc.top_achievements.length)
+  ));
+  const resumeContextBlock = hasResumeContext
+    ? [
+        rc.summary ? `Summary: ${rc.summary}` : null,
+        rc.career_level && rc.career_level !== 'Unknown' ? `Career level: ${rc.career_level}` : null,
+        rc.industries && rc.industries.length ? `Industries: ${rc.industries.join(', ')}` : null,
+        rc.companies && rc.companies.length ? `Companies: ${rc.companies.join(', ')}` : null,
+        rc.customers && rc.customers.length ? `Enterprise customers: ${rc.customers.join(', ')}` : null,
+        rc.products && rc.products.length ? `Products/platforms: ${rc.products.join(', ')}` : null,
+        rc.leadership_scope && rc.leadership_scope !== 'Not explicitly stated' ? `Leadership scope: ${rc.leadership_scope}` : null,
+        rc.top_achievements && rc.top_achievements.length ? `Top achievements: ${rc.top_achievements.join('; ')}` : null,
+      ].filter(Boolean).join('\n')
+    : '(no resume on file for this candidate — do not reference resume details)';
 
   return `[1 · SYSTEM PERSONA]
 ${SYSTEM_PERSONA_CHARTER}
@@ -778,6 +807,10 @@ ${history}
 [9 · CURRENT TURN ANSWER TRANSCRIPT]
 Candidate's most recent answer (the input you are reacting to now):
 ${currentAnswerBlock}
+
+[10 · RESUME CONTEXT — PERSONALIZATION ONLY, NOT AN EVALUATION NODE]
+${resumeContextBlock}
+This layer is for phrasing/personalization only. It must NEVER be treated as a competency to probe, NEVER scored, and NEVER cited as a reason to weight or favor any evaluation node in layer 6.
 
 EVALUATION DIRECTIVE:
 - Evaluate the candidate's answers turn-by-turn against the active competency nodes in layer 6 — every question you ask must probe at least one of those nodes.
