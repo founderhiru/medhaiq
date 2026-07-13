@@ -541,12 +541,13 @@ app.get('/founder', async (req, res) => {
     const founder = await isFounder(userId);
     if (!founder) return res.status(404).render('error-boundary', { url: req.url, errorMessage: 'Not found' });
 
-    const { getOverviewStats, getRecentActivity } = require('./db/founder-stats');
+    const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview } = require('./db/founder-stats');
     const { listUsers } = require('./db/founder-users');
-    const [stats, activity, users] = await Promise.all([
+    const [stats, activity, users, betaOverview] = await Promise.all([
       getOverviewStats(),
       getRecentActivity(10),
       listUsers({ search: '', limit: 25 }),
+      getBetaAndSubscriptionOverview(),
     ]);
 
     const footerInfo = {
@@ -556,7 +557,7 @@ app.get('/founder', async (req, res) => {
       environment: process.env.NODE_ENV === 'production' ? 'Production' : (process.env.NODE_ENV || 'Development'),
     };
 
-    res.render('founder-dashboard', { shellUser: user, stats, activity, users, footerInfo });
+    res.render('founder-dashboard', { shellUser: user, stats, activity, users, footerInfo, betaOverview });
   } catch (err) {
     console.error('[founder]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
