@@ -340,6 +340,25 @@ async function runMigrations() {
           await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS resume_context JSONB`);
         }
       },
+      {
+        name: '009_founder_access',
+        up: async (c) => {
+          // Founder Dashboard authorization — deliberately a separate table,
+          // NOT a column on `users`. Zero impact on the existing auth flow,
+          // trivially reversible (drop the table), and supports more than
+          // one admin later without ever touching the core users schema.
+          await c.query(`CREATE TABLE IF NOT EXISTS founder_access (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            role VARCHAR(50) NOT NULL DEFAULT 'founder',
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          )`);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS founder_access_user_id_unique_idx
+            ON founder_access (user_id)
+          `);
+        }
+      },
     ];
 
     for (const m of migrations) {
