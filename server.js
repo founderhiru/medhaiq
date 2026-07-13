@@ -44,6 +44,25 @@ app.get('/health', (_req, res) => res.json({ status: 'healthy' }));
 // Static files
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
+// Founder Dashboard nav visibility — sets res.locals.isFounder so
+// workspace-shell-top.ejs can conditionally show/hide the nav link on
+// every authenticated page without editing every page's render() call.
+// This is UI visibility only — the actual route and API are separately
+// protected server-side in routes/founder.js and never trust this flag.
+app.use(async (req, res, next) => {
+  res.locals.isFounder = false;
+  try {
+    const userId = req.cookies?.user_id;
+    if (userId) {
+      const { isFounder } = require('./db/founder-access');
+      res.locals.isFounder = await isFounder(userId);
+    }
+  } catch (err) {
+    console.error('[isFounder check]', err.message);
+  }
+  next();
+});
+
 // ── API Routes ──────────────────────────────────────────────────────────────;
 app.use('/api/contact',    require('./routes/contact'));
 app.use('/auth',           require('./routes/auth'));
@@ -51,6 +70,7 @@ app.use('/api/interview',  require('./routes/interview'));
 app.use('/api/dashboard',  require('./routes/dashboard'));
 app.use('/api/resume',     require('./routes/resume'));
 app.use('/api/admin',      require('./routes/admin'));
+app.use('/api/founder',    require('./routes/founder'));
 app.use('/api',            require('./routes/vapi'));
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
@@ -501,6 +521,44 @@ app.get('/settings', async (req, res) => {
     res.render('settings', { shellUser: user });
   } catch (err) {
     console.error('[settings]', err);
+    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
+  }
+});
+
+// Founder Dashboard — same cookie-auth pattern as /settings and /resume,
+// plus a founder_access check. Non-founders get a plain 404 (not a
+// redirect), so the route's existence isn't revealed either way.
+app.get('/founder', async (req, res) => {
+  try {
+    const userId = req.cookies?.user_id;
+    if (!userId) return res.redirect('/auth/login');
+
+    const { getUserById } = require('./db/auth');
+    const { isFounder } = require('./db/founder-access');
+    const user = await getUserById(userId);
+    if (!user) return res.redirect('/auth/login');
+
+    const founder = await isFounder(userId);
+    if (!founder) return res.status(404).render('error-boundary', { url: req.url, errorMessage: 'Not found' });
+
+    const { getOverviewStats, getRecentActivity } = require('./db/founder-stats');
+    const { listUsers } = require('./db/founder-users');
+    const [stats, activity, users] = await Promise.all([
+      getOverviewStats(),
+      getRecentActivity(10),
+      listUsers({ search: '', limit: 25 }),
+    ]);
+
+    const footerInfo = {
+      version: '1.0 Beta',
+      lastRefreshed: new Date(),
+      dbConnected: true, // if we got this far, the queries above already succeeded
+      environment: process.env.NODE_ENV === 'production' ? 'Production' : (process.env.NODE_ENV || 'Development'),
+    };
+
+    res.render('founder-dashboard', { shellUser: user, stats, activity, users, footerInfo });
+  } catch (err) {
+    console.error('[founder]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });
