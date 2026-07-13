@@ -188,10 +188,13 @@ router.get('/me', async (req, res) => {
   return res.json({ user: { id: user.id, email: user.email, name: user.name } });
 });
 
-// GET /auth/logout — clear cookie
-router.get('/logout', (req, res) => {
-  res.clearCookie('user_id');
-  return res.json({ success: true });
-});
+// GET /auth/logout — clear cookie, then send the user back to the
+   // marketing page. Was returning raw JSON, which left visitors staring at
+   // {"success":true} because the only caller is a plain <a href> page link
+   // (views/partials/workspace-shell-top.ejs), not a fetch/AJAX call.
+   router.get('/logout', (req, res) => {
+     res.clearCookie('user_id');
+     return res.redirect('/');
+   });
 
 module.exports = router;
