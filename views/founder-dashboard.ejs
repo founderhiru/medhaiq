@@ -1,0 +1,259 @@
+<%
+/* KPI cards are config-driven on purpose (Decision 3 — "pluggable, not
+   hardcoded"): adding a future KPI is one array entry here, not a layout
+   change. Any key missing from `stats` renders as '—' instead of erroring,
+   so new/removed backend fields never break this view. */
+const kpiConfig = [
+  { key: 'totalUsers', title: 'Total Users', icon: 'users' },
+  { key: 'activeUsersToday', title: 'Active Users Today', icon: 'person' },
+  { key: 'newBetaSignupsToday', title: 'New Beta Signups (Today)', icon: 'sparkle' },
+  { key: 'paidSubscribers', title: 'Paid Subscribers', icon: 'check' },
+  { key: 'interviewsCompleted', title: 'Interviews Completed', icon: 'mic' },
+  { key: 'reportsGenerated', title: 'Reports Generated', icon: 'document' },
+];
+const _stats = typeof stats !== 'undefined' && stats ? stats : {};
+const _activity = typeof activity !== 'undefined' && activity ? activity : [];
+const _users = typeof users !== 'undefined' && users ? users : [];
+const _footer = typeof footerInfo !== 'undefined' && footerInfo ? footerInfo : {};
+const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : null;
+%>
+<%- include('partials/workspace-shell-top', { pageTitle: 'Founder Dashboard — MedhaIQ', activeNav: 'founder', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css', '/css/founder-dashboard.css'] }) %>
+
+<div class="fdash-header-row">
+  <div>
+    <h1>Founder Dashboard</h1>
+    <p class="fdash-subtitle">How is MedhaIQ performing today?</p>
+  </div>
+  <span class="fdash-status-dot" id="fdash-live-dot">Live</span>
+</div>
+
+<!-- Section 1 — Executive Snapshot (config-driven, tolerates missing data) -->
+<div class="fdash-kpi-grid" id="fdash-kpi-grid">
+  <% kpiConfig.forEach(function(k) { %>
+  <div class="fdash-kpi-card" data-kpi="<%= k.key %>">
+    <div class="fdash-kpi-icon"><%- include('partials/icon', { name: k.icon, svgSize: 18 }) %></div>
+    <div class="fdash-kpi-value"><%= (_stats[k.key] !== undefined && _stats[k.key] !== null) ? _stats[k.key] : '—' %></div>
+    <div class="fdash-kpi-title"><%= k.title %></div>
+  </div>
+  <% }); %>
+</div>
+
+<!-- Quick Actions -->
+<div class="fdash-section">
+  <div class="fdash-section-header">
+    <div class="fdash-section-title">Quick Actions</div>
+  </div>
+  <div class="fdash-quick-actions">
+    <div class="fdash-qa-card">
+      <div class="fdash-qa-label">Add to Beta Allowlist</div>
+      <div class="fdash-qa-sub">Approves an email to sign up. Does not send anything — you'll need to tell them yourself.</div>
+      <form id="fdash-invite-form" class="fdash-qa-invite-form">
+        <input type="email" id="fdash-invite-email" placeholder="name@company.com" required>
+        <button type="submit">Approve</button>
+      </form>
+      <div class="fdash-qa-invite-msg" id="fdash-invite-msg"></div>
+    </div>
+    <a href="#fdash-users-section" class="fdash-qa-card fdash-qa-link">
+      <div class="fdash-qa-label">Manage Users</div>
+      <div class="fdash-qa-sub">Jump to User Management ↓</div>
+    </a>
+    <a href="/admin/founder-dashboard.html" target="_blank" rel="noopener" class="fdash-qa-card fdash-qa-link">
+      <div class="fdash-qa-label">Open Cost Analytics</div>
+      <div class="fdash-qa-sub">Existing dashboard, opens separately</div>
+    </a>
+    <div class="fdash-qa-card fdash-qa-disabled" title="Available with Alerts (Phase 5)">
+      <div class="fdash-qa-label">Approve Beta Users</div>
+      <div class="fdash-qa-sub">Coming with Alerts</div>
+    </div>
+    <div class="fdash-qa-card fdash-qa-disabled" title="Not built yet">
+      <div class="fdash-qa-label">Platform Settings</div>
+      <div class="fdash-qa-sub">Coming soon</div>
+    </div>
+    <div class="fdash-qa-card fdash-qa-disabled" title="Not built yet">
+      <div class="fdash-qa-label">Send Announcement</div>
+      <div class="fdash-qa-sub">Coming soon</div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 2 — Recent User Activity -->
+<div class="fdash-section">
+  <div class="fdash-section-header">
+    <div class="fdash-section-title">Recent Activity</div>
+  </div>
+  <div class="fdash-activity-card">
+    <% if (_activity.length === 0) { %>
+      <div class="fdash-activity-empty">No activity logged yet.</div>
+    <% } else { %>
+      <table class="fdash-activity-table">
+        <thead><tr><th>Time</th><th>User</th><th>Activity</th></tr></thead>
+        <tbody id="fdash-activity-body">
+          <% _activity.forEach(function(a) { %>
+          <tr>
+            <td><%= fmtDateTime(a.created_at) %></td>
+            <td class="fdash-user"><%= a.user_name || a.user_email || 'Unknown' %></td>
+            <td><%= a.action || '—' %><%= a.feature ? (' · ' + a.feature) : '' %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+  <p class="fdash-refresh-note">Refreshes automatically every 45 seconds.</p>
+</div>
+
+<!-- Section 3 — User Management -->
+<div class="fdash-section" id="fdash-users-section">
+  <div class="fdash-section-header">
+    <div class="fdash-section-title">User Management</div>
+    <input type="text" id="fdash-user-search" class="fdash-search-input" placeholder="Search name or email…">
+  </div>
+  <div class="fdash-activity-card">
+    <table class="fdash-activity-table" id="fdash-users-table">
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Plan</th><th>Status</th><th>Last Login</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="fdash-users-body">
+        <% if (_users.length === 0) { %>
+        <tr><td colspan="6" class="fdash-activity-empty">No users found.</td></tr>
+        <% } else { %>
+        <% _users.forEach(function(u) { %>
+        <tr>
+          <td class="fdash-user"><%= u.name || '—' %></td>
+          <td><%= u.email %></td>
+          <td><%= u.subscription_plan || 'Free' %></td>
+          <td><%= u.subscription_status === 'active' ? 'Active Subscriber' : 'Free / Trial' %></td>
+          <td><%= fmtDateTime(u.last_login) || 'Never logged in' %></td>
+          <td class="fdash-actions-cell">
+            <span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Suspend</span>
+            <span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Activate</span>
+          </td>
+        </tr>
+        <% }); %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="fdash-footer">
+  <div class="fdash-footer-title">MedhaIQ Founder Dashboard</div>
+  <div class="fdash-footer-row">
+    <span>Version <%= _footer.version || '1.0 Beta' %></span>
+    <span>Last refreshed: <span id="fdash-last-refreshed"><%= fmtDateTime(_footer.lastRefreshed) || '—' %></span></span>
+    <span>Database: <span class="fdash-footer-ok">Connected</span></span>
+    <span>Environment: <%= _footer.environment || 'Production' %></span>
+  </div>
+</div>
+
+<script>
+  (function () {
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str == null ? '' : String(str);
+      return div.innerHTML;
+    }
+    function fmtDT(iso) {
+      if (!iso) return null;
+      return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+
+    async function refreshOverview() {
+      try {
+        const res = await fetch('/api/founder/overview');
+        if (!res.ok) return;
+        const stats = await res.json();
+        Object.keys(stats).forEach(function (key) {
+          const card = document.querySelector('.fdash-kpi-card[data-kpi="' + key + '"] .fdash-kpi-value');
+          if (card) card.textContent = stats[key];
+        });
+        const lastRefreshed = document.getElementById('fdash-last-refreshed');
+        if (lastRefreshed) lastRefreshed.textContent = fmtDT(new Date().toISOString());
+      } catch (e) { /* silent — next tick will retry */ }
+    }
+
+    async function refreshActivity() {
+      try {
+        const res = await fetch('/api/founder/activity');
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('fdash-activity-body');
+        if (!tbody || !data.activity) return;
+        tbody.innerHTML = data.activity.map(function (a) {
+          const time = escapeHtml(fmtDT(a.created_at));
+          const user = escapeHtml(a.user_name || a.user_email || 'Unknown');
+          const act = escapeHtml((a.action || '—') + (a.feature ? (' · ' + a.feature) : ''));
+          return '<tr><td>' + time + '</td><td class="fdash-user">' + user + '</td><td>' + act + '</td></tr>';
+        }).join('');
+      } catch (e) { /* silent — next tick will retry */ }
+    }
+
+    async function searchUsers(term) {
+      try {
+        const res = await fetch('/api/founder/users?search=' + encodeURIComponent(term));
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('fdash-users-body');
+        if (!tbody || !data.users) return;
+        if (data.users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="fdash-activity-empty">No users found.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.users.map(function (u) {
+          const name = escapeHtml(u.name || '—');
+          const email = escapeHtml(u.email);
+          const plan = escapeHtml(u.subscription_plan || 'Free');
+          const status = u.subscription_status === 'active' ? 'Active Subscriber' : 'Free / Trial';
+          const lastLogin = escapeHtml(fmtDT(u.last_login) || 'Never logged in');
+          return '<tr><td class="fdash-user">' + name + '</td><td>' + email + '</td><td>' + plan + '</td><td>' + status + '</td><td>' + lastLogin + '</td>' +
+            '<td class="fdash-actions-cell"><span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Suspend</span> <span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Activate</span></td></tr>';
+        }).join('');
+      } catch (e) { /* silent */ }
+    }
+
+    let searchDebounce;
+    const searchInput = document.getElementById('fdash-user-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        clearTimeout(searchDebounce);
+        const term = this.value;
+        searchDebounce = setTimeout(function () { searchUsers(term); }, 300);
+      });
+    }
+
+    const inviteForm = document.getElementById('fdash-invite-form');
+    if (inviteForm) {
+      inviteForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const emailInput = document.getElementById('fdash-invite-email');
+        const msg = document.getElementById('fdash-invite-msg');
+        msg.textContent = 'Approving…';
+        msg.className = 'fdash-qa-invite-msg';
+        try {
+          const res = await fetch('/api/founder/invitations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: emailInput.value }),
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            msg.textContent = emailInput.value + ' can now sign up. Remember to tell them yourself — no email was sent automatically.';
+            msg.className = 'fdash-qa-invite-msg success';
+            emailInput.value = '';
+          } else {
+            msg.textContent = data.error || 'Failed to approve email';
+            msg.className = 'fdash-qa-invite-msg error';
+          }
+        } catch (err) {
+          msg.textContent = 'Failed to approve email';
+          msg.className = 'fdash-qa-invite-msg error';
+        }
+      });
+    }
+
+    setInterval(function () { refreshOverview(); refreshActivity(); }, 45000);
+  })();
+</script>
+
+<%- include('partials/workspace-shell-bottom') %>
