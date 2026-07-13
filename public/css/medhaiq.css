@@ -303,6 +303,20 @@ button { cursor: pointer; }
   transform: translateY(-1px);
   box-shadow: 0 4px 40px rgba(30, 64, 175, 0.5);
 }
+/* Sign In — secondary action for existing/returning users. Reuses the
+      same font-family/size/weight as .mh-nav-link so it reads as part of the
+      same nav system, not a bolted-on button. */
+   .mh-nav-signin {
+     font-family: var(--font-body);
+     font-size: 14px;
+     font-weight: 600;
+     color: var(--text-muted);
+     padding: 8px 14px;
+     border-radius: 8px;
+     white-space: nowrap;
+     transition: color 0.15s ease, background 0.15s ease;
+   }
+   .mh-nav-signin:hover { color: var(--white); background: var(--white-soft); }
 
 /* Hamburger */
 .mh-hamburger {
