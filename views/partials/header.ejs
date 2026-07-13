@@ -220,3 +220,25 @@
   document.addEventListener('click', function(e) {
     if (megaWrap.classList.contains('mh-mega-open') && !megaWrap.contains(e.target)) {
       cancelScheduledClose();
+      closeMega();
+    }
+  });
+
+  // Clicking/activating any menu item closes the panel immediately
+  megaWrap.querySelectorAll('.mh-megamenu-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      cancelScheduledClose();
+      closeMega();
+    });
+  });
+
+  /* ---- NEW: mobile Platform accordion ---- */
+  var mobTrigger = document.getElementById('mh-mobile-platform-trigger');
+  var mobPanel = document.getElementById('mh-mobile-platform-panel');
+
+  mobTrigger.addEventListener('click', function() {
+    var isOpen = mobPanel.classList.toggle('mh-mobile-accordion-panel-open');
+    mobTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+})();
+</script>
