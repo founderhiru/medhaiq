@@ -10,6 +10,11 @@ const {
   aiExtractJdCompetencies,
   compileWeightedCompetencyMatrix,
 } = require('../services/harmonicAlignmentEngine');
+// Resume Intelligence: READ-ONLY here. This controller never parses a resume —
+// it only reads whatever is already on file (see routes/resume.js, the sole
+// place parsing happens). Absent/undefined is the normal, fully-supported
+// case for a candidate with no resume on file.
+const { getCareerProfile } = require('../db/career-profile');
 
 /**
  * POST /api/interview/sessions  (alias: POST /api/interview/session/initialize)
@@ -39,16 +44,33 @@ async function initializeSession(req, res) {
     const roleDefaults  = getRoleDefaults(roleTitle);
     const companyTraits = getOrgTraits(orgPreset);
 
+    // ── 2b. Resume Intelligence — READ existing career_profiles row only.
+    // Parsing already happened (or didn't) at upload time via routes/resume.js.
+    // Absent resume is the normal case and produces empty channels below —
+    // zero behavior change for any candidate who hasn't uploaded one.
+    const careerProfile = await getCareerProfile(req.user.id).catch((e) => {
+      console.warn('[resume] getCareerProfile failed (non-fatal, treated as no resume):', e.message);
+      return null;
+    });
+    const resumeCompetencies = (careerProfile && Array.isArray(careerProfile.resume_competencies))
+      ? careerProfile.resume_competencies
+      : [];
+    const resumeContext = (careerProfile && careerProfile.resume_context) ? careerProfile.resume_context : null;
+
     // ── 3. AI competency extraction (deterministic fallback inside) ─────────
     const extraction = await aiExtractJdCompetencies(jdText);
     console.log(`[harmonic] JD extraction source=${extraction.source} count=${extraction.competencies.length}`);
 
     // ── 4. Weighted merge → finalized matrix (≤8 strings, floor 5) ────────
+    // 4th arg (resumeCompetencies) is additive and optional — existing
+    // 3-arg behavior is unchanged when it's an empty array.
     const { matrix: finalizedMatrix, detailed } =
-      compileWeightedCompetencyMatrix(roleDefaults, companyTraits, extraction.competencies);
+      compileWeightedCompetencyMatrix(roleDefaults, companyTraits, extraction.competencies, resumeCompetencies);
     console.log('[harmonic] finalized matrix:', JSON.stringify(detailed));
 
-    // ── 5. Persist session document state ───────────────────────────────────
+    // ── 5. Persist session document state (Resume Intelligence snapshotted
+    // here, same precedent as jd_text/competency_matrix — frozen at creation,
+    // immune to a later resume replace) ──────────────────────────────────────
     const session = await createSession({
       userId: req.user.id,
       personaId,
@@ -57,6 +79,8 @@ async function initializeSession(req, res) {
       orgPreset: orgPreset || null,
       jdText: jdText || null,
       competencyMatrix: finalizedMatrix,
+      resumeCompetencies,
+      resumeContext,
     });
 
     // ── 6. Opening question via the enterprise prompt layer ─────────────────
@@ -70,6 +94,7 @@ async function initializeSession(req, res) {
       jdText,
       qaPairs: [],
       questionCount: 0,
+      resumeContext,
     });
 
     const question = await addQuestion({
