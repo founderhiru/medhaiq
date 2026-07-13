@@ -899,6 +899,7 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     openingQ,
     questionCount,
     wasSkipped: wasLastSkipped,
+    resumeContext,
   });
 
   const prompt = questionCount === 0
