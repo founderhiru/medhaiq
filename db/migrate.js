@@ -298,7 +298,6 @@ async function runMigrations() {
         }
       },
       {
-  
         name: '007d_activity_logs_relax_action_type',
         up: async (c) => {
           // Legacy column from earlier work: NOT NULL with no default, and
@@ -357,6 +356,31 @@ async function runMigrations() {
             CREATE UNIQUE INDEX IF NOT EXISTS founder_access_user_id_unique_idx
             ON founder_access (user_id)
           `);
+        }
+      },
+      {
+        name: '010_waitlist_table',
+        up: async (c) => {
+          // Found via staging deploy on a fresh database, July 2026: the
+          // `waitlist` table (backing db/waitlist.js and the landing page
+          // signup form) exists on production from earlier manual setup
+          // work, but was never captured in this migration file — so a
+          // fresh database never creates it, and any query against it
+          // (e.g. founder-stats.js's newBetaSignupsToday count) fails with
+          // "relation does not exist". Columns match exactly what
+          // db/waitlist.js's createWaitlistEntry() already inserts.
+          await c.query(`CREATE TABLE IF NOT EXISTS waitlist (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255),
+            email VARCHAR(255) NOT NULL,
+            phone VARCHAR(50),
+            city VARCHAR(255),
+            user_type VARCHAR(100),
+            plan_interest VARCHAR(255),
+            ip_address VARCHAR(64),
+            user_agent TEXT,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          )`);
         }
       },
     ];
