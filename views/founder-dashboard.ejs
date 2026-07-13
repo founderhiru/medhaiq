@@ -15,6 +15,9 @@ const _stats = typeof stats !== 'undefined' && stats ? stats : {};
 const _activity = typeof activity !== 'undefined' && activity ? activity : [];
 const _users = typeof users !== 'undefined' && users ? users : [];
 const _footer = typeof footerInfo !== 'undefined' && footerInfo ? footerInfo : {};
+const _betaOverview = typeof betaOverview !== 'undefined' && betaOverview ? betaOverview : {};
+const _beta = _betaOverview.beta || {};
+const _plans = Array.isArray(_betaOverview.plans) ? _betaOverview.plans : [];
 // NOTE: dates are deliberately NOT formatted here. This template renders on
 // the server (Render runs in UTC), but the person viewing this page is in
 // their own local timezone — formatting server-side would silently show
@@ -108,6 +111,37 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
     <% } %>
   </div>
   <p class="fdash-refresh-note">Refreshes automatically every 45 seconds.</p>
+</div>
+
+<!-- Section 4 — Beta & Subscription Overview -->
+<div class="fdash-section">
+  <div class="fdash-section-header">
+    <div class="fdash-section-title">Beta & Subscription Overview</div>
+  </div>
+  <p class="fdash-beta-note">These beta counts come from approvals via Quick Actions → "Add to Beta Allowlist" — separate from the "New Beta Signups" KPI above, which counts the public waitlist form on the marketing site. The two won't always match, and that's expected.</p>
+  <div class="fdash-beta-grid">
+    <div class="fdash-mini-card">
+      <div class="fdash-mini-value"><%= _beta.pending || 0 %></div>
+      <div class="fdash-mini-title">Beta Pending</div>
+    </div>
+    <div class="fdash-mini-card">
+      <div class="fdash-mini-value"><%= _beta.accepted || 0 %></div>
+      <div class="fdash-mini-title">Beta Accepted</div>
+    </div>
+    <% if (_plans.length === 0) { %>
+    <div class="fdash-mini-card fdash-mini-empty">
+      <div class="fdash-mini-value">—</div>
+      <div class="fdash-mini-title">No paid subscribers yet</div>
+    </div>
+    <% } else { %>
+    <% _plans.forEach(function(p) { %>
+    <div class="fdash-mini-card">
+      <div class="fdash-mini-value"><%= p.count %></div>
+      <div class="fdash-mini-title"><%= p.plan.charAt(0).toUpperCase() + p.plan.slice(1) %></div>
+    </div>
+    <% }); %>
+    <% } %>
+  </div>
 </div>
 
 <!-- Section 3 — User Management -->
