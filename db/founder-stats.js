@@ -59,4 +59,35 @@ async function getRecentActivity(limit = 10) {
   return res.rows;
 }
 
-module.exports = { getOverviewStats, getRecentActivity };
+// Section 4 — Beta & Subscription Overview.
+// Beta counts come straight from `invitations.status` as it actually
+// exists today (pending/accepted only — no invented "rejected" state).
+// Plan counts are grouped dynamically from whatever distinct
+// subscription_plan values are actually in use (currently 'professional'
+// and 'leadership', per db/cost-analytics.js) rather than hardcoding a
+// plan list that doesn't match real billing data — if a new plan name
+// appears later, it shows up here automatically, nothing to update.
+async function getBetaAndSubscriptionOverview() {
+  const [betaResult, plansResult] = await Promise.all([
+    pool.query(`SELECT status, COUNT(*)::int AS count FROM invitations GROUP BY status`),
+    pool.query(
+      `SELECT LOWER(subscription_plan) AS plan, COUNT(*)::int AS count
+       FROM users
+       WHERE subscription_status = 'active' AND subscription_plan IS NOT NULL
+       GROUP BY LOWER(subscription_plan)
+       ORDER BY count DESC`
+    ),
+  ]);
+
+  const beta = { pending: 0, accepted: 0 };
+  betaResult.rows.forEach(row => {
+    beta[row.status] = row.count;
+  });
+
+  return {
+    beta,
+    plans: plansResult.rows, // [{ plan: 'professional', count: 3 }, ...] — empty array if none yet
+  };
+}
+
+module.exports = { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview };
