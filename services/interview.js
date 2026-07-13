@@ -838,8 +838,7 @@ ${questionCount === 0 ? `- This is the OPENING question. Generate a FRESH, sessi
 // ═══════════════════════════════════════════════════════════════════
 // REPLACE the existing generateNextQuestion function with this version
 // ═══════════════════════════════════════════════════════════════════
-async function generateNextQuestion({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, competencyMatrix, jdText, currentAnswer, qaPairs, questionCount }) {
-  const persona = PERSONAS[personaId];
+async function generateNextQuestion({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, competencyMatrix, jdText, currentAnswer, qaPairs, questionCount, resumeContext }) {  const persona = PERSONAS[personaId];
   if (!persona) throw new Error(`Unknown persona: ${personaId}`);
 
   // 0. InterviewSnapshot (module 1) — parses qaPairs ONCE, feeds every
