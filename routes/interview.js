@@ -139,6 +139,15 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     try { competencyMatrix = JSON.parse(competencyMatrix); } catch (e) { competencyMatrix = []; }
   }
 
+  // Resume Intelligence: read the immutable per-session snapshot (set once
+  // at initializeSession, see controllers/sessionController.js) — never
+  // re-read from career_profiles here, so a mid-session resume replace can
+  // never change an interview already in progress.
+  let resumeContext = session.resume_context;
+  if (typeof resumeContext === 'string') {
+    try { resumeContext = JSON.parse(resumeContext); } catch (e) { resumeContext = null; }
+  }
+
   const generated = await generateNextQuestion({
     sessionId: session.id,
     personaId: session.persona_id,
@@ -149,6 +158,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     jdText: session.jd_text || '',
     qaPairs,
     questionCount: answeredQuestions.length,
+    resumeContext,
   });
 
   const questionOrder = answeredQuestions.length; // 0-indexed, matches opening question's order:0
