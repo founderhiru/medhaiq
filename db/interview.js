@@ -1,10 +1,10 @@
 // Interview sessions DB access — all queries go through here.
 const { pool } = require('./index');
 
-async function createSession({ userId, personaId, roleTitle, experienceLevel, orgPreset, jdText, competencyMatrix }) {
+async function createSession({ userId, personaId, roleTitle, experienceLevel, orgPreset, jdText, competencyMatrix, resumeCompetencies, resumeContext }) {
   const result = await pool.query(
-    `INSERT INTO interview_sessions (user_id, persona_id, role_title, experience_level, org_preset, jd_text, competency_matrix)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+    `INSERT INTO interview_sessions (user_id, persona_id, role_title, experience_level, org_preset, jd_text, competency_matrix, resume_competencies, resume_context)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
     [
       userId,
       personaId,
@@ -13,6 +13,8 @@ async function createSession({ userId, personaId, roleTitle, experienceLevel, or
       orgPreset || null,
       jdText || null,
       competencyMatrix ? JSON.stringify(competencyMatrix) : null,
+      (resumeCompetencies && resumeCompetencies.length) ? JSON.stringify(resumeCompetencies) : null,
+      resumeContext ? JSON.stringify(resumeContext) : null,
     ]
   );
   return result.rows[0];
