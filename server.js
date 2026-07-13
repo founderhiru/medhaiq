@@ -54,7 +54,25 @@ app.use('/api/admin',      require('./routes/admin'));
 app.use('/api',            require('./routes/vapi'));
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
-app.get('/', (_req, res) => res.render('layout', buildLandingContext()));
+// Landing page — acquisition surface for NEW users only.
+   // Existing (authenticated) visitors are redirected straight to the
+   // Career Workspace so they never see the signup-oriented marketing page.
+   // Uses the same `user_id` cookie + getUserById pattern already used by
+   // /dashboard/history, /settings, /resume, etc. — no new auth mechanism.
+   app.get('/', async (req, res) => {
+     try {
+       const userId = req.cookies?.user_id;
+       if (userId) {
+         const { getUserById } = require('./db/auth');
+         const user = await getUserById(userId);
+         if (user) return res.redirect('/dashboard/history');
+       }
+     } catch (err) {
+       console.error('[landing] auth check error:', err);
+       // Fall through to the public marketing page — never block on this check.
+     }
+     res.render('layout', buildLandingContext());
+   });
 app.get('/privacy', (_req, res) => res.redirect('/'));
 app.get('/terms',   (_req, res) => res.redirect('/'));
 app.get('/architecture', (_req, res) => res.render('architecture'));
