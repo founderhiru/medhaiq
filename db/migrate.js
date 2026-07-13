@@ -298,6 +298,7 @@ async function runMigrations() {
         }
       },
       {
+  {
         name: '007d_activity_logs_relax_action_type',
         up: async (c) => {
           // Legacy column from earlier work: NOT NULL with no default, and
@@ -305,7 +306,17 @@ async function runMigrations() {
           // "action" column instead). Relaxing this is additive/safe — it
           // only permits more inserts, it can't break anything that already
           // depends on this column being required.
-        await c.query(`ALTER TABLE user_activity_logs ALTER COLUMN action_type DROP NOT NULL`);
+          //
+          // FIX (found via staging deploy on a fresh database, July 2026):
+          // this assumed the column already existed (true on production,
+          // from earlier undocumented setup work) but a brand-new database
+          // never had it, so the ALTER below failed with "column does not
+          // exist". Creating it first makes this safe on both a fresh
+          // install and production (where this is a no-op — the column's
+          // already there, and production already has this migration
+          // marked applied, so this won't even re-run against it).
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS action_type VARCHAR(100)`);
+          await c.query(`ALTER TABLE user_activity_logs ALTER COLUMN action_type DROP NOT NULL`);
         }
       },
       {
