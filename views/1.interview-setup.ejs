@@ -856,33 +856,10 @@ function switchTab(tab) {
     <div class="tc-field-label">AI Detected Focus Areas</div>
     <div class="tc-chips" id="tcChips"><span style="font-size:11px;color:var(--muted)">Paste a JD above to detect focus areas…</span></div>
 
-    <div class="tc-field-label">Resume Intelligence</div>
-    <div id="tcResumeStatus" style="font-size:12.5px; color:var(--muted); margin-bottom:14px;">Checking…</div>
-
     <button class="tc-apply" type="button" id="tcApply">✦ Apply Context</button>
     <div class="tc-privacy">🔒 Private &amp; secure — used only to personalize your interview.</div>
   </div>
 </div>
-
-<script>
-// Resume Intelligence status — READ-ONLY. This fetch never parses or
-// modifies anything; it only reports what's already on file (managed at
-// /resume). Interview Setup must never trigger parsing itself.
-(function () {
-  const el = document.getElementById('tcResumeStatus');
-  if (!el) return;
-  fetch('/api/resume/status')
-    .then(r => r.json())
-    .then((data) => {
-      if (data && data.hasResume) {
-        el.innerHTML = `✓ Resume on file (${data.competencyCount || 0} competencies detected) — will personalize this interview automatically. <a href="/resume" style="color:var(--blue-hi);">Manage</a>`;
-      } else {
-        el.innerHTML = `No resume on file yet. <a href="/resume" style="color:var(--blue-hi);">Add one</a> to personalize your questions.`;
-      }
-    })
-    .catch(() => { el.textContent = 'Resume status unavailable.'; });
-})();
-</script>
 
 <script>
 (function () {
