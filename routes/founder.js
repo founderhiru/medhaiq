@@ -6,7 +6,7 @@ const express = require('express');
 const router = express.Router();
 const { getUserById } = require('../db/auth');
 const { isFounder } = require('../db/founder-access');
-const { getOverviewStats, getRecentActivity } = require('../db/founder-stats');
+const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview } = require('../db/founder-stats');
 const { listUsers } = require('../db/founder-users');
 const { createInvitation } = require('../db/invitations');
 
@@ -75,6 +75,17 @@ router.post('/invitations', requireFounder, async (req, res) => {
   } catch (err) {
     console.error('[founder] create invitation error:', err);
     return res.status(500).json({ error: 'Failed to create invitation' });
+  }
+});
+
+// GET /api/founder/beta-overview — Section 4 Beta & Subscription Overview
+router.get('/beta-overview', requireFounder, async (_req, res) => {
+  try {
+    const overview = await getBetaAndSubscriptionOverview();
+    return res.json(overview);
+  } catch (err) {
+    console.error('[founder] beta-overview error:', err);
+    return res.status(500).json({ error: 'Failed to load beta/subscription overview' });
   }
 });
 
