@@ -1,0 +1,171 @@
+/* ============================================================
+   FOUNDER DASHBOARD — scoped to .fdash-* classes only. Reads
+   --navy/--card/--card-hover/--bright/--muted/--dim/--white/--radius
+   from interview.css (already loaded first via workspace-shell-top.ejs).
+   Does not redefine any shared token. Purely additive.
+   ============================================================ */
+
+.fdash-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+.fdash-subtitle { color: var(--muted); margin-top: 4px; font-size: 14px; }
+
+.fdash-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+@media (max-width: 900px) {
+  .fdash-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .fdash-kpi-grid { grid-template-columns: 1fr; }
+}
+
+.fdash-kpi-card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: background 0.15s;
+}
+.fdash-kpi-card:hover { background: var(--card-hover); }
+.fdash-kpi-card .fdash-kpi-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  background: rgba(59,130,246,0.12);
+  color: var(--bright);
+}
+.fdash-kpi-value { font-size: 28px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--white); line-height: 1; }
+.fdash-kpi-title { font-size: 13px; color: var(--muted); font-weight: 500; }
+.fdash-kpi-trend { font-size: 12px; color: var(--dim); }
+.fdash-kpi-trend.up { color: var(--emerald); }
+.fdash-kpi-trend.down { color: var(--danger); }
+
+.fdash-kpi-skeleton { opacity: 0.4; }
+.fdash-kpi-empty { color: var(--dim); font-size: 20px; }
+
+.fdash-section { margin-bottom: 32px; }
+.fdash-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.fdash-section-title { font-size: 16px; font-weight: 700; color: var(--white); }
+.fdash-view-all { font-size: 12.5px; color: var(--bright); text-decoration: none; }
+.fdash-view-all:hover { text-decoration: underline; }
+
+.fdash-activity-card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.fdash-activity-table { width: 100%; border-collapse: collapse; }
+.fdash-activity-table th {
+  text-align: left;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dim);
+  font-weight: 600;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.fdash-activity-table td {
+  padding: 12px 20px;
+  font-size: 13.5px;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.fdash-activity-table tr:last-child td { border-bottom: none; }
+.fdash-activity-table td.fdash-user { color: var(--white); font-weight: 500; }
+.fdash-activity-empty { padding: 32px 20px; text-align: center; color: var(--dim); font-size: 13.5px; }
+
+.fdash-status-dot {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; color: var(--muted);
+}
+.fdash-status-dot::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--emerald);
+}
+
+.fdash-refresh-note { font-size: 11.5px; color: var(--dim); margin-top: 10px; }
+
+/* Quick Actions */
+.fdash-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 900px) { .fdash-quick-actions { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .fdash-quick-actions { grid-template-columns: 1fr; } }
+
+.fdash-qa-card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  text-decoration: none;
+  display: block;
+}
+a.fdash-qa-link:hover { background: var(--card-hover); }
+.fdash-qa-label { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+.fdash-qa-sub { font-size: 12px; color: var(--dim); }
+.fdash-qa-disabled { opacity: 0.5; cursor: not-allowed; }
+
+.fdash-qa-invite-form { display: flex; gap: 8px; margin-top: 8px; }
+.fdash-qa-invite-form input {
+  flex: 1; min-width: 0;
+  background: var(--navy);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--white);
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.fdash-qa-invite-form button {
+  background: var(--royal);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fdash-qa-invite-form button:hover { background: var(--bright); }
+.fdash-qa-invite-msg { font-size: 12px; margin-top: 8px; color: var(--dim); min-height: 16px; }
+.fdash-qa-invite-msg.success { color: var(--emerald); }
+.fdash-qa-invite-msg.error { color: var(--danger); }
+
+/* User Management */
+.fdash-search-input {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--white);
+  padding: 8px 12px;
+  font-size: 13px;
+  width: 220px;
+}
+.fdash-actions-cell { display: flex; gap: 8px; }
+.fdash-action-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.04);
+  color: var(--muted);
+}
+.fdash-action-disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Footer */
+.fdash-footer {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 18px;
+  margin-top: 8px;
+}
+.fdash-footer-title { font-size: 12.5px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+.fdash-footer-row { display: flex; flex-wrap: wrap; gap: 18px; font-size: 12px; color: var(--dim); }
+.fdash-footer-ok { color: var(--emerald); font-weight: 600; }
