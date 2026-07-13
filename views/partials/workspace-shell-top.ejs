@@ -6,7 +6,7 @@
 
    Expected locals (all optional, safe defaults below):
    - pageTitle:  string, used in <title>
-   - activeNav:  one of 'dashboard' | 'interview' | 'reports' | 'settings'
+   - activeNav:  one of 'dashboard' | 'interview' | 'reports' | 'resume' | 'settings'
    - shellUser:  { name, email } — pass the logged-in user object through
    - extraHead:  raw string of any extra <link>/<style> tags a page needs
    - extraStylesheets: array of extra stylesheet hrefs specific to a page
@@ -54,10 +54,7 @@ const _firstInitial = (_shellUser.name || '?').trim().charAt(0).toUpperCase() ||
       <a href="/dashboard/history" class="shell-link <%= _activeNav === 'dashboard' ? 'active' : '' %>"><span class="dot"></span> Dashboard</a>
       <a href="/interview" class="shell-link <%= _activeNav === 'interview' ? 'active' : '' %>"><span class="dot"></span> New Interview</a>
       <a href="/dashboard/history" class="shell-link <%= _activeNav === 'reports' ? 'active' : '' %>"><span class="dot"></span> Reports</a>
-      <!-- Resume: intentionally not rendered yet — no page/route exists
-           behind it. Re-add this one line once it does:
-      <a href="/resume" class="shell-link"><span class="dot"></span> Resume</a>
-      -->
+      <a href="/resume" class="shell-link <%= _activeNav === 'resume' ? 'active' : '' %>"><span class="dot"></span> Resume</a>
       <a href="/settings" class="shell-link <%= _activeNav === 'settings' ? 'active' : '' %>"><span class="dot"></span> Settings</a>
     </div>
     <div class="shell-footer">
