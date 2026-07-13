@@ -56,6 +56,9 @@ const _firstInitial = (_shellUser.name || '?').trim().charAt(0).toUpperCase() ||
       <a href="/dashboard/history" class="shell-link <%= _activeNav === 'reports' ? 'active' : '' %>"><span class="dot"></span> Reports</a>
       <a href="/resume" class="shell-link <%= _activeNav === 'resume' ? 'active' : '' %>"><span class="dot"></span> Resume</a>
       <a href="/settings" class="shell-link <%= _activeNav === 'settings' ? 'active' : '' %>"><span class="dot"></span> Settings</a>
+      <% if (typeof isFounder !== 'undefined' && isFounder) { %>
+      <a href="/founder" class="shell-link <%= _activeNav === 'founder' ? 'active' : '' %>"><span class="dot"></span> Founder Dashboard</a>
+      <% } %>
     </div>
     <div class="shell-footer">
       <a href="/auth/logout" class="shell-logout">Log out</a>
