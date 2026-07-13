@@ -1,0 +1,113 @@
+<%- include('partials/workspace-shell-top', { pageTitle: 'Resume Intelligence — MedhaIQ', activeNav: 'resume', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'] }) %>
+
+<h1>Resume Intelligence</h1>
+<p class="subtitle">Upload your resume once — MedhaIQ personalizes your interview questions and adds your real experience as an evaluation signal, automatically.</p>
+
+<div class="panel" style="margin-bottom:16px;">
+  <div class="panel-header-row">
+    <h3>Status</h3>
+  </div>
+  <div id="resumeStatusLoading" style="font-size:14px; color:var(--muted);">Checking your resume status…</div>
+  <div id="resumeStatusLoaded" style="display:none;">
+    <p id="resumeStatusLine" style="font-size:14px; margin-bottom:6px;"></p>
+    <p id="resumeStatusDetail" style="font-size:12.5px; color:var(--dim);"></p>
+  </div>
+</div>
+
+<div class="panel">
+  <h3>Upload or Replace Resume</h3>
+  <p style="font-size:12.5px; color:var(--dim); margin-bottom:16px;">
+    PDF or DOCX, or paste the text directly below. Replacing your resume re-parses it once — it won't change any interview report you've already completed.
+  </p>
+
+  <form id="resumeForm">
+    <div style="margin-bottom:14px;">
+      <label for="resumeFile" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Upload file (PDF or DOCX)</label>
+      <input type="file" id="resumeFile" name="resumeFile" accept=".pdf,.docx" class="wf-input" style="padding:10px;">
+    </div>
+
+    <div style="text-align:center; font-size:12px; color:var(--dim); margin:10px 0;">— or —</div>
+
+    <div style="margin-bottom:16px;">
+      <label for="resumeText" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Paste resume text</label>
+      <textarea id="resumeText" name="resumeText" class="wf-textarea" maxlength="20000"
+                placeholder="Paste your resume text here…" style="min-height:180px;"></textarea>
+    </div>
+
+    <button type="submit" id="resumeSubmitBtn" class="btn btn-primary">Parse &amp; Save Resume</button>
+    <span id="resumeSubmitStatus" style="margin-left:12px; font-size:13px; color:var(--dim);"></span>
+  </form>
+</div>
+
+<script>
+(function () {
+  const loadingEl = document.getElementById('resumeStatusLoading');
+  const loadedEl = document.getElementById('resumeStatusLoaded');
+  const lineEl = document.getElementById('resumeStatusLine');
+  const detailEl = document.getElementById('resumeStatusDetail');
+
+  function renderStatus(data) {
+    loadingEl.style.display = 'none';
+    loadedEl.style.display = 'block';
+    if (data && data.hasResume) {
+      const parsedDate = data.parsedAt ? new Date(data.parsedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+      lineEl.textContent = 'Resume Intelligence is active.';
+      detailEl.textContent = `Last parsed ${parsedDate} · ${data.competencyCount || 0} competencies detected. Every new interview you start will use this automatically.`;
+    } else {
+      lineEl.textContent = 'No resume on file yet.';
+      detailEl.textContent = 'Upload or paste your resume below to personalize your next interview.';
+    }
+  }
+
+  fetch('/api/resume/status')
+    .then(r => r.json())
+    .then(renderStatus)
+    .catch(() => {
+      loadingEl.style.display = 'none';
+      loadedEl.style.display = 'block';
+      lineEl.textContent = 'Could not load resume status.';
+    });
+
+  const form = document.getElementById('resumeForm');
+  const submitBtn = document.getElementById('resumeSubmitBtn');
+  const submitStatus = document.getElementById('resumeSubmitStatus');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const fileInput = document.getElementById('resumeFile');
+    const textInput = document.getElementById('resumeText');
+
+    if (!fileInput.files.length && !textInput.value.trim()) {
+      submitStatus.textContent = 'Add a file or paste text first.';
+      return;
+    }
+
+    const formData = new FormData();
+    if (fileInput.files.length) formData.append('resumeFile', fileInput.files[0]);
+    if (textInput.value.trim()) formData.append('resumeText', textInput.value.trim());
+
+    submitBtn.disabled = true;
+    submitStatus.textContent = 'Parsing your resume…';
+
+    fetch('/api/resume/upload', { method: 'POST', body: formData })
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Upload failed');
+        return data;
+      })
+      .then((data) => {
+        submitStatus.textContent = 'Saved.';
+        renderStatus(data);
+        fileInput.value = '';
+      })
+      .catch((err) => {
+        submitStatus.textContent = err.message || 'Something went wrong. Please try again.';
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+      });
+  });
+})();
+</script>
+
+<%- include('partials/workspace-shell-bottom') %>
