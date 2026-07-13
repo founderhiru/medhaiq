@@ -15,7 +15,15 @@ const _stats = typeof stats !== 'undefined' && stats ? stats : {};
 const _activity = typeof activity !== 'undefined' && activity ? activity : [];
 const _users = typeof users !== 'undefined' && users ? users : [];
 const _footer = typeof footerInfo !== 'undefined' && footerInfo ? footerInfo : {};
-const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : null;
+// NOTE: dates are deliberately NOT formatted here. This template renders on
+// the server (Render runs in UTC), but the person viewing this page is in
+// their own local timezone — formatting server-side would silently show
+// UTC times that don't match their clock. Instead we emit the raw ISO
+// timestamp in a data-iso attribute and format it client-side (see the
+// applyTimestamps() function in the <script> below), the same way the
+// auto-refresh functions already format times using the browser's local
+// timezone. This keeps initial load and refreshed data visually consistent.
+const toISO = (d) => d ? new Date(d).toISOString() : '';
 %>
 <%- include('partials/workspace-shell-top', { pageTitle: 'Founder Dashboard — MedhaIQ', activeNav: 'founder', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css', '/css/founder-dashboard.css'] }) %>
 
@@ -90,7 +98,7 @@ const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-US', { month: 'sho
         <tbody id="fdash-activity-body">
           <% _activity.forEach(function(a) { %>
           <tr>
-            <td><%= fmtDateTime(a.created_at) %></td>
+            <td class="fdash-ts" data-iso="<%= toISO(a.created_at) %>"></td>
             <td class="fdash-user"><%= a.user_name || a.user_email || 'Unknown' %></td>
             <td><%= a.action || '—' %><%= a.feature ? (' · ' + a.feature) : '' %></td>
           </tr>
@@ -123,7 +131,7 @@ const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-US', { month: 'sho
           <td><%= u.email %></td>
           <td><%= u.subscription_plan || 'Free' %></td>
           <td><%= u.subscription_status === 'active' ? 'Active Subscriber' : 'Free / Trial' %></td>
-          <td><%= fmtDateTime(u.last_login) || 'Never logged in' %></td>
+          <td class="fdash-ts" data-iso="<%= toISO(u.last_login) %>" data-empty-text="Never logged in"></td>
           <td class="fdash-actions-cell">
             <span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Suspend</span>
             <span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Activate</span>
@@ -141,7 +149,7 @@ const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-US', { month: 'sho
   <div class="fdash-footer-title">MedhaIQ Founder Dashboard</div>
   <div class="fdash-footer-row">
     <span>Version <%= _footer.version || '1.0 Beta' %></span>
-    <span>Last refreshed: <span id="fdash-last-refreshed"><%= fmtDateTime(_footer.lastRefreshed) || '—' %></span></span>
+    <span>Last refreshed: <span id="fdash-last-refreshed" class="fdash-ts" data-iso="<%= toISO(_footer.lastRefreshed) %>" data-empty-text="—"></span></span>
     <span>Database: <span class="fdash-footer-ok">Connected</span></span>
     <span>Environment: <%= _footer.environment || 'Production' %></span>
   </div>
@@ -158,6 +166,20 @@ const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-US', { month: 'sho
       if (!iso) return null;
       return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
     }
+
+    // Formats every server-rendered timestamp using the browser's own local
+    // timezone (the server renders in UTC, which would otherwise silently
+    // mismatch the viewer's clock — see the comment at the top of this file).
+    // Run once on initial load; the refresh functions below already format
+    // their own injected rows the same way, so nothing further is needed
+    // after this for consistency between initial load and refreshes.
+    function applyTimestamps() {
+      document.querySelectorAll('.fdash-ts').forEach(function (el) {
+        const iso = el.getAttribute('data-iso');
+        el.textContent = iso ? fmtDT(iso) : (el.getAttribute('data-empty-text') || '—');
+      });
+    }
+    applyTimestamps();
 
     async function refreshOverview() {
       try {
