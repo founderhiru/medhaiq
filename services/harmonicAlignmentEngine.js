@@ -23,9 +23,14 @@ const { parseJdCompetencies, MAX_JD_TEXT_CHARS } = require('./competency-matrix'
 
 // ── Immutable weight configuration matrix ───────────────────────────────────
 const ALIGNMENT_WEIGHTS = Object.freeze({
-  JD_EXTRACTED:    1.00, // 📄 Job Description (AI extracted) — strongest signal
-  COMPANY_CONTEXT: 0.80, // 🏢 Company culture/scale vector
-  ROLE_BASELINE:   0.60, // 🎯 Role competency mapper
+  JD_EXTRACTED:      1.00, // 📄 Job Description (AI extracted) — strongest signal
+  RESUME_EXTRACTED:  0.90, // 📃 Resume Intelligence (AI extracted) — WHAT to assess only.
+                           //     Sits directly below JD, above Company, per the Resume
+                           //     Intelligence architecture (approved). This is the ONLY
+                           //     way resume data touches competency weighting — resume_context
+                           //     (companies/achievements/etc.) never enters this file at all.
+  COMPANY_CONTEXT:   0.80, // 🏢 Company culture/scale vector
+  ROLE_BASELINE:     0.60, // 🎯 Role competency mapper
 });
 
 const MATRIX_CEILING = 8; // hard slice — never more than 8 entries
@@ -90,9 +95,13 @@ function trackingKey(raw) {
 /**
  * compileWeightedCompetencyMatrix — the definitive v2 merge.
  *
- * @param {string[]} roleDefaults  🎯 role card baseline           (weight 0.60)
- * @param {string[]} companyTraits 🏢 company culture/scale vector (weight 0.80)
- * @param {string[]} jdExtracted   📄 AI-extracted JD competencies (weight 1.00)
+ * @param {string[]} roleDefaults        🎯 role card baseline              (weight 0.60)
+ * @param {string[]} companyTraits       🏢 company culture/scale vector    (weight 0.80)
+ * @param {string[]} jdExtracted         📄 AI-extracted JD competencies    (weight 1.00)
+ * @param {string[]} [resumeExtracted]   📃 AI-extracted Resume Intelligence competencies
+ *                                          (weight 0.90) — OPTIONAL, 4th param. Existing
+ *                                          3-arg call sites are unaffected: an omitted/undefined
+ *                                          resumeExtracted is treated as an empty channel below.
  * @returns {{ matrix: string[], detailed: Array<{name:string,score:number,sources:string[]}> }}
  *
  * Guarantees:
@@ -103,11 +112,12 @@ function trackingKey(raw) {
  *  - deterministic ordering: score desc, then alphabetical
  *  - exactly ≤ 8 entries; backfilled from roleDefaults to a floor of 5
  */
-function compileWeightedCompetencyMatrix(roleDefaults, companyTraits, jdExtracted) {
+function compileWeightedCompetencyMatrix(roleDefaults, companyTraits, jdExtracted, resumeExtracted) {
   const channels = [
-    { items: jdExtracted,   weight: ALIGNMENT_WEIGHTS.JD_EXTRACTED,    source: 'jd' },
-    { items: companyTraits, weight: ALIGNMENT_WEIGHTS.COMPANY_CONTEXT, source: 'company' },
-    { items: roleDefaults,  weight: ALIGNMENT_WEIGHTS.ROLE_BASELINE,   source: 'role' },
+    { items: jdExtracted,     weight: ALIGNMENT_WEIGHTS.JD_EXTRACTED,     source: 'jd' },
+    { items: resumeExtracted, weight: ALIGNMENT_WEIGHTS.RESUME_EXTRACTED, source: 'resume' },
+    { items: companyTraits,   weight: ALIGNMENT_WEIGHTS.COMPANY_CONTEXT,  source: 'company' },
+    { items: roleDefaults,    weight: ALIGNMENT_WEIGHTS.ROLE_BASELINE,    source: 'role' },
   ];
 
   const tracking = new Map(); // key → { display, score, topWeight, sources:Set }
