@@ -49,7 +49,6 @@ app.use('/api/contact',    require('./routes/contact'));
 app.use('/auth',           require('./routes/auth'));
 app.use('/api/interview',  require('./routes/interview'));
 app.use('/api/dashboard',  require('./routes/dashboard'));
-app.use('/api/resume',     require('./routes/resume'));
 app.use('/api/admin',      require('./routes/admin'));
 app.use('/api',            require('./routes/vapi'));
 
@@ -483,25 +482,6 @@ app.get('/settings', async (req, res) => {
     res.render('settings', { shellUser: user });
   } catch (err) {
     console.error('[settings]', err);
-    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
-  }
-});
-
-// Resume Intelligence — same auth pattern as /settings. This page only
-// displays status and lets the user upload/replace; parsing itself happens
-// entirely inside routes/resume.js, never here.
-app.get('/resume', async (req, res) => {
-  try {
-    const userId = req.cookies?.user_id;
-    if (!userId) return res.redirect('/auth/login');
-
-    const { getUserById } = require('./db/auth');
-    const user = await getUserById(userId);
-    if (!user) return res.redirect('/auth/login');
-
-    res.render('resume', { shellUser: user });
-  } catch (err) {
-    console.error('[resume]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });
