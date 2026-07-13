@@ -4178,7 +4178,8 @@ button { cursor: pointer; }
    #technical-blueprint,
    #journey,
    #framework,
-   #proof {
+   #proof,
+   #trust-architecture {
      scroll-margin-top: 100px;
    }
 
