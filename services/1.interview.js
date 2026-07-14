@@ -745,7 +745,7 @@ function buildSystemPrompt({
   // describe the contradiction instead of asking a question.
   const currentAnswerBlock = wasSkipped
     ? '(the candidate chose to SKIP the previous question — there is no answer to evaluate or drill into. Move directly to a fresh question on a new competency; do not reference the skipped question.)'
-    : (currentAnswer && currentAnswer.trim())
+   : (currentAnswer && currentAnswer.trim())
       ? currentAnswer.trim().slice(0, 3000)
       : '(no answer yet — this is the start of the session)';
 
@@ -776,22 +776,6 @@ function buildSystemPrompt({
         rc.top_achievements && rc.top_achievements.length ? `Top achievements: ${rc.top_achievements.join('; ')}` : null,
       ].filter(Boolean).join('\n')
     : '(no resume on file for this candidate — do not reference resume details)';
-
-  // Resume Anchor Selection Policy — active ONLY when a resume is on file.
-  // This is prompt text only: it does not add a call, a field, or a code
-  // path. It governs HOW the model uses the personalization-only block
-  // above; it has no access to and no effect on layer 6 (competency
-  // selection/weighting) or the scoring rubric below.
-  const resumeAnchorPolicy = hasResumeContext ? `
-Resume Anchor Selection Policy (internal reasoning — never narrate this process to the candidate):
-Before writing this question, silently choose ONE, or at most TWO, of the following anchor types from the resume context above — whichever most naturally supports the competency node driving this question and the job description requirement in layer 7:
-  Company · Customer · Product/Platform · Major Implementation · Leadership Example ·
-  Business Transformation · Metric-driven Achievement · Cross-functional Initiative ·
-  Domain Expertise · Failure or Challenge
-Then combine:
-  Next Question = Competency to Assess (layer 6) + JD Requirement (layer 7) + Best Resume Anchor
-The job description always defines the evaluation objective; the resume anchor only supplies the concrete scenario — never the reverse. Weave the anchor naturally into the question's wording. Never dump resume facts, never read the resume back verbatim or as a list, never sound scripted, and never force an anchor into a question it doesn't genuinely strengthen — if nothing fits, ask the question without one.
-Do not reuse the same anchor (same company, same customer, same project) that already anchored an earlier question visible in layer 8 — rotate across anchor types and across different resume facts as the interview progresses. If layer 8 shows the candidate already went deep on a particular anchor, don't re-ask about it from scratch — deepen it instead (tradeoffs made, resistance encountered, what they'd change with hindsight).` : '';
 
   return `[1 · SYSTEM PERSONA]
 ${SYSTEM_PERSONA_CHARTER}
@@ -827,7 +811,6 @@ ${currentAnswerBlock}
 [10 · RESUME CONTEXT — PERSONALIZATION ONLY, NOT AN EVALUATION NODE]
 ${resumeContextBlock}
 This layer is for phrasing/personalization only. It must NEVER be treated as a competency to probe, NEVER scored, and NEVER cited as a reason to weight or favor any evaluation node in layer 6.
-${resumeAnchorPolicy}
 
 EVALUATION DIRECTIVE:
 - Evaluate the candidate's answers turn-by-turn against the active competency nodes in layer 6 — every question you ask must probe at least one of those nodes.
@@ -855,8 +838,7 @@ ${questionCount === 0 ? `- This is the OPENING question. Generate a FRESH, sessi
 // ═══════════════════════════════════════════════════════════════════
 // REPLACE the existing generateNextQuestion function with this version
 // ═══════════════════════════════════════════════════════════════════
-async function generateNextQuestion({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, competencyMatrix, jdText, currentAnswer, qaPairs, questionCount, resumeContext }) {
-  const persona = PERSONAS[personaId];
+async function generateNextQuestion({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, competencyMatrix, jdText, currentAnswer, qaPairs, questionCount, resumeContext }) {  const persona = PERSONAS[personaId];
   if (!persona) throw new Error(`Unknown persona: ${personaId}`);
 
   // 0. InterviewSnapshot (module 1) — parses qaPairs ONCE, feeds every
