@@ -71,6 +71,7 @@ app.use('/api/dashboard',  require('./routes/dashboard'));
 app.use('/api/resume',     require('./routes/resume'));
 app.use('/api/admin',      require('./routes/admin'));
 app.use('/api/founder',    require('./routes/founder'));
+app.use('/api/feedback',   require('./routes/feedback'));
 app.use('/api',            require('./routes/vapi'));
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
@@ -215,6 +216,23 @@ app.get('/interview/report/:id', async (req, res) => {
     const circumference = 2 * Math.PI * 60;
     const circumferenceOffset = circumference - ((report.overall_score || 0) / 100) * circumference;
 
+    // Feedback prompt trigger — shown after the 1st completed report, then
+    // every 5th, and only if this viewer hasn't submitted/dismissed it in
+    // the last 30 days. Uses the logged-in viewer (cookie), not the
+    // report's original owner, consistent with how every other page here
+    // determines "who's looking at this."
+    let showFeedbackPrompt = false;
+    const viewerId = req.cookies?.user_id || null;
+    if (viewerId) {
+      const { getUserCompletedReportCount } = require('./db/interview');
+      const { shouldShowFeedbackPrompt } = require('./db/feedback');
+      const completedCount = await getUserCompletedReportCount(viewerId);
+      const isTriggerPoint = completedCount === 1 || (completedCount > 0 && completedCount % 5 === 0);
+      if (isTriggerPoint) {
+        showFeedbackPrompt = await shouldShowFeedbackPrompt(viewerId);
+      }
+    }
+
     res.render('interview-report', {
       report,
       personaName: persona.name,
@@ -231,6 +249,7 @@ app.get('/interview/report/:id', async (req, res) => {
       frictionAvg: avg('core_friction'),
       circumference,
       circumferenceOffset,
+      showFeedbackPrompt,
     });
   } catch (err) {
     console.error('[interview/report]', err);
@@ -541,13 +560,17 @@ app.get('/founder', async (req, res) => {
     const founder = await isFounder(userId);
     if (!founder) return res.status(404).render('error-boundary', { url: req.url, errorMessage: 'Not found' });
 
-    const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview } = require('./db/founder-stats');
+    const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, getFounderAlerts } = require('./db/founder-stats');
     const { listUsers } = require('./db/founder-users');
-    const [stats, activity, users, betaOverview] = await Promise.all([
+    const { getFeedbackSummary, getRecentFeedback } = require('./db/founder-feedback');
+    const [stats, activity, users, betaOverview, feedbackSummary, recentFeedback, alerts] = await Promise.all([
       getOverviewStats(),
       getRecentActivity(10),
       listUsers({ search: '', limit: 25 }),
       getBetaAndSubscriptionOverview(),
+      getFeedbackSummary(),
+      getRecentFeedback(5),
+      getFounderAlerts(),
     ]);
 
     const footerInfo = {
@@ -557,7 +580,7 @@ app.get('/founder', async (req, res) => {
       environment: process.env.NODE_ENV === 'production' ? 'Production' : (process.env.NODE_ENV || 'Development'),
     };
 
-    res.render('founder-dashboard', { shellUser: user, stats, activity, users, footerInfo, betaOverview });
+    res.render('founder-dashboard', { shellUser: user, stats, activity, users, footerInfo, betaOverview, feedbackSummary, recentFeedback, alerts });
   } catch (err) {
     console.error('[founder]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
