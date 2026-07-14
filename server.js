@@ -565,7 +565,7 @@ app.get('/founder', async (req, res) => {
     const { getFeedbackSummary, getRecentFeedback } = require('./db/founder-feedback');
     const [stats, activity, users, betaOverview, feedbackSummary, recentFeedback, alerts] = await Promise.all([
       getOverviewStats(),
-      getRecentActivity(10),
+      getRecentActivity(5),
       listUsers({ search: '', limit: 25 }),
       getBetaAndSubscriptionOverview(),
       getFeedbackSummary(),
