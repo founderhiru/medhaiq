@@ -1,0 +1,28 @@
+<%
+/* Company Card — expects `company` in locals: { id, slug, name, subtitle, logo, comingSoon }
+   Live companies render as a normal link. Coming-soon companies stay fully
+   interactive (per review) and open the shared #mh-explore-comingsoon-modal
+   instead of being dimmed/disabled. */
+const _tag = company.comingSoon ? 'button' : 'a';
+const _attrs = company.comingSoon
+  ? `type="button" class="mh-explore-card-btn mh-explore-comingsoon-trigger" data-company="${company.name}"`
+  : `href="/explore/companies/${company.slug}" class="mh-explore-card-btn"`;
+%>
+<<%= _tag %> <%- _attrs %> role="listitem" aria-label="<%= company.name %><%= company.comingSoon ? ' — coming soon' : '' %>">
+  <div class="mh-explore-card mh-explore-company-card">
+    <div class="mh-explore-company-top">
+      <div class="mh-explore-company-logo" aria-hidden="true"><%= company.logo %></div>
+      <% if (company.comingSoon) { %>
+        <span class="mh-explore-pill mh-explore-pill-gold">Coming Soon</span>
+      <% } %>
+    </div>
+    <div>
+      <div class="mh-explore-company-name"><%= company.name %></div>
+      <div class="mh-explore-company-sub"><%= company.subtitle %></div>
+    </div>
+    <span class="mh-explore-card-link">
+      <%= company.comingSoon ? 'Notify me' : 'Explore' %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+    </span>
+  </div>
+</<%= _tag %>>
