@@ -76,6 +76,16 @@
   border-radius: var(--radius);
   overflow: hidden;
 }
+/* Recent Activity only — User Management reuses .fdash-activity-card as its
+   table wrapper too, but isn't meant to scroll, so this stays a separate,
+   additional class rather than living on the shared base class. */
+.fdash-activity-scroll { max-height: 258px; overflow-y: auto; }
+.fdash-activity-scroll .fdash-activity-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 1;
+}
 .fdash-activity-table { width: 100%; border-collapse: collapse; }
 .fdash-activity-table th {
   text-align: left;
