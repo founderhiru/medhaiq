@@ -4,12 +4,12 @@
    change. Any key missing from `stats` renders as '—' instead of erroring,
    so new/removed backend fields never break this view. */
 const kpiConfig = [
-  { key: 'totalUsers', title: 'Total Users', icon: 'users' },
-  { key: 'activeUsersToday', title: 'Active Users Today', icon: 'person' },
-  { key: 'newBetaSignupsToday', title: 'New Beta Signups (Today)', icon: 'sparkle' },
-  { key: 'paidSubscribers', title: 'Paid Subscribers', icon: 'check' },
-  { key: 'interviewsCompleted', title: 'Interviews Completed', icon: 'mic' },
-  { key: 'reportsGenerated', title: 'Reports Generated', icon: 'document' },
+  { key: 'totalUsers', title: 'Total Users', icon: 'users', accent: 'blue' },
+  { key: 'activeUsersToday', title: 'Active Users Today', icon: 'person', accent: 'green' },
+  { key: 'newBetaSignupsToday', title: 'New Beta Signups', icon: 'sparkle', accent: 'cyan' },
+  { key: 'paidSubscribers', title: 'Paid Subscribers', icon: 'check', accent: 'gold' },
+  { key: 'interviewsCompleted', title: 'Interviews Completed', icon: 'mic', accent: 'purple' },
+  { key: 'reportsGenerated', title: 'Reports Generated', icon: 'document', accent: 'indigo' },
 ];
 const _stats = typeof stats !== 'undefined' && stats ? stats : {};
 const _activity = typeof activity !== 'undefined' && activity ? activity : [];
@@ -44,10 +44,10 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
 <!-- Section 1 — Executive Snapshot (config-driven, tolerates missing data) -->
 <div class="fdash-kpi-grid" id="fdash-kpi-grid">
   <% kpiConfig.forEach(function(k) { %>
-  <div class="fdash-kpi-card" data-kpi="<%= k.key %>">
-    <div class="fdash-kpi-icon"><%- include('partials/icon', { name: k.icon, svgSize: 18 }) %></div>
+  <div class="fdash-kpi-card fdash-accent-<%= k.accent %>" data-kpi="<%= k.key %>">
     <div class="fdash-kpi-value"><%= (_stats[k.key] !== undefined && _stats[k.key] !== null) ? _stats[k.key] : '—' %></div>
     <div class="fdash-kpi-title"><%= k.title %></div>
+    <div class="fdash-kpi-icon"><%- include('partials/icon', { name: k.icon, svgSize: 13 }) %></div>
   </div>
   <% }); %>
 </div>
@@ -75,18 +75,18 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
       <div class="fdash-qa-label">Open Cost Analytics</div>
       <div class="fdash-qa-sub">Existing dashboard, opens separately</div>
     </a>
-    <div class="fdash-qa-card fdash-qa-disabled" title="Available with Alerts (Phase 5)">
-      <div class="fdash-qa-label">Approve Beta Users</div>
-      <div class="fdash-qa-sub">Coming with Alerts</div>
-    </div>
-    <div class="fdash-qa-card fdash-qa-disabled" title="Not built yet">
-      <div class="fdash-qa-label">Platform Settings</div>
-      <div class="fdash-qa-sub">Coming soon</div>
-    </div>
-    <div class="fdash-qa-card fdash-qa-disabled" title="Not built yet">
-      <div class="fdash-qa-label">Send Announcement</div>
-      <div class="fdash-qa-sub">Coming soon</div>
-    </div>
+    <%
+    /* Removed from the first screen per executive layout decision — "Coming
+       soon" placeholders shouldn't compete for above-the-fold space. Restore
+       these three blocks once each is actually built:
+
+       Approve Beta Users  — disabled, title="Available with Alerts (Phase 5)"
+       Platform Settings   — disabled, title="Not built yet"
+       Send Announcement   — disabled, title="Not built yet"
+
+       Original markup is preserved in version control history (the commit
+       right before this UI pass) if needed verbatim. */
+    %>
   </div>
 </div>
 
