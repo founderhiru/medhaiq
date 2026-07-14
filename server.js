@@ -78,6 +78,9 @@ app.get('/terms',   (_req, res) => res.redirect('/'));
 app.get('/architecture', (_req, res) => res.render('architecture'));
 app.get('/about',        (_req, res) => res.render('about'));
 app.get('/why',     (_req, res) => res.render('why'));
+// Explore MedhaIQ — UI-shell-only sprint. Placeholder data lives in
+// data/explore-data.js; no DB/Supabase yet (see data file header comment).
+app.get('/explore', (_req, res) => res.render('explore', require('./data/explore-data')));
 app.get('/experience', (_req, res) => res.render('experience'));
 app.get('/professional-horizons', (_req, res) => res.render('professional-horizons'));
 app.get('/career-architecture', (_req, res) => res.redirect(301, '/architecture#career-architecture'));
