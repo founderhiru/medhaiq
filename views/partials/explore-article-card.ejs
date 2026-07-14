@@ -1,0 +1,18 @@
+<%
+/* Career Guide Card — expects `article` in locals: { id, slug, title, excerpt, readingTime, category } */
+%>
+<a href="/explore/guides/<%= article.slug %>" class="mh-explore-card-btn" role="listitem" aria-label="<%= article.title %>">
+  <div class="mh-explore-card mh-explore-guide-card">
+    <div class="mh-explore-guide-meta">
+      <span><%= article.category %></span>
+      <span aria-hidden="true">&middot;</span>
+      <span><%= article.readingTime %></span>
+    </div>
+    <div class="mh-explore-guide-title"><%= article.title %></div>
+    <div class="mh-explore-guide-excerpt"><%= article.excerpt %></div>
+    <span class="mh-explore-card-link">
+      Read Guide
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+    </span>
+  </div>
+</a>
