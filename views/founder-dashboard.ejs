@@ -18,6 +18,9 @@ const _footer = typeof footerInfo !== 'undefined' && footerInfo ? footerInfo : {
 const _betaOverview = typeof betaOverview !== 'undefined' && betaOverview ? betaOverview : {};
 const _beta = _betaOverview.beta || {};
 const _plans = Array.isArray(_betaOverview.plans) ? _betaOverview.plans : [];
+const _feedbackSummary = typeof feedbackSummary !== 'undefined' && feedbackSummary ? feedbackSummary : { total: 0, averageRating: null, newThisWeek: 0 };
+const _recentFeedback = typeof recentFeedback !== 'undefined' && recentFeedback ? recentFeedback : [];
+const _alerts = typeof alerts !== 'undefined' && alerts ? alerts : {};
 // NOTE: dates are deliberately NOT formatted here. This template renders on
 // the server (Render runs in UTC), but the person viewing this page is in
 // their own local timezone — formatting server-side would silently show
@@ -141,6 +144,90 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
     </div>
     <% }); %>
     <% } %>
+  </div>
+</div>
+
+<!-- Feedback & Alerts (replaces the originally planned Product Usage
+     section per founder decision — beta-stage priority is sentiment +
+     operational visibility, not feature-adoption analytics yet) -->
+<div class="fdash-section">
+  <div class="fdash-section-header">
+    <div class="fdash-section-title">Feedback & Alerts</div>
+  </div>
+  <div class="fdash-fb-grid">
+    <!-- Left column: Beta Feedback -->
+    <div class="fdash-fb-col">
+      <div class="fdash-fb-summary">
+        <div class="fdash-fb-summary-item">
+          <div class="fdash-fb-summary-value"><%= _feedbackSummary.averageRating !== null ? (_feedbackSummary.averageRating + ' / 5') : '—' %></div>
+          <div class="fdash-fb-summary-label">Average Rating</div>
+        </div>
+        <div class="fdash-fb-summary-item">
+          <div class="fdash-fb-summary-value"><%= _feedbackSummary.total || 0 %></div>
+          <div class="fdash-fb-summary-label">Total Responses</div>
+        </div>
+        <div class="fdash-fb-summary-item">
+          <div class="fdash-fb-summary-value"><%= _feedbackSummary.newThisWeek || 0 %></div>
+          <div class="fdash-fb-summary-label">New This Week</div>
+        </div>
+      </div>
+      <div class="fdash-fb-latest-title">Latest Feedback</div>
+      <% if (_recentFeedback.length === 0) { %>
+        <div class="fdash-activity-empty">No user feedback received yet.</div>
+      <% } else { %>
+        <div class="fdash-fb-list">
+          <% _recentFeedback.forEach(function(f) { %>
+          <div class="fdash-fb-item">
+            <div class="fdash-fb-item-top">
+              <span class="fdash-fb-stars"><%= f.rating ? '★'.repeat(f.rating) + '☆'.repeat(5 - f.rating) : 'No rating' %></span>
+              <span class="fdash-fb-user"><%= f.userName %></span>
+            </div>
+            <% if (f.comment) { %><div class="fdash-fb-comment"><%= f.comment.slice(0, 100) %></div><% } %>
+          </div>
+          <% }); %>
+        </div>
+      <% } %>
+      <button type="button" class="fdash-fb-view-all" disabled title="Coming soon">View All Feedback</button>
+    </div>
+
+    <!-- Right column: Founder Alerts -->
+    <div class="fdash-fb-col">
+      <div class="fdash-alerts-list">
+        <div class="fdash-alert-item <%= (_alerts.pendingBetaCount || 0) > 0 ? 'fdash-alert-amber' : 'fdash-alert-green' %>">
+          <span class="fdash-alert-dot"></span>
+          <span class="fdash-alert-text"><%= _alerts.pendingBetaCount || 0 %> Beta Request<%= _alerts.pendingBetaCount === 1 ? '' : 's' %> Pending</span>
+          <% if ((_alerts.pendingBetaCount || 0) > 0) { %><a href="#fdash-users-section" class="fdash-alert-action">Review</a><% } %>
+        </div>
+        <div class="fdash-alert-item <%= (_alerts.newFeedbackCount || 0) > 0 ? 'fdash-alert-amber' : 'fdash-alert-green' %>">
+          <span class="fdash-alert-dot"></span>
+          <span class="fdash-alert-text"><%= _alerts.newFeedbackCount || 0 %> New Feedback Response<%= _alerts.newFeedbackCount === 1 ? '' : 's' %></span>
+        </div>
+        <div class="fdash-alert-item fdash-alert-green">
+          <span class="fdash-alert-dot"></span>
+          <span class="fdash-alert-text">Database Connected</span>
+        </div>
+        <div class="fdash-alert-item fdash-alert-green">
+          <span class="fdash-alert-dot"></span>
+          <span class="fdash-alert-text">Founder Dashboard Healthy</span>
+        </div>
+        <div class="fdash-alert-item <%= _alerts.activityFeedHealthy ? 'fdash-alert-green' : 'fdash-alert-amber' %>">
+          <span class="fdash-alert-dot"></span>
+          <span class="fdash-alert-text">Activity Feed <%= _alerts.activityFeedHealthy ? 'Running' : 'Quiet (no activity in 24h)' %></span>
+        </div>
+        <div class="fdash-alert-item fdash-alert-disabled" title="Not built yet — no AI failure logging exists">
+          <span class="fdash-alert-dot"></span>
+          <span class="fdash-alert-text">AI Errors</span>
+        </div>
+        <div class="fdash-alert-item fdash-alert-disabled" title="Not built yet — billing isn't live">
+          <span class="fdash-alert-dot"></span>
+          <span class="fdash-alert-text">Payment Failures</span>
+        </div>
+        <div class="fdash-alert-item fdash-alert-disabled" title="Not built yet">
+          <span class="fdash-alert-dot"></span>
+          <span class="fdash-alert-text">Email Delivery Issues</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
