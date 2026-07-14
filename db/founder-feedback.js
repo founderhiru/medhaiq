@@ -24,9 +24,9 @@ async function getFeedbackSummary() {
   };
 }
 
-// Latest N feedback entries with a short preview — read-only, no
-// "mark as reviewed" action per the beta-stage scope.
-async function getRecentFeedback(limit = 5) {
+// Latest N feedback entries with a short preview. `offset` added for the
+// paginated "View All Feedback" page.
+async function getRecentFeedback(limit = 5, offset = 0) {
   const res = await pool.query(
     `SELECT
        al.id, al.created_at, al.metadata,
@@ -35,8 +35,8 @@ async function getRecentFeedback(limit = 5) {
      LEFT JOIN users u ON u.id = al.app_user_id
      WHERE al.action = 'feedback_submitted'
      ORDER BY al.created_at DESC
-     LIMIT $1`,
-    [limit]
+     LIMIT $1 OFFSET $2`,
+    [limit, offset]
   );
   return res.rows.map(row => ({
     id: row.id,

@@ -42,10 +42,12 @@ async function getOverviewStats() {
   };
 }
 
-// Section 2 — Recent User Activity (latest 10, no pagination yet).
+// Section 2 — Recent User Activity. `offset` added for the paginated
+// "View All Activity" page; the dashboard's inline preview still just
+// calls this with the default offset of 0.
 // Joins users for display name/email; falls back gracefully if the actor
 // has been deleted (app_user_id ON DELETE SET NULL leaves it null).
-async function getRecentActivity(limit = 10) {
+async function getRecentActivity(limit = 10, offset = 0) {
   const res = await pool.query(
     `SELECT
        al.id, al.action, al.page, al.feature, al.created_at,
@@ -53,8 +55,8 @@ async function getRecentActivity(limit = 10) {
      FROM user_activity_logs al
      LEFT JOIN users u ON u.id = al.app_user_id
      ORDER BY al.created_at DESC
-     LIMIT $1`,
-    [limit]
+     LIMIT $1 OFFSET $2`,
+    [limit, offset]
   );
   return res.rows;
 }
@@ -91,18 +93,19 @@ async function getBetaAndSubscriptionOverview() {
 }
 
 // Section 6 — Founder Alerts. Read-only; reuses queries already used
-// elsewhere on this dashboard (invitations, activity logs, feedback
-// summary) — no new data sources.
+// elsewhere on this dashboard (waitlist review count, activity logs,
+// feedback summary) — no new data sources beyond founder-waitlist.js.
 async function getFounderAlerts() {
-  const [pendingBetaResult, recentActivityResult] = await Promise.all([
-    pool.query(`SELECT COUNT(*)::int AS count FROM invitations WHERE status = 'pending'`),
+  const { getPendingWaitlistCount } = require('./founder-waitlist');
+  const [pendingWaitlistCount, recentActivityResult] = await Promise.all([
+    getPendingWaitlistCount(),
     pool.query(`SELECT COUNT(*)::int AS count FROM user_activity_logs WHERE created_at >= NOW() - INTERVAL '24 hours'`),
   ]);
   const { getFeedbackSummary } = require('./founder-feedback');
   const feedbackSummary = await getFeedbackSummary();
 
   return {
-    pendingBetaCount: pendingBetaResult.rows[0].count,
+    pendingBetaCount: pendingWaitlistCount,
     newFeedbackCount: feedbackSummary.newThisWeek,
     activityFeedHealthy: recentActivityResult.rows[0].count > 0,
   };

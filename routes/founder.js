@@ -8,6 +8,7 @@ const { getUserById } = require('../db/auth');
 const { isFounder } = require('../db/founder-access');
 const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, getFounderAlerts } = require('../db/founder-stats');
 const { getFeedbackSummary, getRecentFeedback } = require('../db/founder-feedback');
+const { getPendingWaitlistEntries } = require('../db/founder-waitlist');
 const { listUsers } = require('../db/founder-users');
 const { createInvitation } = require('../db/invitations');
 
@@ -109,6 +110,26 @@ router.get('/alerts', requireFounder, async (_req, res) => {
   } catch (err) {
     console.error('[founder] alerts error:', err);
     return res.status(500).json({ error: 'Failed to load alerts' });
+  }
+});
+
+// POST /api/founder/waitlist-approve — "Approve Beta Users" Quick Action.
+// Approving a pending beta request (a waitlist signup with no invitation
+// yet) just creates an invitation for that email — the exact same
+// mechanism as "Add to Beta Allowlist". Once the invitation exists, this
+// entry stops appearing in getPendingWaitlistEntries() automatically —
+// no separate "reviewed" flag needed.
+router.post('/waitlist-approve', requireFounder, async (req, res) => {
+  const { email } = req.body || {};
+  if (!email || !/^[^\n\r@]+@[^\n\r@]+\.[^\n\r@]+$/.test(email.trim())) {
+    return res.status(400).json({ error: 'Valid email required' });
+  }
+  try {
+    const invite = await createInvitation(email.trim(), req.user.id);
+    return res.json({ success: true, invite });
+  } catch (err) {
+    console.error('[founder] waitlist approve error:', err);
+    return res.status(500).json({ error: 'Failed to approve request' });
   }
 });
 
