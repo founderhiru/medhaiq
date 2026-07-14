@@ -1,0 +1,42 @@
+<%
+const _activity = typeof activity !== 'undefined' && activity ? activity : [];
+const fmtDT = (d) => d ? new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—';
+%>
+<%- include('partials/workspace-shell-top', { pageTitle: 'All Activity — Founder Dashboard', activeNav: 'founder', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css', '/css/founder-dashboard.css'] }) %>
+
+<div class="fdash-header-row">
+  <div>
+    <h1>All Activity</h1>
+    <p class="fdash-subtitle"><a href="/founder" style="color: var(--bright); text-decoration: none;">← Back to Founder Dashboard</a></p>
+  </div>
+</div>
+
+<div class="fdash-activity-card">
+  <% if (_activity.length === 0) { %>
+    <div class="fdash-activity-empty">No activity on this page.</div>
+  <% } else { %>
+    <table class="fdash-activity-table">
+      <thead><tr><th>Time</th><th>User</th><th>Activity</th></tr></thead>
+      <tbody>
+        <% _activity.forEach(function(a) { %>
+        <tr>
+          <td><%= fmtDT(a.created_at) %></td>
+          <td class="fdash-user"><%= a.user_name || a.user_email || 'Unknown' %></td>
+          <td><%= a.action || '—' %><%= a.feature ? (' · ' + a.feature) : '' %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<div style="display:flex; justify-content:space-between; margin-top:16px;">
+  <% if (page > 1) { %>
+    <a href="/founder/activity?page=<%= page - 1 %>" class="fdash-qa-view-all" style="text-decoration:none; padding:8px 16px; background:var(--card); border-radius:8px; color:var(--muted); font-size:13px;">← Newer</a>
+  <% } else { %><span></span><% } %>
+  <% if (typeof hasNextPage !== 'undefined' && hasNextPage) { %>
+    <a href="/founder/activity?page=<%= page + 1 %>" style="text-decoration:none; padding:8px 16px; background:var(--card); border-radius:8px; color:var(--muted); font-size:13px;">Older →</a>
+  <% } %>
+</div>
+
+<%- include('partials/workspace-shell-bottom') %>
