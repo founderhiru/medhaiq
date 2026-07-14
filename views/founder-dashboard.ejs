@@ -90,32 +90,6 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
   </div>
 </div>
 
-<!-- Section 2 — Recent User Activity -->
-<div class="fdash-section">
-  <div class="fdash-section-header">
-    <div class="fdash-section-title">Recent Activity</div>
-  </div>
-  <div class="fdash-activity-card">
-    <% if (_activity.length === 0) { %>
-      <div class="fdash-activity-empty">No activity logged yet.</div>
-    <% } else { %>
-      <table class="fdash-activity-table">
-        <thead><tr><th>Time</th><th>User</th><th>Activity</th></tr></thead>
-        <tbody id="fdash-activity-body">
-          <% _activity.forEach(function(a) { %>
-          <tr>
-            <td class="fdash-ts" data-iso="<%= toISO(a.created_at) %>"></td>
-            <td class="fdash-user"><%= a.user_name || a.user_email || 'Unknown' %></td>
-            <td><%= a.action || '—' %><%= a.feature ? (' · ' + a.feature) : '' %></td>
-          </tr>
-          <% }); %>
-        </tbody>
-      </table>
-    <% } %>
-  </div>
-  <p class="fdash-refresh-note">Refreshes automatically every 45 seconds.</p>
-</div>
-
 <!-- Section 4 — Beta & Subscription Overview -->
 <div class="fdash-section">
   <div class="fdash-section-header">
@@ -145,6 +119,32 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
     <% }); %>
     <% } %>
   </div>
+</div>
+
+<!-- Section 2 — Recent User Activity (latest 5, scrollable box) -->
+<div class="fdash-section">
+  <div class="fdash-section-header">
+    <div class="fdash-section-title">Recent Activity</div>
+  </div>
+  <div class="fdash-activity-card fdash-activity-scroll">
+    <% if (_activity.length === 0) { %>
+      <div class="fdash-activity-empty">No activity logged yet.</div>
+    <% } else { %>
+      <table class="fdash-activity-table">
+        <thead><tr><th>Time</th><th>User</th><th>Activity</th></tr></thead>
+        <tbody id="fdash-activity-body">
+          <% _activity.forEach(function(a) { %>
+          <tr>
+            <td class="fdash-ts" data-iso="<%= toISO(a.created_at) %>"></td>
+            <td class="fdash-user"><%= a.user_name || a.user_email || 'Unknown' %></td>
+            <td><%= a.action || '—' %><%= a.feature ? (' · ' + a.feature) : '' %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+  <p class="fdash-refresh-note">Showing latest 5 · refreshes automatically every 45 seconds.</p>
 </div>
 
 <!-- Feedback & Alerts (replaces the originally planned Product Usage
