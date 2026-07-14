@@ -6,7 +6,8 @@ const express = require('express');
 const router = express.Router();
 const { getUserById } = require('../db/auth');
 const { isFounder } = require('../db/founder-access');
-const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview } = require('../db/founder-stats');
+const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, getFounderAlerts } = require('../db/founder-stats');
+const { getFeedbackSummary, getRecentFeedback } = require('../db/founder-feedback');
 const { listUsers } = require('../db/founder-users');
 const { createInvitation } = require('../db/invitations');
 
@@ -86,6 +87,28 @@ router.get('/beta-overview', requireFounder, async (_req, res) => {
   } catch (err) {
     console.error('[founder] beta-overview error:', err);
     return res.status(500).json({ error: 'Failed to load beta/subscription overview' });
+  }
+});
+
+// GET /api/founder/feedback — Feedback & Alerts, left column
+router.get('/feedback', requireFounder, async (_req, res) => {
+  try {
+    const [summary, recent] = await Promise.all([getFeedbackSummary(), getRecentFeedback(5)]);
+    return res.json({ summary, recent });
+  } catch (err) {
+    console.error('[founder] feedback error:', err);
+    return res.status(500).json({ error: 'Failed to load feedback' });
+  }
+});
+
+// GET /api/founder/alerts — Feedback & Alerts, right column
+router.get('/alerts', requireFounder, async (_req, res) => {
+  try {
+    const alerts = await getFounderAlerts();
+    return res.json(alerts);
+  } catch (err) {
+    console.error('[founder] alerts error:', err);
+    return res.status(500).json({ error: 'Failed to load alerts' });
   }
 });
 
