@@ -233,13 +233,27 @@ a.fdash-qa-link:hover { background: var(--card-hover); }
 .fdash-fb-view-all {
   width: 100%;
   background: rgba(255,255,255,0.04);
-  color: var(--muted);
+  color: var(--bright);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 8px;
   padding: 9px;
   font-size: 12.5px;
-  cursor: not-allowed;
+  cursor: pointer;
 }
+.fdash-fb-view-all:hover { background: var(--card-hover); }
+
+.fdash-waitlist-approve-btn {
+  background: var(--royal);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fdash-waitlist-approve-btn:hover { background: var(--bright); }
+.fdash-waitlist-approve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .fdash-alerts-list { display: flex; flex-direction: column; gap: 10px; }
 .fdash-alert-item {
