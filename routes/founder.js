@@ -36,11 +36,11 @@ router.get('/overview', requireFounder, async (_req, res) => {
   }
 });
 
-// GET /api/founder/activity — Section 2 recent activity (latest 10 only;
+// GET /api/founder/activity — Recent Activity (latest 5, scrollable box;
 // pagination/"View All Activity" is a later phase per the sequencing plan)
 router.get('/activity', requireFounder, async (_req, res) => {
   try {
-    const activity = await getRecentActivity(10);
+    const activity = await getRecentActivity(5);
     return res.json({ activity });
   } catch (err) {
     console.error('[founder] activity error:', err);
