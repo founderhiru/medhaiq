@@ -40,6 +40,16 @@ async function getUserSessions(userId, { limit = 20, offset = 0 } = {}) {
   return result.rows;
 }
 
+// Used only for the feedback-prompt trigger (show on 1st completed report,
+// then every 5th) — a plain count, no new table or column involved.
+async function getUserCompletedReportCount(userId) {
+  const result = await pool.query(
+    `SELECT COUNT(*)::int AS count FROM interview_sessions WHERE user_id = $1 AND status = 'completed'`,
+    [userId]
+  );
+  return result.rows[0].count;
+}
+
 async function completeSession(sessionId, overallScore) {
   const result = await pool.query(
     `UPDATE interview_sessions
@@ -185,7 +195,7 @@ async function getReport(sessionId) {
 }
 
 module.exports = {
-  createSession, getSession, getUserSessions, completeSession, abandonSession,
+  createSession, getSession, getUserSessions, getUserCompletedReportCount, completeSession, abandonSession,
   getSessionQuestions, getSessionScores, getUserAggregateScores,
   addQuestion, addAnswer, addScore,
   saveReport, getReport,
