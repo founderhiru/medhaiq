@@ -5,51 +5,66 @@
    Does not redefine any shared token. Purely additive.
    ============================================================ */
 
-.fdash-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+.fdash-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 18px; }
 .fdash-subtitle { color: var(--muted); margin-top: 4px; font-size: 14px; }
 
 .fdash-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
 }
-@media (max-width: 900px) {
-  .fdash-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 1100px) {
+  .fdash-kpi-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 600px) {
-  .fdash-kpi-grid { grid-template-columns: 1fr; }
+  .fdash-kpi-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 .fdash-kpi-card {
+  position: relative;
   background: var(--card);
   border: 1px solid rgba(255,255,255,0.06);
+  border-top: 3px solid var(--fdash-accent, rgba(255,255,255,0.06));
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 14px 16px 12px;
+  min-height: 90px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: center;
+  gap: 2px;
   transition: background 0.15s;
 }
 .fdash-kpi-card:hover { background: var(--card-hover); }
 .fdash-kpi-card .fdash-kpi-icon {
-  width: 36px; height: 36px;
-  border-radius: 10px;
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 22px; height: 22px;
+  border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-  background: rgba(59,130,246,0.12);
-  color: var(--bright);
+  background: var(--fdash-accent-soft, rgba(59,130,246,0.12));
+  color: var(--fdash-accent, var(--bright));
 }
-.fdash-kpi-value { font-size: 28px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--white); line-height: 1; }
-.fdash-kpi-title { font-size: 13px; color: var(--muted); font-weight: 500; }
+.fdash-kpi-value { font-size: 24px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--white); line-height: 1.1; padding-right: 26px; }
+.fdash-kpi-title { font-size: 11.5px; color: var(--muted); font-weight: 500; }
 .fdash-kpi-trend { font-size: 12px; color: var(--dim); }
 .fdash-kpi-trend.up { color: var(--emerald); }
 .fdash-kpi-trend.down { color: var(--danger); }
 
+/* Semantic accent colors — icon + thin top border only. Card background
+   stays the same dark --card for every KPI; color reinforces meaning
+   without turning this into a colorful analytics-dashboard look. */
+.fdash-accent-blue   { --fdash-accent: var(--bright);  --fdash-accent-soft: rgba(59,130,246,0.14); }
+.fdash-accent-green  { --fdash-accent: var(--emerald); --fdash-accent-soft: rgba(5,150,105,0.16); }
+.fdash-accent-cyan   { --fdash-accent: #22D3EE;        --fdash-accent-soft: rgba(34,211,238,0.14); }
+.fdash-accent-gold   { --fdash-accent: var(--gold);    --fdash-accent-soft: rgba(217,119,6,0.16); }
+.fdash-accent-purple { --fdash-accent: #A78BFA;        --fdash-accent-soft: rgba(167,139,250,0.14); }
+.fdash-accent-indigo { --fdash-accent: #818CF8;        --fdash-accent-soft: rgba(129,140,248,0.14); }
+
 .fdash-kpi-skeleton { opacity: 0.4; }
 .fdash-kpi-empty { color: var(--dim); font-size: 20px; }
 
-.fdash-section { margin-bottom: 32px; }
+.fdash-section { margin-bottom: 26px; }
 .fdash-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .fdash-section-title { font-size: 16px; font-weight: 700; color: var(--white); }
 .fdash-view-all { font-size: 12.5px; color: var(--bright); text-decoration: none; }
@@ -106,13 +121,13 @@
   background: var(--card);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: var(--radius);
-  padding: 16px 18px;
+  padding: 12px 16px;
   text-decoration: none;
   display: block;
 }
 a.fdash-qa-link:hover { background: var(--card-hover); }
-.fdash-qa-label { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
-.fdash-qa-sub { font-size: 12px; color: var(--dim); }
+.fdash-qa-label { font-size: 13.5px; font-weight: 600; color: var(--white); margin-bottom: 2px; }
+.fdash-qa-sub { font-size: 11.5px; color: var(--dim); }
 .fdash-qa-disabled { opacity: 0.5; cursor: not-allowed; }
 
 .fdash-qa-invite-form { display: flex; gap: 8px; margin-top: 8px; }
