@@ -613,7 +613,7 @@ function buildObjectiveHypothesisText(comp, evidenceTier, leastValidatedSubskill
   return `Verify foundational capacity and baseline familiarity with [${String(comp).toUpperCase()} -> ${leastValidatedSubskill}].`;
 }
 
-function composePrompt({ competency, calibrationState, evidenceProfile, strategy, candidateModel, difficulty }) {
+function composePrompt({ competency, calibrationState, evidenceProfile, strategy, candidateModel, difficulty, hasResumeContext }) {
   const { activeLevelKey, activeStageSchema, isAiDataDomain, scenarioFormatTag, caseTierBand, experienceStyle } = calibrationState;
 
   const scenarioFormat = (SCENARIO_FORMAT_TEXT[scenarioFormatTag] || SCENARIO_FORMAT_TEXT.analytical)(caseTierBand);
@@ -621,6 +621,43 @@ function composePrompt({ competency, calibrationState, evidenceProfile, strategy
   const objectiveHypothesis = buildObjectiveHypothesisText(competency, evidenceProfile.evidenceTier, evidenceProfile.leastValidatedSubskill);
 
   const candidateModelLine = `Confidence ${candidateModel.confidence}/100 · Ownership ${candidateModel.ownership}/100 · Communication ${candidateModel.communication}/100 · Technical Depth ${candidateModel.technicalDepth}/100 · Leadership ${candidateModel.leadership}/100 · Decision-Making ${candidateModel.decisionMaking}/100 · Learning Agility ${candidateModel.learningAgility}/100 · Business Thinking ${candidateModel.businessThinking}/100`;
+
+  // Resume-Aware Question Planning — ONLY inserted when a resume is on
+  // file. This is the section of the prompt proven to be authoritative at
+  // generation time (it's the last explicit procedure before the model
+  // writes anything), so the resume priority now lives HERE as a strict,
+  // ordered decision procedure — not as a single optional step, and not
+  // relying on the model recalling Layer 10's policy from earlier in the
+  // prompt. Steps 1-6 above and the final output rule are untouched; this
+  // is inserted between step 6 and the final "generate the question" step.
+  const resumeStep = hasResumeContext ? `
+[RESUME-AWARE QUESTION PLANNING — MANDATORY, STRICT PRIORITY ORDER]
+This is not optional framing — it is the mandatory evidence-selection procedure for THIS question. Work through it in order and stop at the first step that produces usable content. Do not skip to a later step just because it is easier.
+
+Step 1 — Competency (already decided, do not re-decide):
+The competency to assess is fixed: [${String(competency || '').toUpperCase()}]. This step is complete — it comes from the Harmonic Alignment Engine output already merged into layer 6.
+
+Step 2 — Resume (search FIRST, before Job Description):
+Search the Resume Context in layer 10 for the single strongest piece of real experience that demonstrates [${String(competency || '').toUpperCase()}] — a company, customer, implementation, transformation, leadership scope, product, quantified achievement, promotion, or domain expertise. If one genuinely fits, THIS is your anchor. Do NOT ask a generic behavioral question when a fitting resume anchor exists — a real anchor from layer 10 always outranks a generic phrasing.
+
+Step 3 — Job Description (only if Step 2 found nothing usable):
+If no resume anchor genuinely supports this competency, use the Job Description in layer 7 to frame a role-specific scenario instead of the resume.
+
+Step 4 — Generic (only if Steps 2 AND 3 both found nothing usable):
+Only when neither the resume nor the job description offers usable context for this competency, fall back to a general competency question.
+
+Calibration examples ONLY — illustrate the TRANSFORMATION STYLE, never reuse this exact wording or these exact facts for the real candidate:
+• Competency Execution, generic: "Describe a difficult project." Resume-anchored: "Your resume states deployment time was reduced by 42%. Walk me through exactly how you diagnosed the bottleneck, convinced stakeholders, and measured success."
+• Competency Leadership, generic: "Tell me about leading a team." Resume-anchored: "You mentioned leading 40 engineers across India and Singapore. How did your leadership style change when coordinating across multiple locations?"
+Notice what changed: same competency, same rigor — the generic prompt became a specific scenario pulled from real resume facts. Produce that same kind of transformation using THIS candidate's actual resume context in layer 10, not the facts in these examples.
+
+Anchor diversity (mandatory — check layer 8 before choosing): Look at which resume anchors (companies, customers, products, achievements) your own earlier questions in layer 8 already used. Do not reuse the same company, customer, or project as the primary anchor two questions in a row, and avoid returning to an anchor already used earlier unless this question is an explicit follow-up deepening that same story (more resistance encountered, a tradeoff, what they'd change with hindsight). Rotate across companies, customers, products, leadership experience, transformations, technical implementations, and quantified achievements as the interview progresses — a candidate should never feel like every question circles back to the same one employer.
+` : '';
+  const finalStepNum = hasResumeContext ? 8 : 7;
+  const resumeStepFinal = hasResumeContext ? resumeStep + '\n' : resumeStep;
+  const resumeGenerationClause = hasResumeContext
+    ? ' Apply the Resume-Aware Question Planning priority above (Resume, then Job Description, then Generic) and build this question from whichever step produced a usable anchor — name the specific company, customer, product, or achievement when Step 2 produced one.'
+    : '';
 
   return `[INTERVIEWER ARCHETYPE EVALUATION STATE]
 • Target Capability: [${String(competency || '').toUpperCase()}]
@@ -648,7 +685,7 @@ Before generating the next question, you must step through this explicit reasoni
 4. Is there any material semantic contradiction or timeline friction across prior answers to investigate?
 5. What is the candidate's current career stage?
 6. What is the appropriate cognitive mode?
-7. Generate exactly ONE concise question that collects the highest-value missing evidence for [${evidenceProfile.leastValidatedSubskill}].
+${resumeStepFinal}${finalStepNum}. Generate exactly ONE concise question that collects the highest-value missing evidence for [${evidenceProfile.leastValidatedSubskill}].${resumeGenerationClause}
 
 Do not append meta-commentary, introductory remarks, or structural summaries. Output ONLY the raw interview question text.`;
 }
@@ -849,6 +886,7 @@ Rules:
 - Ask ONE question only — no compound questions.
 - NEVER give feedback during the session.
 - Return ONLY the question text with the [${competency}] prefix. No preamble, no acknowledgment of previous answers.
+${hasResumeContext ? `- This candidate has a resume on file (Layer 10). Unless you already used a resume anchor in the immediately preceding question, this question SHOULD name a specific company, customer, product, or achievement from Layer 10 that fits the competency above — do not default to a generic phrasing when real resume evidence is available.` : ''}
 ${questionCount === 0 ? `- This is the OPENING question. Generate a FRESH, session-specific opening question grounded in competency node #1 of layer 6, calibrated to the target role, experience tier, and company context — and to the job description in layer 7 when present. Do NOT use canned or template openings. Style calibration example only — never reuse or lightly reword it: "${openingQ}"` : ''}`;
 }
 
@@ -898,7 +936,18 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   const strategy = runCognitiveStrategyEngine(snapshot.currentTurn, snapshot.globalMaturityTiers);
   const candidateModel = runCandidateModelEngine(qaPairs, snapshot);
   const difficulty = determineDifficulty({ snapshot, competency, qaPairs });
-  const calibrationBlueprint = composePrompt({ competency, calibrationState, evidenceProfile, strategy, candidateModel, difficulty });
+  // Same "does this resume actually have anything" check buildSystemPrompt
+  // does for Layer 10 — computed here too so composePrompt's reasoning
+  // chain can reference the SAME resume the candidate actually has on file,
+  // not just the personalization block far earlier in the prompt.
+  const rcForChain = resumeContext && typeof resumeContext === 'object' ? resumeContext : null;
+  const hasResumeContext = !!(rcForChain && (
+    rcForChain.summary || (rcForChain.career_level && rcForChain.career_level !== 'Unknown') || (rcForChain.industries && rcForChain.industries.length) ||
+    (rcForChain.companies && rcForChain.companies.length) || (rcForChain.customers && rcForChain.customers.length) ||
+    (rcForChain.products && rcForChain.products.length) || (rcForChain.leadership_scope && rcForChain.leadership_scope !== 'Not explicitly stated') ||
+    (rcForChain.top_achievements && rcForChain.top_achievements.length)
+  ));
+  const calibrationBlueprint = composePrompt({ competency, calibrationState, evidenceProfile, strategy, candidateModel, difficulty, hasResumeContext });
 
   // 4. Assemble the ordered production prompt (see buildSystemPrompt above)
   const system = buildSystemPrompt({
