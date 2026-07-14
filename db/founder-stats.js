@@ -90,4 +90,22 @@ async function getBetaAndSubscriptionOverview() {
   };
 }
 
-module.exports = { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview };
+// Section 6 — Founder Alerts. Read-only; reuses queries already used
+// elsewhere on this dashboard (invitations, activity logs, feedback
+// summary) — no new data sources.
+async function getFounderAlerts() {
+  const [pendingBetaResult, recentActivityResult] = await Promise.all([
+    pool.query(`SELECT COUNT(*)::int AS count FROM invitations WHERE status = 'pending'`),
+    pool.query(`SELECT COUNT(*)::int AS count FROM user_activity_logs WHERE created_at >= NOW() - INTERVAL '24 hours'`),
+  ]);
+  const { getFeedbackSummary } = require('./founder-feedback');
+  const feedbackSummary = await getFeedbackSummary();
+
+  return {
+    pendingBetaCount: pendingBetaResult.rows[0].count,
+    newFeedbackCount: feedbackSummary.newThisWeek,
+    activityFeedHealthy: recentActivityResult.rows[0].count > 0,
+  };
+}
+
+module.exports = { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, getFounderAlerts };
