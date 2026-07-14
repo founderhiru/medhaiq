@@ -634,29 +634,35 @@ function composePrompt({ competency, calibrationState, evidenceProfile, strategy
 [RESUME-AWARE QUESTION PLANNING — MANDATORY, STRICT PRIORITY ORDER]
 This is not optional framing — it is the mandatory evidence-selection procedure for THIS question. Work through it in order and stop at the first step that produces usable content. Do not skip to a later step just because it is easier.
 
+Design philosophy for this whole section (why it's built this way): the Harmonic Alignment Engine already decided WHAT competency to assess (layer 6). The Job Description decides WHY that competency matters for this specific role (layer 7). Resume Context decides WHICH real experience to use as the evidence for this question (layer 10, via Career Story Anchors below). Conversation history decides HOW DEEP to go before moving to a new topic (layer 8, via story continuity below). Each of these stays in its own lane — do not let the resume influence which competency is assessed, and do not let the competency choice influence which story is used.
+
 Step 1 — Competency (already decided, do not re-decide):
 The competency to assess is fixed: [${String(competency || '').toUpperCase()}]. This step is complete — it comes from the Harmonic Alignment Engine output already merged into layer 6.
 
-Step 2 — Resume (search FIRST, before Job Description):
-Search the Resume Context in layer 10 for the single strongest piece of real experience that demonstrates [${String(competency || '').toUpperCase()}] — a company, customer, implementation, transformation, leadership scope, product, quantified achievement, promotion, or domain expertise. If one genuinely fits, THIS is your anchor. Do NOT ask a generic behavioral question when a fitting resume anchor exists — a real anchor from layer 10 always outranks a generic phrasing.
+Step 2 — Career Story Anchors (search FIRST, before Job Description):
+Do not treat the Resume Context in layer 10 as a flat list of isolated facts to pick from individually. Synthesize it into "Career Story Anchors" — coherent narrative units, each built by combining one company/role/engagement with what actually happened there (an implementation, transformation, leadership moment, or quantified achievement tied to that specific company). A bare metric with no company or context attached is not yet a story; combine it with the company/scope it belongs to before treating it as usable. From these synthesized stories, choose the ONE that most naturally demonstrates [${String(competency || '').toUpperCase()}]. If one genuinely fits, THIS story is your anchor for this question. Do NOT ask a generic behavioral question when a fitting story exists — a real story from layer 10 always outranks a generic phrasing.
 
 Step 3 — Job Description (only if Step 2 found nothing usable):
-If no resume anchor genuinely supports this competency, use the Job Description in layer 7 to frame a role-specific scenario instead of the resume.
+If no Career Story Anchor genuinely supports this competency, use the Job Description in layer 7 to frame a role-specific scenario instead of the resume.
 
 Step 4 — Generic (only if Steps 2 AND 3 both found nothing usable):
 Only when neither the resume nor the job description offers usable context for this competency, fall back to a general competency question.
 
 Calibration examples ONLY — illustrate the TRANSFORMATION STYLE, never reuse this exact wording or these exact facts for the real candidate:
-• Competency Execution, generic: "Describe a difficult project." Resume-anchored: "Your resume states deployment time was reduced by 42%. Walk me through exactly how you diagnosed the bottleneck, convinced stakeholders, and measured success."
-• Competency Leadership, generic: "Tell me about leading a team." Resume-anchored: "You mentioned leading 40 engineers across India and Singapore. How did your leadership style change when coordinating across multiple locations?"
-Notice what changed: same competency, same rigor — the generic prompt became a specific scenario pulled from real resume facts. Produce that same kind of transformation using THIS candidate's actual resume context in layer 10, not the facts in these examples.
+• Competency Execution, generic: "Describe a difficult project." Story-anchored: "Your resume states deployment time was reduced by 42%. Walk me through exactly how you diagnosed the bottleneck, convinced stakeholders, and measured success."
+• Competency Leadership, generic: "Tell me about leading a team." Story-anchored: "You mentioned leading 40 engineers across India and Singapore. How did your leadership style change when coordinating across multiple locations?"
+Notice what changed: same competency, same rigor — the generic prompt became a specific scenario pulled from one real career story. Produce that same kind of transformation using THIS candidate's actual resume context in layer 10, not the facts in these examples.
 
-Anchor diversity (mandatory — check layer 8 before choosing): Look at which resume anchors (companies, customers, products, achievements) your own earlier questions in layer 8 already used. Do not reuse the same company, customer, or project as the primary anchor two questions in a row, and avoid returning to an anchor already used earlier unless this question is an explicit follow-up deepening that same story (more resistance encountered, a tradeoff, what they'd change with hindsight). Rotate across companies, customers, products, leadership experience, transformations, technical implementations, and quantified achievements as the interview progresses — a candidate should never feel like every question circles back to the same one employer.
+Story continuity and diversity (MANDATORY — read this before finalizing your anchor): Re-read your OWN previous questions in layer 8 to identify which Career Story Anchor, if any, the most recent question was built from, and how many consecutive questions have already used it.
+- You MAY stay on the SAME story for up to ONE follow-up question after it was first introduced (asking about resistance encountered, a tradeoff made, or what they'd change with hindsight on that SAME story) — this is what makes a conversation feel like it's naturally going deeper on one topic, the way a real interviewer does, rather than jumping randomly.
+- After at most TWO consecutive questions on the same story, you MUST rotate to a DIFFERENT Career Story Anchor for this question, even if the competency being assessed has not changed. An unanswered/skipped question does not excuse staying on the same story past that limit.
+FAILURE EXAMPLE (do not do this): building 3, 4, or 5 consecutive questions around the same story (e.g. the same "$37M P&L, 200+ engineers" narrative), even if each individual question sounds fine in isolation — the candidate notices instantly when the whole interview circles back to one story.
+This candidate's resume in layer 10 typically contains MULTIPLE distinct Career Story Anchors even for one competency (e.g. leadership can be shown through a team-scaling story at one company, a stakeholder-alignment story at another, or a specific client engagement) — if you cannot find a second distinct story for this competency, that is a signal to move toward Job Description framing (Step 3) rather than stretch one story past two questions.
 ` : '';
   const finalStepNum = hasResumeContext ? 8 : 7;
   const resumeStepFinal = hasResumeContext ? resumeStep + '\n' : resumeStep;
   const resumeGenerationClause = hasResumeContext
-    ? ' Apply the Resume-Aware Question Planning priority above (Resume, then Job Description, then Generic) and build this question from whichever step produced a usable anchor — name the specific company, customer, product, or achievement when Step 2 produced one.'
+    ? ' Apply the Resume-Aware Question Planning priority above (Career Story, then Job Description, then Generic) and build this question from whichever step produced usable content — name the specific company, customer, product, or achievement from the selected Career Story Anchor when Step 2 produced one.'
     : '';
 
   return `[INTERVIEWER ARCHETYPE EVALUATION STATE]
