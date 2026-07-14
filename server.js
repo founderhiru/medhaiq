@@ -563,7 +563,8 @@ app.get('/founder', async (req, res) => {
     const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, getFounderAlerts } = require('./db/founder-stats');
     const { listUsers } = require('./db/founder-users');
     const { getFeedbackSummary, getRecentFeedback } = require('./db/founder-feedback');
-    const [stats, activity, users, betaOverview, feedbackSummary, recentFeedback, alerts] = await Promise.all([
+    const { getPendingWaitlistEntries } = require('./db/founder-waitlist');
+    const [stats, activity, users, betaOverview, feedbackSummary, recentFeedback, alerts, pendingWaitlist] = await Promise.all([
       getOverviewStats(),
       getRecentActivity(5),
       listUsers({ search: '', limit: 25 }),
@@ -571,6 +572,7 @@ app.get('/founder', async (req, res) => {
       getFeedbackSummary(),
       getRecentFeedback(5),
       getFounderAlerts(),
+      getPendingWaitlistEntries({ limit: 10 }),
     ]);
 
     const footerInfo = {
@@ -580,9 +582,73 @@ app.get('/founder', async (req, res) => {
       environment: process.env.NODE_ENV === 'production' ? 'Production' : (process.env.NODE_ENV || 'Development'),
     };
 
-    res.render('founder-dashboard', { shellUser: user, stats, activity, users, footerInfo, betaOverview, feedbackSummary, recentFeedback, alerts });
+    res.render('founder-dashboard', { shellUser: user, stats, activity, users, footerInfo, betaOverview, feedbackSummary, recentFeedback, alerts, pendingWaitlist });
   } catch (err) {
     console.error('[founder]', err);
+    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
+  }
+});
+
+// Founder Dashboard — View All Activity (paginated). Same auth pattern
+// and founder_access check as /founder; just a different, longer table.
+const FOUNDER_PAGE_SIZE = 20;
+app.get('/founder/activity', async (req, res) => {
+  try {
+    const userId = req.cookies?.user_id;
+    if (!userId) return res.redirect('/auth/login');
+
+    const { getUserById } = require('./db/auth');
+    const { isFounder } = require('./db/founder-access');
+    const user = await getUserById(userId);
+    if (!user) return res.redirect('/auth/login');
+
+    const founder = await isFounder(userId);
+    if (!founder) return res.status(404).render('error-boundary', { url: req.url, errorMessage: 'Not found' });
+
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const { getRecentActivity } = require('./db/founder-stats');
+    const activity = await getRecentActivity(FOUNDER_PAGE_SIZE + 1, (page - 1) * FOUNDER_PAGE_SIZE);
+    const hasNextPage = activity.length > FOUNDER_PAGE_SIZE;
+
+    res.render('founder-activity-all', {
+      shellUser: user,
+      activity: activity.slice(0, FOUNDER_PAGE_SIZE),
+      page,
+      hasNextPage,
+    });
+  } catch (err) {
+    console.error('[founder/activity]', err);
+    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
+  }
+});
+
+// Founder Dashboard — View All Feedback (paginated). Same pattern.
+app.get('/founder/feedback', async (req, res) => {
+  try {
+    const userId = req.cookies?.user_id;
+    if (!userId) return res.redirect('/auth/login');
+
+    const { getUserById } = require('./db/auth');
+    const { isFounder } = require('./db/founder-access');
+    const user = await getUserById(userId);
+    if (!user) return res.redirect('/auth/login');
+
+    const founder = await isFounder(userId);
+    if (!founder) return res.status(404).render('error-boundary', { url: req.url, errorMessage: 'Not found' });
+
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const { getRecentFeedback } = require('./db/founder-feedback');
+    const feedback = await getRecentFeedback(FOUNDER_PAGE_SIZE + 1, (page - 1) * FOUNDER_PAGE_SIZE);
+    const hasNextPage = feedback.length > FOUNDER_PAGE_SIZE;
+
+    res.render('founder-feedback-all', {
+      shellUser: user,
+      feedback: feedback.slice(0, FOUNDER_PAGE_SIZE),
+      page,
+      hasNextPage,
+    });
+  } catch (err) {
+    console.error('[founder/feedback]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });
