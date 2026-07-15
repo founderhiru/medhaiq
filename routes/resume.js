@@ -64,6 +64,7 @@ router.get('/status', requireAuth, async (req, res) => {
       hasResume,
       parsedAt: hasResume ? profile.resume_parsed_at : null,
       competencyCount: hasResume && Array.isArray(profile.resume_competencies) ? profile.resume_competencies.length : 0,
+      storyCount: hasResume && Array.isArray(profile.story_library) ? profile.story_library.length : 0,
     });
   } catch (err) {
     console.error('[resume/status]', err);
@@ -95,6 +96,7 @@ router.post('/upload', requireAuth, upload.single('resumeFile'), async (req, res
       hasResume: true,
       parsedAt: saved.resume_parsed_at,
       competencyCount: parsed.resume_competencies.length,
+      storyCount: (parsed.career_story_library || []).length,
       source: parsed.source,
     });
   } catch (err) {

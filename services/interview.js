@@ -1296,6 +1296,28 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   // difficulty; those come from deterministic code, not from here.
   const jsonSchemaInstruction = `\n\nReturn ONLY a JSON object with this exact shape — no markdown, no extra keys:\n{\n  "question": "the interview question text — no prefix, no meta-commentary, nothing else",\n  "reasoning": "one short internal sentence on how you phrased the blueprint — never shown to the candidate"\n}`;
 
+  // ── EXACT DIAGNOSTIC LOG REQUESTED — immediately before the LLM call ────
+  console.log('[FINAL-PRE-LLM-CHECK]', JSON.stringify({
+    competency,
+    storyLibraryCount: storiesForChain.length,
+    selectedStory: selectedStoryKey,
+    selectedHook: questionBlueprint ? questionBlueprint.hook : null,
+    interviewIntent: questionBlueprint ? questionBlueprint.interview_intent : null,
+    questionBlueprint,
+  }));
+
+  // Automated check for "does the actual prompt text contain the resolved
+  // story/hook, or not" — answers requirement #7 directly instead of
+  // requiring a manual read of the full (very long) system prompt string.
+  if (questionBlueprint && questionBlueprint.story) {
+    console.log('[FINAL-PRE-LLM-CHECK] prompt actually contains story company:', system.includes(questionBlueprint.story.company));
+    if (questionBlueprint.hook) {
+      console.log('[FINAL-PRE-LLM-CHECK] prompt actually contains hook detail:', system.includes(questionBlueprint.hook.detail));
+    }
+  } else {
+    console.log('[FINAL-PRE-LLM-CHECK] no story in blueprint — nothing to verify, this turn WILL be generic by design');
+  }
+
   let parsed = await chatJSON(prompt, { system: system + jsonSchemaInstruction, maxTokens: 512 });
   let text = sanitizeQuestionOutput(parsed && parsed.question, competency, roleKey, levelKey);
 
