@@ -65,6 +65,8 @@ router.get('/status', requireAuth, async (req, res) => {
       parsedAt: hasResume ? profile.resume_parsed_at : null,
       competencyCount: hasResume && Array.isArray(profile.resume_competencies) ? profile.resume_competencies.length : 0,
       storyCount: hasResume && Array.isArray(profile.story_library) ? profile.story_library.length : 0,
+      parseStatus: profile ? profile.resume_parse_status : null,
+      lastParseAttemptAt: profile ? profile.resume_last_parse_attempt_at : null,
     });
   } catch (err) {
     console.error('[resume/status]', err);
@@ -77,22 +79,50 @@ router.post('/upload', requireAuth, upload.single('resumeFile'), async (req, res
   try {
     const pastedText = req.body && req.body.resumeText;
     const text = await extractTextFromInput({ file: req.file, pastedText });
+    console.log(`[resume/upload] stage=text_extraction userId=${req.user.id} textLength=${(text || '').length}`);
 
     if (!text || text.trim().length < 40) {
+      console.warn(`[resume/upload] stage=text_extraction status=PARSE_FAILED userId=${req.user.id} — could not extract enough text from the input`);
       return res.status(400).json({ error: 'Could not read enough text from that resume. Try pasting the text instead.' });
     }
 
     const parsed = await parseResume(text);
+    const isGenuineSuccess = parsed.parse_status === 'SUCCESS' &&
+      ((parsed.resume_competencies && parsed.resume_competencies.length) || (parsed.career_story_library && parsed.career_story_library.length));
 
     const saved = await saveResumeIntelligence(req.user.id, {
       rawText: text,
       resumeCompetencies: parsed.resume_competencies,
       resumeContext: parsed.resume_context,
       storyLibrary: parsed.career_story_library,
+      parseStatus: parsed.parse_status,
     });
+
+    console.log(`[resume/upload] stage=complete userId=${req.user.id} parseStatus=${parsed.parse_status} isGenuineSuccess=${isGenuineSuccess}`);
+
+    if (!isGenuineSuccess) {
+      // Parsing technically failed, OR came back completely empty — the
+      // save layer already protected any prior good data (see
+      // saveResumeIntelligence), so we tell the candidate honestly what
+      // happened rather than claiming success with 0 competencies.
+      const hadPriorContent = Array.isArray(saved.resume_competencies) && saved.resume_competencies.length > 0;
+      return res.status(hadPriorContent ? 200 : 422).json({
+        success: false,
+        parseStatus: parsed.parse_status,
+        hasResume: hadPriorContent,
+        preservedPreviousResume: hadPriorContent,
+        parsedAt: saved.resume_parsed_at,
+        competencyCount: Array.isArray(saved.resume_competencies) ? saved.resume_competencies.length : 0,
+        storyCount: Array.isArray(saved.story_library) ? saved.story_library.length : 0,
+        error: hadPriorContent
+          ? 'This re-parse did not complete successfully — your previous resume data is still in use and was not changed. Try uploading again.'
+          : 'We could not extract usable information from that resume. Try pasting the text directly instead of uploading the file.',
+      });
+    }
 
     return res.json({
       success: true,
+      parseStatus: parsed.parse_status,
       hasResume: true,
       parsedAt: saved.resume_parsed_at,
       competencyCount: parsed.resume_competencies.length,
@@ -100,7 +130,7 @@ router.post('/upload', requireAuth, upload.single('resumeFile'), async (req, res
       source: parsed.source,
     });
   } catch (err) {
-    console.error('[resume/upload]', err);
+    console.error('[resume/upload] stage=unhandled_exception', err);
     return res.status(500).json({ error: err.message || 'Failed to process resume' });
   }
 });

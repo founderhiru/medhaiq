@@ -378,6 +378,27 @@ async function runMigrations() {
           await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS question_blueprint JSONB`);
         }
       },
+      {
+        name: '011_resume_parse_status_tracking',
+        up: async (c) => {
+          // Resume Intelligence had no way to distinguish "parsing genuinely
+          // found nothing" from "parsing technically failed" — both looked
+          // identical (0 competencies, real-looking parsed_at timestamp),
+          // because a failed parse silently saved EMPTY_RESULT over
+          // whatever was there before. Two new columns fix this:
+          //
+          // resume_parse_status: one of SUCCESS | PARSE_FAILED |
+          //   MODEL_TRUNCATED | INVALID_JSON | EXTRACTION_FAILED — always
+          //   set on every parse attempt, success or failure.
+          // resume_last_parse_attempt_at: updates on EVERY attempt
+          //   (success or failure). resume_parsed_at (existing column)
+          //   updates ONLY on genuine success, so it always reflects the
+          //   last time real content was actually saved — never a failed
+          //   attempt's timestamp.
+          await c.query(`ALTER TABLE career_profiles ADD COLUMN IF NOT EXISTS resume_parse_status VARCHAR(30)`);
+          await c.query(`ALTER TABLE career_profiles ADD COLUMN IF NOT EXISTS resume_last_parse_attempt_at TIMESTAMPTZ`);
+        }
+      },
     ];
 
     for (const m of migrations) {
