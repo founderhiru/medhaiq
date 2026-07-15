@@ -47,8 +47,16 @@ const EMPTY_RESULT = Object.freeze({
     leadership_scope: 'Not explicitly stated',
     top_achievements: [],
   }),
+  career_story_library: Object.freeze([]),
   source: 'none',
 });
+
+/** Turn arbitrary model output into a safe, stable story_key: uppercase,
+ * alphanumeric + underscores only, capped length. Never throws. */
+function sanitizeStoryKey(raw) {
+  const s = String(raw || '').toUpperCase().trim().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  return s.slice(0, 40) || null;
+}
 
 /**
  * Parse raw resume text into { resume_competencies, resume_context }.
@@ -89,6 +97,42 @@ async function parseResume(resumeText) {
       ? ctxRaw.career_level
       : 'Unknown';
 
+    const top_achievements = asStringArray(ctxRaw.top_achievements, 8);
+
+    // Career Story Library — stable story_key per story, not free-text.
+    // Any single malformed story entry is dropped silently; it never
+    // collapses the whole parse to EMPTY_RESULT.
+    const seenKeys = new Set();
+    const rawStories = Array.isArray(parsed && parsed.career_story_library) ? parsed.career_story_library : [];
+    const career_story_library = rawStories
+      .map((s) => {
+        if (!s || typeof s !== 'object') return null;
+        let story_key = sanitizeStoryKey(s.story_key);
+        const company = (typeof s.company === 'string' && s.company.trim()) ? s.company.trim().slice(0, 100) : null;
+        const summary = (typeof s.summary === 'string' && s.summary.trim()) ? s.summary.trim().slice(0, 300) : null;
+        const competency_hints = asStringArray(s.competency_hints, 4).map((h) => h.slice(0, 40));
+        const business_context = asStringArray(s.business_context, 3).map((h) => h.slice(0, 40));
+        const jd_alignment_tags = asStringArray(s.jd_alignment_tags, 4).map((h) => h.slice(0, 40));
+        // Strict validation: company, summary, AND at least one competency_hint
+        // are all required. A story missing any of the three is dropped
+        // entirely — never kept as a partial/degraded story. business_context
+        // and jd_alignment_tags are NOT required (they default to [] and the
+        // story is still usable without them, just with less matching signal).
+        if (!story_key || !summary || !company || !competency_hints.length) return null;
+        // De-dupe collisions (two stories the model gave the same key) by
+        // appending a numeric suffix rather than silently dropping one —
+        // keeps every genuine story available to the interview engine.
+        if (seenKeys.has(story_key)) {
+          let n = 2;
+          while (seenKeys.has(`${story_key}_${n}`)) n++;
+          story_key = `${story_key}_${n}`;
+        }
+        seenKeys.add(story_key);
+        return { story_key, company, summary, competency_hints, business_context, jd_alignment_tags };
+      })
+      .filter(Boolean)
+      .slice(0, 10); // schema ceiling — 4 to 10 distinct stories
+
     const resume_context = {
       summary: (typeof ctxRaw.summary === 'string' && ctxRaw.summary.trim()) ? ctxRaw.summary.trim().slice(0, 500) : null,
       career_level: careerLevel,
@@ -99,7 +143,7 @@ async function parseResume(resumeText) {
       leadership_scope: (typeof ctxRaw.leadership_scope === 'string' && ctxRaw.leadership_scope.trim())
         ? ctxRaw.leadership_scope.trim().slice(0, 300)
         : 'Not explicitly stated',
-      top_achievements: asStringArray(ctxRaw.top_achievements, 8),
+      top_achievements,
     };
 
     // Fewer than 8 valid competencies is sparse but still usable — only a
@@ -107,6 +151,7 @@ async function parseResume(resumeText) {
     return {
       resume_competencies: competencies,
       resume_context,
+      career_story_library,
       source: 'ai',
     };
   } catch (err) {
@@ -120,4 +165,5 @@ module.exports = {
   MAX_RESUME_TEXT_CHARS,
   EMPTY_RESULT,
   CAREER_LEVELS,
+  sanitizeStoryKey,
 };

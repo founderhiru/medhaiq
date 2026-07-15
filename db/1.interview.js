@@ -1,10 +1,10 @@
 // Interview sessions DB access — all queries go through here.
 const { pool } = require('./index');
 
-async function createSession({ userId, personaId, roleTitle, experienceLevel, orgPreset, jdText, competencyMatrix, resumeCompetencies, resumeContext, storyLibrary }) {
+async function createSession({ userId, personaId, roleTitle, experienceLevel, orgPreset, jdText, competencyMatrix, resumeCompetencies, resumeContext }) {
   const result = await pool.query(
-    `INSERT INTO interview_sessions (user_id, persona_id, role_title, experience_level, org_preset, jd_text, competency_matrix, resume_competencies, resume_context, story_library)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+    `INSERT INTO interview_sessions (user_id, persona_id, role_title, experience_level, org_preset, jd_text, competency_matrix, resume_competencies, resume_context)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
     [
       userId,
       personaId,
@@ -15,7 +15,6 @@ async function createSession({ userId, personaId, roleTitle, experienceLevel, or
       competencyMatrix ? JSON.stringify(competencyMatrix) : null,
       (resumeCompetencies && resumeCompetencies.length) ? JSON.stringify(resumeCompetencies) : null,
       resumeContext ? JSON.stringify(resumeContext) : null,
-      (storyLibrary && storyLibrary.length) ? JSON.stringify(storyLibrary) : null,
     ]
   );
   return result.rows[0];
@@ -39,6 +38,16 @@ async function getUserSessions(userId, { limit = 20, offset = 0 } = {}) {
     [userId, limit, offset]
   );
   return result.rows;
+}
+
+// Used only for the feedback-prompt trigger (show on 1st completed report,
+// then every 5th) — a plain count, no new table or column involved.
+async function getUserCompletedReportCount(userId) {
+  const result = await pool.query(
+    `SELECT COUNT(*)::int AS count FROM interview_sessions WHERE user_id = $1 AND status = 'completed'`,
+    [userId]
+  );
+  return result.rows[0].count;
 }
 
 async function completeSession(sessionId, overallScore) {
@@ -113,11 +122,11 @@ async function getUserAggregateScores(userId) {
   };
 }
 
-async function addQuestion({ sessionId, questionText, personaId, questionType, questionOrder, competency, storyKey, parentQuestionId, questionBlueprint }) {
+async function addQuestion({ sessionId, questionText, personaId, questionType, questionOrder }) {
   const result = await pool.query(
-    `INSERT INTO interview_questions (session_id, question_text, persona_id, question_type, question_order, competency, story_key, parent_question_id, question_blueprint)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-    [sessionId, questionText, personaId, questionType, questionOrder, competency || null, storyKey || null, parentQuestionId || null, questionBlueprint ? JSON.stringify(questionBlueprint) : null]
+    `INSERT INTO interview_questions (session_id, question_text, persona_id, question_type, question_order)
+     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+    [sessionId, questionText, personaId, questionType, questionOrder]
   );
   return result.rows[0];
 }
@@ -186,7 +195,7 @@ async function getReport(sessionId) {
 }
 
 module.exports = {
-  createSession, getSession, getUserSessions, completeSession, abandonSession,
+  createSession, getSession, getUserSessions, getUserCompletedReportCount, completeSession, abandonSession,
   getSessionQuestions, getSessionScores, getUserAggregateScores,
   addQuestion, addAnswer, addScore,
   saveReport, getReport,

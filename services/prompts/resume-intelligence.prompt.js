@@ -174,17 +174,75 @@ Return the most important measurable business outcomes.
 
 Prefer quantified achievements.
 
+CRITICAL: each achievement must be self-contained — include WHICH company or role it happened at, inline in the same string, whenever the resume shows that association (e.g. via a "Key Roles" section, job title, or nearby bullet). An achievement with no attached company is much less useful to an interviewer than one that names where it happened. Never invent a company if the resume genuinely doesn't show one for that bullet — omit the attribution rather than guess.
+
 Examples:
 
-Reduced deployment time by 42%
+Reduced deployment time by 42% at Acme Corp
 
-Led migration of 18 enterprise applications
+Led migration of 18 enterprise applications to AWS while at TechCo
 
 Managed $25M technology portfolio
 
 Improved customer retention by 18%
 
 Do not include generic responsibilities.
+
+----------------------------------------------------
+LAYER 3 — CAREER STORY LIBRARY
+(career_story_library)
+----------------------------------------------------
+
+This is a THIRD, separate output. It exists so an interviewer can later pick
+ONE coherent story to build a question around, instead of reconstructing a
+story from scattered fields every time.
+
+Identify 4 to 10 distinct "stories" from the resume — each one a coherent
+narrative unit tied to ONE company/role/engagement (e.g. a specific
+implementation, transformation, leadership situation, or achievement that
+happened at that company). Two different achievements at the SAME company
+can be two different stories if they are substantively different narratives
+(e.g. a $25M sales program and a separate $9M technical transformation at
+the same employer are two stories, not one).
+
+For each story, return:
+
+story_key
+
+  A STABLE, machine-friendly identifier — NOT display text. Format:
+  UPPERCASE_WITH_UNDERSCORES, built from company + a short distinguishing
+  detail (a program name or the headline metric), e.g. "AWS_PROSERV_25M",
+  "DELOITTE_FINSERV_24M", "TCS_MULTICLOUD_19M". Keep it short (under 30
+  characters). This key is used for persistence and analytics — it must
+  stay stable and machine-parseable, never a full sentence.
+
+company
+  The employer this story happened at.
+
+summary
+  ONE concise, factual sentence describing what happened and the outcome.
+
+competency_hints
+  2-4 short competency-style tags this story could plausibly support in an
+  interview (e.g. ["Leadership", "Strategic Thinking", "Client Management"]).
+  These are hints for matching, not a scored or weighted field.
+
+business_context
+  1-3 short industry/domain tags this story took place in (e.g.
+  ["Healthcare", "Financial Services"]). Used to match a story against a
+  target job description's industry — e.g. if the JD is for a healthcare
+  company, a story that also happened in healthcare should be preferred.
+  Only include an industry if the resume actually indicates it for this
+  specific story (via the employer, client, or explicit domain mention) —
+  do not guess an industry from the company name alone.
+
+jd_alignment_tags
+  2-4 short JD-oriented theme tags this story could support in an interview
+  for a DIFFERENT target role than the one it happened in (e.g.
+  ["Digital Transformation", "Executive Leadership", "Cloud Modernization",
+  "Stakeholder Management"]). Broader and more thematic than
+  competency_hints — these describe what KIND of role/responsibility this
+  story demonstrates, not a specific competency name.
 
 ----------------------------------------------------
 GENERAL EXTRACTION RULES
@@ -208,6 +266,13 @@ If a field is unavailable:
 • Strings → return null
 • leadership_scope → "Not explicitly stated"
 • career_level → "Unknown"
+• career_story_library → [] if no distinct stories can be identified
+• Every story MUST have a non-empty company, summary, and at least one
+  competency_hint — if any of those three is missing, DO NOT include that
+  story at all (drop it entirely, do not include it with empty fields)
+• business_context and jd_alignment_tags → [] if genuinely not evident;
+  these two are not required for a story to be included, unlike the three
+  above
 
 ----------------------------------------------------
 OUTPUT FORMAT
@@ -254,10 +319,28 @@ TARGET SCHEMA
     ],
     "leadership_scope": "Led global engineering teams across the US and India.",
     "top_achievements": [
-      "Reduced deployment time by 42%.",
-      "Migrated 18 enterprise applications to AWS."
+      "Reduced deployment time by 42% while at Company A.",
+      "Migrated 18 enterprise applications to AWS during the Core Banking Platform program at Company B."
     ]
-  }
+  },
+  "career_story_library": [
+    {
+      "story_key": "COMPANY_A_DEPLOY_42PCT",
+      "company": "Company A",
+      "summary": "Reduced deployment time by 42% by leading an infrastructure-as-code transformation.",
+      "competency_hints": ["Execution", "Technical Leadership"],
+      "business_context": ["Financial Services"],
+      "jd_alignment_tags": ["Cloud Modernization", "Technical Delivery"]
+    },
+    {
+      "story_key": "COMPANY_B_CORE_BANKING",
+      "company": "Company B",
+      "summary": "Migrated 18 enterprise applications to AWS during the Core Banking Platform program.",
+      "competency_hints": ["Cloud Architecture", "Program Management"],
+      "business_context": ["Banking"],
+      "jd_alignment_tags": ["Digital Transformation", "Enterprise Migration"]
+    }
+  ]
 }`;
 
 /**

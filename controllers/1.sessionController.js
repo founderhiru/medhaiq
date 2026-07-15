@@ -56,7 +56,6 @@ async function initializeSession(req, res) {
       ? careerProfile.resume_competencies
       : [];
     const resumeContext = (careerProfile && careerProfile.resume_context) ? careerProfile.resume_context : null;
-    const storyLibrary = (careerProfile && Array.isArray(careerProfile.story_library)) ? careerProfile.story_library : [];
 
     // ── 3. AI competency extraction (deterministic fallback inside) ─────────
     const extraction = await aiExtractJdCompetencies(jdText);
@@ -82,7 +81,6 @@ async function initializeSession(req, res) {
       competencyMatrix: finalizedMatrix,
       resumeCompetencies,
       resumeContext,
-      storyLibrary,
     });
 
     // ── 6. Opening question via the enterprise prompt layer ─────────────────
@@ -97,7 +95,6 @@ async function initializeSession(req, res) {
       qaPairs: [],
       questionCount: 0,
       resumeContext,
-      storyLibrary,
     });
 
     const question = await addQuestion({
@@ -107,8 +104,6 @@ async function initializeSession(req, res) {
       questionType: 'opening',
       questionOrder: 0,
       competency: openingResult.competency,
-      storyKey: openingResult.storyKey,
-      questionBlueprint: openingResult.questionBlueprint,
     });
 
     // ── 7. Response Shape ───────────────────────────────────────────────────

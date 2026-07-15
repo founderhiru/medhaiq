@@ -305,6 +305,16 @@ async function runMigrations() {
           // "action" column instead). Relaxing this is additive/safe — it
           // only permits more inserts, it can't break anything that already
           // depends on this column being required.
+          //
+          // FIX (found via staging deploy on a fresh database, July 2026):
+          // this assumed the column already existed (true on production,
+          // from earlier undocumented setup work) but a brand-new database
+          // never had it, so the ALTER below failed with "column does not
+          // exist". Creating it first makes this safe on both a fresh
+          // install and production (where this is a no-op — the column's
+          // already there, and production already has this migration
+          // marked applied, so this won't even re-run against it).
+          await c.query(`ALTER TABLE user_activity_logs ADD COLUMN IF NOT EXISTS action_type VARCHAR(100)`);
           await c.query(`ALTER TABLE user_activity_logs ALTER COLUMN action_type DROP NOT NULL`);
         }
       },
@@ -330,52 +340,47 @@ async function runMigrations() {
         }
       },
       {
-        name: '009_question_competency_tracking',
+        name: '009_founder_access',
         up: async (c) => {
-          // interview_questions never persisted WHICH competency a question
-          // targeted, WHICH resume story it used, or whether it was a
-          // follow-up to another question — all needed now so the
-          // primary/follow-up conversation flow is deterministic across
-          // stateless HTTP requests, instead of hoping the model infers
-          // continuity from prose. Purely additive, nullable — does not
-          // touch scoring, the Harmonic Alignment Engine, or any existing
-          // column. question_type (existing column) gains new values
-          // 'primary' / 'follow_up' alongside the existing 'opening' /
-          // 'drill_down' — old in-progress sessions with 'drill_down' rows
-          // keep working via a backward-compatible check in code.
-          //
-          // story_key (NOT story_anchor / free text): a stable, machine-
-          // friendly identifier like "AWS_PROSERV_25M", assigned once by
-          // Resume Intelligence at parse time. Using a stable key rather
-          // than persisting rendered display text means a later wording
-          // change in Resume Intelligence (e.g. "AWS Professional Services"
-          // -> "AWS ProServe") never silently breaks analytics that already
-          // joined on the old text.
-          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS competency VARCHAR(120)`);
-          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS story_key VARCHAR(80)`);
-          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS parent_question_id INTEGER REFERENCES interview_questions(id) ON DELETE SET NULL`);
-
-          // Career Story Library — the Resume Intelligence output that
-          // assigns each story its stable story_key. Persistent store
-          // (career_profiles, one per user) + per-session immutable
-          // snapshot (interview_sessions), same precedent as the existing
-          // resume_competencies/resume_context columns from migration 008.
-          await c.query(`ALTER TABLE career_profiles ADD COLUMN IF NOT EXISTS story_library JSONB`);
-          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS story_library JSONB`);
+          // Founder Dashboard authorization — deliberately a separate table,
+          // NOT a column on `users`. Zero impact on the existing auth flow,
+          // trivially reversible (drop the table), and supports more than
+          // one admin later without ever touching the core users schema.
+          await c.query(`CREATE TABLE IF NOT EXISTS founder_access (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            role VARCHAR(50) NOT NULL DEFAULT 'founder',
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          )`);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS founder_access_user_id_unique_idx
+            ON founder_access (user_id)
+          `);
         }
       },
       {
-        name: '010_question_blueprint_audit_trail',
+        name: '010_waitlist_table',
         up: async (c) => {
-          // The Question Blueprint (competency, jd_objective, story_key,
-          // difficulty, question_type) is built deterministically before
-          // every AI question-generation call, but was never persisted —
-          // only competency/story_key/parent_question_id from migration 009
-          // were. Storing the FULL blueprint as one JSONB snapshot gives an
-          // exact audit trail of what was decided for that question at the
-          // time it was generated, immune to any future change in how
-          // jd_objective/difficulty get derived. Purely additive, nullable.
-          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS question_blueprint JSONB`);
+          // Found via staging deploy on a fresh database, July 2026: the
+          // `waitlist` table (backing db/waitlist.js and the landing page
+          // signup form) exists on production from earlier manual setup
+          // work, but was never captured in this migration file — so a
+          // fresh database never creates it, and any query against it
+          // (e.g. founder-stats.js's newBetaSignupsToday count) fails with
+          // "relation does not exist". Columns match exactly what
+          // db/waitlist.js's createWaitlistEntry() already inserts.
+          await c.query(`CREATE TABLE IF NOT EXISTS waitlist (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255),
+            email VARCHAR(255) NOT NULL,
+            phone VARCHAR(50),
+            city VARCHAR(255),
+            user_type VARCHAR(100),
+            plan_interest VARCHAR(255),
+            ip_address VARCHAR(64),
+            user_agent TEXT,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          )`);
         }
       },
     ];
