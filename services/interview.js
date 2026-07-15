@@ -1324,7 +1324,16 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   let parsed = await chatJSON(prompt, { system: system + jsonSchemaInstruction, maxTokens: 512 });
   let text = sanitizeQuestionOutput(parsed && parsed.question, competency, roleKey, levelKey);
 
-  // ── Question Repetition & Similarity Loop Intercept (max 2 retries) ──
+  // Deterministic word-count ceiling — a bit of headroom above the prompt's
+  // own stated targets (30-45 primary / 12-25 follow-up, 50-word outer cap)
+  // to avoid punishing a genuinely necessary longer question, while still
+  // catching clear overages. This is a SAFETY NET, not the primary control —
+  // the prompt's own length guidance is still what should usually produce
+  // the right length; this only fires when that guidance wasn't followed.
+  const wordCount = (str) => String(str || '').trim().split(/\s+/).filter(Boolean).length;
+  const HARD_WORD_CEILING = isFollowup ? 35 : 60;
+
+  // ── Question Repetition & Length Intercept (max 2 retries, combined) ──
   // Compares against the SANITIZED text (matches what's actually persisted
   // in qaPairs on later turns, not the raw pre-sanitize model output).
   let attempts = 0;
@@ -1341,13 +1350,37 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
         break;
       }
     }
-    if (!isRepetitive) break;
+    const isTooLong = wordCount(text) > HARD_WORD_CEILING;
+    if (!isRepetitive && !isTooLong) break;
+
+    const warnings = [];
+    if (isRepetitive) {
+      warnings.push('[CRITICAL WARNING: Your previous generation was flagged as repetitive or semantically identical to a question already asked in this session history. You MUST completely vary the scenario, switch the underlying subskill angle, and formulate a fresh, distinct operational direction.]');
+    }
+    if (isTooLong) {
+      const target = isFollowup ? '12-25' : '30-45';
+      warnings.push(`[CRITICAL WARNING: Your previous generation was ${wordCount(text)} words — far over target. Cut ALL scene-setting narration. State the resume anchor in a short opening clause (a few words, not a full sentence of context), then ask ONE tight question. Target ${target} words this time — that is a hard requirement, not a suggestion.]`);
+    }
+
     const retryParsed = await chatJSON(prompt, {
-      system: system + jsonSchemaInstruction + '\n\n[CRITICAL WARNING: Your previous generation was flagged as repetitive or semantically identical to a question already asked in this session history. You MUST completely vary the scenario, switch the underlying subskill angle, and formulate a fresh, distinct operational direction.]',
+      system: system + jsonSchemaInstruction + '\n\n' + warnings.join('\n\n'),
       maxTokens: 512,
     });
     text = sanitizeQuestionOutput(retryParsed && retryParsed.question, competency, roleKey, levelKey);
     attempts++;
+  }
+
+  // Final deterministic fallback — if it's STILL over the hard ceiling after
+  // 2 retries, never ship an overlong question to the candidate. Reuses the
+  // exact same short, pre-written fallback pool sanitizeQuestionOutput
+  // already falls back to for broken/meta-leak output, so there's no new
+  // fallback text to maintain — one consistent safety net for both failure
+  // modes.
+  if (wordCount(text) > HARD_WORD_CEILING) {
+    console.warn(`[interview] question still ${wordCount(text)} words after retries (ceiling ${HARD_WORD_CEILING}) — using short fallback instead of shipping an overlong question.`);
+    text = COMPETENCY_PROMPTS[competency]
+      ? `Tell me about a specific time you had to navigate a difficult trade-off related to ${competency.replace('_', ' ')}. Walk me through the situation, what you decided, and the outcome.`
+      : (OPENING_QUESTIONS[roleKey]?.[levelKey] || OPENING_QUESTIONS.default.mid);
   }
 
   console.log('[blueprint-debug] final output:', JSON.stringify({ storyKey, questionText: text }));
