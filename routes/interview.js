@@ -223,6 +223,13 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     try { storyLibrary = JSON.parse(storyLibrary); } catch (e) { storyLibrary = []; }
   }
 
+  // Executive Interview Strategy — additive only. Simply "which primary
+  // number is this" (1-5); undefined for follow-ups, since the strategy
+  // layer is explicitly scoped to primaries only and follow-up logic
+  // itself is completely untouched. Does not affect answeredPrimaryCount,
+  // isFollowupTurn, or any existing eligibility check above.
+  const questionPosition = isFollowupTurn ? undefined : (answeredPrimaryCount + 1);
+
   const generated = await generateNextQuestion({
     sessionId: session.id,
     personaId: session.persona_id,
@@ -236,6 +243,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     resumeContext,
     storyLibrary: storyLibrary || [],
     isFollowup: isFollowupTurn,
+    questionPosition,
     forcedCompetency: isFollowupTurn ? lastPrimary.competency : undefined,
     forcedStoryKey: isFollowupTurn ? lastPrimary.story_key : undefined,
   });
@@ -251,6 +259,9 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     storyKey: generated.storyKey,
     parentQuestionId: isFollowupTurn ? lastPrimary.id : null,
     questionBlueprint: generated.questionBlueprint,
+    questionPosition,
+    strategySource: generated.questionBlueprint ? generated.questionBlueprint.strategy_source : null,
+    strategyPurpose: generated.questionBlueprint ? generated.questionBlueprint.strategy_purpose : null,
   });
 
   return {

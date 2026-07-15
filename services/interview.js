@@ -643,6 +643,7 @@ ${questionBlueprint.hook ? `Conversation hook — ASK SPECIFICALLY ABOUT THIS, n
 JD requirement this serves: ${questionBlueprint.jd_objective || '(none identified)'}
 Why this story/framing: ${questionBlueprint.reason}
 Turn type: ${questionBlueprint.question_type}
+${questionBlueprint.question_position ? `Strategic position: Q${questionBlueprint.question_position} of 5 — ${questionBlueprint.strategy_purpose}` : ''}
 
 Your job: generate ONE natural, concise interview question that starts from the story above (if one was retrieved) and serves the Interview intent above.${questionBlueprint.hook ? ` If a hook is provided above, your question MUST be about that specific angle — do not ask a generic question about the story when a concrete hook is available; ask about the trade-off/risk/tension/decision it names.` : ''} Do not reason about WHICH competency, WHICH story, WHICH intent, WHICH hook, or WHY — all of that is already decided above; retrieval already happened in code, not in your head. Only decide HOW to phrase it.
 
@@ -756,6 +757,35 @@ function deriveInterviewIntent({ competency, jdObjective, questionType }) {
   }
   if (questionType === 'FOLLOW_UP') intent += " — one level deeper on the candidate's previous answer";
   return intent;
+}
+
+// ── Executive Interview Strategy layer (additive, standalone) ─────────────
+// Gives each of the 5 PRIMARY questions a deliberate strategic intent, per
+// the confirmed design. This function does NOT select competencies, stories,
+// or hooks — those remain entirely owned by the Coverage Engine and
+// selectStoryForCompetency exactly as they already are. It only labels
+// WHICH position (1-5) a primary occupies and WHY, purely for prompt
+// framing and analytics. Follow-ups are explicitly out of scope here — the
+// existing follow-up logic/instructions are untouched and unaffected.
+//   Q1 ResumeStory      — validate strongest achievement
+//   Q2 ResumePlusJD      — validate relevance to target role
+//   Q3 ResumeStory (new) — broaden evidence with a different story
+//   Q4 JDScenario         — future readiness
+//   Q5 ExecutiveJudgment  — strategic thinking beyond resume
+// Q3's "different story" requirement is already satisfied by the EXISTING,
+// unmodified diversity penalty inside selectStoryForCompetency (a story
+// already used earlier in the session scores -100) — no change needed
+// there for this to work correctly.
+const EXECUTIVE_STRATEGY_POSITIONS = Object.freeze({
+  1: { source: 'ResumeStory',      purpose: "Validate the candidate's strongest proven achievement." },
+  2: { source: 'ResumePlusJD',     purpose: 'Validate relevance — test whether that experience maps to the target role.' },
+  3: { source: 'ResumeStory',      purpose: 'Broaden evidence — validate a second, different proven achievement.' },
+  4: { source: 'JDScenario',       purpose: 'Evaluate future readiness through a realistic scenario based on the target role.' },
+  5: { source: 'ExecutiveJudgment', purpose: 'Measure strategic thinking beyond what the resume already shows.' },
+});
+
+function getExecutiveStrategyIntent(position) {
+  return EXECUTIVE_STRATEGY_POSITIONS[position] || null;
 }
 
 // ── Blueprint story payload (Enhancement 2) — pass through every narrative
@@ -1099,7 +1129,7 @@ ${questionCount === 0 ? `- This is the OPENING question. Generate a FRESH, sessi
 // ═══════════════════════════════════════════════════════════════════
 // REPLACE the existing generateNextQuestion function with this version
 // ═══════════════════════════════════════════════════════════════════
-async function generateNextQuestion({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, competencyMatrix, jdText, currentAnswer, qaPairs, questionCount, resumeContext, storyLibrary, forcedCompetency, isFollowup, forcedStoryKey }) {
+async function generateNextQuestion({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, competencyMatrix, jdText, currentAnswer, qaPairs, questionCount, resumeContext, storyLibrary, forcedCompetency, isFollowup, forcedStoryKey, questionPosition }) {
   const persona = PERSONAS[personaId];
   if (!persona) throw new Error(`Unknown persona: ${personaId}`);
 
@@ -1217,6 +1247,14 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     : null;
 
   const blueprintQuestionType = isFollowup ? 'FOLLOW_UP' : (questionCount === 0 ? 'OPENING' : 'PRIMARY');
+
+  // Executive Interview Strategy — additive only. Computed independently of
+  // everything above; does not influence competency, story, or hook
+  // selection in any way. Only meaningful for primaries (questionPosition
+  // is undefined/null for follow-ups, which stay entirely governed by the
+  // existing, untouched follow-up logic).
+  const strategyIntent = (!isFollowup && Number.isInteger(questionPosition)) ? getExecutiveStrategyIntent(questionPosition) : null;
+
   const questionBlueprint = hasResumeContext ? {
     competency,
     jd_objective: jdObjectiveForBlueprint,
@@ -1236,6 +1274,12 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     // Enhancement 1 — deterministic curiosity target, derived in code from
     // competency + JD objective + question type. Never invented by the model.
     interview_intent: deriveInterviewIntent({ competency, jdObjective: jdObjectiveForBlueprint, questionType: blueprintQuestionType }),
+    // Executive Interview Strategy layer (additive) — which of the 5 fixed
+    // primary positions this is, and its deliberate strategic purpose. Null
+    // for follow-ups and for any caller that doesn't pass questionPosition.
+    question_position: Number.isInteger(questionPosition) ? questionPosition : null,
+    strategy_source: strategyIntent ? strategyIntent.source : null,
+    strategy_purpose: strategyIntent ? strategyIntent.purpose : null,
   } : null;
 
   // ── DEBUG LOGGING (temporary) — the full retrieval/selection outcome for
@@ -1298,6 +1342,16 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   // Blueprint — it doesn't decide or return story_key, competency, or
   // difficulty; those come from deterministic code, not from here.
   const jsonSchemaInstruction = `\n\nReturn ONLY a JSON object with this exact shape — no markdown, no extra keys:\n{\n  "question": "the interview question text — no prefix, no meta-commentary, nothing else",\n  "reasoning": "one short internal sentence on how you phrased the blueprint — never shown to the candidate"\n}`;
+
+  // ── HUMAN-READABLE STRATEGY LOG (additive, requested format) ─────────────
+  if (strategyIntent) {
+    console.log(`Q${questionPosition}`);
+    console.log(`Source: ${strategyIntent.source}`);
+    if (selectedStoryKey) console.log(`Story: ${selectedStoryKey}`);
+    if (jdObjectiveForBlueprint) console.log(`JD Objective: ${jdObjectiveForBlueprint}`);
+    console.log(`Competency: ${competency}`);
+    console.log(`Purpose: ${strategyIntent.purpose}`);
+  }
 
   // ── EXACT DIAGNOSTIC LOG REQUESTED — immediately before the LLM call ────
   console.log('[FINAL-PRE-LLM-CHECK]', JSON.stringify({

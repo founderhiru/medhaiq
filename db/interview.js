@@ -113,11 +113,11 @@ async function getUserAggregateScores(userId) {
   };
 }
 
-async function addQuestion({ sessionId, questionText, personaId, questionType, questionOrder, competency, storyKey, parentQuestionId, questionBlueprint }) {
+async function addQuestion({ sessionId, questionText, personaId, questionType, questionOrder, competency, storyKey, parentQuestionId, questionBlueprint, questionPosition, strategySource, strategyPurpose }) {
   const result = await pool.query(
-    `INSERT INTO interview_questions (session_id, question_text, persona_id, question_type, question_order, competency, story_key, parent_question_id, question_blueprint)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-    [sessionId, questionText, personaId, questionType, questionOrder, competency || null, storyKey || null, parentQuestionId || null, questionBlueprint ? JSON.stringify(questionBlueprint) : null]
+    `INSERT INTO interview_questions (session_id, question_text, persona_id, question_type, question_order, competency, story_key, parent_question_id, question_blueprint, question_position, strategy_source, strategy_purpose)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+    [sessionId, questionText, personaId, questionType, questionOrder, competency || null, storyKey || null, parentQuestionId || null, questionBlueprint ? JSON.stringify(questionBlueprint) : null, Number.isInteger(questionPosition) ? questionPosition : null, strategySource || null, strategyPurpose || null]
   );
   return result.rows[0];
 }

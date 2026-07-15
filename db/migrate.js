@@ -399,6 +399,40 @@ async function runMigrations() {
           await c.query(`ALTER TABLE career_profiles ADD COLUMN IF NOT EXISTS resume_last_parse_attempt_at TIMESTAMPTZ`);
         }
       },
+      {
+        name: '012_founder_access',
+        up: async (c) => {
+          // db/founder-access.js queries/inserts into this table but no
+          // migration anywhere creates it — CREATE TABLE IF NOT EXISTS
+          // makes this safe to run regardless of whether it already exists
+          // on any given environment (e.g. if it was created manually on
+          // staging out-of-band). user_id is UNIQUE because
+          // grantFounderAccess() relies on ON CONFLICT (user_id).
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS founder_access (
+              id SERIAL PRIMARY KEY,
+              user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+              role VARCHAR(50) NOT NULL DEFAULT 'founder',
+              created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+        }
+      },
+      {
+        name: '013_executive_strategy_position',
+        up: async (c) => {
+          // The Executive Interview Strategy layer labels which of the 5
+          // fixed primary positions a question occupies (question_position)
+          // and its deliberate source/purpose (strategy_source,
+          // strategy_purpose) — purely additive analytics fields. Does not
+          // touch competency/story_key/parent_question_id from earlier
+          // migrations, and does not change how competency or story
+          // selection work at all.
+          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS question_position SMALLINT`);
+          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS strategy_source VARCHAR(30)`);
+          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS strategy_purpose TEXT`);
+        }
+      },
     ];
 
     for (const m of migrations) {

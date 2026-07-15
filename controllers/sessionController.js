@@ -98,6 +98,7 @@ async function initializeSession(req, res) {
       questionCount: 0,
       resumeContext,
       storyLibrary,
+      questionPosition: 1,
     });
 
     const question = await addQuestion({
@@ -109,6 +110,9 @@ async function initializeSession(req, res) {
       competency: openingResult.competency,
       storyKey: openingResult.storyKey,
       questionBlueprint: openingResult.questionBlueprint,
+      questionPosition: 1,
+      strategySource: openingResult.questionBlueprint ? openingResult.questionBlueprint.strategy_source : null,
+      strategyPurpose: openingResult.questionBlueprint ? openingResult.questionBlueprint.strategy_purpose : null,
     });
 
     // ── 7. Response Shape ───────────────────────────────────────────────────
