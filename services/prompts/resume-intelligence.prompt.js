@@ -244,6 +244,32 @@ jd_alignment_tags
   competency_hints — these describe what KIND of role/responsibility this
   story demonstrates, not a specific competency name.
 
+hooks
+  1-3 specific conversation angles for THIS story, so an interviewer asks
+  about something concrete rather than restating the summary. Each hook is
+  an object: { "type": ..., "detail": ... }.
+
+  "type" must be one of exactly these seven (pick whichever genuinely fit
+  this story — do not force all seven, and do not include a type this
+  story has no real basis for):
+    Biggest decision · Biggest trade-off · Biggest risk ·
+    Biggest stakeholder challenge · Most surprising outcome ·
+    Leadership tension · Business impact
+
+  "detail" is ONE short phrase (under 15 words) instantiating that type
+  SPECIFICALLY for this story — not a generic description of the type.
+  Only include a hook if the resume text actually supports it; if the
+  resume gives no basis for a specific angle (e.g. no visible tension,
+  tradeoff, or decision point), omit that hook entirely rather than
+  inventing one. It is fine for a thin story to have only 1 hook, or even
+  none.
+
+  Example for a cloud migration story:
+  "hooks": [
+    { "type": "Biggest trade-off", "detail": "migration speed vs. minimizing customer disruption" },
+    { "type": "Business impact", "detail": "60% reduction in deployment failures" }
+  ]
+
 ----------------------------------------------------
 GENERAL EXTRACTION RULES
 ----------------------------------------------------
@@ -330,7 +356,11 @@ TARGET SCHEMA
       "summary": "Reduced deployment time by 42% by leading an infrastructure-as-code transformation.",
       "competency_hints": ["Execution", "Technical Leadership"],
       "business_context": ["Financial Services"],
-      "jd_alignment_tags": ["Cloud Modernization", "Technical Delivery"]
+      "jd_alignment_tags": ["Cloud Modernization", "Technical Delivery"],
+      "hooks": [
+        { "type": "Biggest trade-off", "detail": "speed of automation vs. risk of breaking existing pipelines" },
+        { "type": "Business impact", "detail": "42% faster deployments" }
+      ]
     },
     {
       "story_key": "COMPANY_B_CORE_BANKING",
@@ -338,7 +368,10 @@ TARGET SCHEMA
       "summary": "Migrated 18 enterprise applications to AWS during the Core Banking Platform program.",
       "competency_hints": ["Cloud Architecture", "Program Management"],
       "business_context": ["Banking"],
-      "jd_alignment_tags": ["Digital Transformation", "Enterprise Migration"]
+      "jd_alignment_tags": ["Digital Transformation", "Enterprise Migration"],
+      "hooks": [
+        { "type": "Biggest risk", "detail": "migrating core banking systems without customer-facing downtime" }
+      ]
     }
   ]
 }`;

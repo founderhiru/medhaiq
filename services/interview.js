@@ -639,20 +639,22 @@ ${story ? renderBlueprintStory(story) : '(none — no resume story fit this comp
 [QUESTION BLUEPRINT — pre-decided by orchestration, not by you]
 Competency to assess (internal only — must stay invisible in the wording): ${questionBlueprint.competency}
 Interview intent (pre-decided in code — the curiosity THIS question must serve): ${questionBlueprint.interview_intent}
+${questionBlueprint.hook ? `Conversation hook — ASK SPECIFICALLY ABOUT THIS, not the story in general: [${questionBlueprint.hook.type}] ${questionBlueprint.hook.detail}` : ''}
 JD requirement this serves: ${questionBlueprint.jd_objective || '(none identified)'}
 Why this story/framing: ${questionBlueprint.reason}
 Turn type: ${questionBlueprint.question_type}
 
-Your job: generate ONE natural, concise interview question that starts from the story above (if one was retrieved) and serves the Interview intent above. Do not reason about WHICH competency, WHICH story, WHICH intent, or WHY — all of that is already decided above; retrieval already happened in code, not in your head. Only decide HOW to phrase it.
+Your job: generate ONE natural, concise interview question that starts from the story above (if one was retrieved) and serves the Interview intent above.${questionBlueprint.hook ? ` If a hook is provided above, your question MUST be about that specific angle — do not ask a generic question about the story when a concrete hook is available; ask about the trade-off/risk/tension/decision it names.` : ''} Do not reason about WHICH competency, WHICH story, WHICH intent, WHICH hook, or WHY — all of that is already decided above; retrieval already happened in code, not in your head. Only decide HOW to phrase it.
 
-MANDATORY INTERNAL RULE — apply before writing anything: silently ask yourself, "If I were interviewing this candidate after reading their resume, what part of THIS experience would I naturally be curious about?" Generate the question from that curiosity, aimed at the Interview intent above. NEVER generate the question from the competency name — the competency is bookkeeping, curiosity is the question.
+MANDATORY INTERNAL RULE — apply before writing anything: silently ask yourself, "If I were interviewing this candidate after reading their resume, what part of THIS experience would I naturally be curious about?" Generate the question from that curiosity, aimed at the Interview intent above${questionBlueprint.hook ? ` and specifically the hook above` : ''}. NEVER generate the question from the competency name — the competency is bookkeeping, curiosity is the question.
 
 Calibration examples ONLY — they illustrate the transformation style; never reuse these companies or facts for the real candidate:
-• Competency-led (wrong): "Tell me about your leadership experience." Curiosity-led (right): "I noticed you led the cloud modernization programme at Deloitte. Looking back, what was the toughest leadership decision you had to make during that transformation?"
-• Competency-led (wrong): "Describe a strategic initiative." Curiosity-led (right): "During your work with HSBC, you chose to redesign the operating model rather than simply optimise the existing platform. What convinced you the larger transformation was worth the additional risk?"
+• Competency-led (wrong): "Tell me about your leadership experience." Story-led but still generic (wrong): "I noticed you led the cloud modernization programme at Deloitte. Tell me about that." Hook-led (right): "I noticed you led the cloud modernization programme at Deloitte — what was the toughest trade-off between migration speed and minimizing customer disruption?"
+• Competency-led (wrong): "Describe a strategic initiative." Hook-led (right): "During your work with HSBC, you chose to redesign the operating model rather than simply optimise the existing platform. What convinced you the larger transformation was worth the additional risk?"
 
 Phrasing rules:
-- If a story was retrieved above, build the question FROM that story — open from the story itself ("During your...", "While you were leading...", "I noticed that at [company]..."), name the company/achievement naturally, then ask the competency-relevant question about it. The story must be the visible subject of the question; the competency stays invisible. Do not restate the summary verbatim; use it as the scenario, not the script.
+- If a hook was provided, build the question around THAT SPECIFIC ANGLE — open from the story ("During your...", "While you were leading...", "I noticed that at [company]..."), then ask about the hook's trade-off/risk/tension/decision specifically, not the story broadly. Do not restate the story summary or the hook detail verbatim; use it as the scenario, not the script.
+- If a story was retrieved but has no hook, build the question FROM that story more generally — name the company/achievement naturally, then ask the competency-relevant question about it.
 - If no story was retrieved but a JD requirement is listed, frame a role-specific scenario around that requirement instead — no resume reference.
 - If neither is present, ask a general competency question.
 ${isFollowup ? `- This is a FOLLOW-UP: deepen the candidate's last answer about this exact same story/topic — do not shift to a different one.` : `- This is a NEW ${questionBlueprint.question_type} question — the story above was already chosen to avoid repeating a story used earlier this session.`}
@@ -1201,6 +1203,16 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
         ? `No resume story fit ${competency.replace('_', ' ')} — framing from JD requirement instead`
         : `No resume story or JD requirement fit ${competency.replace('_', ' ')} — generic framing`);
 
+  // Deterministic hook selection — ONE specific conversation angle from the
+  // resolved story's hooks array, so the model asks about something
+  // concrete rather than restating the summary. Primaries get the first
+  // hook; follow-ups get a DIFFERENT one when the story has more than one,
+  // so the follow-up deepens a new angle instead of repeating the primary's.
+  const storyHooks = (resolvedStory && Array.isArray(resolvedStory.hooks)) ? resolvedStory.hooks : [];
+  const selectedHook = storyHooks.length
+    ? (isFollowup ? (storyHooks[1] || storyHooks[0]) : storyHooks[0])
+    : null;
+
   const blueprintQuestionType = isFollowup ? 'FOLLOW_UP' : (questionCount === 0 ? 'OPENING' : 'PRIMARY');
   const questionBlueprint = hasResumeContext ? {
     competency,
@@ -1211,6 +1223,10 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     // story orchestration already retrieved for this exact turn. Payload now
     // carries every narrative field the story actually has (Enhancement 2).
     story: buildBlueprintStoryPayload(resolvedStory),
+    // The specific conversational angle to ask about — never the whole
+    // story restated. Null if this story has no usable hooks (e.g. a thin
+    // resume entry with too little detail to instantiate one).
+    hook: selectedHook,
     reason: blueprintReason,
     difficulty,
     question_type: blueprintQuestionType,
@@ -1233,6 +1249,7 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     jdObjective: jdObjectiveForBlueprint,
     selectedStoryKey,
     resolvedStoryCompany: resolvedStory ? resolvedStory.company : null,
+    selectedHook,
     reason: blueprintReason,
     questionType: blueprintQuestionType,
   }));

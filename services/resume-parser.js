@@ -93,6 +93,27 @@ async function parseResume(resumeText) {
       ? v.filter((s) => typeof s === 'string').map((s) => s.trim()).filter(Boolean).slice(0, max)
       : [];
 
+    // Fixed taxonomy for story hooks — an object with a type outside this
+    // set, or with no usable detail, is dropped individually rather than
+    // invalidating the whole story (hooks are an enhancement, not required).
+    const HOOK_TYPES = new Set([
+      'Biggest decision', 'Biggest trade-off', 'Biggest risk',
+      'Biggest stakeholder challenge', 'Most surprising outcome',
+      'Leadership tension', 'Business impact',
+    ]);
+    const asHookArray = (v, max) => Array.isArray(v)
+      ? v
+          .map((h) => {
+            if (!h || typeof h !== 'object') return null;
+            const type = (typeof h.type === 'string') ? h.type.trim() : '';
+            const detail = (typeof h.detail === 'string') ? h.detail.trim().slice(0, 120) : '';
+            if (!HOOK_TYPES.has(type) || !detail) return null;
+            return { type, detail };
+          })
+          .filter(Boolean)
+          .slice(0, max)
+      : [];
+
     const careerLevel = (typeof ctxRaw.career_level === 'string' && CAREER_LEVELS.has(ctxRaw.career_level))
       ? ctxRaw.career_level
       : 'Unknown';
@@ -113,11 +134,13 @@ async function parseResume(resumeText) {
         const competency_hints = asStringArray(s.competency_hints, 4).map((h) => h.slice(0, 40));
         const business_context = asStringArray(s.business_context, 3).map((h) => h.slice(0, 40));
         const jd_alignment_tags = asStringArray(s.jd_alignment_tags, 4).map((h) => h.slice(0, 40));
+        const hooks = asHookArray(s.hooks, 3);
         // Strict validation: company, summary, AND at least one competency_hint
         // are all required. A story missing any of the three is dropped
-        // entirely — never kept as a partial/degraded story. business_context
-        // and jd_alignment_tags are NOT required (they default to [] and the
-        // story is still usable without them, just with less matching signal).
+        // entirely — never kept as a partial/degraded story. business_context,
+        // jd_alignment_tags, and hooks are NOT required (they default to []
+        // and the story is still usable without them, just with less
+        // matching signal / a less specific conversational angle).
         if (!story_key || !summary || !company || !competency_hints.length) return null;
         // De-dupe collisions (two stories the model gave the same key) by
         // appending a numeric suffix rather than silently dropping one —
@@ -128,7 +151,7 @@ async function parseResume(resumeText) {
           story_key = `${story_key}_${n}`;
         }
         seenKeys.add(story_key);
-        return { story_key, company, summary, competency_hints, business_context, jd_alignment_tags };
+        return { story_key, company, summary, competency_hints, business_context, jd_alignment_tags, hooks };
       })
       .filter(Boolean)
       .slice(0, 10); // schema ceiling — 4 to 10 distinct stories

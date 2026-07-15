@@ -87,6 +87,7 @@ router.post('/upload', requireAuth, upload.single('resumeFile'), async (req, res
       rawText: text,
       resumeCompetencies: parsed.resume_competencies,
       resumeContext: parsed.resume_context,
+      storyLibrary: parsed.career_story_library,
     });
 
     return res.json({
