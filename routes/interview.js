@@ -56,18 +56,56 @@ async function requireAuth(req, res, next) {
 router.post('/sessions', requireAuth, sessionController.initializeSession);
 router.post('/session/initialize', requireAuth, sessionController.initializeSession);
 
+// ── Primary vs follow-up question type helper ───────────────────────────────
+// 'opening' and 'primary' are the current values; 'drill_down' is the legacy
+// value used before this conversation-flow redesign — any session already
+// in progress when this deploys still has 'drill_down' rows and must keep
+// counting them as primary questions, or an in-flight interview's progress
+// counter would silently jump or its session-end trigger would misfire.
+function isPrimaryQuestionType(questionType) {
+  return questionType === 'opening' || questionType === 'primary' || questionType === 'drill_down';
+}
+
 // ── Shared: pick + persist the next question for a session ──────────────────
+// Hard session time cap — independent of the 5-primary / 5-follow-up
+// structural bound. A candidate spending 8 minutes on one answer would
+// otherwise be able to stretch a "10 turns max" session indefinitely.
+const MAX_SESSION_MINUTES = 25;
+
 async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   const allQuestions = await getSessionQuestions(session.id);
+
+  const countAnsweredPrimaries = (qs) => qs.filter(q =>
+    isPrimaryQuestionType(q.question_type) && q.answer_text !== null && q.answer_text !== undefined
+  ).length;
+
+  // Time cap check — first, before any other guard, so a session that has
+  // simply run too long ends immediately regardless of question counts.
+  if (session.started_at) {
+    const elapsedMinutes = (Date.now() - new Date(session.started_at).getTime()) / 60000;
+    if (elapsedMinutes >= MAX_SESSION_MINUTES) {
+      return {
+        done: true,
+        text: "We're at the time limit for this session — thank you. I'll put together your intelligence report now.",
+        question: {
+          id: 'session_done',
+          text: "We're at the time limit for this session — thank you. I'll put together your intelligence report now.",
+          type: 'done',
+          order: MAX_QUESTIONS
+        }
+      };
+    }
+  }
 
   // 1. Idempotency guard: returns current pending question if it exists
   const pending = allQuestions.find(q => q.answer_text === null || q.answer_text === undefined);
   if (pending) {
-    
-    // 🚨 GUARD 1: FINAL QUESTION RACE CONDITION
-    if (allQuestions.length >= MAX_QUESTIONS && pending.question_order === MAX_QUESTIONS - 1) {
-      return { 
-        done: true, 
+
+    // 🚨 GUARD 1: FINAL QUESTION RACE CONDITION — counts PRIMARY answers only,
+    // so a follow-up mixed into the sequence can never mis-trigger this.
+    if (countAnsweredPrimaries(allQuestions) >= MAX_QUESTIONS) {
+      return {
+        done: true,
         text: "That's all five questions — thank you. I'll put together your intelligence report now.",
         question: {
           id: pending.id || 'session_done',
@@ -83,6 +121,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
       id: pending.id,
       text: pending.question_text,
       type: pending.question_type,
+      isFollowup: pending.question_type === 'follow_up',
       order: pending.question_order,
       competency: pending.competency || null,
       audio_url: null,
@@ -90,19 +129,20 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
         id: pending.id,
         text: pending.question_text,
         type: pending.question_type,
+        isFollowup: pending.question_type === 'follow_up',
         order: pending.question_order,
         competency: pending.competency || null
       }
     };
   }
 
-  // 2. Check if the maximum questions limit has already been met
-  const answeredCount = allQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined).length;
-  
-  // 🚨 GUARD 2: MAX QUESTION LIMIT REACHED
-  if (answeredCount >= MAX_QUESTIONS) {
-    return { 
-      done: true, 
+  // 2. Check if the maximum PRIMARY questions limit has already been met
+  const answeredPrimaryCount = countAnsweredPrimaries(allQuestions);
+
+  // 🚨 GUARD 2: MAX PRIMARY QUESTION LIMIT REACHED
+  if (answeredPrimaryCount >= MAX_QUESTIONS) {
+    return {
+      done: true,
       text: "That's all five questions — thank you. I'll put together your intelligence report now.",
       question: {
         id: 'session_done',
@@ -112,6 +152,36 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
       }
     };
   }
+
+  // 2b. Decide: is this turn the (at most one) adaptive follow-up to the
+  // primary that was just answered, or a new primary? Fully deterministic —
+  // the model has no say in whether a follow-up happens, only in writing
+  // it once orchestration decides one should. Eligibility is based on the
+  // candidate's actual answer substance (word count + real STAR-component
+  // detection via the existing computeStarProgress()), not just "was it
+  // skipped" — a technically-answered-but-thin response shouldn't earn a
+  // follow-up any more than a skipped one does.
+  const primaries = allQuestions.filter(q => isPrimaryQuestionType(q.question_type));
+  const lastPrimary = primaries[primaries.length - 1] || null;
+  const lastPrimaryWasSkipped = !!lastPrimary && lastPrimary.answer_text === '';
+  const followupAlreadyUsedForLastPrimary = !!lastPrimary && allQuestions.some(q =>
+    q.question_type === 'follow_up' && String(q.parent_question_id) === String(lastPrimary.id)
+  );
+  const lastPrimaryHasSubstance = (() => {
+    if (!lastPrimary || lastPrimaryWasSkipped || !lastPrimary.answer_text) return false;
+    const clean = lastPrimary.answer_text.trim().replace(/\s+/g, ' ');
+    const wordCount = clean.split(' ').filter(Boolean).length;
+    if (wordCount < 20) return false; // too thin to have anything worth deepening
+    const star = computeStarProgress(lastPrimary.answer_text);
+    const starComponentCount = ['situation', 'task', 'action', 'result'].filter(k => star[k]).length;
+    return starComponentCount >= 2 || wordCount >= 40;
+  })();
+  const isFollowupTurn = !!(
+    lastPrimary &&
+    lastPrimaryHasSubstance &&
+    !followupAlreadyUsedForLastPrimary &&
+    answeredPrimaryCount < MAX_QUESTIONS // never offer a follow-up after the final primary — go straight to the report
+  );
 
   // 3. Generate the next question — single source of truth.
   // This is the exact same function that generates the opening question in
@@ -132,6 +202,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     // triggered a drill-down question with no real answer to drill into.
     score: Number.isFinite(scoreByQuestionId.get(q.id)) ? scoreByQuestionId.get(q.id) : null,
     wasSkipped: q.answer_text === '',
+    storyKey: q.story_key || null,
   }));
 
   let competencyMatrix = session.competency_matrix;
@@ -147,6 +218,17 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   if (typeof resumeContext === 'string') {
     try { resumeContext = JSON.parse(resumeContext); } catch (e) { resumeContext = null; }
   }
+  let storyLibrary = session.story_library;
+  if (typeof storyLibrary === 'string') {
+    try { storyLibrary = JSON.parse(storyLibrary); } catch (e) { storyLibrary = []; }
+  }
+
+  // Executive Interview Strategy — additive only. Simply "which primary
+  // number is this" (1-5); undefined for follow-ups, since the strategy
+  // layer is explicitly scoped to primaries only and follow-up logic
+  // itself is completely untouched. Does not affect answeredPrimaryCount,
+  // isFollowupTurn, or any existing eligibility check above.
+  const questionPosition = isFollowupTurn ? undefined : (answeredPrimaryCount + 1);
 
   const generated = await generateNextQuestion({
     sessionId: session.id,
@@ -159,6 +241,11 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     qaPairs,
     questionCount: answeredQuestions.length,
     resumeContext,
+    storyLibrary: storyLibrary || [],
+    isFollowup: isFollowupTurn,
+    questionPosition,
+    forcedCompetency: isFollowupTurn ? lastPrimary.competency : undefined,
+    forcedStoryKey: isFollowupTurn ? lastPrimary.story_key : undefined,
   });
 
   const questionOrder = answeredQuestions.length; // 0-indexed, matches opening question's order:0
@@ -166,8 +253,15 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     sessionId: session.id,
     questionText: generated.text,
     personaId: session.persona_id,
-    questionType: 'drill_down',
+    questionType: isFollowupTurn ? 'follow_up' : 'primary',
     questionOrder,
+    competency: generated.competency,
+    storyKey: generated.storyKey,
+    parentQuestionId: isFollowupTurn ? lastPrimary.id : null,
+    questionBlueprint: generated.questionBlueprint,
+    questionPosition,
+    strategySource: generated.questionBlueprint ? generated.questionBlueprint.strategy_source : null,
+    strategyPurpose: generated.questionBlueprint ? generated.questionBlueprint.strategy_purpose : null,
   });
 
   return {
@@ -175,6 +269,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     id: savedQuestion.id,
     text: savedQuestion.question_text,
     type: savedQuestion.question_type,
+    isFollowup: isFollowupTurn,
     order: savedQuestion.question_order,
     competency: generated.competency || null,
     audio_url: null,
@@ -182,6 +277,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
       id: savedQuestion.id,
       text: savedQuestion.question_text,
       type: savedQuestion.question_type,
+      isFollowup: isFollowupTurn,
       order: savedQuestion.question_order,
       competency: generated.competency || null,
     },
@@ -285,12 +381,23 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
       },
     };
 
-    // 3. Recalculate answered counts safely
+    // 3. Recalculate answered counts safely — PRIMARY questions only.
+    // Follow-ups are real Q&A exchanges (still scored, still in the report
+    // below) but must never affect whether the session is considered
+    // "done" — only the 5 primary questions count toward that.
     const updatedQuestions = await getSessionQuestions(sessionId);
-    const answeredCount = updatedQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined).length;
+    const answeredCount = updatedQuestions.filter(q =>
+      isPrimaryQuestionType(q.question_type) && q.answer_text !== null && q.answer_text !== undefined
+    ).length;
 
-    // 4. Check if session should end
-    if (answeredCount >= MAX_QUESTIONS) {
+    // Shared finalize-and-report helper — used both when the 5th primary
+    // has just been answered directly, AND when pickAndPersistNextQuestion
+    // returns done:true for any other reason (time cap, or the GUARD1/
+    // GUARD2 safety nets). Without this shared path, a done:true result
+    // from the second case was previously returned to the candidate as if
+    // it were a real next question, and the report/session-complete state
+    // never actually got written.
+    async function finalizeSessionAndRespond() {
       const allScores = await getSessionScores(sessionId);
       const qaPairs = updatedQuestions
         .filter(q => q.answer_text !== null && q.answer_text !== undefined)
@@ -306,7 +413,7 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
         scores: allScores,
       });
 
-      const report = await saveReport({
+      await saveReport({
         sessionId,
         overallScore: reportData.overall_score,
         strengthsJson: reportData.strengths_json,
@@ -358,6 +465,11 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
       });
     }
 
+    // 4. Check if session should end
+    if (answeredCount >= MAX_QUESTIONS) {
+      return await finalizeSessionAndRespond();
+    }
+
     // 5. Handle standard voiceMode response paths
     if (voiceMode) {
       return res.json({
@@ -373,6 +485,9 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
     }
 
     const picked = await pickAndPersistNextQuestion(session, MAX_QUESTIONS);
+    if (picked.done) {
+      return await finalizeSessionAndRespond();
+    }
     return res.json({
       sessionEnded: false,
       scores,
@@ -507,3 +622,4 @@ router.post('/tts', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.isPrimaryQuestionType = isPrimaryQuestionType;

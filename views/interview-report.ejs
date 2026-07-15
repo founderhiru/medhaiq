@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/interview.css">
+  <link rel="stylesheet" href="/css/feedback-widget.css">
 </head>
 <body>
 
@@ -142,6 +143,73 @@
     <a href="/dashboard/history" class="cta-btn emerald">View History</a>
     <a href="/" class="cta-btn text-link">Return Home</a>
   </div>
+
+  <% if (typeof showFeedbackPrompt !== 'undefined' && showFeedbackPrompt) { %>
+  <!-- Lightweight feedback widget — shown after 1st report, then every 5th,
+       max once per 30 days. Reuses user_activity_logs, no new table. -->
+  <div class="fbw-card" id="fbw-card">
+    <div id="fbw-form-state">
+      <div class="fbw-title">How was your MedhaIQ experience?</div>
+      <div class="fbw-stars" id="fbw-stars">
+        <% for (let i = 1; i <= 5; i++) { %><span class="fbw-star" data-value="<%= i %>">★</span><% } %>
+      </div>
+      <div class="fbw-sub">(Optional)</div>
+      <input type="text" id="fbw-comment" class="fbw-comment" placeholder="What could we improve?" maxlength="500">
+      <div class="fbw-actions">
+        <button type="button" id="fbw-submit" class="fbw-submit-btn" disabled>Submit</button>
+        <button type="button" id="fbw-dismiss" class="fbw-dismiss-btn">Not Now</button>
+      </div>
+      <div class="fbw-msg" id="fbw-msg"></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const card = document.getElementById('fbw-card');
+      const stars = document.querySelectorAll('#fbw-stars .fbw-star');
+      const submitBtn = document.getElementById('fbw-submit');
+      const dismissBtn = document.getElementById('fbw-dismiss');
+      const commentInput = document.getElementById('fbw-comment');
+      const msg = document.getElementById('fbw-msg');
+      let selectedRating = 0;
+
+      stars.forEach(function (star) {
+        star.addEventListener('click', function () {
+          selectedRating = parseInt(this.getAttribute('data-value'), 10);
+          stars.forEach(function (s) {
+            s.classList.toggle('fbw-star-filled', parseInt(s.getAttribute('data-value'), 10) <= selectedRating);
+          });
+          submitBtn.disabled = false;
+        });
+      });
+
+      async function postFeedback(path, body) {
+        const res = await fetch(path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body || {}),
+        });
+        return res.ok;
+      }
+
+      submitBtn.addEventListener('click', async function () {
+        if (!selectedRating) return;
+        submitBtn.disabled = true;
+        const ok = await postFeedback('/api/feedback', { rating: selectedRating, comment: commentInput.value, feature: 'interview_report' });
+        if (ok) {
+          card.innerHTML = '<div class="fbw-thanks">Thanks for the feedback — it genuinely helps.</div>';
+        } else {
+          msg.textContent = 'Something went wrong — feel free to try again later.';
+          submitBtn.disabled = false;
+        }
+      });
+
+      dismissBtn.addEventListener('click', async function () {
+        card.style.display = 'none';
+        await postFeedback('/api/feedback/dismiss', {});
+      });
+    })();
+  </script>
+  <% } %>
 </div>
 
 </body>

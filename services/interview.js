@@ -598,7 +598,7 @@ function buildCalibrationState({ experienceLevel, competency, roleTitle, jdText,
 const SCENARIO_FORMAT_TEXT = {
   consulting_case: (caseTierBand) => `Management Consulting Case Interview style (MBB/Big 4).\n${caseTierBand === 'senior' ? '- For L4-L7: Provide an ambiguous macro-strategy shift, a cross-border acquisition scenario, or a structural operating-model crisis.' : '- For L1-L3: Provide a quantitative market sizing or profitability drop scenario.'}\nDemand an explicit, MECE-compliant framework before proposing a solution.`,
   coding_challenge: () => 'Algorithmic challenge framework. Require explicit Big-O time/space complexity statements and explicit handling of critical edge cases (null values, memory leaks, integer overflows).',
-  behavioral: () => "Past-Behavioral blueprint structure (STAR method). Force the candidate to unpack a real historical timeline — 'Tell me about a specific time when...'.",
+  behavioral: () => "Past-Behavioral evidence structure (STAR rigor, executive voice). Anchor the question in ONE real situation and unpack its timeline conversationally — open from the situation itself ('During your...', 'While you were leading...', 'I noticed...') rather than the template phrase 'Tell me about a specific time when...'.",
   system_design: () => 'Active, scenario-based architecture problem statement. Force the candidate to reason out architectural trade-offs live.',
   analytical: () => 'Present the challenge as a focused analytical scenario problem statement.',
 };
@@ -613,7 +613,7 @@ function buildObjectiveHypothesisText(comp, evidenceTier, leastValidatedSubskill
   return `Verify foundational capacity and baseline familiarity with [${String(comp).toUpperCase()} -> ${leastValidatedSubskill}].`;
 }
 
-function composePrompt({ competency, calibrationState, evidenceProfile, strategy, candidateModel, difficulty, hasResumeContext }) {
+function composePrompt({ competency, calibrationState, evidenceProfile, strategy, candidateModel, difficulty, hasResumeContext, isFollowup, questionBlueprint }) {
   const { activeLevelKey, activeStageSchema, isAiDataDomain, scenarioFormatTag, caseTierBand, experienceStyle } = calibrationState;
 
   const scenarioFormat = (SCENARIO_FORMAT_TEXT[scenarioFormatTag] || SCENARIO_FORMAT_TEXT.analytical)(caseTierBand);
@@ -622,47 +622,50 @@ function composePrompt({ competency, calibrationState, evidenceProfile, strategy
 
   const candidateModelLine = `Confidence ${candidateModel.confidence}/100 · Ownership ${candidateModel.ownership}/100 · Communication ${candidateModel.communication}/100 · Technical Depth ${candidateModel.technicalDepth}/100 · Leadership ${candidateModel.leadership}/100 · Decision-Making ${candidateModel.decisionMaking}/100 · Learning Agility ${candidateModel.learningAgility}/100 · Business Thinking ${candidateModel.businessThinking}/100`;
 
-  // Resume-Aware Question Planning — ONLY inserted when a resume is on
-  // file. This is the section of the prompt proven to be authoritative at
-  // generation time (it's the last explicit procedure before the model
-  // writes anything), so the resume priority now lives HERE as a strict,
-  // ordered decision procedure — not as a single optional step, and not
-  // relying on the model recalling Layer 10's policy from earlier in the
-  // prompt. Steps 1-6 above and the final output rule are untouched; this
-  // is inserted between step 6 and the final "generate the question" step.
+  // Question Blueprint — ONLY inserted when a resume is on file. Every
+  // field here (competency, jd_objective, story_key + resolved story,
+  // difficulty, question_type, reason) was already decided by deterministic
+  // code BEFORE this prompt was built (see generateNextQuestion). The model
+  // never sees a list of stories to search — only the ONE story
+  // orchestration already retrieved for this exact turn, if any. This is
+  // deliberate: retrieval happens in code (selectStoryForCompetency), never
+  // inside the model's own reasoning.
+  const story = questionBlueprint && questionBlueprint.story;
+
   const resumeStep = hasResumeContext ? `
-[RESUME-AWARE QUESTION PLANNING — MANDATORY, STRICT PRIORITY ORDER]
-This is not optional framing — it is the mandatory evidence-selection procedure for THIS question. Work through it in order and stop at the first step that produces usable content. Do not skip to a later step just because it is easier.
+[TODAY'S STORY — pre-retrieved by orchestration, the ONLY story available for this turn]
+${story ? renderBlueprintStory(story) : '(none — no resume story fit this competency this turn; see reason below)'}
 
-Design philosophy for this whole section (why it's built this way): the Harmonic Alignment Engine already decided WHAT competency to assess (layer 6). The Job Description decides WHY that competency matters for this specific role (layer 7). Resume Context decides WHICH real experience to use as the evidence for this question (layer 10, via Career Story Anchors below). Conversation history decides HOW DEEP to go before moving to a new topic (layer 8, via story continuity below). Each of these stays in its own lane — do not let the resume influence which competency is assessed, and do not let the competency choice influence which story is used.
+[QUESTION BLUEPRINT — pre-decided by orchestration, not by you]
+Competency to assess (internal only — must stay invisible in the wording): ${questionBlueprint.competency}
+Interview intent (pre-decided in code — the curiosity THIS question must serve): ${questionBlueprint.interview_intent}
+${questionBlueprint.hook ? `Conversation hook — ASK SPECIFICALLY ABOUT THIS, not the story in general: [${questionBlueprint.hook.type}] ${questionBlueprint.hook.detail}` : ''}
+JD requirement this serves: ${questionBlueprint.jd_objective || '(none identified)'}
+Why this story/framing: ${questionBlueprint.reason}
+Turn type: ${questionBlueprint.question_type}
+${questionBlueprint.question_position ? `Strategic position: Q${questionBlueprint.question_position} of 5 — ${questionBlueprint.strategy_purpose}` : ''}
 
-Step 1 — Competency (already decided, do not re-decide):
-The competency to assess is fixed: [${String(competency || '').toUpperCase()}]. This step is complete — it comes from the Harmonic Alignment Engine output already merged into layer 6.
+Your job: generate ONE natural, concise interview question that starts from the story above (if one was retrieved) and serves the Interview intent above.${questionBlueprint.hook ? ` If a hook is provided above, your question MUST be about that specific angle — do not ask a generic question about the story when a concrete hook is available; ask about the trade-off/risk/tension/decision it names.` : ''} Do not reason about WHICH competency, WHICH story, WHICH intent, WHICH hook, or WHY — all of that is already decided above; retrieval already happened in code, not in your head. Only decide HOW to phrase it.
 
-Step 2 — Career Story Anchors (search FIRST, before Job Description):
-Do not treat the Resume Context in layer 10 as a flat list of isolated facts to pick from individually. Synthesize it into "Career Story Anchors" — coherent narrative units, each built by combining one company/role/engagement with what actually happened there (an implementation, transformation, leadership moment, or quantified achievement tied to that specific company). A bare metric with no company or context attached is not yet a story; combine it with the company/scope it belongs to before treating it as usable. From these synthesized stories, choose the ONE that most naturally demonstrates [${String(competency || '').toUpperCase()}]. If one genuinely fits, THIS story is your anchor for this question. Do NOT ask a generic behavioral question when a fitting story exists — a real story from layer 10 always outranks a generic phrasing.
+MANDATORY INTERNAL RULE — apply before writing anything: silently ask yourself, "If I were interviewing this candidate after reading their resume, what part of THIS experience would I naturally be curious about?" Generate the question from that curiosity, aimed at the Interview intent above${questionBlueprint.hook ? ` and specifically the hook above` : ''}. NEVER generate the question from the competency name — the competency is bookkeeping, curiosity is the question.
 
-Step 3 — Job Description (only if Step 2 found nothing usable):
-If no Career Story Anchor genuinely supports this competency, use the Job Description in layer 7 to frame a role-specific scenario instead of the resume.
+Calibration examples ONLY — they illustrate the transformation style; never reuse these companies or facts for the real candidate:
+• Competency-led (wrong): "Tell me about your leadership experience." Story-led but still generic (wrong): "I noticed you led the cloud modernization programme at Deloitte. Tell me about that." Hook-led (right): "I noticed you led the cloud modernization programme at Deloitte — what was the toughest trade-off between migration speed and minimizing customer disruption?"
+• Competency-led (wrong): "Describe a strategic initiative." Hook-led (right): "During your work with HSBC, you chose to redesign the operating model rather than simply optimise the existing platform. What convinced you the larger transformation was worth the additional risk?"
 
-Step 4 — Generic (only if Steps 2 AND 3 both found nothing usable):
-Only when neither the resume nor the job description offers usable context for this competency, fall back to a general competency question.
+Phrasing rules:
+- If a hook was provided, build the question around THAT SPECIFIC ANGLE — open from the story ("During your...", "While you were leading...", "I noticed that at [company]..."), then ask about the hook's trade-off/risk/tension/decision specifically, not the story broadly. Do not restate the story summary or the hook detail verbatim; use it as the scenario, not the script.
+- If a story was retrieved but has no hook, build the question FROM that story more generally — name the company/achievement naturally, then ask the competency-relevant question about it.
+- If no story was retrieved but a JD requirement is listed, frame a role-specific scenario around that requirement instead — no resume reference.
+- If neither is present, ask a general competency question.
+${isFollowup ? `- This is a FOLLOW-UP: deepen the candidate's last answer about this exact same story/topic — do not shift to a different one.` : `- This is a NEW ${questionBlueprint.question_type} question — the story above was already chosen to avoid repeating a story used earlier this session.`}
 
-Calibration examples ONLY — illustrate the TRANSFORMATION STYLE, never reuse this exact wording or these exact facts for the real candidate:
-• Competency Execution, generic: "Describe a difficult project." Story-anchored: "Your resume states deployment time was reduced by 42%. Walk me through exactly how you diagnosed the bottleneck, convinced stakeholders, and measured success."
-• Competency Leadership, generic: "Tell me about leading a team." Story-anchored: "You mentioned leading 40 engineers across India and Singapore. How did your leadership style change when coordinating across multiple locations?"
-Notice what changed: same competency, same rigor — the generic prompt became a specific scenario pulled from one real career story. Produce that same kind of transformation using THIS candidate's actual resume context in layer 10, not the facts in these examples.
-
-Story continuity and diversity (MANDATORY — read this before finalizing your anchor): Re-read your OWN previous questions in layer 8 to identify which Career Story Anchor, if any, the most recent question was built from, and how many consecutive questions have already used it.
-- You MAY stay on the SAME story for up to ONE follow-up question after it was first introduced (asking about resistance encountered, a tradeoff made, or what they'd change with hindsight on that SAME story) — this is what makes a conversation feel like it's naturally going deeper on one topic, the way a real interviewer does, rather than jumping randomly.
-- After at most TWO consecutive questions on the same story, you MUST rotate to a DIFFERENT Career Story Anchor for this question, even if the competency being assessed has not changed. An unanswered/skipped question does not excuse staying on the same story past that limit.
-FAILURE EXAMPLE (do not do this): building 3, 4, or 5 consecutive questions around the same story (e.g. the same "$37M P&L, 200+ engineers" narrative), even if each individual question sounds fine in isolation — the candidate notices instantly when the whole interview circles back to one story.
-This candidate's resume in layer 10 typically contains MULTIPLE distinct Career Story Anchors even for one competency (e.g. leadership can be shown through a team-scaling story at one company, a stakeholder-alignment story at another, or a specific client engagement) — if you cannot find a second distinct story for this competency, that is a signal to move toward Job Description framing (Step 3) rather than stretch one story past two questions.
+One question = one objective (critical self-check before you finalize): a primary question must contain exactly ONE resume/story reference, ONE competency, ONE objective, and ONE ask — nothing else. If your draft mentions situation AND stakeholders AND constraints AND outcome all at once, cut it down to the single core ask before returning it. Then run the TWO FINAL CHECKS from the Executive Interviewer Voice contract above — the Personalization Test and the Executive Interview Test — and rewrite before returning if either fails.
 ` : '';
   const finalStepNum = hasResumeContext ? 8 : 7;
   const resumeStepFinal = hasResumeContext ? resumeStep + '\n' : resumeStep;
   const resumeGenerationClause = hasResumeContext
-    ? ' Apply the Resume-Aware Question Planning priority above (Career Story, then Job Description, then Generic) and build this question from whichever step produced usable content — name the specific company, customer, product, or achievement from the selected Career Story Anchor when Step 2 produced one.'
+    ? ' Build the question from Today\'s Story above (if one was retrieved) — do not re-decide competency, story, or JD framing, those are fixed.'
     : '';
 
   return `[INTERVIEWER ARCHETYPE EVALUATION STATE]
@@ -683,6 +686,20 @@ ${candidateModelLine}
 - Difficulty Mode: ${difficulty} — the hardest/easiest appropriate question WITHIN the Adjusted Caliber Tier above; never raise the seniority scope itself.
 - Action Directive: ${strategy.operationalDirective}
 
+[EXECUTIVE INTERVIEWER VOICE — MANDATORY STYLE CONTRACT]
+You are a real executive interviewer with 20+ years of experience (McKinsey / Amazon / Microsoft / Google / Bain calibre) who carefully studied this candidate's materials before the interview. Every question you produce must obey ALL of the following:
+- THINK IN THIS ORDER: competency → relevant real situation → business context → natural question. NEVER: competency → behavioural template → insert resume keywords into it.
+- The situation leads the question; the competency stays invisible. The candidate must never be able to tell from the wording which competency label is being assessed — the story dominates, the competency is only the lens.
+- RESUME ANCHOR MUST OPEN THE QUESTION: when a story or business context is available, the concrete anchor (company, programme, customer, transformation, measurable achievement, or business context) must be the FIRST clause the candidate hears — not folded in halfway through, not appended as an afterthought. The candidate should feel their resume was understood within the first few words, not by the end of the sentence.
+- Default openers: "I noticed...", "One thing that stood out...", "During your...", "While you were leading...", "Walk me through...", "Help me understand...". The phrases "Tell me about a time...", "Describe a situation...", and "Give me an example..." are exceptions of last resort — permitted only when the Question Blueprint provided neither a story nor a JD requirement.
+- Where context allows, ground the question in business reality: customer, implementation, transformation, migration, programme, portfolio, delivery, executive stakeholder, steering committee, procurement, organisational resistance, commercial impact, budget, revenue, risk, trade-offs.
+- Emphasis: judgement, trade-offs, decision-making, influence, customer management, organisational complexity, business outcomes — not textbook behavioural interviewing.
+- LENGTH: target 30–45 words for a primary question (minimum 25, ideal 35–40). 50 words is the outer cap — only go there when the context genuinely requires it (e.g. a richer business scenario), not as a routine ceiling. Keep the opening contextual clause concise — one short anchor phrase, not a narrated scene-setting paragraph. If you're consistently landing near 50, you're narrating too much context, not asking too much — trim the setup, not the actual question.
+- STRUCTURE: one primary decision plus, where it strengthens the question, one natural probing clause (e.g. "...and how did you get the team to actually adopt it?") — this two-part shape is allowed and often stronger than a bare single-fact question. What's NOT allowed: stacking three or more distinct sub-asks (situation AND stakeholders AND constraints AND outcome all at once). One decision, at most one probe on it — never a layered list.
+- TWO FINAL CHECKS before output (silently rewrite the question if either fails):
+  (1) PERSONALIZATION TEST — could this exact question be asked to 100 different candidates? If yes, and a story or JD requirement was provided above, rewrite it around something only THIS candidate has done. (Only a turn with no story AND no JD context is exempt.)
+  (2) EXECUTIVE INTERVIEW TEST — does this sound like a senior executive who has already read the candidate's resume and is genuinely curious about their experience? If it sounds like an AI or a behavioural interview template, rewrite it.
+
 [INTERNAL REASONING ENGINE CHAIN]
 Before generating the next question, you must step through this explicit reasoning sequence internally:
 1. What is the current interview hypothesis?
@@ -691,9 +708,223 @@ Before generating the next question, you must step through this explicit reasoni
 4. Is there any material semantic contradiction or timeline friction across prior answers to investigate?
 5. What is the candidate's current career stage?
 6. What is the appropriate cognitive mode?
-${resumeStepFinal}${finalStepNum}. Generate exactly ONE concise question that collects the highest-value missing evidence for [${evidenceProfile.leastValidatedSubskill}].${resumeGenerationClause}
+${resumeStepFinal}${finalStepNum}. Generate exactly ONE concise question — phrased under the Executive Interviewer Voice contract above (single objective, situation-led, conversational opener) — that collects the highest-value missing evidence for [${evidenceProfile.leastValidatedSubskill}].${resumeGenerationClause}
 
-Do not append meta-commentary, introductory remarks, or structural summaries. Output ONLY the raw interview question text.`;
+Do not append meta-commentary, introductory remarks, or structural summaries. The "question" value in your JSON output must contain ONLY the raw interview question text — nothing else.`;
+}
+
+// ── Question Blueprint helpers — fully deterministic, zero AI calls ────────
+// These two functions let orchestration pre-decide WHICH story and WHICH JD
+// framing a question should use, BEFORE the model is ever asked to write
+// anything. The model's job shrinks to "phrase this blueprint naturally" —
+// it no longer reasons about story selection or JD-requirement matching at
+// all, which is more deterministic, easier to debug/log, and cheaper.
+
+// This app's Coverage Engine only ever cycles through these 5 fixed
+// competency keys (see COMPETENCY_PROMPTS above) — but resume-extracted
+// competency_hints are free-form AI-generated labels ("Program Management",
+// "Client Advisory", "Cloud Modernization") that frequently share NO
+// substring with these exact 5 words, even when they're clearly related.
+// Without this expansion, story selection correctly finds zero match and
+// falls back to generic framing — not a bug, just too narrow a net.
+// ── Interview Intent (Enhancement 1) — fully deterministic, zero AI calls ──
+// Derived in code from competency + JD objective + question type. The model
+// NEVER invents this field; it receives it pre-decided inside the Question
+// Blueprint and must treat it as the curiosity target the question serves.
+const COMPETENCY_INTENT_MAP = {
+  system_design: 'Understand architectural trade-offs',
+  leadership: 'Understand leadership maturity',
+  strategy: 'Understand executive decision making',
+  communication: 'Understand stakeholder influence',
+  technical: 'Understand technical depth',
+};
+
+function deriveInterviewIntent({ competency, jdObjective, questionType }) {
+  // Base intent comes from the fixed competency key. When a JD objective was
+  // extracted, its deterministic keyword bucket takes precedence — the JD
+  // objective encodes WHY this competency matters for THIS role, which is
+  // exactly what the interviewer should be curious about. Buckets are checked
+  // in a fixed priority order so identical inputs always yield identical
+  // intent (deterministic, loggable, explainable).
+  let intent = COMPETENCY_INTENT_MAP[competency] || 'Understand business impact';
+  const jd = String(jdObjective || '').toLowerCase();
+  if (jd) {
+    if (/(customer|client|account)/.test(jd)) intent = 'Understand customer thinking';
+    else if (/(transformation|change management|moderni[sz]ation)/.test(jd)) intent = 'Understand business transformation judgement';
+    else if (/(scal(e|ing)|growth|org(anis|aniz)ation design|restructur)/.test(jd)) intent = 'Understand organisational scaling';
+    else if (/(conflict|resistance|negotiat)/.test(jd)) intent = 'Understand conflict resolution';
+    else if (/(p&l|budget|revenue|cost|commercial)/.test(jd)) intent = 'Understand business impact';
+  }
+  if (questionType === 'FOLLOW_UP') intent += " — one level deeper on the candidate's previous answer";
+  return intent;
+}
+
+// ── Executive Interview Strategy layer (additive, standalone) ─────────────
+// Gives each of the 5 PRIMARY questions a deliberate strategic intent, per
+// the confirmed design. This function does NOT select competencies, stories,
+// or hooks — those remain entirely owned by the Coverage Engine and
+// selectStoryForCompetency exactly as they already are. It only labels
+// WHICH position (1-5) a primary occupies and WHY, purely for prompt
+// framing and analytics. Follow-ups are explicitly out of scope here — the
+// existing follow-up logic/instructions are untouched and unaffected.
+//   Q1 ResumeStory      — validate strongest achievement
+//   Q2 ResumePlusJD      — validate relevance to target role
+//   Q3 ResumeStory (new) — broaden evidence with a different story
+//   Q4 JDScenario         — future readiness
+//   Q5 ExecutiveJudgment  — strategic thinking beyond resume
+// Q3's "different story" requirement is already satisfied by the EXISTING,
+// unmodified diversity penalty inside selectStoryForCompetency (a story
+// already used earlier in the session scores -100) — no change needed
+// there for this to work correctly.
+const EXECUTIVE_STRATEGY_POSITIONS = Object.freeze({
+  1: { source: 'ResumeStory',      purpose: "Validate the candidate's strongest proven achievement." },
+  2: { source: 'ResumePlusJD',     purpose: 'Validate relevance — test whether that experience maps to the target role.' },
+  3: { source: 'ResumeStory',      purpose: 'Broaden evidence — validate a second, different proven achievement.' },
+  4: { source: 'JDScenario',       purpose: 'Evaluate future readiness through a realistic scenario based on the target role.' },
+  5: { source: 'ExecutiveJudgment', purpose: 'Measure strategic thinking beyond what the resume already shows.' },
+});
+
+function getExecutiveStrategyIntent(position) {
+  return EXECUTIVE_STRATEGY_POSITIONS[position] || null;
+}
+
+// ── Blueprint story payload (Enhancement 2) — pass through every narrative
+// field the story ACTUALLY carries, never inventing any. Today's extraction
+// schema guarantees story_key/company/summary plus the tag arrays; the
+// optional richer fields (industry, customer, challenge, decision, outcome,
+// leadership_scope, technologies) flow through automatically the moment the
+// Resume Intelligence extraction starts providing them — no schema
+// migration, no additional AI calls, and graceful today with just
+// company + summary + business_context tags.
+const OPTIONAL_STORY_FIELDS = ['industry', 'business_context', 'customer', 'challenge', 'decision', 'outcome', 'leadership_scope', 'technologies'];
+
+function buildBlueprintStoryPayload(story) {
+  if (!story) return null;
+  const payload = { company: story.company, summary: story.summary };
+  OPTIONAL_STORY_FIELDS.forEach((k) => {
+    const v = story[k];
+    if (v === null || v === undefined) return;
+    if (Array.isArray(v) ? v.filter(Boolean).length : String(v).trim()) payload[k] = v;
+  });
+  return payload;
+}
+
+// Renders the payload as labeled lines — only for fields that exist.
+function renderBlueprintStory(story) {
+  if (!story) return null;
+  const lines = [];
+  const push = (label, v) => {
+    if (v === null || v === undefined) return;
+    const val = Array.isArray(v) ? v.filter(Boolean).join(', ') : String(v).trim();
+    if (val) lines.push(`${label}: ${val}`);
+  };
+  push('Company', story.company || 'Unknown');
+  push('Industry', story.industry);
+  push('Business context', story.business_context);
+  push('Customer', story.customer);
+  push('Challenge', story.challenge);
+  push('Decision made', story.decision);
+  push('Outcome', story.outcome);
+  push('Leadership scope', story.leadership_scope);
+  push('Technologies', story.technologies);
+  push('What happened', story.summary);
+  return lines.join('\n');
+}
+
+const COMPETENCY_SYNONYMS = {
+  system_design: ['architecture', 'cloud', 'platform', 'infrastructure', 'modernization', 'scalability', 'engineering', 'technology'],
+  leadership: ['management', 'team', 'people', 'organization', 'mentoring', 'executive', 'people management', 'org'],
+  strategy: ['strategic', 'planning', 'roadmap', 'vision', 'transformation', 'business', 'growth', 'portfolio'],
+  communication: ['stakeholder', 'presentation', 'client', 'advisory', 'alignment', 'partner', 'relationship', 'customer'],
+  technical: ['engineering', 'implementation', 'development', 'delivery', 'domain', 'technology', 'program management'],
+};
+
+/**
+ * Deterministically pick the best-fitting Career Story for a competency,
+ * scored by keyword overlap against each story's competency_hints, with a
+ * hard penalty for stories already used earlier in this session (diversity
+ * is enforced structurally here, not just requested in prose).
+ * @returns {string|null} the winning story_key, or null if nothing scores
+ */
+function selectStoryForCompetency({ storyLibrary, competency, usedStoryKeys, jdText }) {
+  const stories = Array.isArray(storyLibrary) ? storyLibrary.filter(s => s && s.story_key && s.summary) : [];
+  if (!stories.length) return null;
+
+  const compNorm = String(competency || '').toLowerCase().replace(/_/g, ' ').trim();
+  const compWords = compNorm.split(/\s+/).filter(Boolean);
+  const synonymWords = (COMPETENCY_SYNONYMS[competency] || []).map(s => s.toLowerCase());
+  const used = usedStoryKeys instanceof Set ? usedStoryKeys : new Set(usedStoryKeys || []);
+  const jdLower = (typeof jdText === 'string') ? jdText.toLowerCase() : '';
+
+  const scored = stories.map((s) => {
+    const hints = Array.isArray(s.competency_hints) ? s.competency_hints.map(h => String(h).toLowerCase()) : [];
+    const businessContext = Array.isArray(s.business_context) ? s.business_context.map(h => String(h).toLowerCase()) : [];
+    const jdAlignmentTags = Array.isArray(s.jd_alignment_tags) ? s.jd_alignment_tags.map(h => String(h).toLowerCase()) : [];
+    let score = 0;
+    hints.forEach((h) => {
+      if (h === compNorm) score += 10; // exact competency-hint match — strongest signal
+      else if (compWords.some(w => w.length > 2 && (h.includes(w) || w.includes(h)))) score += 5; // partial overlap
+      else if (synonymWords.some(w => h.includes(w) || w.includes(h))) score += 4; // synonym overlap — weaker than a direct match, still a real signal
+    });
+    // Industry match against the actual JD text — e.g. a JD for a
+    // healthcare company should prefer a story that also happened in
+    // healthcare, with zero LLM reasoning required to know that.
+    if (jdLower) {
+      businessContext.forEach((bc) => { if (bc.length > 2 && jdLower.includes(bc)) score += 6; });
+      jdAlignmentTags.forEach((tag) => { if (tag.length > 2 && jdLower.includes(tag)) score += 4; });
+    }
+    // ── Enhancement 3 — additional deterministic ranking signals. All
+    // additive and all defensive: each fires only when the story actually
+    // carries the field AND there is JD/competency context to compare
+    // against. The original hint/context/tag scoring above is untouched.
+    const storyIndustry = typeof s.industry === 'string' ? s.industry.toLowerCase().trim() : '';
+    const storyCustomer = typeof s.customer === 'string' ? s.customer.toLowerCase().trim() : '';
+    const storyTech = Array.isArray(s.technologies) ? s.technologies.map(t => String(t).toLowerCase()) : [];
+    const storyText = `${s.summary || ''} ${businessContext.join(' ')}`.toLowerCase();
+    if (jdLower) {
+      if (storyIndustry.length > 2 && jdLower.includes(storyIndustry)) score += 5;  // industry similarity
+      if (storyCustomer.length > 2 && jdLower.includes(storyCustomer)) score += 4;  // customer similarity
+      let techHits = 0;
+      storyTech.forEach((t) => { if (t.length > 2 && jdLower.includes(t)) techHits++; });
+      score += Math.min(techHits * 2, 6);                                            // technology similarity (capped)
+      if (/(transformation|change management|moderni[sz]ation|migration)/.test(jdLower) &&
+          /(transformation|moderni[sz]ation|migration|redesign|re-?architect)/.test(storyText)) {
+        score += 3;                                                                   // business-transformation relevance
+      }
+    }
+    if (competency === 'leadership' && (s.leadership_scope || /(led |leading |managed |team of |direct reports)/.test(storyText))) {
+      score += 3;                                                                     // leadership-level signal
+    }
+    if (used.has(s.story_key)) score -= 100; // hard diversity penalty, not an outright ban — a candidate
+                                              // with only one relevant story can still reuse it eventually
+    return { story_key: s.story_key, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  return (scored[0] && scored[0].score > 0) ? scored[0].story_key : null;
+}
+
+/**
+ * Deterministically extract a short JD phrase relevant to a competency, by
+ * keyword-overlap matching against sentence/bullet chunks of the raw JD
+ * text — the same lightweight regex-taxonomy style already used for JD
+ * competency detection elsewhere in this codebase. Not an AI call.
+ * @returns {string|null} a JD snippet (capped length), or null if no match
+ */
+function extractJdObjective(jdText, competency) {
+  if (!jdText || typeof jdText !== 'string') return null;
+  const compNorm = String(competency || '').toLowerCase().replace(/_/g, ' ');
+  const compWords = compNorm.split(/\s+/).filter(w => w.length > 3); // skip tiny/common words
+  if (!compWords.length) return null;
+
+  const chunks = jdText.split(/(?<=[.!?])\s+|\n+/).map(s => s.trim()).filter(s => s.length > 8);
+  for (const chunk of chunks) {
+    const chunkLower = chunk.toLowerCase();
+    if (compWords.some(w => chunkLower.includes(w))) {
+      return chunk.slice(0, 160);
+    }
+  }
+  return null;
 }
 
 // ── selectNextCompetency — least-covered area, with a division-by-zero-
@@ -771,6 +1002,8 @@ function buildSystemPrompt({
   questionCount,
   wasSkipped,
   resumeContext, // NEW — Resume Intelligence, personalization-only. See Layer 10 below.
+  storyLibrary, // NEW — Career Story Library (stable story_key per story). Rendered in Layer 10.
+  isFollowup, // NEW — Conversation Flow: true when this turn is the (at most one) adaptive follow-up to the immediately preceding primary question. See Rules block below.
 }) {
   const matrix = Array.isArray(competencyMatrix) && competencyMatrix.length
     ? competencyMatrix.map((c, i) => `${i + 1}. ${c}`).join('\n')
@@ -801,40 +1034,36 @@ function buildSystemPrompt({
   // model can phrase questions against real companies/products/scope
   // instead of generic placeholders.
   const rc = resumeContext && typeof resumeContext === 'object' ? resumeContext : null;
+  const stories = Array.isArray(storyLibrary) ? storyLibrary.filter(s => s && s.story_key && s.summary) : [];
   const hasResumeContext = !!(rc && (
     rc.summary || rc.career_level && rc.career_level !== 'Unknown' || (rc.industries && rc.industries.length) ||
     (rc.companies && rc.companies.length) || (rc.customers && rc.customers.length) ||
     (rc.products && rc.products.length) || (rc.leadership_scope && rc.leadership_scope !== 'Not explicitly stated') ||
     (rc.top_achievements && rc.top_achievements.length)
-  ));
+  )) || stories.length > 0;
   const resumeContextBlock = hasResumeContext
     ? [
-        rc.summary ? `Summary: ${rc.summary}` : null,
-        rc.career_level && rc.career_level !== 'Unknown' ? `Career level: ${rc.career_level}` : null,
-        rc.industries && rc.industries.length ? `Industries: ${rc.industries.join(', ')}` : null,
-        rc.companies && rc.companies.length ? `Companies: ${rc.companies.join(', ')}` : null,
-        rc.customers && rc.customers.length ? `Enterprise customers: ${rc.customers.join(', ')}` : null,
-        rc.products && rc.products.length ? `Products/platforms: ${rc.products.join(', ')}` : null,
-        rc.leadership_scope && rc.leadership_scope !== 'Not explicitly stated' ? `Leadership scope: ${rc.leadership_scope}` : null,
-        rc.top_achievements && rc.top_achievements.length ? `Top achievements: ${rc.top_achievements.join('; ')}` : null,
+        rc && rc.summary ? `Summary: ${rc.summary}` : null,
+        rc && rc.career_level && rc.career_level !== 'Unknown' ? `Career level: ${rc.career_level}` : null,
+        rc && rc.industries && rc.industries.length ? `Industries: ${rc.industries.join(', ')}` : null,
+        rc && rc.companies && rc.companies.length ? `Companies: ${rc.companies.join(', ')}` : null,
+        rc && rc.customers && rc.customers.length ? `Enterprise customers: ${rc.customers.join(', ')}` : null,
+        rc && rc.products && rc.products.length ? `Products/platforms: ${rc.products.join(', ')}` : null,
+        rc && rc.leadership_scope && rc.leadership_scope !== 'Not explicitly stated' ? `Leadership scope: ${rc.leadership_scope}` : null,
+        rc && rc.top_achievements && rc.top_achievements.length ? `Top achievements: ${rc.top_achievements.join('; ')}` : null,
       ].filter(Boolean).join('\n')
     : '(no resume on file for this candidate — do not reference resume details)';
 
-  // Resume Anchor Selection Policy — active ONLY when a resume is on file.
-  // This is prompt text only: it does not add a call, a field, or a code
-  // path. It governs HOW the model uses the personalization-only block
-  // above; it has no access to and no effect on layer 6 (competency
-  // selection/weighting) or the scoring rubric below.
-  const resumeAnchorPolicy = hasResumeContext ? `
-Resume Anchor Selection Policy (internal reasoning — never narrate this process to the candidate):
-Before writing this question, silently choose ONE, or at most TWO, of the following anchor types from the resume context above — whichever most naturally supports the competency node driving this question and the job description requirement in layer 7:
-  Company · Customer · Product/Platform · Major Implementation · Leadership Example ·
-  Business Transformation · Metric-driven Achievement · Cross-functional Initiative ·
-  Domain Expertise · Failure or Challenge
-Then combine:
-  Next Question = Competency to Assess (layer 6) + JD Requirement (layer 7) + Best Resume Anchor
-The job description always defines the evaluation objective; the resume anchor only supplies the concrete scenario — never the reverse. Weave the anchor naturally into the question's wording. Never dump resume facts, never read the resume back verbatim or as a list, never sound scripted, and never force an anchor into a question it doesn't genuinely strengthen — if nothing fits, ask the question without one.
-Do not reuse the same anchor (same company, same customer, same project) that already anchored an earlier question visible in layer 8 — rotate across anchor types and across different resume facts as the interview progresses. If layer 8 shows the candidate already went deep on a particular anchor, don't re-ask about it from scratch — deepen it instead (tradeoffs made, resistance encountered, what they'd change with hindsight).` : '';
+  // NOTE: this used to render the FULL Career Story Library here as a list
+  // for the model to search — which directly undermined the deterministic
+  // retrieval this architecture is built around (selectStoryForCompetency
+  // already picks the ONE right story in code, before this prompt is even
+  // built). Handing the model 10 stories "to choose from" meant retrieval
+  // was effectively happening twice — once in code, once (redundantly, and
+  // sometimes differently) in the model's own reasoning. The resolved story
+  // for THIS turn now travels inline inside the Question Blueprint further
+  // down (see composePrompt output below) — Layer 10 intentionally no
+  // longer exposes the raw list at all.
 
   return `[1 · SYSTEM PERSONA]
 ${SYSTEM_PERSONA_CHARTER}
@@ -869,8 +1098,7 @@ ${currentAnswerBlock}
 
 [10 · RESUME CONTEXT — PERSONALIZATION ONLY, NOT AN EVALUATION NODE]
 ${resumeContextBlock}
-This layer is for phrasing/personalization only. It must NEVER be treated as a competency to probe, NEVER scored, and NEVER cited as a reason to weight or favor any evaluation node in layer 6.
-${resumeAnchorPolicy}
+This layer is for phrasing/personalization only. It must NEVER be treated as a competency to probe, NEVER scored, and NEVER cited as a reason to weight or favor any evaluation node in layer 6. The specific story (if any) retrieved for THIS turn is provided separately below, in the Question Blueprint — this layer is background only, not a list to search.
 
 EVALUATION DIRECTIVE:
 - Evaluate the candidate's answers turn-by-turn against the active competency nodes in layer 6 — every question you ask must probe at least one of those nodes.
@@ -882,24 +1110,26 @@ ${compPrompt}
 ${calibrationBlueprint ? `
 ${calibrationBlueprint}` : ''}
 ${isDrill ? `
-DRILL-DOWN REQUIRED: The candidate's previous answer scored below 60 on the STAR rubric.
-Ask a targeted follow-up that directly challenges the weakest aspect of their last response.
-Prefix the question text with [${competency}] so it can be tracked.` : `
-ADVANCE THE EVALUATION: Ask a NEW question on a different dimension from previous questions.
-Prefix the question text with [${competency}] so it can be tracked.`}
+WEAK PRIOR ANSWER — CALIBRATE INTENSITY: The candidate's previous answer scored below 60 on the STAR rubric. Whatever this turn turns out to be (primary or follow-up, per the Rules below and the blueprint above), make it firmly probe the specific weak spot in that answer rather than moving on gently.` : `
+ADVANCE THE EVALUATION: the candidate's last answer was solid — follow the primary/follow-up instruction in the Rules below as the authoritative structural decision for this turn.`}
 
 Rules:
 - Ask ONE question only — no compound questions.
 - NEVER give feedback during the session.
-- Return ONLY the question text with the [${competency}] prefix. No preamble, no acknowledgment of previous answers.
-${hasResumeContext ? `- This candidate has a resume on file (Layer 10). Unless you already used a resume anchor in the immediately preceding question, this question SHOULD name a specific company, customer, product, or achievement from Layer 10 that fits the competency above — do not default to a generic phrasing when real resume evidence is available.` : ''}
+- Output the "question" field as the question text ONLY — no prefix, no bracket tags, no preamble, no acknowledgment of previous answers. Competency and story tracking are handled by the "story_key" field, not by anything embedded in the question text itself.
+- Single core ask (critical — this is stricter than "one question"): a question can be one grammatically single sentence and still be a compound ask. One primary decision, plus at most ONE natural probing clause on it (e.g. "...and how did you get the team to adopt it?") — that two-part shape is fine. Do NOT stack three or more asks — situation, stakeholders, constraints, communication approach, AND outcome — into one prompt. One resume/story reference, one competency, one core decision. A senior interviewer asks one thing (with at most one natural probe), listens, then decides what to probe next — they don't front-load every possible angle into the first question.
+- Target length: primary questions target 30–45 words (minimum 25, ideal 35–40), with 50 words as an outer cap used only when the context genuinely needs it — not a routine ceiling. Follow-ups target 12–25 words, but stay flexible — go a little longer only if the specific situation genuinely calls for it. If you're consistently landing near the top of either range, you're narrating too much scene-setting, not asking too much — trim the opening context, not the actual question.
+- Voice: concise, confident, curious — like a senior executive interviewer who has read the resume and is genuinely interested, not like you're reading a structured evaluation prompt. Short, direct sentences beat long, hedged ones.
+- Vary your question openings across the interview. Do NOT default to "Walk me through..." or "Tell me about..." on every question — rotate naturally between openings such as "I noticed...", "One thing that stood out...", "During your...", "While you were leading...", "What made you decide to...", "How did you handle...", "Help me understand...", "I'm curious about...", "What happened when...", or a direct scenario statement with no stock opener at all. "Tell me about a time...", "Describe a situation...", and "Give me an example..." are last-resort phrasings for turns with no story and no JD context — never the default.
+${isFollowup ? `- THIS TURN IS A FOLLOW-UP (does not count toward the 5-question progress counter): deepen the candidate's PREVIOUS answer specifically — reference something they actually said, don't just re-ask the same question in different words. Do not introduce a new competency or a new story. Target 12-25 words — stay flexible and go a bit longer only if the situation genuinely calls for it — ONE focused probe (resistance encountered, a tradeoff made, what they'd change with hindsight, or a specific detail they glossed over). You do not need to re-establish the scenario, it's already on the table. Open naturally with a transition like "Let's stay with that example — ...", "I'm curious about...", "Tell me more about...", or "You mentioned X — what about...". Leave story_key null on a follow-up — the story is already fixed to the primary it's deepening.` : (questionCount > 0 ? `- THIS IS A NEW PRIMARY QUESTION on a fresh competency and, where possible, a fresh story — it counts toward the 5-question progress counter. Open with a brief, natural transition when moving on from a follow-up or shifting topic — a short acknowledgment plus a pivot, e.g. "That's helpful. Let's switch gears — I'd like to ask about your Deloitte work." Don't force a transition if there's nothing to bridge from (e.g. this is only the 2nd question overall); a clean new question is fine too.` : '')}
+${hasResumeContext ? `- This candidate has a resume on file (Layer 10). Unless you already used a resume anchor in the immediately preceding question, this question SHOULD reference the story selected in the Resume-Aware Question Planning above — do not default to a generic phrasing when a real story fits. That anchor (company, programme, customer, transformation, or measurable achievement) must open the question as its first clause, per the Executive Interviewer Voice contract above — not be mentioned mid-sentence or at the end.` : ''}
 ${questionCount === 0 ? `- This is the OPENING question. Generate a FRESH, session-specific opening question grounded in competency node #1 of layer 6, calibrated to the target role, experience tier, and company context — and to the job description in layer 7 when present. Do NOT use canned or template openings. Style calibration example only — never reuse or lightly reword it: "${openingQ}"` : ''}`;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // REPLACE the existing generateNextQuestion function with this version
 // ═══════════════════════════════════════════════════════════════════
-async function generateNextQuestion({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, competencyMatrix, jdText, currentAnswer, qaPairs, questionCount, resumeContext }) {
+async function generateNextQuestion({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, competencyMatrix, jdText, currentAnswer, qaPairs, questionCount, resumeContext, storyLibrary, forcedCompetency, isFollowup, forcedStoryKey, questionPosition }) {
   const persona = PERSONAS[personaId];
   if (!persona) throw new Error(`Unknown persona: ${personaId}`);
 
@@ -909,8 +1139,14 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   // inside the calibration step.
   const snapshot = buildInterviewSnapshot({ roleTitle, qaPairs, questionCount });
 
-  // 1. Select which competency to probe next
-  const competency = selectNextCompetency(snapshot, questionCount);
+  // 1. Select which competency to probe next — UNLESS this is a follow-up
+  // turn (forcedCompetency set), in which case the Coverage Engine's normal
+  // least-validated-subskill selection is skipped entirely and we stay on
+  // the exact competency being deepened. This is conversation-flow control,
+  // not a change to competency WEIGHTING — the Harmonic Alignment Engine's
+  // weighted matrix (competencyMatrix, passed in unchanged) is untouched;
+  // this only controls which already-weighted node THIS turn targets.
+  const competency = forcedCompetency || selectNextCompetency(snapshot, questionCount);
   const compPrompt = COMPETENCY_PROMPTS[competency] || '';
 
   // 2. Determine if we need a drill-down (last score was weak)
@@ -946,14 +1182,126 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   // does for Layer 10 — computed here too so composePrompt's reasoning
   // chain can reference the SAME resume the candidate actually has on file,
   // not just the personalization block far earlier in the prompt.
+  // ── DEBUG LOGGING (temporary — remove once diagnosis is confirmed) ──────
+  // Logs the RAW inputs this function actually received, before any
+  // processing. If resumeContextReceived/storyLibraryReceived show up
+  // false/0 here even though the candidate has a resume on file, the bug
+  // is upstream — in routes/interview.js or controllers/sessionController.js
+  // not reading/passing session.resume_context / session.story_library
+  // correctly — NOT in this file.
+  console.log('[blueprint-debug] generateNextQuestion inputs:', JSON.stringify({
+    questionCount,
+    isFollowup: !!isFollowup,
+    resumeContextReceived: !!resumeContext,
+    resumeContextType: typeof resumeContext,
+    storyLibraryReceived: Array.isArray(storyLibrary),
+    storyLibraryLength: Array.isArray(storyLibrary) ? storyLibrary.length : 'not-an-array',
+    jdTextLength: (jdText || '').length,
+  }));
+
   const rcForChain = resumeContext && typeof resumeContext === 'object' ? resumeContext : null;
+  const storiesForChain = Array.isArray(storyLibrary) ? storyLibrary.filter(s => s && s.story_key && s.summary) : [];
   const hasResumeContext = !!(rcForChain && (
     rcForChain.summary || (rcForChain.career_level && rcForChain.career_level !== 'Unknown') || (rcForChain.industries && rcForChain.industries.length) ||
     (rcForChain.companies && rcForChain.companies.length) || (rcForChain.customers && rcForChain.customers.length) ||
     (rcForChain.products && rcForChain.products.length) || (rcForChain.leadership_scope && rcForChain.leadership_scope !== 'Not explicitly stated') ||
     (rcForChain.top_achievements && rcForChain.top_achievements.length)
-  ));
-  const calibrationBlueprint = composePrompt({ competency, calibrationState, evidenceProfile, strategy, candidateModel, difficulty, hasResumeContext });
+  )) || storiesForChain.length > 0;
+
+  // ── Question Blueprint — fully deterministic, built BEFORE the model is
+  // ever asked to write anything. The model's job is reduced to "phrase
+  // this blueprint into a natural question" — it no longer reasons about
+  // which JD requirement applies or which story to use; both are decided
+  // here by plain code (selectStoryForCompetency / extractJdObjective),
+  // using signals already available to orchestration (qaPairs carries each
+  // past turn's storyKey, so "already used" is derived with zero new state).
+  const usedStoryKeys = new Set(qaPairs.map(p => p.storyKey).filter(Boolean));
+  const selectedStoryKey = isFollowup
+    ? (forcedStoryKey || null)
+    : selectStoryForCompetency({ storyLibrary: storiesForChain, competency, usedStoryKeys, jdText });
+  const resolvedStory = selectedStoryKey
+    ? storiesForChain.find(s => s.story_key === selectedStoryKey) || null
+    : null;
+  const jdObjectiveForBlueprint = extractJdObjective(jdText, competency);
+
+  // Deterministic "reason" — built from what code already knows (the JD
+  // objective it matched against, or the fact no story fit), not invented
+  // by the model. This is the human-readable audit trail for WHY this
+  // story (or lack of one) was selected for this turn.
+  const blueprintReason = resolvedStory
+    ? (jdObjectiveForBlueprint
+        ? `Matches ${competency.replace('_', ' ')} and the JD's emphasis on: "${jdObjectiveForBlueprint}"`
+        : `Best available match for ${competency.replace('_', ' ')} in the candidate's story library`)
+    : (jdObjectiveForBlueprint
+        ? `No resume story fit ${competency.replace('_', ' ')} — framing from JD requirement instead`
+        : `No resume story or JD requirement fit ${competency.replace('_', ' ')} — generic framing`);
+
+  // Deterministic hook selection — ONE specific conversation angle from the
+  // resolved story's hooks array, so the model asks about something
+  // concrete rather than restating the summary. Primaries get the first
+  // hook; follow-ups get a DIFFERENT one when the story has more than one,
+  // so the follow-up deepens a new angle instead of repeating the primary's.
+  const storyHooks = (resolvedStory && Array.isArray(resolvedStory.hooks)) ? resolvedStory.hooks : [];
+  const selectedHook = storyHooks.length
+    ? (isFollowup ? (storyHooks[1] || storyHooks[0]) : storyHooks[0])
+    : null;
+
+  const blueprintQuestionType = isFollowup ? 'FOLLOW_UP' : (questionCount === 0 ? 'OPENING' : 'PRIMARY');
+
+  // Executive Interview Strategy — additive only. Computed independently of
+  // everything above; does not influence competency, story, or hook
+  // selection in any way. Only meaningful for primaries (questionPosition
+  // is undefined/null for follow-ups, which stay entirely governed by the
+  // existing, untouched follow-up logic).
+  const strategyIntent = (!isFollowup && Number.isInteger(questionPosition)) ? getExecutiveStrategyIntent(questionPosition) : null;
+
+  const questionBlueprint = hasResumeContext ? {
+    competency,
+    jd_objective: jdObjectiveForBlueprint,
+    story_key: selectedStoryKey,
+    // The resolved story's actual content travels WITH the blueprint — the
+    // model is never handed a list to search or reason over, only the one
+    // story orchestration already retrieved for this exact turn. Payload now
+    // carries every narrative field the story actually has (Enhancement 2).
+    story: buildBlueprintStoryPayload(resolvedStory),
+    // The specific conversational angle to ask about — never the whole
+    // story restated. Null if this story has no usable hooks (e.g. a thin
+    // resume entry with too little detail to instantiate one).
+    hook: selectedHook,
+    reason: blueprintReason,
+    difficulty,
+    question_type: blueprintQuestionType,
+    // Enhancement 1 — deterministic curiosity target, derived in code from
+    // competency + JD objective + question type. Never invented by the model.
+    interview_intent: deriveInterviewIntent({ competency, jdObjective: jdObjectiveForBlueprint, questionType: blueprintQuestionType }),
+    // Executive Interview Strategy layer (additive) — which of the 5 fixed
+    // primary positions this is, and its deliberate strategic purpose. Null
+    // for follow-ups and for any caller that doesn't pass questionPosition.
+    question_position: Number.isInteger(questionPosition) ? questionPosition : null,
+    strategy_source: strategyIntent ? strategyIntent.source : null,
+    strategy_purpose: strategyIntent ? strategyIntent.purpose : null,
+  } : null;
+
+  // ── DEBUG LOGGING (temporary) — the full retrieval/selection outcome for
+  // this turn. hasResumeContext:false here, with resumeContextReceived:true
+  // above, would mean the resume data arrived but didn't pass the
+  // hasResumeContext check — a real bug worth flagging back. storyLibraryLength
+  // > 0 above but selectedStoryKey:null here means retrieval ran but found
+  // no match for this competency (see the story-matching problem from
+  // earlier, or a competency/hint vocabulary mismatch specific to this data).
+  console.log('[blueprint-debug] resolved:', JSON.stringify({
+    hasResumeContext,
+    storiesAvailable: storiesForChain.length,
+    selectedCompetency: competency,
+    jdObjective: jdObjectiveForBlueprint,
+    selectedStoryKey,
+    resolvedStoryCompany: resolvedStory ? resolvedStory.company : null,
+    selectedHook,
+    reason: blueprintReason,
+    questionType: blueprintQuestionType,
+  }));
+
+  const calibrationBlueprint = composePrompt({ competency, calibrationState, evidenceProfile, strategy, candidateModel, difficulty, hasResumeContext, isFollowup: !!isFollowup, questionBlueprint });
 
   // 4. Assemble the ordered production prompt (see buildSystemPrompt above)
   const system = buildSystemPrompt({
@@ -973,16 +1321,73 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     questionCount,
     wasSkipped: wasLastSkipped,
     resumeContext,
+    storyLibrary,
+    isFollowup: !!isFollowup,
   });
 
+  // story_key is now fully deterministic (see questionBlueprint above) —
+  // the model never decides it, so there's nothing to validate here.
+  const storyKey = isFollowup ? (forcedStoryKey || null) : (questionBlueprint ? questionBlueprint.story_key : null);
+
   const prompt = questionCount === 0
-    ? 'Generate a fresh, session-specific opening interview question grounded in the top competency of the matrix — not a canned template.'
-    : `Generate the next adaptive interview question targeting the ${competency.replace('_',' ')} competency.`;
+    ? (questionBlueprint && questionBlueprint.story
+        ? `Generate a fresh opening interview question. Start from Today's Story above (${questionBlueprint.story.company}) and view it through the ${competency.replace('_',' ')} lens — not a canned template.`
+        : 'Generate a fresh, session-specific opening interview question grounded in the top competency of the matrix — not a canned template.')
+    : (questionBlueprint && questionBlueprint.story
+        ? `Generate the next interview question. Start from Today's Story above (${questionBlueprint.story.company}) and view it through the ${competency.replace('_',' ')} lens.`
+        : `Generate the next adaptive interview question targeting the ${competency.replace('_',' ')} competency.`);
 
-  const raw = await chat(prompt, { system, maxTokens: 512 });
-  let text = sanitizeQuestionOutput(raw, competency, roleKey, levelKey);
+  // Structured output — a JSON object, not raw text with hidden inline
+  // tags. The model's ONLY job is to phrase the (already-decided) Question
+  // Blueprint — it doesn't decide or return story_key, competency, or
+  // difficulty; those come from deterministic code, not from here.
+  const jsonSchemaInstruction = `\n\nReturn ONLY a JSON object with this exact shape — no markdown, no extra keys:\n{\n  "question": "the interview question text — no prefix, no meta-commentary, nothing else",\n  "reasoning": "one short internal sentence on how you phrased the blueprint — never shown to the candidate"\n}`;
 
-  // ── Question Repetition & Similarity Loop Intercept (max 2 retries) ──
+  // ── HUMAN-READABLE STRATEGY LOG (additive, requested format) ─────────────
+  if (strategyIntent) {
+    console.log(`Q${questionPosition}`);
+    console.log(`Source: ${strategyIntent.source}`);
+    if (selectedStoryKey) console.log(`Story: ${selectedStoryKey}`);
+    if (jdObjectiveForBlueprint) console.log(`JD Objective: ${jdObjectiveForBlueprint}`);
+    console.log(`Competency: ${competency}`);
+    console.log(`Purpose: ${strategyIntent.purpose}`);
+  }
+
+  // ── EXACT DIAGNOSTIC LOG REQUESTED — immediately before the LLM call ────
+  console.log('[FINAL-PRE-LLM-CHECK]', JSON.stringify({
+    competency,
+    storyLibraryCount: storiesForChain.length,
+    selectedStory: selectedStoryKey,
+    selectedHook: questionBlueprint ? questionBlueprint.hook : null,
+    interviewIntent: questionBlueprint ? questionBlueprint.interview_intent : null,
+    questionBlueprint,
+  }));
+
+  // Automated check for "does the actual prompt text contain the resolved
+  // story/hook, or not" — answers requirement #7 directly instead of
+  // requiring a manual read of the full (very long) system prompt string.
+  if (questionBlueprint && questionBlueprint.story) {
+    console.log('[FINAL-PRE-LLM-CHECK] prompt actually contains story company:', system.includes(questionBlueprint.story.company));
+    if (questionBlueprint.hook) {
+      console.log('[FINAL-PRE-LLM-CHECK] prompt actually contains hook detail:', system.includes(questionBlueprint.hook.detail));
+    }
+  } else {
+    console.log('[FINAL-PRE-LLM-CHECK] no story in blueprint — nothing to verify, this turn WILL be generic by design');
+  }
+
+  let parsed = await chatJSON(prompt, { system: system + jsonSchemaInstruction, maxTokens: 512 });
+  let text = sanitizeQuestionOutput(parsed && parsed.question, competency, roleKey, levelKey);
+
+  // Deterministic word-count ceiling — a bit of headroom above the prompt's
+  // own stated targets (30-45 primary / 12-25 follow-up, 50-word outer cap)
+  // to avoid punishing a genuinely necessary longer question, while still
+  // catching clear overages. This is a SAFETY NET, not the primary control —
+  // the prompt's own length guidance is still what should usually produce
+  // the right length; this only fires when that guidance wasn't followed.
+  const wordCount = (str) => String(str || '').trim().split(/\s+/).filter(Boolean).length;
+  const HARD_WORD_CEILING = isFollowup ? 35 : 60;
+
+  // ── Question Repetition & Length Intercept (max 2 retries, combined) ──
   // Compares against the SANITIZED text (matches what's actually persisted
   // in qaPairs on later turns, not the raw pre-sanitize model output).
   let attempts = 0;
@@ -999,21 +1404,41 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
         break;
       }
     }
-    if (!isRepetitive) break;
-    // BUGFIX vs pasted draft: chat()'s real signature is chat(prompt, { system,
-    // maxTokens }) — not chat(systemPrompt, userTranscriptPayload). Neither of
-    // those two identifiers exist in this file; the real ones are `prompt` and
-    // `system`. Re-sanitize the retry output too, so a second pass through this
-    // loop (or the final return below) compares/returns clean text.
-    const retryRaw = await chat(prompt, {
-      system: system + '\n\n[CRITICAL WARNING: Your previous generation was flagged as repetitive or semantically identical to a question already asked in this session history. You MUST completely vary the scenario, switch the underlying subskill angle, and formulate a fresh, distinct operational direction.]',
+    const isTooLong = wordCount(text) > HARD_WORD_CEILING;
+    if (!isRepetitive && !isTooLong) break;
+
+    const warnings = [];
+    if (isRepetitive) {
+      warnings.push('[CRITICAL WARNING: Your previous generation was flagged as repetitive or semantically identical to a question already asked in this session history. You MUST completely vary the scenario, switch the underlying subskill angle, and formulate a fresh, distinct operational direction.]');
+    }
+    if (isTooLong) {
+      const target = isFollowup ? '12-25' : '30-45';
+      warnings.push(`[CRITICAL WARNING: Your previous generation was ${wordCount(text)} words — far over target. Cut ALL scene-setting narration. State the resume anchor in a short opening clause (a few words, not a full sentence of context), then ask ONE tight question. Target ${target} words this time — that is a hard requirement, not a suggestion.]`);
+    }
+
+    const retryParsed = await chatJSON(prompt, {
+      system: system + jsonSchemaInstruction + '\n\n' + warnings.join('\n\n'),
       maxTokens: 512,
     });
-    text = sanitizeQuestionOutput(retryRaw, competency, roleKey, levelKey);
+    text = sanitizeQuestionOutput(retryParsed && retryParsed.question, competency, roleKey, levelKey);
     attempts++;
   }
 
-  return { text, competency };
+  // Final deterministic fallback — if it's STILL over the hard ceiling after
+  // 2 retries, never ship an overlong question to the candidate. Reuses the
+  // exact same short, pre-written fallback pool sanitizeQuestionOutput
+  // already falls back to for broken/meta-leak output, so there's no new
+  // fallback text to maintain — one consistent safety net for both failure
+  // modes.
+  if (wordCount(text) > HARD_WORD_CEILING) {
+    console.warn(`[interview] question still ${wordCount(text)} words after retries (ceiling ${HARD_WORD_CEILING}) — using short fallback instead of shipping an overlong question.`);
+    text = COMPETENCY_PROMPTS[competency]
+      ? `Tell me about a specific time you had to navigate a difficult trade-off related to ${competency.replace('_', ' ')}. Walk me through the situation, what you decided, and the outcome.`
+      : (OPENING_QUESTIONS[roleKey]?.[levelKey] || OPENING_QUESTIONS.default.mid);
+  }
+
+  console.log('[blueprint-debug] final output:', JSON.stringify({ storyKey, questionText: text }));
+  return { text, competency, storyKey, questionBlueprint };
 }
 
 // ── Output guardrail ──────────────────────────────────────────────────────
@@ -1038,8 +1463,8 @@ function looksLikeMetaLeak(text) {
   if ((text.match(/\*\*/g) || []).length >= 4) return true; // heavy bold markup = the model is explaining, not asking
   return META_LEAK_PATTERNS.some((re) => re.test(text));
 }
-function sanitizeQuestionOutput(raw, competency, roleKey, levelKey) {
-  const text = String(raw || '').trim().replace(/^\[[\w_]+\]\s*/, '');
+function sanitizeQuestionOutput(rawText, competency, roleKey, levelKey) {
+  const text = String(rawText || '').trim();
   if (!looksLikeMetaLeak(text)) return text;
   console.error('[interview] generateNextQuestion produced a meta/broken-character response — falling back to a safe question. Raw output was:', text.slice(0, 300));
   const fallbackPool = COMPETENCY_PROMPTS[competency]
@@ -1293,7 +1718,14 @@ Produce the structured debrief in valid JSON format.`;
   // Whatever the AI wrote, a low-evidence session can never publish a high
   // scoreboard or a hire recommendation. Enforced in code, every time.
   if (lowEvidence && result && result.scoreboard) {
-    const cap = Math.max(10, Math.round(weightedAvg) + 10);
+    // A session with ZERO substantive answers (every question skipped or
+    // trivial) must be allowed to cap all the way down to 0 — the previous
+    // Math.max(10, ...) floor applied even here, which meant a candidate
+    // who answered nothing still saw a suspicious uniform 10/100 across
+    // every category (the AI's raw scores, rarely a literal 0, all got
+    // clamped down to exactly this floor). The 10-point floor is now only
+    // applied when there is at least SOME real evidence to be lenient about.
+    const cap = substantiveCount === 0 ? 0 : Math.max(10, Math.round(weightedAvg) + 10);
     Object.keys(result.scoreboard).forEach(function (k) {
       const v = parseInt(result.scoreboard[k], 10) || 0;
       result.scoreboard[k] = Math.min(v, cap, 25);

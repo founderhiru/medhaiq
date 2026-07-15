@@ -305,7 +305,7 @@ async function runMigrations() {
           // "action" column instead). Relaxing this is additive/safe — it
           // only permits more inserts, it can't break anything that already
           // depends on this column being required.
-        await c.query(`ALTER TABLE user_activity_logs ALTER COLUMN action_type DROP NOT NULL`);
+          await c.query(`ALTER TABLE user_activity_logs ALTER COLUMN action_type DROP NOT NULL`);
         }
       },
       {
@@ -327,6 +327,110 @@ async function runMigrations() {
           // history of a past interview/report.
           await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS resume_competencies JSONB`);
           await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS resume_context JSONB`);
+        }
+      },
+      {
+        name: '009_question_competency_tracking',
+        up: async (c) => {
+          // interview_questions never persisted WHICH competency a question
+          // targeted, WHICH resume story it used, or whether it was a
+          // follow-up to another question — all needed now so the
+          // primary/follow-up conversation flow is deterministic across
+          // stateless HTTP requests, instead of hoping the model infers
+          // continuity from prose. Purely additive, nullable — does not
+          // touch scoring, the Harmonic Alignment Engine, or any existing
+          // column. question_type (existing column) gains new values
+          // 'primary' / 'follow_up' alongside the existing 'opening' /
+          // 'drill_down' — old in-progress sessions with 'drill_down' rows
+          // keep working via a backward-compatible check in code.
+          //
+          // story_key (NOT story_anchor / free text): a stable, machine-
+          // friendly identifier like "AWS_PROSERV_25M", assigned once by
+          // Resume Intelligence at parse time. Using a stable key rather
+          // than persisting rendered display text means a later wording
+          // change in Resume Intelligence (e.g. "AWS Professional Services"
+          // -> "AWS ProServe") never silently breaks analytics that already
+          // joined on the old text.
+          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS competency VARCHAR(120)`);
+          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS story_key VARCHAR(80)`);
+          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS parent_question_id INTEGER REFERENCES interview_questions(id) ON DELETE SET NULL`);
+
+          // Career Story Library — the Resume Intelligence output that
+          // assigns each story its stable story_key. Persistent store
+          // (career_profiles, one per user) + per-session immutable
+          // snapshot (interview_sessions), same precedent as the existing
+          // resume_competencies/resume_context columns from migration 008.
+          await c.query(`ALTER TABLE career_profiles ADD COLUMN IF NOT EXISTS story_library JSONB`);
+          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS story_library JSONB`);
+        }
+      },
+      {
+        name: '010_question_blueprint_audit_trail',
+        up: async (c) => {
+          // The Question Blueprint (competency, jd_objective, story_key,
+          // difficulty, question_type) is built deterministically before
+          // every AI question-generation call, but was never persisted —
+          // only competency/story_key/parent_question_id from migration 009
+          // were. Storing the FULL blueprint as one JSONB snapshot gives an
+          // exact audit trail of what was decided for that question at the
+          // time it was generated, immune to any future change in how
+          // jd_objective/difficulty get derived. Purely additive, nullable.
+          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS question_blueprint JSONB`);
+        }
+      },
+      {
+        name: '011_resume_parse_status_tracking',
+        up: async (c) => {
+          // Resume Intelligence had no way to distinguish "parsing genuinely
+          // found nothing" from "parsing technically failed" — both looked
+          // identical (0 competencies, real-looking parsed_at timestamp),
+          // because a failed parse silently saved EMPTY_RESULT over
+          // whatever was there before. Two new columns fix this:
+          //
+          // resume_parse_status: one of SUCCESS | PARSE_FAILED |
+          //   MODEL_TRUNCATED | INVALID_JSON | EXTRACTION_FAILED — always
+          //   set on every parse attempt, success or failure.
+          // resume_last_parse_attempt_at: updates on EVERY attempt
+          //   (success or failure). resume_parsed_at (existing column)
+          //   updates ONLY on genuine success, so it always reflects the
+          //   last time real content was actually saved — never a failed
+          //   attempt's timestamp.
+          await c.query(`ALTER TABLE career_profiles ADD COLUMN IF NOT EXISTS resume_parse_status VARCHAR(30)`);
+          await c.query(`ALTER TABLE career_profiles ADD COLUMN IF NOT EXISTS resume_last_parse_attempt_at TIMESTAMPTZ`);
+        }
+      },
+      {
+        name: '012_founder_access',
+        up: async (c) => {
+          // db/founder-access.js queries/inserts into this table but no
+          // migration anywhere creates it — CREATE TABLE IF NOT EXISTS
+          // makes this safe to run regardless of whether it already exists
+          // on any given environment (e.g. if it was created manually on
+          // staging out-of-band). user_id is UNIQUE because
+          // grantFounderAccess() relies on ON CONFLICT (user_id).
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS founder_access (
+              id SERIAL PRIMARY KEY,
+              user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+              role VARCHAR(50) NOT NULL DEFAULT 'founder',
+              created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+        }
+      },
+      {
+        name: '013_executive_strategy_position',
+        up: async (c) => {
+          // The Executive Interview Strategy layer labels which of the 5
+          // fixed primary positions a question occupies (question_position)
+          // and its deliberate source/purpose (strategy_source,
+          // strategy_purpose) — purely additive analytics fields. Does not
+          // touch competency/story_key/parent_question_id from earlier
+          // migrations, and does not change how competency or story
+          // selection work at all.
+          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS question_position SMALLINT`);
+          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS strategy_source VARCHAR(30)`);
+          await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS strategy_purpose TEXT`);
         }
       },
     ];

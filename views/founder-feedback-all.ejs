@@ -1,0 +1,42 @@
+<%
+const _feedback = typeof feedback !== 'undefined' && feedback ? feedback : [];
+const fmtDT = (d) => d ? new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—';
+%>
+<%- include('partials/workspace-shell-top', { pageTitle: 'All Feedback — Founder Dashboard', activeNav: 'founder', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css', '/css/founder-dashboard.css'] }) %>
+
+<div class="fdash-header-row">
+  <div>
+    <h1>All Feedback</h1>
+    <p class="fdash-subtitle"><a href="/founder" style="color: var(--bright); text-decoration: none;">← Back to Founder Dashboard</a></p>
+  </div>
+</div>
+
+<% if (_feedback.length === 0) { %>
+  <div class="fdash-activity-card"><div class="fdash-activity-empty">No feedback on this page.</div></div>
+<% } else { %>
+  <div class="fdash-fb-col" style="margin-bottom:16px;">
+    <div class="fdash-fb-list">
+      <% _feedback.forEach(function(f) { %>
+      <div class="fdash-fb-item">
+        <div class="fdash-fb-item-top">
+          <span class="fdash-fb-stars"><%= f.rating ? '★'.repeat(f.rating) + '☆'.repeat(5 - f.rating) : 'No rating' %></span>
+          <span class="fdash-fb-user"><%= f.userName %> · <%= fmtDT(f.createdAt) %></span>
+        </div>
+        <% if (f.comment) { %><div class="fdash-fb-comment"><%= f.comment %></div><% } %>
+        <% if (f.feature) { %><div style="font-size:11px; color:var(--dim); margin-top:4px;">via <%= f.feature %></div><% } %>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+<% } %>
+
+<div style="display:flex; justify-content:space-between; margin-top:16px;">
+  <% if (page > 1) { %>
+    <a href="/founder/feedback?page=<%= page - 1 %>" style="text-decoration:none; padding:8px 16px; background:var(--card); border-radius:8px; color:var(--muted); font-size:13px;">← Newer</a>
+  <% } else { %><span></span><% } %>
+  <% if (typeof hasNextPage !== 'undefined' && hasNextPage) { %>
+    <a href="/founder/feedback?page=<%= page + 1 %>" style="text-decoration:none; padding:8px 16px; background:var(--card); border-radius:8px; color:var(--muted); font-size:13px;">Older →</a>
+  <% } %>
+</div>
+
+<%- include('partials/workspace-shell-bottom') %>

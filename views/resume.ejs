@@ -49,10 +49,20 @@
   function renderStatus(data) {
     loadingEl.style.display = 'none';
     loadedEl.style.display = 'block';
-    if (data && data.hasResume) {
+    const hasRealContent = data && (data.competencyCount > 0 || data.storyCount > 0);
+    if (data && data.hasResume && hasRealContent) {
       const parsedDate = data.parsedAt ? new Date(data.parsedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
       lineEl.textContent = 'Resume Intelligence is active.';
-      detailEl.textContent = `Last parsed ${parsedDate} · ${data.competencyCount || 0} competencies detected. Every new interview you start will use this automatically.`;
+      detailEl.textContent = `Last parsed ${parsedDate} · ${data.competencyCount || 0} competencies, ${data.storyCount || 0} career stories detected. Every new interview you start will use this automatically.`;
+    } else if (data && data.hasResume && !hasRealContent) {
+      // A resume is on file but genuinely has almost nothing extractable —
+      // distinct from "no resume at all" and from "parsing failed" (that
+      // case never reaches here, since a failed re-parse always preserves
+      // whatever WAS there — if you're seeing this, the last successful
+      // parse itself found very little, which usually means the resume
+      // text was thin; try pasting the full text directly).
+      lineEl.textContent = '⚠ Resume on file, but little could be extracted.';
+      detailEl.textContent = 'Try pasting the full resume text directly instead of uploading the file — this often extracts much more detail.';
     } else {
       lineEl.textContent = 'No resume on file yet.';
       detailEl.textContent = 'Upload or paste your resume below to personalize your next interview.';
@@ -96,7 +106,13 @@
         return data;
       })
       .then((data) => {
-        submitStatus.textContent = 'Saved.';
+        if (data.success === false && data.preservedPreviousResume) {
+          // Parse failed, but the save layer protected the previous good
+          // data — tell the candidate plainly rather than saying "Saved."
+          submitStatus.textContent = '⚠ ' + (data.error || 'This parse did not complete — your previous resume is still active.');
+        } else {
+          submitStatus.textContent = 'Saved.';
+        }
         renderStatus(data);
         fileInput.value = '';
       })

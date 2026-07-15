@@ -1,10 +1,10 @@
 // Interview sessions DB access — all queries go through here.
 const { pool } = require('./index');
 
-async function createSession({ userId, personaId, roleTitle, experienceLevel, orgPreset, jdText, competencyMatrix, resumeCompetencies, resumeContext }) {
+async function createSession({ userId, personaId, roleTitle, experienceLevel, orgPreset, jdText, competencyMatrix, resumeCompetencies, resumeContext, storyLibrary }) {
   const result = await pool.query(
-    `INSERT INTO interview_sessions (user_id, persona_id, role_title, experience_level, org_preset, jd_text, competency_matrix, resume_competencies, resume_context)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+    `INSERT INTO interview_sessions (user_id, persona_id, role_title, experience_level, org_preset, jd_text, competency_matrix, resume_competencies, resume_context, story_library)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
     [
       userId,
       personaId,
@@ -15,6 +15,7 @@ async function createSession({ userId, personaId, roleTitle, experienceLevel, or
       competencyMatrix ? JSON.stringify(competencyMatrix) : null,
       (resumeCompetencies && resumeCompetencies.length) ? JSON.stringify(resumeCompetencies) : null,
       resumeContext ? JSON.stringify(resumeContext) : null,
+      (storyLibrary && storyLibrary.length) ? JSON.stringify(storyLibrary) : null,
     ]
   );
   return result.rows[0];
@@ -112,11 +113,11 @@ async function getUserAggregateScores(userId) {
   };
 }
 
-async function addQuestion({ sessionId, questionText, personaId, questionType, questionOrder }) {
+async function addQuestion({ sessionId, questionText, personaId, questionType, questionOrder, competency, storyKey, parentQuestionId, questionBlueprint, questionPosition, strategySource, strategyPurpose }) {
   const result = await pool.query(
-    `INSERT INTO interview_questions (session_id, question_text, persona_id, question_type, question_order)
-     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-    [sessionId, questionText, personaId, questionType, questionOrder]
+    `INSERT INTO interview_questions (session_id, question_text, persona_id, question_type, question_order, competency, story_key, parent_question_id, question_blueprint, question_position, strategy_source, strategy_purpose)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+    [sessionId, questionText, personaId, questionType, questionOrder, competency || null, storyKey || null, parentQuestionId || null, questionBlueprint ? JSON.stringify(questionBlueprint) : null, Number.isInteger(questionPosition) ? questionPosition : null, strategySource || null, strategyPurpose || null]
   );
   return result.rows[0];
 }
@@ -184,9 +185,27 @@ async function getReport(sessionId) {
   return result.rows[0] || null;
 }
 
+// Added — the report page was calling this but it didn't exist anywhere in
+// this codebase, causing "getUserCompletedReportCount is not a function".
+// Purely additive: counts how many of this user's sessions have a
+// completed report, using the same status='completed' value completeSession()
+// already writes. If the real call site expects a different signature or
+// semantics, this is a safe starting point to adjust rather than a guess
+// that could break anything currently working (nothing currently calls it).
+async function getUserCompletedReportCount(userId) {
+  const result = await pool.query(
+    `SELECT COUNT(*)::int AS count
+     FROM interview_sessions s
+     JOIN interview_reports r ON r.session_id = s.id
+     WHERE s.user_id = $1 AND s.status = 'completed'`,
+    [userId]
+  );
+  return result.rows[0]?.count || 0;
+}
+
 module.exports = {
   createSession, getSession, getUserSessions, completeSession, abandonSession,
   getSessionQuestions, getSessionScores, getUserAggregateScores,
   addQuestion, addAnswer, addScore,
-  saveReport, getReport,
+  saveReport, getReport, getUserCompletedReportCount,
 };
