@@ -1147,6 +1147,23 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   // does for Layer 10 — computed here too so composePrompt's reasoning
   // chain can reference the SAME resume the candidate actually has on file,
   // not just the personalization block far earlier in the prompt.
+  // ── DEBUG LOGGING (temporary — remove once diagnosis is confirmed) ──────
+  // Logs the RAW inputs this function actually received, before any
+  // processing. If resumeContextReceived/storyLibraryReceived show up
+  // false/0 here even though the candidate has a resume on file, the bug
+  // is upstream — in routes/interview.js or controllers/sessionController.js
+  // not reading/passing session.resume_context / session.story_library
+  // correctly — NOT in this file.
+  console.log('[blueprint-debug] generateNextQuestion inputs:', JSON.stringify({
+    questionCount,
+    isFollowup: !!isFollowup,
+    resumeContextReceived: !!resumeContext,
+    resumeContextType: typeof resumeContext,
+    storyLibraryReceived: Array.isArray(storyLibrary),
+    storyLibraryLength: Array.isArray(storyLibrary) ? storyLibrary.length : 'not-an-array',
+    jdTextLength: (jdText || '').length,
+  }));
+
   const rcForChain = resumeContext && typeof resumeContext === 'object' ? resumeContext : null;
   const storiesForChain = Array.isArray(storyLibrary) ? storyLibrary.filter(s => s && s.story_key && s.summary) : [];
   const hasResumeContext = !!(rcForChain && (
@@ -1201,6 +1218,24 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     // competency + JD objective + question type. Never invented by the model.
     interview_intent: deriveInterviewIntent({ competency, jdObjective: jdObjectiveForBlueprint, questionType: blueprintQuestionType }),
   } : null;
+
+  // ── DEBUG LOGGING (temporary) — the full retrieval/selection outcome for
+  // this turn. hasResumeContext:false here, with resumeContextReceived:true
+  // above, would mean the resume data arrived but didn't pass the
+  // hasResumeContext check — a real bug worth flagging back. storyLibraryLength
+  // > 0 above but selectedStoryKey:null here means retrieval ran but found
+  // no match for this competency (see the story-matching problem from
+  // earlier, or a competency/hint vocabulary mismatch specific to this data).
+  console.log('[blueprint-debug] resolved:', JSON.stringify({
+    hasResumeContext,
+    storiesAvailable: storiesForChain.length,
+    selectedCompetency: competency,
+    jdObjective: jdObjectiveForBlueprint,
+    selectedStoryKey,
+    resolvedStoryCompany: resolvedStory ? resolvedStory.company : null,
+    reason: blueprintReason,
+    questionType: blueprintQuestionType,
+  }));
 
   const calibrationBlueprint = composePrompt({ competency, calibrationState, evidenceProfile, strategy, candidateModel, difficulty, hasResumeContext, isFollowup: !!isFollowup, questionBlueprint });
 
@@ -1273,6 +1308,7 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     attempts++;
   }
 
+  console.log('[blueprint-debug] final output:', JSON.stringify({ storyKey, questionText: text }));
   return { text, competency, storyKey, questionBlueprint };
 }
 
