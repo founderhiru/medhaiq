@@ -354,7 +354,7 @@
    Append to the END of hero-v2.css.
    ============================================================ */
 @media (min-width: 1025px) {
-  .mh-hero { padding-top: 40px; min-height: calc(100svh - 68px); }
+  .mh-hero { padding-top: 76px; min-height: calc(100svh - 68px); } /* 68px nav + 8px buffer — guaranteed clearance regardless of which column (left text vs. terminal) is taller, since whichever one is tallest sits with its top at padding-top exactly */
   .mh-hero-badge { margin-bottom: 14px; }
   .mh-hero-h1 { margin-bottom: 10px; }
   .mh-hero-chips { margin: 14px 0 18px; }
