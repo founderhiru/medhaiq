@@ -301,51 +301,12 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
 
     const allQuestions = await getSessionQuestions(sessionId);
 
-    // ── DETERMINISTIC SKIP/PASS INTENT DETECTION (no LLM) ──────────────────
-    // Fixes the real bug: a candidate typing "pass", "skip this", "I don't
-    // know, just move on", etc. was previously either reprompted with a
-    // generic "please expand" message or scored as a real (near-zero)
-    // answer — neither of which is what the candidate meant. This runs
-    // BEFORE the sparse-answer guardrail below, and produces the exact
-    // same effect as clicking the existing Skip button — same downstream
-    // code path, not a new one. Deliberately conservative: only considers
-    // SHORT inputs (<=15 words) — a genuine, substantive answer describing
-    // real experience is essentially never this short, even if it happens
-    // to mention "next" or "move on" in passing.
-    const STRONG_SKIP_PHRASES = [
-      'skip this', 'pass this', 'just skip', 'just pass', 'skip it', 'pass it',
-      "let's skip", "lets skip", 'skip question', 'pass question', 'next question',
-      "i don't know", "i dont know", 'no idea', "don't know it", "dont know it",
-      'go next', 'go to next',
-    ];
-    // These are genuinely ambiguous — "I decided to move on from the vendor
-    // after repeated delivery failures" is a legitimate story that happens
-    // to contain "move on". They only count as skip-intent when they make
-    // up almost the entire short message (<=6 words), not when embedded in
-    // a longer, real answer.
-    const AMBIGUOUS_SKIP_PHRASES = ['move on', "let's move on", "lets move on", 'move forward', 'continue'];
-    const cleanInputForIntent = (answerText || '').trim();
-    const intentWordCount = cleanInputForIntent.split(/\s+/).filter(Boolean).length;
-    const detectedSkipIntent = (() => {
-      if (!cleanInputForIntent || intentWordCount > 15) return false;
-      const lower = cleanInputForIntent.toLowerCase().replace(/[.!?,]/g, ' ').replace(/\s+/g, ' ').trim();
-      // Also catch the single bare word "skip" or "pass" (not just phrases)
-      if (/^(skip|pass|next)$/.test(lower)) return true;
-      if (STRONG_SKIP_PHRASES.some((phrase) => lower.includes(phrase))) return true;
-      if (intentWordCount <= 6 && AMBIGUOUS_SKIP_PHRASES.some((phrase) => lower.includes(phrase))) return true;
-      return false;
-    })();
-    if (detectedSkipIntent) {
-      console.log(`[intent-router] Detected skip/pass intent in typed answer: "${cleanInputForIntent}" — routing as an explicit skip.`);
-    }
-    const effectiveSkip = !!skip || detectedSkipIntent;
-
     // ── RESPONSE QUALITY GATEWAY INTERCEPTOR ──
     const cleanInput = (answerText || '').trim().replace(/\s+/g, ' ');
     const wordCount = cleanInput.split(' ').filter(Boolean).length;
     const sparsePhrases = new Set(["yes", "no", "ok", "sure", "yep", "nope", "yeah", "yes.", "no."]);
     
-    if (!effectiveSkip && (wordCount < 5 || sparsePhrases.has(cleanInput.toLowerCase()))) {
+    if (!skip && (wordCount < 5 || sparsePhrases.has(cleanInput.toLowerCase()))) {
       console.log(`[guardrail] Intercepted sparse answer: "${cleanInput}". Blocking database commit.`);
       
       const repromptText = "I see. Could you please expand on that answer with a bit more detail or a specific example from your professional experience?";
@@ -373,7 +334,7 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
     const savedAnswer = await addAnswer({
       sessionId,
       questionId,
-      answerText: effectiveSkip ? '' : (answerText || ''),
+      answerText: answerText || '',
     });
     if (!savedAnswer) {
       return res.status(409).json({
@@ -384,7 +345,7 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
 
     // 2. Score the validated answer
     let scores;
-    if (!effectiveSkip && answerText && answerText.trim()) {
+    if (!skip && answerText && answerText.trim()) {
       scores = await scoreAnswer(answerText, session.persona_id, {
         roleTitle: session.role_title,
         experienceLevel: session.experience_level,
@@ -405,7 +366,7 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
       weighted: scores.weighted,
     });
 
-    const starProgress = effectiveSkip
+    const starProgress = skip
       ? { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 }
       : computeStarProgress(answerText);
 
