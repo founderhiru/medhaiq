@@ -16,10 +16,16 @@ const _attrs = company.comingSoon
         <span class="mh-explore-pill mh-explore-pill-gold">Coming Soon</span>
       <% } %>
     </div>
-    <div>
+     <div>
       <div class="mh-explore-company-name"><%= company.name %></div>
       <div class="mh-explore-company-sub"><%= company.subtitle %></div>
+      <% if (company.stat) { %>
+        <div class="mh-explore-company-stat"><%= company.stat %></div>
+      <% } else { %>
+        <div class="mh-explore-company-stat mh-explore-company-stat-placeholder">Details coming soon</div>
+      <% } %>
     </div>
+    
     <span class="mh-explore-card-link">
       <%= company.comingSoon ? 'Notify me' : 'Explore' %>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>

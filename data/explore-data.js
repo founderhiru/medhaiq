@@ -13,6 +13,7 @@ const companies = [
     logo: 'A',
     featured: true,
     comingSoon: false,
+    stat: null, // e.g. "8 Interview Rounds" — leave null until real per-company data is confirmed
   },
   {
     id: 2,
@@ -22,6 +23,7 @@ const companies = [
     logo: 'M',
     featured: true,
     comingSoon: false,
+    stat: null,
   },
   {
     id: 3,
@@ -31,6 +33,7 @@ const companies = [
     logo: 'T',
     featured: false,
     comingSoon: true,
+    stat: null,
   },
 ];
 
