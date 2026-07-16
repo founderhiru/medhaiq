@@ -294,6 +294,12 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
 // Vapi webhook) can use it identically to the HTTP route.
 async function processInterviewAnswer({ sessionId, questionId, answerText, skip, voiceMode, userId, userEmail, userName }) {
   const MAX_QUESTIONS = 5;
+  // One turnId per invocation — the single correlating value threaded
+  // through every log line for this request/response round-trip, so
+  // backend generation, frontend receipt, UI render, and vapi.say() can
+  // all be matched up by grepping for the same TURN_ID.
+  const turnId = Math.random().toString(16).slice(2, 8);
+  console.log(`[turn-trace] TURN_ID=${turnId} processInterviewAnswer start: sessionId=${sessionId} questionId=${questionId} skip=${!!skip} voiceMode=${!!voiceMode}`);
 
   if (!questionId) return { httpStatus: 400, body: { error: 'questionId required' } };
 
@@ -355,12 +361,14 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     console.log(`[guardrail] Intercepted sparse answer: "${cleanInput}". Blocking database commit.`);
 
     const repromptText = "I see. Could you please expand on that answer with a bit more detail or a specific example from your professional experience?";
+    console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (REPROMPT, same question — must NOT advance): QuestionId=${questionId}`);
 
     return {
       httpStatus: 200,
       body: {
         sessionEnded: false,
         validationFailed: true,
+        turnId,
         scores: { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 },
         star_progress: { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 },
         intelligence_scores: { overallScore: 0, vectors: { structure: 0, technicalDepth: 0, executivePresence: 0, gccReadiness: 0, communicationClarity: 0 } },
@@ -500,11 +508,13 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
       console.error('[email] report setup failed (non-fatal):', emailErr.message);
     }
 
+    console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (SESSION ENDED): reportId=${sessionId}`);
     return {
       httpStatus: 200,
       body: {
         sessionEnded: true,
         reportId: sessionId,
+        turnId,
         scores,
         star_progress: starProgress,
         intelligence_scores: intelligenceScores,
@@ -530,10 +540,12 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   if (picked.done) {
     return await finalizeSessionAndRespond();
   }
+  console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (${picked.type === 'follow_up' ? 'FOLLOW_UP — must NOT advance progress' : 'PRIMARY — advances progress'}): QuestionId=${picked.id}`);
   return {
     httpStatus: 200,
     body: {
       sessionEnded: false,
+      turnId,
       scores,
       star_progress: starProgress,
       intelligence_scores: intelligenceScores,

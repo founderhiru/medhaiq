@@ -143,18 +143,17 @@
   var pendingAudioUrl = null;
   var qAudioEl = new Audio();
   var MedhaIQSync = {
-    hold: function(question, type, competency, wasSkipped, turnId) {
-      pendingQuestion = { question: question, type: type, competency: competency, turnId: turnId };
+    hold: function(question, type, competency, wasSkipped) {
+      pendingQuestion = { question: question, type: type, competency: competency };
       var voice = window.MedhaIQVoice;
       if (voice && voice.isLive && voice.isLive()) {
         // v2 FIX (repeat/ghost bugs): the backend's question is the single
         // source of truth ON SCREEN — painted in full, immediately. Vapi is
         // instructed to SPEAK this same text (with an explicit no-repeat
         // directive), but its transcript never overwrites the card again.
-        var instructed = voice.instructNext(question.text, !!wasSkipped, turnId, question.id);
+        var instructed = voice.instructNext(question.text, !!wasSkipped);
         if (instructed) {
           pendingAudioUrl = null; // Vapi is speaking now — our own TTS clip (if any) must not fire later
-          if (turnId) (window.MedhaIQ_log||function(){})('[turn-trace] TURN_ID='+turnId+' UI rendered: QuestionId='+question.id, 'info');
           showQuestion(question, type, competency);
           pendingQuestion = null;
           // Input gate: uiText is drawn; lock typing until the audio
@@ -170,7 +169,6 @@
     },
     reveal: function() {
       if (!pendingQuestion) return;
-      if (pendingQuestion.turnId) (window.MedhaIQ_log||function(){})('[turn-trace] TURN_ID='+pendingQuestion.turnId+' UI rendered (text-only path): QuestionId='+pendingQuestion.question.id, 'info');
       showQuestion(pendingQuestion.question, pendingQuestion.type, pendingQuestion.competency);
       pendingQuestion = null;
       if (pendingAudioUrl) {
@@ -629,8 +627,6 @@
 
       setAIState('GENERATING');
 
-      if (data.turnId) slog('[turn-trace] TURN_ID='+data.turnId+' Frontend received: QuestionId='+(data.question ? data.question.id : QID), 'info');
-
       if (data.sessionEnded) {
       clearInterval(timerInt);
       setAIState('GENERATING_REPORT');
@@ -644,34 +640,14 @@
       setTimeout(function(){ window.location.href='/interview/report/'+data.reportId; }, redirectDelay);
       return; // isSubmitting intentionally stays true — page is navigating away
     }
-
-      // FIX 1 — validationFailed (sparse-answer reprompt): this is the SAME
-      // question asked again with a request for more detail. It must NEVER
-      // advance QID or QN — previously this fell through to the generic
-      // "new question" handling below and incorrectly counted as progress.
-      if (data.validationFailed) {
-        slog('[turn-trace] TURN_ID='+data.turnId+' UI rendering REPROMPT (no advance): QuestionId='+QID, 'info');
-        var repromptQ = { text: data.text, type: 'reprompt', id: QID, order: (data.question ? data.question.order : undefined) };
-        pendingAudioUrl = data.audio_url || null;
-        MedhaIQSync.hold(repromptQ, 'reprompt', data.competency_tag, skip, data.turnId);
-        slog('Q'+QN+' — please expand (not a new question)','info');
-        return;
-      }
-
-      // FIX 2 — follow-up questions do not count toward the 5-question
-      // progress counter. QID still advances (it IS a new question/turn),
-      // but QN must not — previously this incremented unconditionally for
-      // every response type, including follow_up.
+    
       QID = data.question.id;
-      if (data.question.type !== 'follow_up') {
-        QN = Math.min(QN + 1, MAXQ); // clamp — never display past MAXQ even if something upstream misbehaves
-      }
+      QN = Math.min(QN + 1, MAXQ); // clamp — never display past MAXQ even if something upstream misbehaves
       updateCounter();
       var nextQ = { text: data.text || data.question.text, type: data.question.type, id: data.question.id, order: data.question.order };
       pendingAudioUrl = data.audio_url || null;
       window.MedhaIQ_SessionAdvanced = true; // voice connecting late must not re-open from Q1
-      slog('[turn-trace] TURN_ID='+data.turnId+' UI rendering ('+data.question.type+'): QuestionId='+data.question.id, 'info');
-      MedhaIQSync.hold(nextQ, data.question.type, data.competency_tag || data.question.competency, skip, data.turnId);
+      MedhaIQSync.hold(nextQ, data.question.type, data.competency_tag || data.question.competency, skip);
       slog('Q'+QN+' ready','info');
     } catch (err) {
       console.error('[MedhaIQ]', err);
@@ -809,7 +785,6 @@
   var state=STATES.IDLE, vapi=null;
   var assistantTranscriptBuf = '';
   var aiIsSpeaking = false; // true between vapi 'speech-start' and 'speech-end' — guards verbal skip/submit commands
-  var currentSpokenTurnId = null, currentSpokenQuestionId = null; // set by instructNext(), logged at speech-end for the final trace stage
 
   function setState(s,msg,isErr){
     state=s;
@@ -841,16 +816,12 @@
        mechanism. The system add-message is kept, but demoted to a short
        anti-drift guard only (no longer carrying the question text itself),
        sent first so it can never delay or precede the forced utterance. */
-    instructNext: function(questionText, wasSkipped, turnId, questionId){
+    instructNext: function(questionText, wasSkipped){
       if (state !== STATES.LIVE || !vapi) return false;
       try {
         var lead = wasSkipped
           ? 'No problem, let\u2019s move on. '
           : '';
-        // Track the in-flight turn so the speech-end handler below can log
-        // the final stage of the trace against the same TURN_ID/QuestionId.
-        currentSpokenTurnId = turnId || null;
-        currentSpokenQuestionId = (questionId !== undefined && questionId !== null) ? questionId : null;
         // Anti-drift guard only — no question text here, so there is
         // nothing left for the LLM to mediate, paraphrase, or delay.
         vapi.send({
@@ -866,7 +837,6 @@
         if (typeof vapi.say === 'function') {
           vapi.say(lead + String(questionText));
           slog('Forced speech via vapi.say()', 'ok');
-          if (turnId) slog('[turn-trace] TURN_ID='+turnId+' vapi.say(): QuestionId='+questionId, 'info');
         } else {
           // Defensive fallback only, in case an older SDK build lacks
           // say() — keeps the session functional rather than silent.
@@ -880,7 +850,6 @@
           // this session is running on the unreliable fallback path.
           console.warn('[Vapi] vapi.say() unavailable on this SDK build — falling back to context injection');
           slog('WARNING: vapi.say() unavailable — question sent as a suggestion only, not forced', 'err');
-          if (turnId) slog('[turn-trace] TURN_ID='+turnId+' vapi.say() UNAVAILABLE — fallback used for QuestionId='+questionId, 'err');
           vapi.send({
             type: 'add-message',
             message: {
@@ -1117,9 +1086,6 @@
     vapi.on('speech-end', function() {
       aiIsSpeaking = false;
       sub.textContent = 'Your turn — speak clearly';
-      if (currentSpokenTurnId) {
-        slog('[turn-trace] TURN_ID='+currentSpokenTurnId+' Speech finished: QuestionId='+currentSpokenQuestionId, 'info');
-      }
       // Input gate: the question has fully finished playing — unlock.
       if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.unlockInput();
     });
