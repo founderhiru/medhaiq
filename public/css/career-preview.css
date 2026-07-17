@@ -121,7 +121,25 @@
   font-family: var(--font-display); font-size: 11px; font-weight: 700;
   letter-spacing: 0.06em; color: var(--blue-bright); text-transform: uppercase;
   margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
 }
+.mh-preview-sample-badge {
+  font-family: var(--font-body); font-size: 9.5px; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--text-faint);
+  border: 1px solid var(--navy-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.mh-preview-upload-hint {
+  font-size: 11.5px; color: var(--text-faint); text-align: center;
+  margin-bottom: 14px;
+}
+
+/* Fade transition — sample → loading → real result. Subtle opacity only,
+   no scale/motion, per the "premium SaaS, no dramatic animation" brief. */
+.mh-preview-card { transition: opacity 0.3s ease; opacity: 1; }
+.mh-preview-card.mh-preview-fade-out { opacity: 0; }
 .mh-preview-band { font-family: var(--font-display); font-size: clamp(28px, 3vw, 34px); font-weight: 800; color: var(--emerald); line-height: 1; }
 .mh-preview-caption { font-size: 12.5px; color: var(--text-muted); margin-top: 8px; }
 .mh-preview-caption span { color: var(--white); font-weight: 600; }

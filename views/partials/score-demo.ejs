@@ -101,12 +101,17 @@
 
         <div class="mh-preview-error" id="mh-preview-error"></div>
 
+        <div class="mh-preview-upload-hint" id="mh-preview-upload-hint">Upload your resume to generate your personalized Career Intelligence Preview.</div>
+
         <div class="mh-preview-card" id="mh-score-card">
 
           <div class="mh-preview-section">
             <div class="mh-cip-right-top">
               <div>
-                <div class="mh-preview-eyebrow">Career Intelligence Preview</div>
+                <div class="mh-preview-eyebrow">
+                  Career Intelligence Preview
+                  <span class="mh-preview-sample-badge" id="mh-preview-sample-badge">Example Preview</span>
+                </div>
                 <div class="mh-preview-band" id="mh-preview-band"></div>
                 <div class="mh-preview-caption">Estimated from Resume · Confidence: <span id="mh-preview-confidence"></span></div>
                 <div class="mh-preview-helper">Your Verified Career Intelligence is generated after a Live AI Interview.</div>
@@ -171,8 +176,41 @@
 
   var CONFIDENCE_GAUGE_OFFSET = { High: 18, Medium: 48, Low: 89 }; // out of dasharray=119 (semicircle length)
 
-  function renderPreview(preview) {
-    document.getElementById('mh-preview-band').textContent = preview.metrics.overall.band;
+  // Illustrative example shown before any real upload — same schema as a
+  // real /api/public-preview response, just static content. Never sent to
+  // or from the server; purely a presentation fixture.
+  var SAMPLE_PREVIEW = {
+    metrics: { overall: { band: 'Strong', confidence: 'Medium' } },
+    buckets: [
+      { key: 'careerReadiness', label: 'Career Readiness', numeric: true, score: 82 },
+      { key: 'leadership', label: 'Leadership Evidence', numeric: true, score: 74 },
+      { key: 'business', label: 'Business Impact', numeric: true, score: 68 },
+      { key: 'communication', label: 'Executive Communication', numeric: true, score: 71 },
+    ],
+    executiveSignals: {
+      signals: ['Career Scope & Seniority', 'Leadership Evidence', 'Quantified Business Impact', 'Executive Communication'],
+      note: 'Additional capabilities are validated during the live interview.',
+    },
+    opportunities: ['Business impact could be framed with stronger, more specific numbers.'],
+    recruiterFirstImpression: 'This profile shows real leadership scope and team ownership, with measurable business outcomes beginning to take shape. Framing achievements with more specific numbers would strengthen the impression further.',
+  };
+
+  // Band → color mapping for REAL results (per the approved distinction:
+  // sample stays a neutral blue regardless of band; a real result colors
+  // itself by how strong the band actually is).
+  var BAND_COLORS = {
+    'Excellent': 'var(--emerald)',
+    'Strong': 'var(--emerald)',
+    'Good': 'var(--blue-bright)',
+    'Developing': 'var(--gold)',
+    'Early Signal': 'var(--text-faint)',
+  };
+  var SAMPLE_COLOR = 'var(--blue-bright)';
+
+  function renderPreview(preview, isSample) {
+    var bandEl = document.getElementById('mh-preview-band');
+    bandEl.textContent = preview.metrics.overall.band;
+    bandEl.style.color = isSample ? SAMPLE_COLOR : (BAND_COLORS[preview.metrics.overall.band] || 'var(--emerald)');
     document.getElementById('mh-preview-confidence').textContent = preview.metrics.overall.confidence;
 
     var arc = document.getElementById('mh-preview-gauge-arc');
@@ -213,6 +251,11 @@
     oppEl.innerHTML = opportunities.length
       ? opportunities.map(function (o) { return '<li>' + o + '</li>'; }).join('')
       : '<li class="mh-preview-muted-item">No notable gaps detected — resume evidence is strong across the board.</li>';
+
+    var sampleBadge = document.getElementById('mh-preview-sample-badge');
+    var uploadHint = document.getElementById('mh-preview-upload-hint');
+    if (sampleBadge) sampleBadge.style.display = isSample ? '' : 'none';
+    if (uploadHint) uploadHint.style.display = isSample ? '' : 'none';
   }
 
   function renderError(message) {
@@ -268,35 +311,48 @@
       formData.append('targetRole', targetRole);
       formData.append('orgScale', orgScale);
 
-      loading.classList.add('mh-score-loading-visible');
+      // Soft fade-out of whatever is currently showing (sample or a
+      // previous real result) before the loading state appears — keeps the
+      // sample → loading → real-result sequence feeling continuous rather
+      // than an abrupt swap.
+      card.classList.add('mh-preview-fade-out');
       btn.disabled = true;
 
-      fetch('/api/public-preview', { method: 'POST', body: formData })
-        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
-        .then(function (result) {
-          loading.classList.remove('mh-score-loading-visible');
-          btn.disabled = false;
+      setTimeout(function () {
+        card.classList.remove('mh-score-visible');
+        loading.classList.add('mh-score-loading-visible');
 
-          if (!result.ok || result.data.status === 'error') {
+        fetch('/api/public-preview', { method: 'POST', body: formData })
+          .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+          .then(function (result) {
+            loading.classList.remove('mh-score-loading-visible');
+            btn.disabled = false;
+
+            if (!result.ok || result.data.status === 'error') {
+              resetButton(btn);
+              renderError((result.data && result.data.message) || 'Something went wrong. Please try again.');
+              return;
+            }
+            if (result.data.status === 'insufficient_signal') {
+              resetButton(btn);
+              renderError(result.data.message);
+              return;
+            }
+            renderPreview(result.data.preview, false);
+            card.classList.add('mh-score-visible');
+            // Next frame, so the browser registers display:block at
+            // opacity 0 first, then transitions to 1 — a genuine fade-in
+            // rather than an instant pop.
+            requestAnimationFrame(function () { card.classList.remove('mh-preview-fade-out'); });
+            setButtonComplete(btn);
+          })
+          .catch(function () {
+            loading.classList.remove('mh-score-loading-visible');
+            btn.disabled = false;
             resetButton(btn);
-            renderError((result.data && result.data.message) || 'Something went wrong. Please try again.');
-            return;
-          }
-          if (result.data.status === 'insufficient_signal') {
-            resetButton(btn);
-            renderError(result.data.message);
-            return;
-          }
-          renderPreview(result.data.preview);
-          card.classList.add('mh-score-visible');
-          setButtonComplete(btn);
-        })
-        .catch(function () {
-          loading.classList.remove('mh-score-loading-visible');
-          btn.disabled = false;
-          resetButton(btn);
-          renderError('Something went wrong reaching the server. Please try again.');
-        });
+            renderError('Something went wrong reaching the server. Please try again.');
+          });
+      }, 300);
     });
   }
 
@@ -368,6 +424,14 @@
         if (e.key === 'Enter') { e.preventDefault(); commitCustomRole(); }
       });
     }
+  }
+
+  // Show the illustrative sample immediately so the right panel is never
+  // empty for a first-time visitor. Purely presentational — no fetch, no
+  // network call, nothing sent anywhere.
+  if (card) {
+    renderPreview(SAMPLE_PREVIEW, true);
+    card.classList.add('mh-score-visible');
   }
 })();
 </script>
