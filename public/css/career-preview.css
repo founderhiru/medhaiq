@@ -1,166 +1,202 @@
 /* ============================================
    career-preview.css — MedhaIQ Career Intelligence Preview
-   New right-panel styles for the homepage "score-demo" section.
-   Reuses tokens from medhaiq.css (:root) — no new palette introduced.
-   Kept in its own file per the modular architecture we agreed on:
-   this section's styles never mix with the older .mh-metric-* /
-   .mh-score-overall-* rules, which remain in medhaiq.css untouched
-   for any other page still using them.
+   Premium redesign (v2) — connected two-card shell, numbered steps,
+   confidence gauge, chip-style Executive Signals, number-free snapshot
+   bars. Reuses :root tokens from medhaiq.css — no new palette introduced.
+   Loaded AFTER medhaiq.css in layout.ejs, so these rules intentionally
+   override the old .mh-score-* visual defaults for this section only.
    ============================================ */
 
-.mh-preview-output {
-  position: relative;
+.mh-cip-header { text-align: center; margin-bottom: 40px; }
+.mh-cip-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em; color: var(--blue-bright);
+  background: var(--blue-glow); border: 1px solid rgba(59,130,246,0.3);
+  border-radius: 999px; padding: 6px 14px;
 }
+.mh-cip-headline {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(28px, 4.2vw, 46px); color: var(--navy-rich);
+  line-height: 1.15; margin: 18px 0 14px;
+}
+.mh-score .mh-cip-headline { color: var(--navy-rich); }
+.mh-cip-headline .accent {
+  background: linear-gradient(90deg, var(--royal-blue), #7C3AED);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.mh-cip-sub {
+  font-size: clamp(14px, 1.4vw, 17px); color: #64748b;
+  max-width: 640px; margin: 0 auto 24px; line-height: 1.6;
+}
+.mh-cip-stats {
+  display: flex; justify-content: center; align-items: center; gap: 20px;
+  flex-wrap: wrap; font-size: 13px; color: #64748b;
+}
+.mh-cip-stats span { display: inline-flex; align-items: center; gap: 6px; }
+.mh-cip-stats .sep { color: #cbd5e1; }
 
-.mh-preview-card {
-  display: none;
+/* ── Connected shell — replaces the old .mh-score-layout side-by-side ── */
+.mh-cip-shell {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
   background: var(--navy-rich);
   border: 1px solid var(--navy-border);
   border-radius: var(--radius-xl);
-  padding: 28px 30px;
-  text-align: left;
+  overflow: hidden;
 }
-.mh-preview-card.mh-score-visible { display: block !important; }
+.mh-cip-left, .mh-cip-right { padding: clamp(24px, 3vw, 32px); }
+.mh-cip-left { border-right: 1px solid var(--navy-border); background: var(--navy-card); }
 
+.mh-cip-step { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.mh-cip-step:not(:first-child) { margin-top: 26px; }
+.mh-cip-step-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 1.5px solid var(--blue-bright); color: var(--blue-bright);
+  font-family: var(--font-display); font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.mh-cip-step-label { font-family: var(--font-display); font-size: 14.5px; font-weight: 700; color: var(--white); }
+
+/* Dropzone — same #mh-upload-zone / .extracting / .uploaded state classes
+   and toggle logic already defined in medhaiq.css (untouched); this only
+   restyles the visual container to the new centered, premium look. */
+.mh-cip-left .mh-drop-zone {
+  flex-direction: column;
+  text-align: center;
+  background: var(--navy-deep);
+  border: 1.5px dashed var(--navy-border);
+  border-radius: var(--radius-lg);
+  padding: 28px 20px;
+  gap: 8px;
+}
+.mh-cip-left .mh-drop-zone:hover { border-color: var(--blue-bright); background: rgba(59,130,246,0.04); box-shadow: none; }
+.mh-cip-left .mh-drop-icon { background: none; color: var(--blue-bright); width: auto; height: auto; margin: 0 auto; }
+.mh-cip-left .mh-drop-label { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--white); }
+.mh-cip-left .mh-upload-hint { color: var(--text-faint); }
+.mh-cip-left .mh-upload-filename {
+  background: var(--navy-deep); border: 1px solid var(--navy-border);
+  border-radius: var(--radius); padding: 8px 14px; margin-top: 4px;
+}
+.mh-cip-left .mh-drop-zone:not(.mh-upload-zone) {
+  flex-direction: row; text-align: left; background: transparent;
+  border-style: solid; padding: 14px 16px;
+}
+.mh-cip-left .mh-drop-zone:not(.mh-upload-zone) .mh-drop-icon {
+  width: 36px; height: 36px; border-radius: 10px; background: var(--navy-deep);
+}
+.mh-cip-left .mh-drop-select {
+  background: var(--navy-deep); border: 1px solid var(--navy-border); color: var(--white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+.mh-cip-left .mh-drop-select:focus { box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+
+.mh-cip-left .mh-score-cta-wrap { margin-top: 28px; }
+.mh-cip-left .mh-score-run-btn { border-radius: 999px; }
+.mh-cip-left .mh-score-run-btn.is-complete {
+  background: linear-gradient(90deg, #047857, var(--emerald));
+  box-shadow: 0 0 24px rgba(5,150,105,0.3);
+}
+.mh-cip-btn-sub { display: block; font-family: var(--font-body); font-weight: 400; font-size: 11.5px; opacity: 0.85; margin-top: 2px; }
+
+.mh-cip-trust { text-align: center; font-size: 11.5px; color: var(--text-faint); margin-top: 14px; }
+
+/* ── Right panel ─────────────────────────────────────────────────────── */
+.mh-preview-output { position: relative; }
 .mh-preview-error {
   display: none;
-  background: var(--navy-rich);
-  border: 1px solid var(--navy-border);
-  border-left: 3px solid var(--gold);
-  border-radius: var(--radius);
-  padding: 16px 18px;
-  font-size: 12.5px;
-  color: var(--text-muted);
-  line-height: 1.5;
+  background: var(--navy-rich); border: 1px solid var(--navy-border);
+  border-left: 3px solid var(--gold); border-radius: var(--radius);
+  padding: 16px 18px; font-size: 12.5px; color: var(--text-muted); line-height: 1.5;
 }
 .mh-preview-error.mh-preview-error-visible { display: block; }
 
-.mh-preview-section {
-  padding: 14px 0;
-  border-bottom: 1px solid var(--navy-border);
-}
-.mh-preview-section:last-child { border-bottom: none; padding-bottom: 0; }
-.mh-preview-section:first-child { padding-top: 0; }
+.mh-preview-card { display: none; }
+.mh-preview-card.mh-score-visible { display: block !important; }
 
-.mh-preview-section-title {
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--white);
-  margin-bottom: 10px;
-}
-
-/* ── 1. Headline band ────────────────────────────────────────────────── */
+.mh-cip-right-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
 .mh-preview-eyebrow {
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--royal-blue);
-  margin-bottom: 6px;
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em; color: var(--blue-bright); text-transform: uppercase;
+  margin-bottom: 8px;
 }
-.mh-preview-band {
-  font-family: var(--font-display);
-  font-size: 34px;
-  font-weight: 800;
-  color: var(--emerald);
-  line-height: 1.1;
-}
-.mh-preview-caption {
-  font-size: 12.5px;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-.mh-preview-caption span { color: var(--white); font-weight: 600; }
-.mh-preview-helper {
-  font-size: 11.5px;
-  color: var(--text-faint);
-  margin-top: 8px;
-  line-height: 1.4;
-}
+.mh-preview-band { font-family: var(--font-display); font-size: clamp(30px, 3vw, 38px); font-weight: 800; color: var(--emerald); line-height: 1; }
+.mh-preview-caption { font-size: 12.5px; color: var(--text-muted); margin-top: 6px; }
+.mh-preview-caption b, .mh-preview-caption span { color: var(--white); font-weight: 600; }
+.mh-preview-helper { font-size: 11.5px; color: var(--text-faint); margin-top: 8px; max-width: 340px; }
 
-/* ── 2. Snapshot bars — Limited Signal state ─────────────────────────── */
+.mh-cip-gauge { width: 92px; flex-shrink: 0; text-align: center; }
+.mh-cip-gauge svg { display: block; margin: 0 auto; }
+.mh-cip-gauge-label { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--white); margin-top: -34px; }
+.mh-cip-gauge-sub { font-size: 9.5px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+
+.mh-preview-section { padding: 22px 0; border-bottom: 1px solid var(--navy-border); }
+.mh-preview-section:first-child { padding-top: 0; }
+.mh-preview-section:last-child { border-bottom: none; padding-bottom: 0; }
+.mh-preview-section-title { font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--white); margin-bottom: 14px; }
+
+.mh-score-bars { display: flex; flex-direction: column; gap: 12px; }
+.mh-score-bar-row { display: flex; align-items: center; gap: 12px; }
+.mh-score-bar-label { font-size: 12.5px; color: var(--text-muted); width: 160px; flex-shrink: 0; }
+.mh-score-bar-track { flex: 1; height: 7px; background: var(--navy-deep); border-radius: 4px; overflow: hidden; }
+.mh-score-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--blue-bright), var(--emerald)); width: 0; transition: width 1s ease; }
+.mh-score-bar-fill.gold-fill { background: linear-gradient(90deg, var(--gold), #fbbf24); }
 .mh-preview-limited-row { opacity: 0.75; }
 .mh-preview-limited-chip {
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--text-faint);
-  border: 1px solid var(--navy-border);
-  border-radius: 999px;
-  padding: 2px 10px;
-  flex-shrink: 0;
+  font-size: 10.5px; font-weight: 600; color: var(--text-faint);
+  border: 1px solid var(--navy-border); border-radius: 999px; padding: 2px 10px; flex-shrink: 0;
 }
 
-/* ── 3. Executive Signals ─────────────────────────────────────────────── */
-.mh-preview-signal-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.mh-cip-split { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.mh-preview-signal-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
 .mh-preview-signal-list li {
-  font-size: 12.5px;
-  color: var(--white);
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--emerald-soft); color: #6EE7B7;
+  border: 1px solid rgba(5,150,105,0.3); border-radius: 999px;
+  padding: 6px 12px; font-size: 11.5px; font-weight: 600;
 }
-.mh-preview-muted-item { color: var(--text-faint) !important; font-style: italic; }
-.mh-preview-note {
-  font-size: 11px;
-  color: var(--text-faint);
-  margin-top: 8px;
-  font-style: italic;
+.mh-preview-muted-item {
+  background: transparent !important; border-color: var(--navy-border) !important;
+  color: var(--text-faint) !important; font-style: italic; font-weight: 400 !important;
+}
+.mh-preview-note { font-size: 11px; color: var(--text-faint); margin-top: 10px; font-style: italic; }
+
+.mh-preview-recruiter-text { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin: 0; }
+
+.mh-preview-opportunity-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.mh-preview-opportunity-list li { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+
+.mh-preview-cta {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  background: linear-gradient(90deg, rgba(30,64,175,0.15), rgba(5,150,105,0.1));
+  border: 1px solid var(--navy-border); border-radius: var(--radius-lg);
+  padding: 18px 22px;
+}
+.mh-preview-cta-icon {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  background: var(--navy-deep); border: 1px solid var(--navy-border);
+  display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 16px;
+}
+.mh-preview-cta-title { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--white); margin: 0 0 4px; }
+.mh-preview-cta-text { flex: 1; min-width: 220px; font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+.mh-preview-cta-text b { color: var(--white); }
+.mh-preview-cta-btn {
+  background: linear-gradient(90deg, var(--emerald), #10B981) !important;
+  width: auto !important; white-space: nowrap;
+  padding: 11px 20px !important; border-radius: 999px !important;
 }
 
-/* ── 4. Recruiter First Impression ───────────────────────────────────── */
-.mh-preview-recruiter-text {
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--text-muted);
-  margin: 0;
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .mh-cip-shell { grid-template-columns: 1fr; }
+  .mh-cip-left { border-right: none; border-bottom: 1px solid var(--navy-border); }
+  .mh-cip-split { grid-template-columns: 1fr; }
 }
-
-/* ── 5. Opportunities to Strengthen ──────────────────────────────────── */
-.mh-preview-opportunity-list {
-  margin: 0;
-  padding-left: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.mh-preview-opportunity-list li {
-  font-size: 12.5px;
-  color: var(--text-muted);
-  line-height: 1.45;
-}
-
-/* ── 6. Premium CTA ───────────────────────────────────────────────────── */
-.mh-preview-cta { background: var(--gold-soft); border-radius: var(--radius); padding: 16px 18px; margin-top: 4px; }
-.mh-preview-cta-title {
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--gold);
-  margin-bottom: 6px;
-}
-.mh-preview-cta-copy { font-size: 12px; color: var(--text-muted); margin: 0 0 8px; }
-.mh-preview-cta-list {
-  list-style: none;
-  margin: 0 0 14px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.mh-preview-cta-list li {
-  font-size: 12px;
-  color: var(--white);
-}
-.mh-preview-cta-list li::before { content: '\2713  '; color: var(--gold); }
-.mh-preview-cta-btn { width: 100%; }
-
-@media (max-width: 860px) {
-  .mh-preview-band { font-size: 28px; }
+@media (max-width: 520px) {
+  .mh-cip-stats { flex-direction: column; gap: 8px; }
+  .mh-cip-stats .sep { display: none; }
+  .mh-cip-right-top { flex-direction: column; }
+  .mh-preview-cta { flex-direction: column; align-items: flex-start; }
+  .mh-preview-cta-btn { width: 100% !important; justify-content: center; }
 }
