@@ -101,7 +101,7 @@
       <% } %>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="insights">
       <h3>Interview Insights</h3>
       <!-- Labels here are the SAME ones already shown on the per-session
            Report page (interview-report.ejs) — Structure / Domain Expertise /
@@ -210,5 +210,17 @@
   </div>
 
 <% } %>
+
+<script>
+  // If arrived via the "Interview Insights" nav link (?focus=insights),
+  // scroll that panel into view. Purely presentational, no other behavior
+  // on this page is affected.
+  (function() {
+    if (new URLSearchParams(window.location.search).get('focus') === 'insights') {
+      var el = document.getElementById('insights');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  })();
+</script>
 
 <%- include('partials/workspace-shell-bottom') %>
