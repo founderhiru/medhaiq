@@ -334,7 +334,7 @@
         card.classList.remove('mh-score-visible');
         loading.classList.add('mh-score-loading-visible');
 
-        fetch('/api/public-preview', { method: 'POST', body: formData })
+        fetch('https://api.medhaiq.com/api/public-preview', { method: 'POST', body: formData })
           .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
           .then(function (result) {
             loading.classList.remove('mh-score-loading-visible');
