@@ -17,7 +17,7 @@
 
 /* ── Connected shell ─────────────────────────────────────────────────── */
 .mh-cip-shell {
-  margin-top: 48px;
+  margin-top: 24px;
   display: grid;
   grid-template-columns: 1fr 1.2fr;
   background: var(--navy-rich);
@@ -26,7 +26,7 @@
   overflow: hidden;
 }
 .mh-cip-left, .mh-preview-output { padding: 32px; }
-.mh-cip-left { border-right: 1px solid var(--navy-border); background: var(--navy-card); display: flex; flex-direction: column; }
+.mh-cip-left { border-right: 1px solid rgba(255, 255, 255, 0.1); background: var(--navy-card); display: flex; flex-direction: column; }
 
 .mh-cip-step { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .mh-cip-step:not(:first-child) { margin-top: 30px; }
@@ -45,7 +45,7 @@
   background: var(--navy-deep);
   border: 1.5px dashed var(--navy-border);
   border-radius: var(--radius-lg);
-  padding: 32px 20px;
+  padding: 24px 20px;
   gap: 8px;
 }
 .mh-cip-left .mh-drop-zone:hover { border-color: var(--blue-bright); background: rgba(59,130,246,0.04); box-shadow: none; }
