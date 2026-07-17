@@ -120,9 +120,10 @@
           </div>
 
           <!-- Calm sub-caption -->
-          <div class="mh-preview-caption" style="margin-top: 6px; font-size: 12.5px; color: var(--text-muted);">
-            Estimated from Resume · Confidence: <span id="mh-preview-confidence">Medium</span>
-          </div>
+          <!-- Updated Premium Frame -->
+         <div class="mh-preview-caption" style="margin-top: 6px; font-size: 12.5px; color: var(--text-muted); letter-spacing: 0.01em;">
+         Estimated from Resume · <span style="color: var(--text-faint);">Verified through Live AI Interview</span>
+         </div>
           </div>
               <div class="mh-cip-gauge">
                 <svg width="88" height="52" viewBox="0 0 88 52">
@@ -224,7 +225,8 @@
     var arc = document.getElementById('mh-preview-gauge-arc');
     var offset = CONFIDENCE_GAUGE_OFFSET[preview.metrics.overall.confidence];
     arc.style.strokeDashoffset = (offset !== undefined ? offset : 89);
-    document.getElementById('mh-preview-gauge-label').textContent = preview.metrics.overall.confidence;
+   // Change this line if it dynamically sets a text content that conflicts:
+    document.getElementById('mh-preview-gauge-label').textContent = isSample ? 'Top 20%' : preview.metrics.overall.confidence;
 
     // Snapshot bars — visual-only, no numeric label (direction, not false
     // precision). A bucket that didn't clear the reliability threshold
