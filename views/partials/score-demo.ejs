@@ -261,9 +261,10 @@
       : '<li class="mh-preview-muted-item">No notable gaps detected — resume evidence is strong across the board.</li>';
 
     var sampleFlag = document.getElementById('mh-sample-headline-flag');
-    var uploadHint = document.getElementById('mh-preview-upload-hint');
-    if (sampleFlag) sampleFlag.querySelector('span').style.display = isSample ? 'block' : 'none';
-    if (uploadHint) uploadHint.style.display = isSample ? '' : 'none';
+  if (sampleFlag) {
+  var flagSpan = sampleFlag.querySelector('span');
+  if (flagSpan) flagSpan.style.display = isSample ? 'block' : 'none';
+}
   }
 
   function renderError(message) {
