@@ -1,56 +1,35 @@
 /* ============================================
    career-preview.css — MedhaIQ Career Intelligence Preview
-   Premium redesign (v2) — connected two-card shell, numbered steps,
-   confidence gauge, chip-style Executive Signals, number-free snapshot
-   bars. Reuses :root tokens from medhaiq.css — no new palette introduced.
-   Loaded AFTER medhaiq.css in layout.ejs, so these rules intentionally
-   override the old .mh-score-* visual defaults for this section only.
+   v3 — native-homepage-section pass. Header now uses the SAME shared
+   .mh-eyebrow / .mh-section-title / .mh-section-sub classes as Pricing,
+   Timeline, Framework, etc. (defined once in medhaiq.css) instead of a
+   custom headline treatment — this is what makes it inherit the exact
+   sitewide type scale rather than approximating it.
    ============================================ */
 
-.mh-cip-header { text-align: center; margin-bottom: 40px; }
-.mh-cip-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-family: var(--font-display); font-size: 11px; font-weight: 700;
-  letter-spacing: 0.06em; color: var(--blue-bright);
-  background: var(--blue-glow); border: 1px solid rgba(59,130,246,0.3);
-  border-radius: 999px; padding: 6px 14px;
-}
-.mh-cip-headline {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: clamp(28px, 4.2vw, 46px); color: var(--navy-rich);
-  line-height: 1.15; margin: 18px 0 14px;
-}
-.mh-score .mh-cip-headline { color: var(--navy-rich); }
-.mh-cip-headline .accent {
-  background: linear-gradient(90deg, var(--royal-blue), #7C3AED);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-.mh-cip-sub {
-  font-size: clamp(14px, 1.4vw, 17px); color: #64748b;
-  max-width: 640px; margin: 0 auto 24px; line-height: 1.6;
-}
 .mh-cip-stats {
-  display: flex; justify-content: center; align-items: center; gap: 20px;
-  flex-wrap: wrap; font-size: 13px; color: #64748b;
+  display: flex; justify-content: center; align-items: center; gap: 14px;
+  flex-wrap: wrap; font-size: 13px; color: var(--text-muted); margin-top: 18px;
 }
+.mh-score .mh-cip-stats { color: #64748b; }
 .mh-cip-stats span { display: inline-flex; align-items: center; gap: 6px; }
 .mh-cip-stats .sep { color: #cbd5e1; }
 
-/* ── Connected shell — replaces the old .mh-score-layout side-by-side ── */
+/* ── Connected shell ─────────────────────────────────────────────────── */
 .mh-cip-shell {
-  margin-top: 40px;
+  margin-top: 48px;
   display: grid;
-  grid-template-columns: 1fr 1.35fr;
+  grid-template-columns: 1fr 1.2fr;
   background: var(--navy-rich);
   border: 1px solid var(--navy-border);
   border-radius: var(--radius-xl);
   overflow: hidden;
 }
-.mh-cip-left, .mh-cip-right { padding: clamp(24px, 3vw, 32px); }
-.mh-cip-left { border-right: 1px solid var(--navy-border); background: var(--navy-card); }
+.mh-cip-left, .mh-preview-output { padding: 32px; }
+.mh-cip-left { border-right: 1px solid var(--navy-border); background: var(--navy-card); display: flex; flex-direction: column; }
 
-.mh-cip-step { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.mh-cip-step:not(:first-child) { margin-top: 26px; }
+.mh-cip-step { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.mh-cip-step:not(:first-child) { margin-top: 30px; }
 .mh-cip-step-num {
   width: 24px; height: 24px; border-radius: 50%;
   border: 1.5px solid var(--blue-bright); color: var(--blue-bright);
@@ -59,16 +38,14 @@
 }
 .mh-cip-step-label { font-family: var(--font-display); font-size: 14.5px; font-weight: 700; color: var(--white); }
 
-/* Dropzone — same #mh-upload-zone / .extracting / .uploaded state classes
-   and toggle logic already defined in medhaiq.css (untouched); this only
-   restyles the visual container to the new centered, premium look. */
+/* Dropzone — IDs/state classes unchanged; visual container restyled only. */
 .mh-cip-left .mh-drop-zone {
   flex-direction: column;
   text-align: center;
   background: var(--navy-deep);
   border: 1.5px dashed var(--navy-border);
   border-radius: var(--radius-lg);
-  padding: 28px 20px;
+  padding: 32px 20px;
   gap: 8px;
 }
 .mh-cip-left .mh-drop-zone:hover { border-color: var(--blue-bright); background: rgba(59,130,246,0.04); box-shadow: none; }
@@ -79,20 +56,44 @@
   background: var(--navy-deep); border: 1px solid var(--navy-border);
   border-radius: var(--radius); padding: 8px 14px; margin-top: 4px;
 }
+
+/* Role/org-scale rows — row layout (icon left, select right) */
 .mh-cip-left .mh-drop-zone:not(.mh-upload-zone) {
-  flex-direction: row; text-align: left; background: transparent;
-  border-style: solid; padding: 14px 16px;
+  flex-direction: row; align-items: center; text-align: left; background: transparent;
+  border-style: solid; padding: 14px 16px; gap: 14px;
 }
 .mh-cip-left .mh-drop-zone:not(.mh-upload-zone) .mh-drop-icon {
   width: 36px; height: 36px; border-radius: 10px; background: var(--navy-deep);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
+
+/* FIX: previous pass used the `background` SHORTHAND here, which silently
+   resets background-repeat/background-position to their defaults, breaking
+   the dropdown arrow's position and, on some renders, its visibility
+   entirely. Using background-color (not the shorthand) preserves every
+   other background sub-property already set by the base .mh-drop-select
+   rule in medhaiq.css, so the arrow position/no-repeat behavior survives
+   untouched. This was the actual root cause of the "broken dropdown" bug. */
 .mh-cip-left .mh-drop-select {
-  background: var(--navy-deep); border: 1px solid var(--navy-border); color: var(--white);
+  background-color: var(--navy-deep);
+  border: 1px solid var(--navy-border);
+  color: var(--white);
+  height: 44px;
+  line-height: 1.2;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
-.mh-cip-left .mh-drop-select:focus { box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+.mh-cip-left .mh-drop-select:hover { border-color: #2b3a56; }
+.mh-cip-left .mh-drop-select:focus {
+  outline: none; border-color: var(--blue-bright);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+/* Improves native option-list contrast on browsers/platforms that respect
+   it (Chrome/Firefox on Windows, Linux, Android); macOS/iOS Safari always
+   renders native <option> lists with system chrome regardless of CSS —
+   a platform limitation, not something fixable from here. */
+.mh-cip-left .mh-drop-select option { background: var(--navy-deep); color: var(--white); }
 
-.mh-cip-left .mh-score-cta-wrap { margin-top: 28px; }
+.mh-cip-left .mh-score-cta-wrap { margin-top: auto; padding-top: 30px; }
 .mh-cip-left .mh-score-run-btn { border-radius: 999px; }
 .mh-cip-left .mh-score-run-btn.is-complete {
   background: linear-gradient(90deg, #047857, var(--emerald));
@@ -121,22 +122,28 @@
   letter-spacing: 0.06em; color: var(--blue-bright); text-transform: uppercase;
   margin-bottom: 8px;
 }
-.mh-preview-band { font-family: var(--font-display); font-size: clamp(30px, 3vw, 38px); font-weight: 800; color: var(--emerald); line-height: 1; }
-.mh-preview-caption { font-size: 12.5px; color: var(--text-muted); margin-top: 6px; }
-.mh-preview-caption b, .mh-preview-caption span { color: var(--white); font-weight: 600; }
-.mh-preview-helper { font-size: 11.5px; color: var(--text-faint); margin-top: 8px; max-width: 340px; }
+.mh-preview-band { font-family: var(--font-display); font-size: clamp(28px, 3vw, 34px); font-weight: 800; color: var(--emerald); line-height: 1; }
+.mh-preview-caption { font-size: 12.5px; color: var(--text-muted); margin-top: 8px; }
+.mh-preview-caption span { color: var(--white); font-weight: 600; }
+.mh-preview-helper { font-size: 11.5px; color: var(--text-faint); margin-top: 8px; max-width: 340px; line-height: 1.5; }
 
 .mh-cip-gauge { width: 92px; flex-shrink: 0; text-align: center; }
 .mh-cip-gauge svg { display: block; margin: 0 auto; }
 .mh-cip-gauge-label { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--white); margin-top: -34px; }
 .mh-cip-gauge-sub { font-size: 9.5px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
 
-.mh-preview-section { padding: 22px 0; border-bottom: 1px solid var(--navy-border); }
-.mh-preview-section:first-child { padding-top: 0; }
-.mh-preview-section:last-child { border-bottom: none; padding-bottom: 0; }
-.mh-preview-section-title { font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--white); margin-bottom: 14px; }
+/* Consistent vertical rhythm — every section gets the SAME top margin
+   (except the first), regardless of whether it also has a divider below
+   it. Only 2 dividers total in the whole card (per the design review),
+   everything else separated by whitespace alone. */
+.mh-preview-section { margin-top: 28px; }
+.mh-preview-section:first-child { margin-top: 0; }
+.mh-preview-section--divided { padding-bottom: 28px; border-bottom: 1px solid var(--navy-border); }
+.mh-preview-section--last { margin-top: 32px; }
 
-.mh-score-bars { display: flex; flex-direction: column; gap: 12px; }
+.mh-preview-section-title { font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--white); margin-bottom: 16px; }
+
+.mh-score-bars { display: flex; flex-direction: column; gap: 14px; }
 .mh-score-bar-row { display: flex; align-items: center; gap: 12px; }
 .mh-score-bar-label { font-size: 12.5px; color: var(--text-muted); width: 160px; flex-shrink: 0; }
 .mh-score-bar-track { flex: 1; height: 7px; background: var(--navy-deep); border-radius: 4px; overflow: hidden; }
@@ -148,7 +155,7 @@
   border: 1px solid var(--navy-border); border-radius: 999px; padding: 2px 10px; flex-shrink: 0;
 }
 
-.mh-cip-split { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.mh-cip-split { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
 .mh-preview-signal-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
 .mh-preview-signal-list li {
   display: inline-flex; align-items: center; gap: 6px;
@@ -160,43 +167,46 @@
   background: transparent !important; border-color: var(--navy-border) !important;
   color: var(--text-faint) !important; font-style: italic; font-weight: 400 !important;
 }
-.mh-preview-note { font-size: 11px; color: var(--text-faint); margin-top: 10px; font-style: italic; }
+.mh-preview-note { font-size: 11px; color: var(--text-faint); margin-top: 12px; font-style: italic; }
 
-.mh-preview-recruiter-text { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin: 0; }
+.mh-preview-recruiter-text { font-size: 12.5px; color: var(--text-muted); line-height: 1.65; margin: 0; }
 
-.mh-preview-opportunity-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
-.mh-preview-opportunity-list li { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+.mh-preview-opportunity-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
+.mh-preview-opportunity-list li { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; }
 
 .mh-preview-cta {
   display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
   background: linear-gradient(90deg, rgba(30,64,175,0.15), rgba(5,150,105,0.1));
   border: 1px solid var(--navy-border); border-radius: var(--radius-lg);
-  padding: 18px 22px;
+  padding: 20px 22px;
 }
 .mh-preview-cta-icon {
   width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
   background: var(--navy-deep); border: 1px solid var(--navy-border);
   display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 16px;
 }
-.mh-preview-cta-title { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--white); margin: 0 0 4px; }
-.mh-preview-cta-text { flex: 1; min-width: 220px; font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+.mh-preview-cta-text { flex: 1; min-width: 220px; font-size: 12.5px; color: var(--text-muted); line-height: 1.55; margin: 0; }
 .mh-preview-cta-text b { color: var(--white); }
 .mh-preview-cta-btn {
   background: linear-gradient(90deg, var(--emerald), #10B981) !important;
   width: auto !important; white-space: nowrap;
-  padding: 11px 20px !important; border-radius: 999px !important;
+  padding: 12px 22px !important; border-radius: 999px !important;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .mh-cip-shell { grid-template-columns: 1fr; }
   .mh-cip-left { border-right: none; border-bottom: 1px solid var(--navy-border); }
-  .mh-cip-split { grid-template-columns: 1fr; }
+  .mh-cip-split { grid-template-columns: 1fr; gap: 20px; }
 }
 @media (max-width: 520px) {
-  .mh-cip-stats { flex-direction: column; gap: 8px; }
+  .mh-cip-left, .mh-preview-output { padding: 22px; }
+  .mh-cip-stats { gap: 8px; }
   .mh-cip-stats .sep { display: none; }
+  .mh-cip-stats span { width: 100%; justify-content: center; }
   .mh-cip-right-top { flex-direction: column; }
+  .mh-cip-gauge { align-self: flex-start; }
   .mh-preview-cta { flex-direction: column; align-items: flex-start; }
   .mh-preview-cta-btn { width: 100% !important; justify-content: center; }
+  .mh-score-bar-label { width: 120px; font-size: 11.5px; }
 }
