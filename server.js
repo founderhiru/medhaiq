@@ -73,6 +73,7 @@ app.use('/api/admin',      require('./routes/admin'));
 app.use('/api/founder',    require('./routes/founder'));
 app.use('/api/feedback',   require('./routes/feedback'));
 app.use('/api',            require('./routes/vapi'));
+app.use('/api/public-preview', require('./routes/public-preview'));
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
 // Landing page — acquisition surface for NEW users only.

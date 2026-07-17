@@ -35,7 +35,7 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
             <div style="width:100%">
-              <div class="mh-drop-label">Choose Target Role & Level</div>
+              <div class="mh-drop-label">Choose Target Role &amp; Level</div>
               <select class="mh-drop-select" id="mh-role-select">
                 <option value="">Select a role...</option>
                 <option>Software Engineer</option>
@@ -73,8 +73,8 @@
         </div>
       </div>
 
-      <!-- Right: score output -->
-      <div class="mh-score-output">
+      <!-- Right: Career Intelligence Preview -->
+      <div class="mh-preview-output">
         <!-- Loading state -->
         <div class="mh-score-loading" id="mh-score-loading">
           <div class="mh-shimmer" style="width:60%"></div>
@@ -84,92 +84,62 @@
           <div class="mh-shimmer" style="width:55%"></div>
         </div>
 
-        <!-- Score card -->
-        <div class="mh-score-card" id="mh-score-card">
-          <div class="mh-score-centre">
-            <div class="mh-score-overall-ring">
-              <svg width="120" height="120" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r="52" fill="none" stroke="var(--navy-border)" stroke-width="8"/>
-                <circle cx="60" cy="60" r="52" fill="none" stroke="var(--gold)" stroke-width="8"
-                  stroke-dasharray="327" stroke-dashoffset="56"
-                  id="mh-overall-circle" style="transition: stroke-dashoffset 1.5s ease"/>
-              </svg>
-              <div class="mh-score-overall-val">
-                <span class="mh-score-overall-num" id="mh-overall-num">83</span>
-                <span class="mh-score-overall-label">Overall</span>
-              </div>
-              <div class="mh-score-overall-pulse"></div>
-            </div>
+        <!-- insufficient_signal / error state — distinct from the 6-section
+             card, shown only when the API can't produce a preview at all
+             (the "Early Signal" band is a different case and still renders
+             the full card below, with buckets in their Limited Signal state) -->
+        <div class="mh-preview-error" id="mh-preview-error"></div>
+
+        <!-- Preview card: 6 stacked sections -->
+        <div class="mh-preview-card" id="mh-score-card">
+
+          <!-- 1. Career Intelligence Preview (headline band, never a raw number) -->
+          <div class="mh-preview-section mh-preview-headline">
+            <div class="mh-preview-eyebrow">Career Intelligence Preview</div>
+            <div class="mh-preview-band" id="mh-preview-band"></div>
+            <div class="mh-preview-caption">Estimated from Resume · Confidence: <span id="mh-preview-confidence"></span></div>
+            <div class="mh-preview-helper">Your Verified Career Intelligence is generated after a Live AI Interview.</div>
           </div>
 
-          <div class="mh-score-metrics">
-            <div class="mh-metric-dial">
-              <div class="mh-metric-ring-wrap">
-                <svg width="72" height="72" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--emerald)" stroke-width="5"
-                    stroke-dasharray="188" stroke-dashoffset="18"
-                    class="mh-metric-circle" data-target="83"/>
-                </svg>
-                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="83">83</span>%</div>
-              </div>
-              <div class="mh-metric-label">STAR Method Structure</div>
-            </div>
-
-            <div class="mh-metric-dial">
-              <div class="mh-metric-ring-wrap">
-                <svg width="72" height="72" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--emerald)" stroke-width="5"
-                    stroke-dasharray="188" stroke-dashoffset="17"
-                    class="mh-metric-circle" data-target="91"/>
-                </svg>
-                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="91">91</span>%</div>
-              </div>
-              <div class="mh-metric-label">Executive Tone</div>
-            </div>
-
-            <div class="mh-metric-dial">
-              <div class="mh-metric-ring-wrap">
-                <svg width="72" height="72" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--emerald)" stroke-width="5"
-                    stroke-dasharray="188" stroke-dashoffset="21"
-                    class="mh-metric-circle" data-target="89"/>
-                </svg>
-                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="89">89</span>%</div>
-              </div>
-              <div class="mh-metric-label">Coherence Score</div>
-            </div>
-
-            <div class="mh-metric-dial">
-              <div class="mh-metric-ring-wrap">
-                <svg width="72" height="72" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--gold)" stroke-width="5"
-                    stroke-dasharray="188" stroke-dashoffset="42"
-                    class="mh-metric-circle" data-target="78"/>
-                </svg>
-                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="78">78</span>%</div>
-              </div>
-              <div class="mh-metric-label">Confidence Index</div>
-            </div>
-
-            <div class="mh-metric-dial">
-              <div class="mh-metric-ring-wrap">
-                <svg width="72" height="72" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--gold)" stroke-width="5"
-                    stroke-dasharray="188" stroke-dashoffset="45"
-                    class="mh-metric-circle" data-target="76"/>
-                </svg>
-                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="76">76</span>%</div>
-              </div>
-              <div class="mh-metric-label">Promotion Readiness Index</div>
-            </div>
+          <!-- 2. Resume Intelligence Snapshot (4 bars, visual-only — no false precision) -->
+          <div class="mh-preview-section">
+            <div class="mh-preview-section-title">Resume Intelligence Snapshot</div>
+            <div class="mh-score-bars" id="mh-preview-bars"></div>
           </div>
 
-          <p class="mh-score-disclaimer"><em>Instant diagnostic preview generated under MedhaIQ Sandbox Parameters. Start your free trial to unlock your full unredacted enterprise report.</em></p>
+          <!-- 3. Executive Signals Detected -->
+          <div class="mh-preview-section">
+            <div class="mh-preview-section-title">Executive Signals Detected</div>
+            <ul class="mh-preview-signal-list" id="mh-preview-signals"></ul>
+            <div class="mh-preview-note"></div>
+          </div>
+
+          <!-- 4. AI Recruiter First Impression -->
+          <div class="mh-preview-section">
+            <div class="mh-preview-section-title">AI Recruiter First Impression</div>
+            <p class="mh-preview-recruiter-text" id="mh-preview-recruiter-text"></p>
+          </div>
+
+          <!-- 5. Opportunities to Strengthen (max 3, constructive framing only) -->
+          <div class="mh-preview-section">
+            <div class="mh-preview-section-title">Opportunities to Strengthen</div>
+            <ul class="mh-preview-opportunity-list" id="mh-preview-opportunities"></ul>
+          </div>
+
+          <!-- 6. Premium CTA -->
+          <div class="mh-preview-section mh-preview-cta">
+            <div class="mh-preview-cta-title">What Your Resume Cannot Reveal</div>
+            <p class="mh-preview-cta-copy">A resume demonstrates experience. It cannot verify:</p>
+            <ul class="mh-preview-cta-list">
+              <li>Executive Presence</li>
+              <li>Strategic Thinking</li>
+              <li>Communication Under Pressure</li>
+              <li>Leadership Judgement</li>
+              <li>Decision Making</li>
+            </ul>
+            <button type="button" class="mh-score-run-btn mh-preview-cta-btn">Start Free Trial</button>
+          </div>
+
         </div>
       </div>
     </div>
@@ -178,42 +148,126 @@
 
 <script>
 (function () {
+  // ── Renders directly off the real API response shape from
+  // POST /api/public-preview (services/resume-preview-scoring.js's
+  // scoreResume(), wrapped by services/resume-preview.js). No adapter
+  // layer, no field renaming, no duplicate mapping logic, no mock data —
+  // every value below is read straight off what the backend returns.
+
+  function renderPreview(preview) {
+    document.getElementById('mh-preview-band').textContent = preview.metrics.overall.band;
+    document.getElementById('mh-preview-confidence').textContent = preview.metrics.overall.confidence;
+
+    // 2. Snapshot bars — visual-only, no numeric label (direction, not false
+    // precision). A bucket that didn't clear the reliability threshold
+    // (numeric: false) renders as a "Limited Signal" chip instead of a bar.
+    var barsEl = document.getElementById('mh-preview-bars');
+    barsEl.innerHTML = preview.buckets.map(function (b) {
+      if (!b.numeric) {
+        return '<div class="mh-score-bar-row mh-preview-limited-row">' +
+          '<span class="mh-score-bar-label">' + b.label + '</span>' +
+          '<span class="mh-preview-limited-chip">Limited Signal</span>' +
+          '</div>';
+      }
+      var fillClass = b.score >= 70 ? '' : 'gold-fill';
+      return '<div class="mh-score-bar-row">' +
+        '<span class="mh-score-bar-label">' + b.label + '</span>' +
+        '<div class="mh-score-bar-track"><div class="mh-score-bar-fill ' + fillClass + '" style="width:' + b.score + '%"></div></div>' +
+        '</div>';
+    }).join('');
+
+    // 3. Executive Signals — honest count; note is always shown, straight
+    // from preview.executiveSignals.note.
+    var signalsEl = document.getElementById('mh-preview-signals');
+    var signals = preview.executiveSignals.signals || [];
+    signalsEl.innerHTML = signals.length
+      ? signals.map(function (s) { return '<li>&#10003; ' + s + '</li>'; }).join('')
+      : '<li class="mh-preview-muted-item">No strong signals detected yet from the resume alone.</li>';
+    document.querySelector('#mh-score-card .mh-preview-note').textContent = preview.executiveSignals.note;
+
+    // 4. Recruiter First Impression — template-selected string from the
+    // backend, never generated client-side.
+    document.getElementById('mh-preview-recruiter-text').textContent = preview.recruiterFirstImpression;
+
+    // 5. Opportunities — plain string[].
+    var oppEl = document.getElementById('mh-preview-opportunities');
+    var opportunities = preview.opportunities || [];
+    oppEl.innerHTML = opportunities.length
+      ? opportunities.map(function (o) { return '<li>' + o + '</li>'; }).join('')
+      : '<li class="mh-preview-muted-item">No notable gaps detected — resume evidence is strong across the board.</li>';
+  }
+
+  function renderError(message) {
+    var errorEl = document.getElementById('mh-preview-error');
+    errorEl.textContent = message;
+    errorEl.classList.add('mh-preview-error-visible');
+    document.getElementById('mh-score-card').classList.remove('mh-score-visible');
+  }
+
+  function clearError() {
+    var errorEl = document.getElementById('mh-preview-error');
+    errorEl.classList.remove('mh-preview-error-visible');
+    errorEl.textContent = '';
+  }
+
   var btn = document.getElementById('mh-run-btn');
   var loading = document.getElementById('mh-score-loading');
   var card = document.getElementById('mh-score-card');
-  if (!btn || !loading || !card) return;
-  btn.addEventListener('click', function (e) {
-    e.preventDefault();
-    loading.classList.add('mh-score-loading-visible');
-    setTimeout(function () {
-      loading.classList.remove('mh-score-loading-visible');
-      card.classList.add('mh-score-visible');
-      card.querySelectorAll('.mh-metric-circle').forEach(function (c) {
-        var rawFull = c.getAttribute('stroke-dasharray');
-        if (!rawFull) return;
-        var full = parseFloat(rawFull);
-        if (isNaN(full)) return;
-        c.style.strokeDashoffset = full;
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            var target = parseInt(c.getAttribute('data-target'), 10);
-            c.style.transition = 'stroke-dashoffset 1.5s ease-in-out';
-            c.style.strokeDashoffset = full - (full * target / 100);
-          });
-        });
-      });
-      var overall = document.getElementById('mh-overall-circle');
-      if (overall) {
-        overall.style.strokeDashoffset = 327;
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            overall.style.strokeDashoffset = 56;
-          });
-        });
-      }
-    }, 1500);
-  });
+  var cvFileInput = document.getElementById('mh-cv-file');
+  var roleSelect = document.getElementById('mh-role-select');
+  var scaleSelect = document.getElementById('mh-scale-select');
 
+  if (btn && loading && card) {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      clearError();
+
+      var targetRole = roleSelect ? roleSelect.value : '';
+      var orgScale = scaleSelect ? scaleSelect.value : '';
+      if (!cvFileInput || !cvFileInput.files.length) {
+        renderError('Upload your resume first.');
+        return;
+      }
+      if (!targetRole || !orgScale) {
+        renderError('Choose a target role and organisation scale first.');
+        return;
+      }
+
+      var formData = new FormData();
+      formData.append('resumeFile', cvFileInput.files[0]);
+      formData.append('targetRole', targetRole);
+      formData.append('orgScale', orgScale);
+
+      loading.classList.add('mh-score-loading-visible');
+      btn.disabled = true;
+
+      fetch('/api/public-preview', { method: 'POST', body: formData })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (result) {
+          loading.classList.remove('mh-score-loading-visible');
+          btn.disabled = false;
+
+          if (!result.ok || result.data.status === 'error') {
+            renderError((result.data && result.data.message) || 'Something went wrong. Please try again.');
+            return;
+          }
+          if (result.data.status === 'insufficient_signal') {
+            renderError(result.data.message);
+            return;
+          }
+          renderPreview(result.data.preview);
+          card.classList.add('mh-score-visible');
+        })
+        .catch(function () {
+          loading.classList.remove('mh-score-loading-visible');
+          btn.disabled = false;
+          renderError('Something went wrong reaching the server. Please try again.');
+        });
+    });
+  }
+
+  // ── Upload zone / role-select interaction — UNCHANGED from the original
+  // implementation. ─────────────────────────────────────────────────────
   var uploadZone = document.getElementById('mh-upload-zone');
   var cvFile = document.getElementById('mh-cv-file');
   var extracting = document.getElementById('mh-upload-extracting');
@@ -244,41 +298,42 @@
     });
   }
 
-  var roleSelect = document.getElementById('mh-role-select');
-  var customRoleInput = document.getElementById('mh-custom-role');
-  if (roleSelect && customRoleInput) {
-    roleSelect.addEventListener('change', function () {
-      if (roleSelect.value === 'Custom') {
-        roleSelect.style.display = 'none';
-        customRoleInput.style.display = 'block';
-        customRoleInput.value = '';
-        customRoleInput.focus();
-      } else {
-        customRoleInput.style.display = 'none';
-      }
-    });
-    function commitCustomRole() {
-      var val = customRoleInput.value.trim();
-      customRoleInput.style.display = 'none';
-      roleSelect.style.display = '';
-      if (val) {
-        var opt = document.getElementById('mh-custom-role-opt');
-        if (!opt) {
-          opt = document.createElement('option');
-          opt.id = 'mh-custom-role-opt';
-          roleSelect.appendChild(opt);
+  if (roleSelect) {
+    var customRoleInput = document.getElementById('mh-custom-role');
+    if (customRoleInput) {
+      roleSelect.addEventListener('change', function () {
+        if (roleSelect.value === 'Custom') {
+          roleSelect.style.display = 'none';
+          customRoleInput.style.display = 'block';
+          customRoleInput.value = '';
+          customRoleInput.focus();
+        } else {
+          customRoleInput.style.display = 'none';
         }
-        opt.value = val;
-        opt.textContent = val;
-        roleSelect.value = val;
-      } else {
-        roleSelect.value = '';
+      });
+      function commitCustomRole() {
+        var val = customRoleInput.value.trim();
+        customRoleInput.style.display = 'none';
+        roleSelect.style.display = '';
+        if (val) {
+          var opt = document.getElementById('mh-custom-role-opt');
+          if (!opt) {
+            opt = document.createElement('option');
+            opt.id = 'mh-custom-role-opt';
+            roleSelect.appendChild(opt);
+          }
+          opt.value = val;
+          opt.textContent = val;
+          roleSelect.value = val;
+        } else {
+          roleSelect.value = '';
+        }
       }
+      customRoleInput.addEventListener('blur', commitCustomRole);
+      customRoleInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); commitCustomRole(); }
+      });
     }
-    customRoleInput.addEventListener('blur', commitCustomRole);
-    customRoleInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); commitCustomRole(); }
-    });
   }
 })();
 </script>
