@@ -4,15 +4,8 @@
 // in medhaiq.css / interview.css / brand-logo.css) — no inline styles,
 // no per-render pixel math. Contextual mapping:
 //   sm = footer / in-session compact watermark
-//   md = CANONICAL — every primary page: homepage, login, signup,
-//        dashboard, career workspace, reports, and any future page.
-//        This is the single source of truth for brand sizing.
-//   lg = retained in CSS for potential future use, but not currently
-//        used anywhere. Auth screens previously used 'lg' for a
-//        deliberately larger "high-impact" treatment; that was reversed
-//        in favor of one canonical size across the whole product. Do
-//        not reintroduce 'lg' on a page without an explicit decision to
-//        do so — the default should always be 'md'.
+//   md = global navbars & dashboards (default)
+//   lg = login & auth screens (high-impact first impression)
 const _validSizes = ['sm', 'md', 'lg'];
 const _size    = _validSizes.includes(typeof size !== 'undefined' ? size : '') ? size : 'md';
 const _variant = typeof variant !== 'undefined' ? variant : 'full';
