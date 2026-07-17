@@ -59,6 +59,7 @@ app.get('/terms',   (_req, res) => res.redirect('/'));
 app.get('/architecture', (_req, res) => res.render('architecture'));
 app.get('/about',        (_req, res) => res.render('about'));
 app.get('/why',     (_req, res) => res.render('why'));
+app.get('/professional-horizons', (_req, res) => res.render('professional-horizons'));
 app.get('/career-architecture', (_req, res) => res.redirect(301, '/architecture#career-architecture'));
 app.get('/technical-blueprint', (_req, res) => res.redirect(301, '/architecture#technical-blueprint'));
 app.get('/core-architecture',   (_req, res) => res.redirect(301, '/architecture#core-architecture'));
@@ -366,16 +367,10 @@ app.get('/dashboard/history', async (req, res) => {
 
     const { getUserById } = require('./db/auth');
     const { getUserSessions, getUserAggregateScores } = require('./db/interview');
-    // These three queries only depend on `userId`, not on each other's
-    // results — running them in parallel instead of one-after-another
-    // cuts the wait from the sum of three round-trips down to roughly
-    // whichever one is slowest. Same data, same behavior, just faster.
-    const [user, sessions, aggregateScores] = await Promise.all([
-      getUserById(userId),
-      getUserSessions(userId, { limit: 20 }),
-      getUserAggregateScores(userId),
-    ]);
+    const user = await getUserById(userId);
     if (!user) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
+
+    const sessions = await getUserSessions(userId, { limit: 20 });
     // Two bugs were compounding here:
     // 1) `s.overall_score || s.report_score || null` treats a real score of
     //    0 as falsy, silently discarding it (and `report_score` isn't even
@@ -436,6 +431,7 @@ app.get('/dashboard/history', async (req, res) => {
     const readinessScore = trendAvg !== null ? Math.round(trendAvg) : null;
     const readinessDeltaVsFirst = (trend.length > 1) ? Math.round(trend[trend.length - 1] - trend[0]) : null;
     const interruptedSession = history.find(s => s.status === 'in_progress') || null;
+    const aggregateScores = await getUserAggregateScores(userId);
 
     // ---- Relative-time labels for the overview cards ("Last interview
     // yesterday", etc.) — real dates from `history`, just formatted. ----
