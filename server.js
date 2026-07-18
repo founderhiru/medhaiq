@@ -491,6 +491,26 @@ app.get('/dashboard/history', async (req, res) => {
   }
 });
 
+// Resume Intelligence page — same auth pattern as /settings. The page
+// itself fetches its own status/upload data client-side from
+// /api/resume/status and /api/resume/upload (see views/resume.ejs), so
+// this route only needs to supply shellUser for the workspace shell.
+app.get('/resume', async (req, res) => {
+  try {
+    const userId = req.cookies?.user_id;
+    if (!userId) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
+
+    const { getUserById } = require('./db/auth');
+    const user = await getUserById(userId);
+    if (!user) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
+
+    res.render('resume', { shellUser: user });
+  } catch (err) {
+    console.error('[resume]', err);
+    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
+  }
+});
+
 // Settings — new, minimal (Profile / Account / Preferences). No page
 // existed at this route before; same auth pattern as dashboard/history.
 app.get('/settings', async (req, res) => {
