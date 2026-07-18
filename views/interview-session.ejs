@@ -712,28 +712,40 @@
     window.MedhaIQ_Q1 = INITQ; // read by the Vapi call-start handshake
     var HASVOICE = Boolean('<%= vapiPublicKey %>' && '<%= vapiAssistantId %>');
     var revealQ1 = function(){ showQuestion({text:INITQ}, QTYPE, null); };
-    // ── FIX: calibrate() no longer starts its countdown at page load.
-    // It previously began an 8s timer the instant this script ran — before
-    // the candidate had clicked anything, before initVapi()/vapi.start()
-    // had even been called. Any candidate who took longer than 8s to notice
-    // the page, grant mic permission, and click connect would ALWAYS hit
-    // the fallback before a real connection attempt had even begun,
-    // permanently locking out the voice-certified reveal for that question
-    // (reveal() is idempotent — first caller wins). window.MedhaIQ_startCalibration
-    // is now exposed and invoked from the mic button's own click handler,
-    // at the moment vapi.start() actually fires — so the clock times the
-    // thing it's meant to time. Text-only sessions are unaffected: this
-    // path is only taken when HASVOICE is true to begin with.
+    // ── REVISED FIX (v2) — restores the v1 guarantee that a regression
+    // in the previous patch silently removed.
+    //
+    // v1: calibrate() ran unconditionally at page load. Its fallback timer
+    // was a GUARANTEE — it fired regardless of whether the candidate ever
+    // touched the mic button, so the question always revealed eventually
+    // even for a candidate who never intends to use voice at all.
+    //
+    // Prior patch: moved that call into window.MedhaIQ_startCalibration,
+    // invoked ONLY from the mic button's click handler. This fixed the
+    // narrow race (clock starting before a connection attempt existed) but
+    // broke the broader guarantee: a candidate who never clicks the mic
+    // button at all now gets NO fallback, ever — the loading overlay is
+    // stuck permanently with no self-recovery. Confirmed via screenshot:
+    // session live 80+ seconds, still frozen on "Calibrating...".
+    //
+    // v2 — keep BOTH triggers. calibrate()'s own reveal() is idempotent
+    // (first caller wins, see interviewOrchestrator.js), so arming it twice
+    // is safe by construction:
+    //   (a) unconditional 15s fallback at page load — the restored
+    //       guarantee; fires regardless of any click, exactly like v1.
+    //   (b) the click handler (below) still calls calibrate() again at the
+    //       moment of actual connection attempt — harmless no-op if (a)
+    //       already fired or is still pending; on a fast click, (b) simply
+    //       re-confirms the same 15s window is running.
     if (HASVOICE && window.MedhaIQOrchestrator) {
       document.getElementById('questionCard').style.display = 'none';
       document.querySelector('.answer-bar-wrap').style.display = 'none';
       document.getElementById('loadingText').textContent = 'Calibrating Interviewer Persona…';
       document.getElementById('loadingOverlay').classList.add('show');
       window.MedhaIQ_startCalibration = function () {
-        // 15s: aligned with the existing 13s hard connection-timeout below,
-        // plus margin, so the two deadlines aren't racing different clocks.
         window.MedhaIQOrchestrator.calibrate({ hasVoice: true, fallbackMs: 15000, onReveal: revealQ1 });
       };
+      window.MedhaIQ_startCalibration(); // (a) unconditional — the restored guarantee
     } else {
       revealQ1();
     }
