@@ -883,6 +883,16 @@
         // nothing left for the LLM to mediate, paraphrase, or delay.
         vapi.send({
           type: 'add-message',
+          // FIX: without this flag, the Vapi SDK's default behavior lets
+          // the assistant's model take a free, unconstrained turn in
+          // response to this injected message — on EVERY question, right
+          // before the forced vapi.say() below. That free turn is a
+          // documented, concrete explanation for "Vapi says something
+          // different than the screen": the model generates its own
+          // response to this context injection, and it can win the race
+          // against the forced speech that follows. Setting this false
+          // makes the injection silent — no model turn, just context.
+          triggerResponseEnabled: false,
           message: {
             role: 'system',
             content: 'Do not add any commentary, acknowledgment, or remarks of your own beyond exactly what you are about to be told to say next. Do not repeat, summarize, or reference any earlier question or answer.'
@@ -1013,6 +1023,10 @@
       try {
         vapi.send({
           type: 'add-message',
+          // Same fix as above — this call-start injection was equally able
+          // to trigger an unwanted free model turn immediately after the
+          // forced opening speech.
+          triggerResponseEnabled: false,
           message: {
             role: 'system',
             content:
