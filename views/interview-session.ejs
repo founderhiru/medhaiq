@@ -712,12 +712,28 @@
     window.MedhaIQ_Q1 = INITQ; // read by the Vapi call-start handshake
     var HASVOICE = Boolean('<%= vapiPublicKey %>' && '<%= vapiAssistantId %>');
     var revealQ1 = function(){ showQuestion({text:INITQ}, QTYPE, null); };
+    // ── FIX: calibrate() no longer starts its countdown at page load.
+    // It previously began an 8s timer the instant this script ran — before
+    // the candidate had clicked anything, before initVapi()/vapi.start()
+    // had even been called. Any candidate who took longer than 8s to notice
+    // the page, grant mic permission, and click connect would ALWAYS hit
+    // the fallback before a real connection attempt had even begun,
+    // permanently locking out the voice-certified reveal for that question
+    // (reveal() is idempotent — first caller wins). window.MedhaIQ_startCalibration
+    // is now exposed and invoked from the mic button's own click handler,
+    // at the moment vapi.start() actually fires — so the clock times the
+    // thing it's meant to time. Text-only sessions are unaffected: this
+    // path is only taken when HASVOICE is true to begin with.
     if (HASVOICE && window.MedhaIQOrchestrator) {
       document.getElementById('questionCard').style.display = 'none';
       document.querySelector('.answer-bar-wrap').style.display = 'none';
       document.getElementById('loadingText').textContent = 'Calibrating Interviewer Persona…';
       document.getElementById('loadingOverlay').classList.add('show');
-      window.MedhaIQOrchestrator.calibrate({ hasVoice: true, fallbackMs: 8000, onReveal: revealQ1 });
+      window.MedhaIQ_startCalibration = function () {
+        // 15s: aligned with the existing 13s hard connection-timeout below,
+        // plus margin, so the two deadlines aren't racing different clocks.
+        window.MedhaIQOrchestrator.calibrate({ hasVoice: true, fallbackMs: 15000, onReveal: revealQ1 });
+      };
     } else {
       revealQ1();
     }
@@ -921,6 +937,22 @@
   }, 
   config: { position: 'hidden' } 
 });
+
+    // Hardening: certify the calibration gate on 'call-start-success' as
+    // well as 'call-start'. This event fires once, from Vapi's own start()
+    // promise, purely from the technical connection succeeding — it cannot
+    // be blocked by a missed or malformed 'listening' app-message. It does
+    // NOT duplicate the opening-question speech logic below (that stays
+    // solely on 'call-start', which still fires normally when the
+    // 'listening' signal does arrive) — it only guarantees the UI is never
+    // stuck showing a stale fallback question when the connection is
+    // demonstrably live.
+    vapi.on('call-start-success', function() {
+      if (window.MedhaIQOrchestrator && !window.MedhaIQOrchestrator.isReady()) {
+        console.log('[Vapi] call-start-success received — certifying voice connection (fallback path, independent of the listening signal)');
+        window.MedhaIQOrchestrator.voiceConnected();
+      }
+    });
 
     vapi.on('call-start', function() {
       setState(STATES.LIVE, 'Voice active — speak your answer');
@@ -1176,6 +1208,12 @@
     if(state!==STATES.CONNECTING&&state!==STATES.REQUESTING)return;
 
     setState(STATES.CONNECTING,'Connecting to AI interviewer…');
+    // Start the calibration clock NOW — the moment a real connection
+    // attempt begins — instead of at page load (see FIX above).
+    if (typeof window.MedhaIQ_startCalibration === 'function') {
+      window.MedhaIQ_startCalibration();
+      window.MedhaIQ_startCalibration = null; // once per session
+    }
     try{ initVapi(); vapi.start(VAST); }
     catch(e){ setErr('Failed to connect: '+e.message); return; }
 
