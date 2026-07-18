@@ -49,6 +49,7 @@ app.use('/api/contact',    require('./routes/contact'));
 app.use('/auth',           require('./routes/auth'));
 app.use('/api/interview',  require('./routes/interview'));
 app.use('/api/dashboard',  require('./routes/dashboard'));
+app.use('/api/resume',     require('./routes/resume'));
 app.use('/api/admin',      require('./routes/admin'));
 app.use('/api/public-preview', require('./routes/public-preview'));
 app.use('/api',            require('./routes/vapi'));
