@@ -81,44 +81,64 @@
 .new-interview-btn:hover { background: var(--royal); }
 
 /* Readiness ring + line chart, side by side */
-.readiness-row { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
-.readiness-ring-wrap { position: relative; width: 140px; height: 140px; flex-shrink: 0; }
+.readiness-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.readiness-ring-wrap { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
 .readiness-ring-wrap svg { transform: rotate(-90deg); }
-.readiness-ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 12; }
-.readiness-ring-fill { fill: none; stroke: var(--bright); stroke-width: 12; stroke-linecap: round; }
+.readiness-ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 10; }
+.readiness-ring-fill { fill: none; stroke: var(--bright); stroke-width: 10; stroke-linecap: round; }
 .readiness-ring-center {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
-.readiness-ring-center .num { font-size: 28px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; color: #ffffff; }
-.readiness-ring-center .of100 { font-size: 12px; font-weight: 400; color: var(--dim); }
-.readiness-chart-col { flex: 1; min-width: 200px; }
+.readiness-ring-center .num { font-size: 24px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; color: #ffffff; }
+.readiness-ring-center .of100 { font-size: 11px; font-weight: 400; color: var(--dim); }
+.readiness-chart-col { flex: 1; min-width: 180px; }
 .readiness-chart-col .score-trend-svg {
-  height: 58px; /* was 80px (set in interview.css); overridden here only,
+  height: 52px; /* was 80px (set in interview.css); overridden here only,
                     so Interview Setup / Live Interview / Reports are
                     untouched — this page loads career-workspace.css last. */
 }
 
+/* Best Competency / Focus Next — the small intelligence row added below
+   the ring/trend, using the same real aggregate scores as Interview
+   Insights (just picking the highest and lowest of the five). */
+.readiness-competency-row {
+  display: flex; gap: 16px;
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.competency-stat { flex: 1; min-width: 0; }
+.competency-stat-label {
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+  color: var(--dim); margin-bottom: 3px;
+}
+.competency-stat-value { font-size: 13px; font-weight: 700; color: #ffffff; }
+.competency-stat-value.good { color: #6EE7B7; }
+.competency-stat-value.focus { color: #FCD34D; }
+
 /* Star rating for Interview Insights, with a reserved right-side AI Tip column */
-.star-row { display: flex; align-items: center; gap: 14px; padding: 7px 0; border-top: 1px solid rgba(255,255,255,0.05); }
+.star-row { display: flex; align-items: center; gap: 13px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.05); }
 .star-row:first-child { border-top: none; padding-top: 0; }
-.star-row-main { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
-.star-row-label-wrap { display: flex; align-items: center; gap: 10px; min-width: 180px; }
-.star-row-label { font-size: 14px; color: #ffffff; font-weight: 500; }
+.star-row-main { display: flex; align-items: center; gap: 13px; flex: 1; min-width: 0; }
+.star-row-label-wrap { display: flex; align-items: center; gap: 9px; min-width: 170px; }
+.star-row-label { font-size: 13px; color: #ffffff; font-weight: 500; }
 .star-icons { letter-spacing: 1px; font-size: 15px; }
 .star-icons .filled { color: #FBBF24; }
 .star-icons .empty { color: rgba(255,255,255,0.15); }
-.star-val { font-size: 14px; min-width: 46px; text-align: right; }
+.star-val { font-size: 13px; min-width: 44px; text-align: right; }
 .star-val-num { font-weight: 600; color: #ffffff; }
 .star-val-denom { font-weight: 400; color: var(--muted); }
 .ai-tip-col {
   width: 108px; flex-shrink: 0;
   display: flex; flex-direction: column; gap: 2px;
   border-left: 1px solid rgba(255,255,255,0.10);
-  padding-left: 10px;
+  padding-left: 8px;
 }
-.ai-tip-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1px; color: var(--bright); }
-.ai-tip-text { font-size: 12px; font-weight: 400; color: var(--dim); line-height: 1.4; }
+.ai-tip-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1px; color: var(--bright); }
+.ai-tip-text { font-size: 11px; font-weight: 400; color: var(--dim); line-height: 1.4; }
+/* Icon shrink scoped to Interview Insights only — Recent Activity's
+   icon-sq.sm (interview status dots) is untouched. */
+.insights-panel .icon-sq.sm { width: 26px; height: 26px; font-size: 12px; }
 
 /* Two-column pairing */
 .pair-row {
@@ -150,6 +170,9 @@
   font-weight: 700;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
+/* Scoped ~5% reduction for Interview Readiness / Interview Insights only —
+   Recent Activity and Quick Actions headings are untouched. */
+.readiness-panel h3, .insights-panel h3 { font-size: 15px; }
 .panel-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .panel-header-row h3 { margin-bottom: 0; }
 .view-all-link { font-size: 13px; font-weight: 600; color: var(--bright); text-decoration: none; }
@@ -158,7 +181,7 @@
 .readiness-score { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
 .readiness-score .num { font-size: 40px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--gold); }
 .readiness-score .of5 { font-size: 15px; color: var(--dim); }
-.readiness-delta { font-size: 13px; font-weight: 500; color: #10B981; margin-bottom: 10px; }
+.readiness-delta { font-size: 12px; font-weight: 500; color: #10B981; margin-bottom: 8px; }
 
 /* Interview Insights */
 .score-bars { display: flex; flex-direction: column; }

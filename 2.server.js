@@ -400,7 +400,6 @@ app.get('/dashboard/history', async (req, res) => {
       id: s.id,
       personaId: s.persona_id,
       roleTitle: s.role_title,
-      orgPreset: s.org_preset,
       experienceLevel: s.experience_level,
       startedAt: s.started_at,
       endedAt: s.ended_at,
@@ -472,27 +471,6 @@ app.get('/dashboard/history', async (req, res) => {
       ? `Updated ${relativeDayLabel(careerProfile.resume_parsed_at)}`
       : null;
 
-    // Best Competency / Focus Next — reuses the exact same 5 metrics/labels
-    // already shown in Interview Insights (Structure, Domain Expertise,
-    // Strategic Thinking, Communication, Leadership & Execution), just
-    // picking the highest and lowest instead of listing all five. No new
-    // query, no fabricated data — null/placeholder until scores exist.
-    let bestCompetencyLabel = null, focusNextLabel = null;
-    if (aggregateScores && aggregateScores.starAvg !== null) {
-      const competencyScores = [
-        { label: 'Structure', val: aggregateScores.starAvg },
-        { label: 'Domain Expertise', val: aggregateScores.technicalAvg },
-        { label: 'Strategic Thinking', val: aggregateScores.executiveAvg },
-        { label: 'Communication', val: aggregateScores.frictionAvg },
-        { label: 'Leadership & Execution', val: aggregateScores.gccAvg },
-      ].filter(c => typeof c.val === 'number' && !Number.isNaN(c.val));
-      if (competencyScores.length > 0) {
-        const sorted = [...competencyScores].sort((a, b) => b.val - a.val);
-        bestCompetencyLabel = sorted[0].label;
-        focusNextLabel = sorted[sorted.length - 1].label;
-      }
-    }
-
     // "Preparing For" — real data: the in-progress session's role if one
     // exists, otherwise the most recent session's role. Not fabricated;
     // null (and hidden in the view) if there's no session at all yet.
@@ -506,7 +484,6 @@ app.get('/dashboard/history', async (req, res) => {
       readinessScore, readinessDeltaVsFirst, interruptedSession, aggregateScores,
       lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
       resumeIntelActive, resumeIntelSubLabel,
-      bestCompetencyLabel, focusNextLabel,
     });
   } catch (err) {
     console.error('[dashboard/history]', err);

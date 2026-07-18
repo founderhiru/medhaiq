@@ -7,11 +7,11 @@
    ============================================================ */
 
 .workspace-content h1 {
-  font-size: 32px;
-  font-weight: 800;
-  margin-bottom: 6px;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
 }
-.subtitle { color: var(--muted); margin-bottom: 24px; font-size: 14px; }
+.subtitle { color: var(--muted); margin-bottom: 20px; font-size: 13px; }
 
 /* Shared color-icon system.
    Overview strip uses rounded squares (.square variant); Interview
@@ -28,7 +28,7 @@
 .icon-sq.blue   { background: #1D4ED8; color: #FFFFFF; }
 .icon-sq.gold   { background: #A16207; color: #FFFFFF; }
 .icon-sq.orange { background: #C2410C; color: #FFFFFF; }
-.icon-sq.sm { width: 32px; height: 32px; font-size: 14px; }
+.icon-sq.sm { width: 28px; height: 28px; font-size: 13px; }
 
 /* Activity Overview Strip — single bordered container with internal
    dividers between cards, matching T.png (rather than 4 separate cards) */
@@ -48,8 +48,26 @@
 }
 .overview-stat:last-child { border-right: none; }
 .overview-stat .num { font-size: 22px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--white); }
-.overview-stat .label { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
-.overview-stat .sublabel { font-size: 11.5px; color: var(--dim); margin-top: 8px; }
+.overview-stat .label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.overview-stat .sublabel { font-size: 11px; color: var(--dim); margin-top: 6px; }
+
+/* Resume Intelligence KPI status (replaces the old duplicate Interview
+   Readiness KPI) — same card shell, just a status readout instead of a
+   number. */
+.overview-stat .num.resume-intel-status { display: flex; align-items: center; gap: 8px; font-size: 18px; }
+.resume-intel-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.resume-intel-dot.is-active {
+  background: #34D399;
+  animation: resumeIntelPulse 2s infinite;
+}
+.resume-intel-dot.is-inactive { background: var(--dim); }
+@keyframes resumeIntelPulse {
+  0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(52,211,153,0); }
+  100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+}
+.resume-intel-cta { color: var(--bright); text-decoration: none; font-weight: 600; display: inline-block; }
+.resume-intel-cta:hover { color: var(--white); }
 
 /* Page header row with top-right CTA button */
 .page-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 6px; }
@@ -63,21 +81,26 @@
 .new-interview-btn:hover { background: var(--royal); }
 
 /* Readiness ring + line chart, side by side */
-.readiness-row { display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
-.readiness-ring-wrap { position: relative; width: 180px; height: 180px; flex-shrink: 0; }
+.readiness-row { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.readiness-ring-wrap { position: relative; width: 140px; height: 140px; flex-shrink: 0; }
 .readiness-ring-wrap svg { transform: rotate(-90deg); }
-.readiness-ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 14; }
-.readiness-ring-fill { fill: none; stroke: var(--bright); stroke-width: 14; stroke-linecap: round; }
+.readiness-ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 12; }
+.readiness-ring-fill { fill: none; stroke: var(--bright); stroke-width: 12; stroke-linecap: round; }
 .readiness-ring-center {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
-.readiness-ring-center .num { font-size: 36px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; color: #ffffff; }
-.readiness-ring-center .of100 { font-size: 14px; font-weight: 400; color: var(--dim); }
-.readiness-chart-col { flex: 1; min-width: 220px; }
+.readiness-ring-center .num { font-size: 28px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; color: #ffffff; }
+.readiness-ring-center .of100 { font-size: 12px; font-weight: 400; color: var(--dim); }
+.readiness-chart-col { flex: 1; min-width: 200px; }
+.readiness-chart-col .score-trend-svg {
+  height: 58px; /* was 80px (set in interview.css); overridden here only,
+                    so Interview Setup / Live Interview / Reports are
+                    untouched — this page loads career-workspace.css last. */
+}
 
 /* Star rating for Interview Insights, with a reserved right-side AI Tip column */
-.star-row { display: flex; align-items: center; gap: 16px; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.05); }
+.star-row { display: flex; align-items: center; gap: 14px; padding: 7px 0; border-top: 1px solid rgba(255,255,255,0.05); }
 .star-row:first-child { border-top: none; padding-top: 0; }
 .star-row-main { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
 .star-row-label-wrap { display: flex; align-items: center; gap: 10px; min-width: 180px; }
@@ -92,7 +115,7 @@
   width: 108px; flex-shrink: 0;
   display: flex; flex-direction: column; gap: 2px;
   border-left: 1px solid rgba(255,255,255,0.10);
-  padding-left: 14px;
+  padding-left: 10px;
 }
 .ai-tip-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1px; color: var(--bright); }
 .ai-tip-text { font-size: 12px; font-weight: 400; color: var(--dim); line-height: 1.4; }
@@ -110,20 +133,24 @@
   background: var(--card);
   border: 1px solid rgba(255,255,255,0.10);
   border-radius: var(--radius);
-  padding: 22px 24px;
+  padding: 18px 22px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  min-width: 0; /* lets the panel shrink gracefully instead of overflowing
-                   at intermediate window widths, before the 900px
-                   stacked-layout breakpoint kicks in */
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 258px; /* equalizes Interview Readiness / Interview Insights /
+                         Recent Activity / Quick Actions. This one number is
+                         the easiest thing to nudge after you see it live if
+                         any card's real content ends up taller/shorter. */
 }
 .panel h3 {
-  font-size: 17px;
+  font-size: 16px;
   color: var(--white);
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   font-weight: 700;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.panel-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.panel-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .panel-header-row h3 { margin-bottom: 0; }
 .view-all-link { font-size: 13px; font-weight: 600; color: var(--bright); text-decoration: none; }
 .view-all-link:hover { color: var(--white); }
@@ -131,7 +158,7 @@
 .readiness-score { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
 .readiness-score .num { font-size: 40px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--gold); }
 .readiness-score .of5 { font-size: 15px; color: var(--dim); }
-.readiness-delta { font-size: 13.5px; font-weight: 500; color: #10B981; margin-bottom: 18px; }
+.readiness-delta { font-size: 13px; font-weight: 500; color: #10B981; margin-bottom: 10px; }
 
 /* Interview Insights */
 .score-bars { display: flex; flex-direction: column; }
@@ -152,7 +179,7 @@
 .activity-feed { display: flex; flex-direction: column; }
 .activity-row {
   display: flex; align-items: center; gap: 14px;
-  padding: 14px 0;
+  padding: 11px 0;
   border-top: 1px solid rgba(255,255,255,0.05);
 }
 .activity-row:first-child { border-top: none; padding-top: 0; }
@@ -176,11 +203,11 @@
 .activity-status-text.abandoned { color: var(--dim); }
 
 /* Quick Actions — card style */
-.qa-panel { display: flex; flex-direction: column; }
-.quick-actions { display: flex; flex-direction: row; align-items: flex-start; gap: 12px; margin-top: 16px; }
-.qa-card { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.qa-panel { display: flex; flex-direction: column; height: 100%; }
+.quick-actions { display: flex; flex: 1; flex-direction: row; align-items: stretch; gap: 12px; margin-top: 14px; }
+.qa-card { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
 .qa-card {
-  display: block;
+  display: flex;
   position: relative;
   border-radius: var(--radius);
   border: 1px solid;
@@ -216,8 +243,7 @@
 
 @media (max-width: 1200px) {
   .workspace-content { max-width: 100%; padding: 32px 24px 60px; }
-  .ai-tip-col { display: none; } /* reclaim space before things get cramped;
-                                     tips are supplementary, not essential */
+  .ai-tip-col { display: none; }
 }
 
 @media (max-width: 900px) {

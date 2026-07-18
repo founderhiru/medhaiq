@@ -65,10 +65,10 @@
 
   <!-- Interview Readiness + Interview Insights, paired -->
   <div class="pair-row">
-    <div class="panel">
+    <div class="panel readiness-panel">
       <h3>Interview Readiness</h3>
       <% if (trend && trend.length > 1) {
-        const circR = 58, circCircumference = 2 * Math.PI * circR;
+        const circR = 46, circCircumference = 2 * Math.PI * circR;
         const circOffset = circCircumference - ((readinessScore || 0) / 100) * circCircumference;
       %>
         <% if (readinessDeltaVsFirst !== null) { %>
@@ -76,9 +76,9 @@
         <% } %>
         <div class="readiness-row">
           <div class="readiness-ring-wrap">
-            <svg viewBox="0 0 140 140" width="140" height="140">
-              <circle class="readiness-ring-track" cx="70" cy="70" r="<%= circR %>"/>
-              <circle class="readiness-ring-fill" cx="70" cy="70" r="<%= circR %>"
+            <svg viewBox="0 0 110 110" width="110" height="110">
+              <circle class="readiness-ring-track" cx="55" cy="55" r="<%= circR %>"/>
+              <circle class="readiness-ring-fill" cx="55" cy="55" r="<%= circR %>"
                 stroke-dasharray="<%= circCircumference %>" stroke-dashoffset="<%= circOffset %>"/>
             </svg>
             <div class="readiness-ring-center">
@@ -103,13 +103,25 @@
             </svg>
           </div>
         </div>
-        <p style="font-size:12px;color:var(--dim);margin-top:8px;">Calculated from your last <%= trend.length %> completed interviews.</p>
+        <p style="font-size:11px;color:var(--dim);margin-top:6px;">Calculated from your last <%= trend.length %> completed interviews.</p>
       <% } else { %>
-        <p style="color:var(--dim); font-size:13px;">Complete one more interview to unlock your readiness trend.</p>
+        <p style="color:var(--dim); font-size:12.5px;">Complete one more interview to unlock your readiness trend.</p>
+      <% } %>
+      <% if (bestCompetencyLabel || focusNextLabel) { %>
+        <div class="readiness-competency-row">
+          <div class="competency-stat">
+            <div class="competency-stat-label">Best Competency</div>
+            <div class="competency-stat-value good"><%= bestCompetencyLabel || '—' %></div>
+          </div>
+          <div class="competency-stat">
+            <div class="competency-stat-label">Focus Next</div>
+            <div class="competency-stat-value focus"><%= focusNextLabel || '—' %></div>
+          </div>
+        </div>
       <% } %>
     </div>
 
-    <div class="panel" id="insights">
+    <div class="panel insights-panel" id="insights">
       <h3>Interview Insights</h3>
       <!-- Labels here are the SAME ones already shown on the per-session
            Report page (interview-report.ejs) — Structure / Domain Expertise /
@@ -137,7 +149,7 @@
           <% const full = Math.floor(stars5); const half = (stars5 - full) >= 0.5 ? 1 : 0; const empty = 5 - full - half; %>
           <div class="star-row">
             <div class="star-row-main">
-              <div class="star-row-label-wrap"><div class="icon-sq sm <%= m.color %>"><%- include('partials/icon', { name: m.icon, svgSize: 15 }) %></div><div class="star-row-label"><%= m.label %></div></div>
+              <div class="star-row-label-wrap"><div class="icon-sq sm <%= m.color %>"><%- include('partials/icon', { name: m.icon, svgSize: 13 }) %></div><div class="star-row-label"><%= m.label %></div></div>
               <div class="star-icons">
                 <% for (let i = 0; i < full; i++) { %><span class="filled">★</span><% } %>
                 <% if (half) { %><span class="filled">⯨</span><% } %>
@@ -157,7 +169,7 @@
         <% }); %>
       </div>
       <% } else { %>
-        <p style="color:var(--dim); font-size:13px;">Insights appear once your first interview is scored.</p>
+        <p style="color:var(--dim); font-size:12.5px;">Insights appear once your first interview is scored.</p>
       <% } %>
     </div>
   </div>
@@ -168,7 +180,6 @@
     <div class="panel">
       <div class="panel-header-row"><h3>Recent Activity</h3><a href="/dashboard/history" class="view-all-link">View all →</a></div>
       <div class="activity-feed">
-        <% const personaNames = {alex_chen:'Alex Chen',priya_ramesh:'Priya Ramesh',marcus_webb:'Marcus Webb',sanjeev_nair:'Sanjeev Nair',sarah_kim:'Sarah Kim',raj_mehta:'Raj Mehta'}; %>
         <% history.slice(0, 3).forEach(function(s) { %>
           <% const isInterrupted = s.status === 'in_progress'; %>
           <div class="activity-row <%= isInterrupted ? 'interrupted' : '' %>">
@@ -176,9 +187,9 @@
               <%- include('partials/icon', { name: isInterrupted ? 'play' : 'check', svgSize: 15 }) %>
             </div>
             <div class="activity-main">
-              <div class="title"><%= personaNames[s.personaId] || s.personaId %><% if (s.roleTitle) { %> · <%= s.roleTitle %><% } %></div>
+              <div class="title"><%= s.roleTitle || 'Mock Interview' %></div>
               <div class="meta">
-                <%= new Date(s.startedAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) %>
+                <% if (s.orgPreset) { %><%= s.orgPreset %> · <% } %><%= new Date(s.startedAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) %>
               </div>
             </div>
             <% if (s.status === 'completed' && s.overallScore !== null) { %>
@@ -201,18 +212,36 @@
     <div class="panel qa-panel">
       <h3>Quick Actions</h3>
       <div class="quick-actions">
-        <a href="/interview" class="qa-card violet">
-          <div class="qa-icon"><%- include('partials/icon', { name: 'mic', svgSize: 20 }) %></div>
-          <div class="qa-title">Start Interview</div>
-          <div class="qa-desc">Practice with AI interviewer and get instant feedback</div>
-          <div class="qa-arrow">→</div>
-        </a>
-        <a href="/interview" class="qa-card green">
-          <div class="qa-icon"><%- include('partials/icon', { name: 'upload', svgSize: 20 }) %></div>
-          <div class="qa-title">Upload Resume</div>
-          <div class="qa-desc">Keep your resume updated for better AI insights</div>
-          <div class="qa-arrow">→</div>
-        </a>
+        <% if (interruptedSession) { %>
+          <a href="/interview/session/<%= interruptedSession.id %>" class="qa-card violet">
+            <div class="qa-icon"><%- include('partials/icon', { name: 'play', svgSize: 20 }) %></div>
+            <div class="qa-title">Continue Interview</div>
+            <div class="qa-desc">Pick back up where you left off</div>
+            <div class="qa-arrow">→</div>
+          </a>
+        <% } else { %>
+          <a href="/interview" class="qa-card violet">
+            <div class="qa-icon"><%- include('partials/icon', { name: 'mic', svgSize: 20 }) %></div>
+            <div class="qa-title">Start Interview</div>
+            <div class="qa-desc">Practice with AI interviewer and get instant feedback</div>
+            <div class="qa-arrow">→</div>
+          </a>
+        <% } %>
+        <% if (resumeIntelActive) { %>
+          <a href="/resume" class="qa-card green">
+            <div class="qa-icon"><%- include('partials/icon', { name: 'upload', svgSize: 20 }) %></div>
+            <div class="qa-title">Update Resume</div>
+            <div class="qa-desc">Refresh Resume Intelligence with your latest resume</div>
+            <div class="qa-arrow">→</div>
+          </a>
+        <% } else { %>
+          <a href="/resume" class="qa-card green">
+            <div class="qa-icon"><%- include('partials/icon', { name: 'upload', svgSize: 20 }) %></div>
+            <div class="qa-title">Upload Resume</div>
+            <div class="qa-desc">Complete your AI profile before starting your interview</div>
+            <div class="qa-arrow">→</div>
+          </a>
+        <% } %>
       </div>
     </div>
   </div>
