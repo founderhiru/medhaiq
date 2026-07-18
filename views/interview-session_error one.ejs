@@ -851,8 +851,12 @@
         // the final stage of the trace against the same TURN_ID/QuestionId.
         currentSpokenTurnId = turnId || null;
         currentSpokenQuestionId = (questionId !== undefined && questionId !== null) ? questionId : null;
+        window.MedhaIQ_lastCanonicalQuestionText = String(questionText || ''); // diagnostic only
         // Anti-drift guard only — no question text here, so there is
         // nothing left for the LLM to mediate, paraphrase, or delay.
+        // ── DIAGNOSTIC marker (no behavior change) ──
+        window.MedhaIQ_lastAddMessageAt = Date.now();
+        window.MedhaIQ_lastAddMessageLabel = 'instructNext-anti-drift-guard';
         vapi.send({
           type: 'add-message',
           message: {
@@ -925,6 +929,12 @@
     vapi.on('call-start', function() {
       setState(STATES.LIVE, 'Voice active — speak your answer');
       window.MedhaIQVoiceLive = true;
+      // ── DIAGNOSTIC (no behavior change) ── settles whether this SDK
+      // build actually exposes vapi.say(). If this logs false, every
+      // question this session rode the LLM-mediated fallback path.
+      var _sayAvail = (typeof vapi.say === 'function');
+      console.log('[diag] capability: vapi.say available = ' + _sayAvail);
+      slog('[diag] capability: vapi.say available = ' + _sayAvail, _sayAvail ? 'ok' : 'err');
       /* ── v2.2 sessionReadyContext handshake (cold-start amnesia + latency
          fix) — two-part, matching the instructNext fix above:
          1. FACTS the assistant needs to know (role, level, no-discovery-
@@ -967,6 +977,9 @@
         }
       } catch (e) { console.error('[Vapi] opening speech failed', e); }
       try {
+        // ── DIAGNOSTIC marker (no behavior change) ──
+        window.MedhaIQ_lastAddMessageAt = Date.now();
+        window.MedhaIQ_lastAddMessageLabel = 'call-start-sessionReadyContext';
         vapi.send({
           type: 'add-message',
           message: {
@@ -1009,6 +1022,23 @@
       if (message.role === 'assistant') {
         if (message.transcriptType === 'final' && message.transcript) {
           assistantTranscriptBuf = (assistantTranscriptBuf ? assistantTranscriptBuf + ' ' : '') + message.transcript;
+        }
+        // ── DIAGNOSTIC (no behavior change) ── does assistant speech
+        // follow shortly after an add-message injection, with no forced
+        // say() text expected? That is the "Assistant replied after
+        // addMessage()" signature this commit exists to detect.
+        if (window.MedhaIQ_lastAddMessageAt) {
+          var _dt = Date.now() - window.MedhaIQ_lastAddMessageAt;
+          if (_dt < 4000) {
+            var _evidence = {
+              label: window.MedhaIQ_lastAddMessageLabel,
+              msSinceAddMessage: _dt,
+              transcriptType: message.transcriptType,
+              transcriptSnippet: String(message.transcript || '').slice(0, 100)
+            };
+            console.warn('[diag][ASSISTANT-REPLIED-AFTER-ADDMESSAGE]', JSON.stringify(_evidence));
+            slog('[diag] Assistant spoke ' + _dt + 'ms after add-message ("' + _evidence.label + '") — possible unsolicited model turn', 'err');
+          }
         }
         return;
       }
@@ -1105,6 +1135,8 @@
     });
 
     vapi.on('speech-start', function() {
+      // ── DIAGNOSTIC (no behavior change) ──
+      slog('[diag] speech-start (turnId=' + currentSpokenTurnId + ', questionId=' + currentSpokenQuestionId + ')', 'info');
       // Hard sync fix: Tell the orchestrator that the speaker audio track has started playing
       if (window.MedhaIQOrchestrator) {
         window.MedhaIQOrchestrator.interviewerStartedSpeaking();
@@ -1119,6 +1151,28 @@
       sub.textContent = 'Your turn — speak clearly';
       if (currentSpokenTurnId) {
         slog('[turn-trace] TURN_ID='+currentSpokenTurnId+' Speech finished: QuestionId='+currentSpokenQuestionId, 'info');
+      }
+      // ── DIAGNOSTIC — divergence check (no behavior change, READ-ONLY) ──
+      // Compares what Vapi actually said (transcript buffer) against the
+      // canonical question text handed to instructNext(). This does NOT
+      // alter what was spoken — it only reports, after the fact, whether
+      // it matched. Guards: needs a meaningful canonical text and enough
+      // transcript to compare, so short/no-op turns never false-positive.
+      if (window.MedhaIQ_lastCanonicalQuestionText && assistantTranscriptBuf && assistantTranscriptBuf.length > 40) {
+        var _cw = window.MedhaIQ_lastCanonicalQuestionText.toLowerCase().split(/\W+/).filter(function(w){ return w.length > 3; });
+        if (_cw.length >= 5) {
+          var _sl = assistantTranscriptBuf.toLowerCase();
+          var _h = 0;
+          for (var _i = 0; _i < _cw.length; _i++) { if (_sl.indexOf(_cw[_i]) !== -1) _h++; }
+          var _ov = _h / _cw.length;
+          var _line = '[diag] TURN_ID=' + currentSpokenTurnId + ' spoken-vs-canonical overlap=' + _ov.toFixed(2);
+          if (_ov < 0.4) {
+            console.error('[diag][DIVERGENCE]', JSON.stringify({ turnId: currentSpokenTurnId, questionId: currentSpokenQuestionId, overlap: _ov.toFixed(2), spoken: assistantTranscriptBuf.slice(0, 160) }));
+            slog(_line + ' — MISMATCH, see console for full transcript', 'err');
+          } else {
+            slog(_line + ' — match', 'ok');
+          }
+        }
       }
       // Input gate: the question has fully finished playing — unlock.
       if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.unlockInput();
