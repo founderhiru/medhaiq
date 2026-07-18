@@ -372,14 +372,16 @@ app.get('/dashboard/history', async (req, res) => {
 
     const { getUserById } = require('./db/auth');
     const { getUserSessions, getUserAggregateScores } = require('./db/interview');
-    // These three queries only depend on `userId`, not on each other's
+    const { getCareerProfile } = require('./db/career-profile');
+    // These four queries only depend on `userId`, not on each other's
     // results — running them in parallel instead of one-after-another
-    // cuts the wait from the sum of three round-trips down to roughly
+    // cuts the wait from the sum of the round-trips down to roughly
     // whichever one is slowest. Same data, same behavior, just faster.
-    const [user, sessions, aggregateScores] = await Promise.all([
+    const [user, sessions, aggregateScores, careerProfile] = await Promise.all([
       getUserById(userId),
       getUserSessions(userId, { limit: 20 }),
       getUserAggregateScores(userId),
+      getCareerProfile(userId),
     ]);
     if (!user) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
     // Two bugs were compounding here:
@@ -458,6 +460,16 @@ app.get('/dashboard/history', async (req, res) => {
     const lastSessionLabel = history[0] ? `Last session ${relativeDayLabel(history[0].startedAt)}` : 'No sessions yet';
     const lastReportLabel = lastCompleted ? `Last report ${relativeDayLabel(lastCompleted.startedAt)}` : 'No reports yet';
 
+    // Resume Intelligence KPI — real status from career_profiles.
+    // "Active" means the most recent parse attempt was a genuine success
+    // (same SUCCESS check already used in db/career-profile.js and
+    // routes/resume.js); anything else (no resume yet, or a failed parse)
+    // shows as "Inactive" rather than implying a capability that isn't there.
+    const resumeIntelActive = !!(careerProfile && careerProfile.resume_parse_status === 'SUCCESS');
+    const resumeIntelSubLabel = resumeIntelActive
+      ? `Updated ${relativeDayLabel(careerProfile.resume_parsed_at)}`
+      : null;
+
     // "Preparing For" — real data: the in-progress session's role if one
     // exists, otherwise the most recent session's role. Not fabricated;
     // null (and hidden in the view) if there's no session at all yet.
@@ -470,6 +482,7 @@ app.get('/dashboard/history', async (req, res) => {
       interviewsCompletedCount, reportsGeneratedCount, practiceTimeLabel,
       readinessScore, readinessDeltaVsFirst, interruptedSession, aggregateScores,
       lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
+      resumeIntelActive, resumeIntelSubLabel,
     });
   } catch (err) {
     console.error('[dashboard/history]', err);

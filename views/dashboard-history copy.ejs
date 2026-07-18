@@ -23,18 +23,10 @@
   <!-- Activity Overview Strip -->
   <div class="overview-strip">
     <div class="overview-stat">
-      <div class="icon-sq square <%= resumeIntelActive ? 'green' : 'blue' %>"><%- include('partials/icon', { name: 'sparkle', svgSize: 20 }) %></div>
+      <div class="icon-sq square gold"><%- include('partials/icon', { name: 'target', svgSize: 20 }) %></div>
       <div>
-        <div class="num resume-intel-status">
-          <span class="resume-intel-dot <%= resumeIntelActive ? 'is-active' : 'is-inactive' %>"></span>
-          <%= resumeIntelActive ? 'Active' : 'Inactive' %>
-        </div>
-        <div class="label">Resume Intelligence</div>
-        <% if (resumeIntelActive) { %>
-          <div class="sublabel"><%= resumeIntelSubLabel %></div>
-        <% } else { %>
-          <a href="/interview" class="sublabel resume-intel-cta">Upload Resume →</a>
-        <% } %>
+        <div class="num"><%= readinessScore !== null ? readinessScore : '—' %><% if (readinessScore !== null) { %><span style="font-size:13px;color:var(--dim);font-weight:600;"> /100</span><% } %></div>
+        <div class="label">Interview Readiness</div>
       </div>
     </div>
     <div class="overview-stat">
@@ -68,7 +60,7 @@
     <div class="panel">
       <h3>Interview Readiness</h3>
       <% if (trend && trend.length > 1) {
-        const circR = 58, circCircumference = 2 * Math.PI * circR;
+        const circR = 76, circCircumference = 2 * Math.PI * circR;
         const circOffset = circCircumference - ((readinessScore || 0) / 100) * circCircumference;
       %>
         <% if (readinessDeltaVsFirst !== null) { %>
@@ -76,9 +68,9 @@
         <% } %>
         <div class="readiness-row">
           <div class="readiness-ring-wrap">
-            <svg viewBox="0 0 140 140" width="140" height="140">
-              <circle class="readiness-ring-track" cx="70" cy="70" r="<%= circR %>"/>
-              <circle class="readiness-ring-fill" cx="70" cy="70" r="<%= circR %>"
+            <svg viewBox="0 0 180 180" width="180" height="180">
+              <circle class="readiness-ring-track" cx="90" cy="90" r="<%= circR %>"/>
+              <circle class="readiness-ring-fill" cx="90" cy="90" r="<%= circR %>"
                 stroke-dasharray="<%= circCircumference %>" stroke-dashoffset="<%= circOffset %>"/>
             </svg>
             <div class="readiness-ring-center">
