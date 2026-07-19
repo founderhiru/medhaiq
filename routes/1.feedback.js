@@ -2,10 +2,18 @@
 // comment). Reuses user_activity_logs via db/feedback.js — no new table.
 const express = require('express');
 const router = express.Router();
+const { getUserById } = require('../db/auth');
 const { submitFeedback, dismissFeedbackPrompt } = require('../db/feedback');
-// Shared guard (middleware/guards.js) replaces the locally-duplicated
-// version — same cookie-auth pattern used across the rest of the app.
-const { requireAuth } = require('../middleware/guards');
+
+// Same cookie-auth pattern used across the rest of the app.
+async function requireAuth(req, res, next) {
+  const userId = req.cookies?.user_id;
+  if (!userId) return res.status(401).json({ error: 'Authentication required' });
+  const user = await getUserById(userId);
+  if (!user) return res.status(401).json({ error: 'Session expired' });
+  req.user = user;
+  next();
+}
 
 // POST /api/feedback — submit a rating (1-5), optional short comment, and
 // an optional feature tag (which part of the app triggered the prompt).
