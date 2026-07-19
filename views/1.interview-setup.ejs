@@ -412,14 +412,10 @@
 </head>
 <body>
 
-<% if (typeof previewMode !== 'undefined' && previewMode) { %>
-<script>window.__MIQ_PREVIEW_DEMO__ = <%- JSON.stringify(demoData || {}) %>;</script>
-<% } %>
-
 <nav class="nav">
 <%- include('partials/brand-logo', { size: 'md', eager: true }) %>
   <div class="nav-actions">
-    <a href="<%= typeof previewMode !== 'undefined' && previewMode ? '/auth/signup' : '/dashboard/history' %>" class="nav-link"><%= typeof previewMode !== 'undefined' && previewMode ? 'Sign Up' : 'History' %></a>
+    <a href="/dashboard/history" class="nav-link">History</a>
   </div>
 </nav>
 
@@ -645,11 +641,7 @@
           <div>
             <div class="engine-title" id="engTitle">Waiting</div>
             <div class="engine-sub">AI systems ready.</div>
-            <% if (typeof previewMode !== 'undefined' && previewMode) { %>
-              <div class="engine-sub">Explore, then create your free account.</div>
-            <% } else { %>
-              <div class="engine-sub">Click 'Initialize Session' to begin.</div>
-            <% } %>
+            <div class="engine-sub">Click 'Initialize Session' to begin.</div>
           </div>
         </div>
       </div>
@@ -688,14 +680,10 @@
 
       <div class="term-block term-block-last">
         <div class="term-label">AI Activity Feed</div>
-        <div class="feed-row"><span class="feed-dot"></span><span id="feedMsg"><% if (typeof previewMode !== 'undefined' && previewMode) { %>AI systems ready. Explore the setup, then create your free account.<% } else { %>AI systems ready. Click 'Initialize Session' to begin.<% } %></span></div>
+        <div class="feed-row"><span class="feed-dot"></span><span id="feedMsg">AI systems ready. Click 'Initialize Session' to begin.</span></div>
       </div>
 
-      <% if (typeof previewMode !== 'undefined' && previewMode) { %>
-        <button class="begin-btn" id="beginBtn">Create Your Free Account →</button>
-      <% } else { %>
-        <button class="begin-btn" id="beginBtn" disabled>Initialize Session →</button>
-      <% } %>
+      <button class="begin-btn" id="beginBtn" disabled>Initialize Session →</button>
       <div class="begin-sub">🔒 Secure &amp; private</div>
     </div>
   </aside>
@@ -725,7 +713,6 @@ function switchTab(tab) {
 (function () {
   // Same state machine and API payload as the previous version of this page —
   // { personaId, roleTitle, experienceLevel, vapiVoiceId } → POST /api/interview/sessions
-  var IS_PREVIEW = <%- (typeof previewMode !== 'undefined' && previewMode) ? 'true' : 'false' %>;
   let state = { role: '', exp: null, persona: null, voice: null, org: null, jdText: '' };
   // Bridge for the Tailor-context script below (object shared by reference;
   // its writes to org/jdText are picked up by the POST payload above).
@@ -794,22 +781,16 @@ function switchTab(tab) {
     // interview" context (state.tailorApplied set by the tailor script).
     const ready = !!((state.role || state.tailorApplied) && state.persona && state.exp);
     const btn = document.getElementById('beginBtn');
-    btn.disabled = IS_PREVIEW ? false : !ready;
+    btn.disabled = !ready;
     document.getElementById('engTitle').textContent = ready ? 'Ready' : 'Waiting';
     document.getElementById('termStatus').textContent = ready ? 'Ready' : 'Waiting';
-    document.getElementById('feedMsg').textContent = IS_PREVIEW
-      ? 'AI systems ready. Explore the setup, then create your free account.'
-      : (ready
-        ? 'All systems ready. Click \u2018Initialize Session\u2019 to launch.'
-        : 'AI systems ready. Complete steps 1\u20133 to begin.');
+    document.getElementById('feedMsg').textContent = ready
+      ? 'All systems ready. Click \u2018Initialize Session\u2019 to launch.'
+      : 'AI systems ready. Complete steps 1\u20133 to begin.';
   }
 
   document.getElementById('beginBtn').addEventListener('click', async () => {
     const btn = document.getElementById('beginBtn');
-    if (IS_PREVIEW) {
-      window.location.href = '/auth/signup';
-      return;
-    }
     btn.textContent = 'Initializing...';
     try {
       const res = await fetch('/api/interview/sessions', {
@@ -890,10 +871,6 @@ function switchTab(tab) {
 (function () {
   const el = document.getElementById('tcResumeStatus');
   if (!el) return;
-  if (window.__MIQ_PREVIEW_DEMO__) {
-    el.innerHTML = window.__MIQ_PREVIEW_DEMO__.resumeStatusHtml;
-    return;
-  }
   fetch('/api/resume/status')
     .then(r => r.json())
     .then((data) => {
@@ -1132,8 +1109,5 @@ function switchTab(tab) {
   });
 })();
 </script>
-<% if (typeof previewMode !== 'undefined' && previewMode) { %>
-  <%- include('partials/preview-conversion-panel') %>
-<% } %>
 </body>
 </html>
