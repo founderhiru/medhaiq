@@ -103,8 +103,34 @@ async function requireAuthPage(req, res, next) {
   next();
 }
 
+/**
+ * Requires authentication AND founder_access, for a rendered page (the
+ * Founder Dashboard itself — GET /founder). Deliberately separate from
+ * routes/founder.js's own requireFounder: that one guards the /api/founder/*
+ * JSON endpoints and responds with a 403 JSON body, which is correct for
+ * an API call but not for a page a person can land on directly. Same
+ * "page guards redirect, never JSON" contract as requireAuthPage above —
+ * anonymous visitors go to login, authenticated non-founders are sent to
+ * their normal dashboard rather than shown a raw 403.
+ */
+async function requireFounderPage(req, res, next) {
+  const capabilities = await getCapabilities(req);
+  if (!capabilities.isAuthenticated) {
+    return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
+  }
+  req.capabilities = capabilities;
+  req.user = capabilities.user;
+  const { isFounder } = require('../db/founder-access');
+  const founder = await isFounder(req.user.id);
+  if (!founder) {
+    return res.redirect('/dashboard/history');
+  }
+  next();
+}
+
 module.exports = {
   requireAuth,
   requireInterviewEntitlement,
   requireAuthPage,
+  requireFounderPage,
 };

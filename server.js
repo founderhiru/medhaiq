@@ -2,7 +2,7 @@
 const express = require('express');
 const path = require('path');
 const { buildLandingContext } = require('./lib/landing-context');
-const { requireAuthPage } = require('./middleware/guards');
+const { requireAuthPage, requireFounderPage } = require('./middleware/guards');
 require('./config/passport');
 
 // Fail fast if DATABASE_URL is missing
@@ -60,6 +60,7 @@ app.use('/api/interview',  require('./routes/interview'));
 app.use('/api/dashboard',  require('./routes/dashboard'));
 app.use('/api/resume',     require('./routes/resume'));
 app.use('/api/admin',      require('./routes/admin'));
+app.use('/api/founder',    require('./routes/founder'));
 app.use('/api/public-preview', require('./routes/public-preview'));
 app.use('/preview',        require('./routes/preview'));
 app.use('/api',            require('./routes/vapi'));
@@ -402,6 +403,50 @@ app.get('/interview/report/:id/pdf', requireAuthPage, async (req, res) => {
 // Dashboard history (rendered as the Career Workspace / persistent shell's
 // Dashboard page — same route, same URL, per founder decision not to
 // introduce a new route for this)
+// Founder Dashboard (Super Admin) — page route. Gated by requireFounderPage,
+// NOT requireAuthPage: any logged-in user can pass requireAuthPage, but only
+// founder_access rows should ever see this page. Deliberately NOT linked
+// from any public navigation (see views/partials/header.ejs) — reachable
+// only by knowing the URL, same as routes/founder.js's API endpoints this
+// page's own client-side JS calls.
+app.get('/founder', requireFounderPage, async (req, res) => {
+  try {
+    const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, getFounderAlerts } = require('./db/founder-stats');
+    const { getFeedbackSummary, getRecentFeedback } = require('./db/founder-feedback');
+    const { listUsers } = require('./db/founder-users');
+
+    // All six sections' data depend only on shared, already-committed
+    // database state, not on each other's results — fetched in parallel.
+    const [stats, activity, betaOverview, alerts, feedbackSummary, recentFeedback, users] = await Promise.all([
+      getOverviewStats(),
+      getRecentActivity(),
+      getBetaAndSubscriptionOverview(),
+      getFounderAlerts(),
+      getFeedbackSummary(),
+      getRecentFeedback(),
+      listUsers(),
+    ]);
+
+    res.render('founder-dashboard', {
+      stats,
+      activity,
+      betaOverview,
+      alerts,
+      feedbackSummary,
+      recentFeedback,
+      users,
+      footerInfo: {
+        lastRefreshed: new Date().toISOString(),
+        environment: process.env.NODE_ENV === 'production' ? 'Production' : 'Staging',
+      },
+      shellUser: req.user,
+    });
+  } catch (err) {
+    console.error('[founder] dashboard render error:', err);
+    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
+  }
+});
+
 app.get('/dashboard/history', requireAuthPage, async (req, res) => {
   try {
     const userId = req.cookies.user_id;
