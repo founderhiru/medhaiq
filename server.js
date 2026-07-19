@@ -35,6 +35,14 @@ app.use((req, _res, next) => {
   next();
 });
 
+// Capability Engine — resolves visitor/free/pro tier for every request and
+// attaches req.capabilities + res.locals.capabilities/megaMenuItems/headerCTA.
+// Must run after the cookie parser (needs req.cookies.user_id) and before
+// any route that renders a view. Nothing in views/partials/header.ejs reads
+// megaMenuItems/headerCTA yet — that wiring is a separate, later change —
+// so this is purely additive infrastructure right now.
+app.use(require('./middleware/capabilities'));
+
 // EJS view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -53,6 +61,7 @@ app.use('/api/dashboard',  require('./routes/dashboard'));
 app.use('/api/resume',     require('./routes/resume'));
 app.use('/api/admin',      require('./routes/admin'));
 app.use('/api/public-preview', require('./routes/public-preview'));
+app.use('/preview',        require('./routes/preview'));
 app.use('/api',            require('./routes/vapi'));
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
