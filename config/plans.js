@@ -3,13 +3,21 @@ const MAX_SESSION_MINUTES = 25;
 
 const PLAN_CONFIG = {
   free: {
-    includedMinutes: 50,   // Temporary launch value — revisit with pricing decision
-    unlimited: false
+    unlimited: false,
+    interview: {
+      includedMinutes: 50,   // Temporary launch value — revisit with pricing decision
+      maxSessionMinutes: MAX_SESSION_MINUTES,
+    },
   },
   pro: {
-    includedMinutes: null,
-    unlimited: true
-  }
+    unlimited: true,
+    interview: {
+      includedMinutes: null,
+      maxSessionMinutes: MAX_SESSION_MINUTES,
+    },
+  },
 };
 
-module.exports = { PLAN_CONFIG, MAX_SESSION_MINUTES };
+const DEFAULT_TIER = 'free';
+
+module.exports = { PLAN_CONFIG, MAX_SESSION_MINUTES, DEFAULT_TIER };
