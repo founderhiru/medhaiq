@@ -702,7 +702,6 @@
 
 </div>
 
-<% if (typeof previewMode === 'undefined' || !previewMode) { %>
 <!-- ══════════ BOTTOM TRUST BAR ══════════ -->
 <div class="trust">
   <div class="trust-inner">
@@ -713,7 +712,6 @@
     <div class="trust-item"><span class="trust-ic" style="background:rgba(139,92,246,0.15);color:#8b5cf6;">🛡</span><div><div class="trust-t">Secure &amp; Private</div><div class="trust-s">Enterprise Grade</div></div></div>
   </div>
 </div>
-<% } %>
 
 <script>
 function switchTab(tab) {
@@ -1134,5 +1132,8 @@ function switchTab(tab) {
   });
 })();
 </script>
+<% if (typeof previewMode !== 'undefined' && previewMode) { %>
+  <%- include('partials/preview-conversion-panel') %>
+<% } %>
 </body>
 </html>
