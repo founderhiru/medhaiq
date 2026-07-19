@@ -162,12 +162,41 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
   }
 });
 
+// ── Report access control ────────────────────────────────────────────────
+// Three layers, matched to the two routes below:
+//   1. Authentication  — requireAuthPage middleware (redirects if not logged in)
+//   2. Ownership        — report.user_id must match the logged-in user...
+//   3. Founder override — ...unless the requester is a Founder (founder_access
+//      table, same isFounder() check routes/founder.js already uses — never
+//      a client-supplied flag, always re-verified against the DB)
+//
+// Centralized here so the HTML route and the PDF route can never drift —
+// one function decides "can this user see this report," both routes just
+// call it and either get a report object or null.
+//
+// Returns 404, not 403, on a failed ownership check — deliberately, so
+// someone probing sequential report IDs can't distinguish "doesn't exist"
+// from "exists, but isn't yours."
+async function loadAuthorizedReport(reportId, user) {
+  const { getReport } = require('./db/interview');
+  const { isFounder } = require('./db/founder-access');
+
+  const report = await getReport(reportId);
+  if (!report) return null;
+
+  if (await isFounder(user.id)) return report;
+  if (String(report.user_id) !== String(user.id)) return null;
+
+  return report;
+}
+
 // Interview report
-app.get('/interview/report/:id', async (req, res) => {
+app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
   try {
-    const { getReport, getSession, getSessionScores } = require('./db/interview');
-    const report = await getReport(req.params.id);
+    const report = await loadAuthorizedReport(req.params.id, req.user);
     if (!report) return res.status(404).send('Report not found');
+
+    const { getSessionScores } = require('./db/interview');
 
     const { PERSONAS } = require('./services/interview');
     const persona = PERSONAS[report.persona_id] || PERSONAS.alex_chen;
@@ -231,13 +260,13 @@ function renderView(view, data) {
   });
 }
 
-app.get('/interview/report/:id/pdf', async (req, res) => {
+app.get('/interview/report/:id/pdf', requireAuthPage, async (req, res) => {
   try {
-    const { getReport, getSessionScores, getSessionQuestions } = require('./db/interview');
+    const { getSessionScores, getSessionQuestions } = require('./db/interview');
     const { PERSONAS, computeStarProgress } = require('./services/interview');
     const { renderReportPdf } = require('./services/pdf-report');
 
-    const report = await getReport(req.params.id);
+    const report = await loadAuthorizedReport(req.params.id, req.user);
     if (!report) return res.status(404).send('Report not found');
 
     const persona = PERSONAS[report.persona_id] || PERSONAS.alex_chen;
