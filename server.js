@@ -2,6 +2,7 @@
 const express = require('express');
 const path = require('path');
 const { buildLandingContext } = require('./lib/landing-context');
+const { requireAuthPage } = require('./middleware/guards');
 require('./config/passport');
 
 // Fail fast if DATABASE_URL is missing
@@ -99,17 +100,14 @@ app.get('/login',       (_req, res) => res.redirect('/auth/login'));
 
 
 // Interview setup
-app.get('/interview', (req, res) => {
-  const userId = req.cookies?.user_id;
-  if (!userId) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
+app.get('/interview', requireAuthPage, (req, res) => {
   res.render('interview-setup');
 });
 
 // Interview session
-app.get('/interview/session/:id', async (req, res) => {
+app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
   try {
-    const userId = req.cookies?.user_id;
-    if (!userId) return res.redirect('/auth/login');
+    const userId = req.cookies.user_id;
 
     const { getSession, getSessionQuestions } = require('./db/interview');
     const session = await getSession(req.params.id);
@@ -366,25 +364,23 @@ app.get('/interview/report/:id/pdf', async (req, res) => {
 // Dashboard history (rendered as the Career Workspace / persistent shell's
 // Dashboard page — same route, same URL, per founder decision not to
 // introduce a new route for this)
-app.get('/dashboard/history', async (req, res) => {
+app.get('/dashboard/history', requireAuthPage, async (req, res) => {
   try {
-    const userId = req.cookies?.user_id;
-    if (!userId) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
+    const userId = req.cookies.user_id;
 
-    const { getUserById } = require('./db/auth');
     const { getUserSessions, getUserAggregateScores } = require('./db/interview');
     const { getCareerProfile } = require('./db/career-profile');
-    // These four queries only depend on `userId`, not on each other's
-    // results — running them in parallel instead of one-after-another
-    // cuts the wait from the sum of the round-trips down to roughly
-    // whichever one is slowest. Same data, same behavior, just faster.
-    const [user, sessions, aggregateScores, careerProfile] = await Promise.all([
-      getUserById(userId),
+    // req.user was already fetched by requireAuthPage — no need to fetch it
+    // again here. These three queries only depend on `userId`, not on each
+    // other's results — running them in parallel instead of one-after-
+    // another cuts the wait from the sum of the round-trips down to
+    // roughly whichever one is slowest. Same data, same behavior, just faster.
+    const [sessions, aggregateScores, careerProfile] = await Promise.all([
       getUserSessions(userId, { limit: 20 }),
       getUserAggregateScores(userId),
       getCareerProfile(userId),
     ]);
-    if (!user) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
+    const user = req.user;
     // Two bugs were compounding here:
     // 1) `s.overall_score || s.report_score || null` treats a real score of
     //    0 as falsy, silently discarding it (and `report_score` isn't even
@@ -518,16 +514,9 @@ app.get('/dashboard/history', async (req, res) => {
 // itself fetches its own status/upload data client-side from
 // /api/resume/status and /api/resume/upload (see views/resume.ejs), so
 // this route only needs to supply shellUser for the workspace shell.
-app.get('/resume', async (req, res) => {
+app.get('/resume', requireAuthPage, (req, res) => {
   try {
-    const userId = req.cookies?.user_id;
-    if (!userId) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
-
-    const { getUserById } = require('./db/auth');
-    const user = await getUserById(userId);
-    if (!user) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
-
-    res.render('resume', { shellUser: user });
+    res.render('resume', { shellUser: req.user });
   } catch (err) {
     console.error('[resume]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
@@ -536,16 +525,9 @@ app.get('/resume', async (req, res) => {
 
 // Settings — new, minimal (Profile / Account / Preferences). No page
 // existed at this route before; same auth pattern as dashboard/history.
-app.get('/settings', async (req, res) => {
+app.get('/settings', requireAuthPage, (req, res) => {
   try {
-    const userId = req.cookies?.user_id;
-    if (!userId) return res.redirect('/auth/login');
-
-    const { getUserById } = require('./db/auth');
-    const user = await getUserById(userId);
-    if (!user) return res.redirect('/auth/login');
-
-    res.render('settings', { shellUser: user });
+    res.render('settings', { shellUser: req.user });
   } catch (err) {
     console.error('[settings]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
