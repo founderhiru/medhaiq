@@ -25,6 +25,14 @@
 }
 .mh-explore-search-wrap .mh-form-input { padding-left: 46px; }
 .mh-explore-search-meta { margin-top: 14px; font-size: 13px; color: var(--text-faint); min-height: 18px; text-align: center; }
+.mh-explore-trust-line { margin-top: 10px; font-size: 13px; color: var(--text-faint); text-align: center; }
+
+/* ---- What You'll Discover ---- */
+.mh-explore-discover-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 48px; }
+.mh-explore-discover-card { align-items: flex-start; text-align: left; }
+.mh-explore-discover-icon { font-size: 26px; line-height: 1; margin-bottom: 4px; }
+.mh-explore-discover-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; }
+.mh-explore-discover-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
 
 /* ---- Card grid scaffolding (shared by companies / roles / guides) ---- */
 .mh-explore-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-top: 48px; }
@@ -67,6 +75,8 @@
 }
 .mh-explore-company-name { font-family: var(--font-display); font-weight: 700; font-size: 16px; margin-top: 2px; }
 .mh-explore-company-sub { font-size: 13px; color: var(--text-muted); }
+.mh-explore-company-stat { font-size: 12px; color: var(--blue-bright); font-weight: 600; margin-top: 6px; }
+.mh-explore-company-stat-placeholder { color: var(--text-faint); font-weight: 500; font-style: italic; }
 
 /* ---- Role card ---- */
 .mh-explore-role-category { font-size: 12px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -96,6 +106,7 @@
 .mh-explore-preview-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
 .mh-explore-preview-head h3 { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
 .mh-explore-btn-sm { padding: 8px 16px; font-size: 13px; }
+.mh-explore-preview-intro { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
 
 .mh-explore-report-lines { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; filter: blur(4px); user-select: none; }
 .mh-explore-report-line { height: 10px; border-radius: 4px; background: var(--white-soft); }
@@ -132,6 +143,7 @@
   pointer-events: none;
 }
 .mh-explore-cta-inner { position: relative; max-width: 620px; margin: 0 auto; }
+.mh-explore-cta-sub { font-size: 15px; color: var(--text-muted); margin-top: -4px; margin-bottom: 8px; }
 .mh-explore-cta-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 8px; }
 
 /* ---- Mobile ---- */

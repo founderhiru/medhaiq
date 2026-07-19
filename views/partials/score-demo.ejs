@@ -1,81 +1,96 @@
-<!-- Section 5: AI Career Score Demo -->
+<!-- Section 5: AI Career Score Demo — Career Intelligence Preview -->
 <section class="mh-score reveal" id="score">
   <div class="mh-score-inner">
+
     <div class="mh-section-center">
-      <div class="mh-eyebrow">Live Diagnostic</div>
-      <h2 class="mh-section-title">Discover Your Career Intelligence Score</h2>
-      <p class="mh-section-sub">Don't guess your market trajectory. Run a live sample diagnostic across elite enterprise rubrics.</p>
+      <div class="mh-eyebrow">Career Intelligence Preview</div>
+      <h2 class="mh-section-title">See Your Profile Through an Executive Recruiter's Eyes</h2>
+      <p class="mh-section-sub">Upload your resume to generate an evidence-based preview before validating your capabilities through a Live AI Interview.</p>
+      <div class="mh-cip-stats">
+        <span>100% Free</span><span class="sep">·</span>
+        <span>Takes 60 Seconds</span><span class="sep">·</span>
+        <span>No Sign Up</span>
+      </div>
     </div>
 
-    <div class="mh-score-layout">
-      <!-- Left: context + CTA -->
-      <div>
-        <div class="mh-drop-zones">
-          <!-- CV upload drop zone -->
-          <div class="mh-drop-zone mh-upload-zone" id="mh-upload-zone">
-            <div class="mh-drop-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-            </div>
-            <div style="width:100%">
-              <div class="mh-drop-label">Upload Your CV</div>
-              <div class="mh-drop-hint mh-upload-hint">Drag &amp; drop or click to browse</div>
-              <div class="mh-upload-extracting" id="mh-upload-extracting">AI Extracting Skills&hellip;</div>
-              <div class="mh-upload-filename" id="mh-upload-filename"></div>
-            </div>
-            <input type="file" id="mh-cv-file" accept=".pdf,.doc,.docx" style="display:none">
-          </div>
+    <div class="mh-cip-shell">
+      <!-- LEFT -->
+      <div class="mh-cip-left">
+        <div class="mh-cip-step">
+          <span class="mh-cip-step-num">1</span>
+          <span class="mh-cip-step-label">Upload Your Resume</span>
+        </div>
 
-          <!-- Role selector -->
-          <div class="mh-drop-zone" style="cursor:default">
-            <div class="mh-drop-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div style="width:100%">
-              <div class="mh-drop-label">Choose Target Role & Level</div>
-              <select class="mh-drop-select" id="mh-role-select">
-                <option value="">Select a role...</option>
-                <option>Software Engineer</option>
-                <option>Product Manager</option>
-                <option>Management Consultant</option>
-                <option>Director</option>
-                <option>VP</option>
-                <option>C-Suite</option>
-                <option>Custom</option>
-              </select>
-              <input type="text" id="mh-custom-role" class="mh-drop-select" placeholder="Describe your target role…" style="display:none">
-            </div>
+        <!-- CV upload drop zone — IDs/classes below are unchanged from the
+             existing implementation; medhaiq.css's .extracting/.uploaded
+             state toggling (already defined there) keeps working as-is. -->
+        <div class="mh-drop-zone mh-upload-zone" id="mh-upload-zone">
+          <div class="mh-drop-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
           </div>
+          <div style="width:100%">
+            <div class="mh-drop-label">Drag &amp; drop your resume here</div>
+            <div class="mh-drop-hint mh-upload-hint">PDF or DOCX (Max 5MB)</div>
+            <div class="mh-upload-extracting" id="mh-upload-extracting">AI Extracting Skills&hellip;</div>
+            <div class="mh-upload-filename" id="mh-upload-filename"></div>
+          </div>
+          <input type="file" id="mh-cv-file" accept=".pdf,.doc,.docx" style="display:none">
+        </div>
 
-          <!-- Org scale -->
-          <div class="mh-drop-zone" style="cursor:default">
-            <div class="mh-drop-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            </div>
-            <div style="width:100%">
-              <div class="mh-drop-label">Target Organisation Scale</div>
-              <select class="mh-drop-select" id="mh-scale-select">
-                <option value="">Select org type...</option>
-                <option>Startup (1–50)</option>
-                <option>SME (51–500)</option>
-                <option>Enterprise (500–5,000)</option>
-                <option>Fortune 500 / Global MNC</option>
-              </select>
-            </div>
+        <div class="mh-cip-step">
+          <span class="mh-cip-step-num">2</span>
+          <span class="mh-cip-step-label">Choose Target Role &amp; Level</span>
+        </div>
+        <div class="mh-drop-zone" style="cursor:default">
+          <div class="mh-drop-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div style="width:100%">
+            <select class="mh-drop-select" id="mh-role-select">
+              <option value="">Select a role...</option>
+              <option>Software Engineer</option>
+              <option>Product Manager</option>
+              <option>Management Consultant</option>
+              <option>Director</option>
+              <option>VP</option>
+              <option>C-Suite</option>
+              <option>Custom</option>
+            </select>
+            <input type="text" id="mh-custom-role" class="mh-drop-select" placeholder="Describe your target role…" style="display:none">
+          </div>
+        </div>
+
+        <div class="mh-cip-step">
+          <span class="mh-cip-step-num">3</span>
+          <span class="mh-cip-step-label">Target Organisation Scale</span>
+        </div>
+        <div class="mh-drop-zone" style="cursor:default">
+          <div class="mh-drop-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <div style="width:100%">
+            <select class="mh-drop-select" id="mh-scale-select">
+              <option value="">Select org type...</option>
+              <option>Startup (1–50)</option>
+              <option>SME (51–500)</option>
+              <option>Enterprise (500–5,000)</option>
+              <option>Fortune 500 / Global MNC</option>
+            </select>
           </div>
         </div>
 
         <div class="mh-score-cta-wrap">
           <button id="mh-run-btn" type="button" class="mh-score-run-btn">Run Free Analysis</button>
         </div>
+        <div class="mh-cip-trust">&#128274; Your resume is processed securely and is not stored after analysis.</div>
       </div>
 
-      <!-- Right: score output -->
-      <div class="mh-score-output">
-        <!-- Loading state -->
+      <!-- RIGHT: Career Intelligence Preview -->
+      <div class="mh-preview-output">
         <div class="mh-score-loading" id="mh-score-loading">
           <div class="mh-shimmer" style="width:60%"></div>
           <div class="mh-shimmer" style="width:80%"></div>
@@ -84,92 +99,76 @@
           <div class="mh-shimmer" style="width:55%"></div>
         </div>
 
-        <!-- Score card -->
-        <div class="mh-score-card" id="mh-score-card">
-          <div class="mh-score-centre">
-            <div class="mh-score-overall-ring">
-              <svg width="120" height="120" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r="52" fill="none" stroke="var(--navy-border)" stroke-width="8"/>
-                <circle cx="60" cy="60" r="52" fill="none" stroke="var(--gold)" stroke-width="8"
-                  stroke-dasharray="327" stroke-dashoffset="56"
-                  id="mh-overall-circle" style="transition: stroke-dashoffset 1.5s ease"/>
-              </svg>
-              <div class="mh-score-overall-val">
-                <span class="mh-score-overall-num" id="mh-overall-num">83</span>
-                <span class="mh-score-overall-label">Overall</span>
+        <div class="mh-preview-error" id="mh-preview-error"></div>
+
+        <div class="mh-preview-upload-hint" id="mh-preview-upload-hint">Upload your resume to generate your personalized Career Intelligence Preview.</div>
+
+       <div class="mh-preview-card" id="mh-score-card">
+          <div class="mh-preview-section">
+            <div class="mh-cip-right-top" style="padding-top: 12px;">
+              <div>
+                <!-- The single, calm product badge -->
+                <div class="mh-preview-eyebrow" style="margin-bottom: 12px;">
+                  Career Intelligence Preview
+                </div>
+
+                <!-- The Example Preview flag and core score -->
+                <div id="mh-sample-headline-flag" style="margin-top: 6px;">
+                  <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; letter-spacing: 0.05em; margin-bottom: 2px;">Example Preview</span>
+                  <div class="mh-preview-band" id="mh-preview-band" style="line-height: 1.1;">Strong</div>
+                </div>
+
+                <!-- Calm sub-caption detailing value of live interview -->
+                <div class="mh-preview-caption" style="margin-top: 6px; font-size: 12.5px; color: var(--text-muted); letter-spacing: 0.01em;">
+                  Estimated from Resume · <span style="color: var(--text-faint);">Verified through Live AI Interview</span>
+                </div>
               </div>
-              <div class="mh-score-overall-pulse"></div>
+
+              <!-- Unmixed Percentile Gauge Element Group -->
+              <div class="mh-cip-gauge">
+                <svg width="88" height="52" viewBox="0 0 88 52">
+                  <path d="M6 46 A38 38 0 0 1 82 46" fill="none" stroke="var(--navy-border)" stroke-width="7" stroke-linecap="round"/>
+                  <path d="M6 46 A38 38 0 0 1 82 46" fill="none" stroke="var(--emerald)" stroke-width="7" stroke-linecap="round"
+                    stroke-dasharray="119" stroke-dashoffset="119" id="mh-preview-gauge-arc" style="transition: stroke-dashoffset 1s ease"/>
+                </svg>
+                <div class="mh-cip-gauge-label" id="mh-preview-gauge-label" style="margin-top: -34px;">Top 20%</div>
+                <div class="mh-cip-gauge-sub" style="font-size: 8.5px; line-height: 1.2; padding: 0 2px;">Executive Positioning</div>
+              </div>
             </div>
           </div>
 
-          <div class="mh-score-metrics">
-            <div class="mh-metric-dial">
-              <div class="mh-metric-ring-wrap">
-                <svg width="72" height="72" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--emerald)" stroke-width="5"
-                    stroke-dasharray="188" stroke-dashoffset="18"
-                    class="mh-metric-circle" data-target="83"/>
-                </svg>
-                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="83">83</span>%</div>
-              </div>
-              <div class="mh-metric-label">STAR Method Structure</div>
-            </div>
+          <div class="mh-preview-section mh-preview-section--divided">
+            <div class="mh-preview-section-title">Intelligence Snapshot</div>
+            <div class="mh-score-bars" id="mh-preview-bars"></div>
+          </div>
 
-            <div class="mh-metric-dial">
-              <div class="mh-metric-ring-wrap">
-                <svg width="72" height="72" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--emerald)" stroke-width="5"
-                    stroke-dasharray="188" stroke-dashoffset="17"
-                    class="mh-metric-circle" data-target="91"/>
-                </svg>
-                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="91">91</span>%</div>
+          <div class="mh-preview-section">
+            <div class="mh-cip-split">
+              <div>
+                <div class="mh-preview-section-title">Executive Signals Detected</div>
+                <ul class="mh-preview-signal-list" id="mh-preview-signals"></ul>
+                <div class="mh-preview-note"></div>
               </div>
-              <div class="mh-metric-label">Executive Tone</div>
-            </div>
-
-            <div class="mh-metric-dial">
-              <div class="mh-metric-ring-wrap">
-                <svg width="72" height="72" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--emerald)" stroke-width="5"
-                    stroke-dasharray="188" stroke-dashoffset="21"
-                    class="mh-metric-circle" data-target="89"/>
-                </svg>
-                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="89">89</span>%</div>
+              <div>
+                <div class="mh-preview-section-title">AI Recruiter First Impression</div>
+                <p class="mh-preview-recruiter-text" id="mh-preview-recruiter-text"></p>
               </div>
-              <div class="mh-metric-label">Coherence Score</div>
-            </div>
-
-            <div class="mh-metric-dial">
-              <div class="mh-metric-ring-wrap">
-                <svg width="72" height="72" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--gold)" stroke-width="5"
-                    stroke-dasharray="188" stroke-dashoffset="42"
-                    class="mh-metric-circle" data-target="78"/>
-                </svg>
-                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="78">78</span>%</div>
-              </div>
-              <div class="mh-metric-label">Confidence Index</div>
-            </div>
-
-            <div class="mh-metric-dial">
-              <div class="mh-metric-ring-wrap">
-                <svg width="72" height="72" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--navy-border)" stroke-width="5"/>
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="var(--gold)" stroke-width="5"
-                    stroke-dasharray="188" stroke-dashoffset="45"
-                    class="mh-metric-circle" data-target="76"/>
-                </svg>
-                <div class="mh-metric-ring-val"><span class="mh-metric-num" data-target="76">76</span>%</div>
-              </div>
-              <div class="mh-metric-label">Promotion Readiness Index</div>
             </div>
           </div>
 
-          <p class="mh-score-disclaimer"><em>Instant diagnostic preview generated under MedhaIQ Sandbox Parameters. Start your free trial to unlock your full unredacted enterprise report.</em></p>
+          <div class="mh-preview-section mh-preview-section--divided">
+            <div class="mh-preview-section-title">Opportunities to Strengthen</div>
+            <ul class="mh-preview-opportunity-list" id="mh-preview-opportunities"></ul>
+          </div>
+
+          <div class="mh-preview-section mh-preview-section--last">
+            <div class="mh-preview-cta">
+              <div class="mh-preview-cta-icon">&#9733;</div>
+              <p class="mh-preview-cta-text"><b>A resume can't reveal your Executive Presence, Strategic Thinking, Decision Making, or Leadership Judgement.</b> Validate your true potential in a live, AI-powered interview.</p>
+              <button type="button" class="mh-score-run-btn mh-preview-cta-btn">Start Free Trial</button>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -178,42 +177,199 @@
 
 <script>
 (function () {
+  // ── Renders directly off the real API response shape from
+  // POST /api/public-preview. No adapter layer, no mock data — every value
+  // below is read straight off what the backend returns. Only presentation
+  // (chip rendering, gauge fill, button success/reset state) changed in
+  // this pass; the fetch/response-handling logic itself is unchanged.
+
+  var CONFIDENCE_GAUGE_OFFSET = { High: 18, Medium: 48, Low: 89 }; // out of dasharray=119 (semicircle length)
+
+  // Illustrative example shown before any real upload — same schema as a
+  // real /api/public-preview response, just static content. Never sent to
+  // or from the server; purely a presentation fixture.
+  var SAMPLE_PREVIEW = {
+    metrics: { overall: { band: 'Strong', confidence: 'Medium' } },
+    buckets: [
+      { key: 'careerReadiness', label: 'Career Readiness', numeric: true, score: 82 },
+      { key: 'leadership', label: 'Leadership Evidence', numeric: true, score: 74 },
+      { key: 'business', label: 'Business Impact', numeric: true, score: 68 },
+      { key: 'communication', label: 'Executive Communication', numeric: true, score: 71 },
+    ],
+    executiveSignals: {
+      signals: ['Career Scope & Seniority', 'Leadership Evidence', 'Quantified Business Impact', 'Executive Communication'],
+      note: 'Additional capabilities are validated during the live interview.',
+    },
+    opportunities: ['Business impact could be framed with stronger, more specific numbers.'],
+    recruiterFirstImpression: 'This profile shows real leadership scope and team ownership, with measurable business outcomes beginning to take shape. Framing achievements with more specific numbers would strengthen the impression further.',
+  };
+
+  // Band → color mapping for REAL results (per the approved distinction:
+  // sample stays a neutral blue regardless of band; a real result colors
+  // itself by how strong the band actually is).
+  var BAND_COLORS = {
+    'Excellent': 'var(--emerald)',
+    'Strong': 'var(--emerald)',
+    'Good': 'var(--blue-bright)',
+    'Developing': 'var(--gold)',
+    'Early Signal': 'var(--text-faint)',
+  };
+  var SAMPLE_COLOR = 'var(--blue-bright)';
+
+  function renderPreview(preview, isSample) {
+    var bandEl = document.getElementById('mh-preview-band');
+    bandEl.textContent = isSample ? 'Strong' : preview.metrics.overall.band;
+    bandEl.style.color = isSample ? SAMPLE_COLOR : (BAND_COLORS[preview.metrics.overall.band] || 'var(--emerald)');
+
+    var confEl = document.getElementById('mh-preview-confidence');
+    if (confEl) confEl.textContent = preview.metrics.overall.confidence;
+
+    var arc = document.getElementById('mh-preview-gauge-arc');
+    var offset = CONFIDENCE_GAUGE_OFFSET[preview.metrics.overall.confidence];
+    arc.style.strokeDashoffset = (offset !== undefined ? offset : 89);
+    
+    document.getElementById('mh-preview-gauge-label').textContent = isSample ? 'Top 20%' : preview.metrics.overall.confidence;
+    // Snapshot bars — visual-only, no numeric label (direction, not false
+    // precision). A bucket that didn't clear the reliability threshold
+    // (numeric: false) renders as a "Limited Signal" chip instead of a bar.
+    var barsEl = document.getElementById('mh-preview-bars');
+    barsEl.innerHTML = preview.buckets.map(function (b) {
+      if (!b.numeric) {
+        return '<div class="mh-score-bar-row mh-preview-limited-row">' +
+          '<span class="mh-score-bar-label">' + b.label + '</span>' +
+          '<span class="mh-preview-limited-chip">Limited Signal</span>' +
+          '</div>';
+      }
+      var fillClass = b.score >= 70 ? '' : 'gold-fill';
+      return '<div class="mh-score-bar-row">' +
+        '<span class="mh-score-bar-label">' + b.label + '</span>' +
+        '<div class="mh-score-bar-track"><div class="mh-score-bar-fill ' + fillClass + '" style="width:' + b.score + '%"></div></div>' +
+        '</div>';
+    }).join('');
+
+    // Executive Signals — now rendered as chips (was a plain checklist).
+    var signalsEl = document.getElementById('mh-preview-signals');
+    var signals = preview.executiveSignals.signals || [];
+    signalsEl.innerHTML = signals.length
+      ? signals.map(function (s) { return '<li>' + s + '</li>'; }).join('')
+      : '<li class="mh-preview-muted-item">No strong signals detected yet</li>';
+    document.querySelector('#mh-score-card .mh-preview-note').textContent = preview.executiveSignals.note;
+
+    document.getElementById('mh-preview-recruiter-text').textContent = preview.recruiterFirstImpression;
+
+    var oppEl = document.getElementById('mh-preview-opportunities');
+    var opportunities = preview.opportunities || [];
+    oppEl.innerHTML = opportunities.length
+      ? opportunities.map(function (o) { return '<li>' + o + '</li>'; }).join('')
+      : '<li class="mh-preview-muted-item">No notable gaps detected — resume evidence is strong across the board.</li>';
+
+    var sampleFlag = document.getElementById('mh-sample-headline-flag');
+  if (sampleFlag) {
+  var flagSpan = sampleFlag.querySelector('span');
+  if (flagSpan) flagSpan.style.display = isSample ? 'block' : 'none';
+}
+  }
+
+  function renderError(message) {
+    var errorEl = document.getElementById('mh-preview-error');
+    errorEl.textContent = message;
+    errorEl.classList.add('mh-preview-error-visible');
+    document.getElementById('mh-score-card').classList.remove('mh-score-visible');
+  }
+
+  function clearError() {
+    var errorEl = document.getElementById('mh-preview-error');
+    errorEl.classList.remove('mh-preview-error-visible');
+    errorEl.textContent = '';
+  }
+
+  // Button success/reset presentation state — purely cosmetic, no change
+  // to the underlying click/fetch behavior.
+  var BTN_DEFAULT_HTML = 'Run Free Analysis';
+  function setButtonComplete(btn) {
+    btn.classList.add('is-complete');
+    btn.innerHTML = '&#10003; Analysis Complete<span class="mh-cip-btn-sub">You can re-run the analysis</span>';
+  }
+  function resetButton(btn) {
+    btn.classList.remove('is-complete');
+    btn.innerHTML = BTN_DEFAULT_HTML;
+  }
+
   var btn = document.getElementById('mh-run-btn');
   var loading = document.getElementById('mh-score-loading');
   var card = document.getElementById('mh-score-card');
-  if (!btn || !loading || !card) return;
-  btn.addEventListener('click', function (e) {
-    e.preventDefault();
-    loading.classList.add('mh-score-loading-visible');
-    setTimeout(function () {
-      loading.classList.remove('mh-score-loading-visible');
-      card.classList.add('mh-score-visible');
-      card.querySelectorAll('.mh-metric-circle').forEach(function (c) {
-        var rawFull = c.getAttribute('stroke-dasharray');
-        if (!rawFull) return;
-        var full = parseFloat(rawFull);
-        if (isNaN(full)) return;
-        c.style.strokeDashoffset = full;
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            var target = parseInt(c.getAttribute('data-target'), 10);
-            c.style.transition = 'stroke-dashoffset 1.5s ease-in-out';
-            c.style.strokeDashoffset = full - (full * target / 100);
-          });
-        });
-      });
-      var overall = document.getElementById('mh-overall-circle');
-      if (overall) {
-        overall.style.strokeDashoffset = 327;
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            overall.style.strokeDashoffset = 56;
-          });
-        });
-      }
-    }, 1500);
-  });
+  var cvFileInput = document.getElementById('mh-cv-file');
+  var roleSelect = document.getElementById('mh-role-select');
+  var scaleSelect = document.getElementById('mh-scale-select');
 
+  if (btn && loading && card) {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      clearError();
+
+      var targetRole = roleSelect ? roleSelect.value : '';
+      var orgScale = scaleSelect ? scaleSelect.value : '';
+      if (!cvFileInput || !cvFileInput.files.length) {
+        renderError('Upload your resume first.');
+        return;
+      }
+      if (!targetRole || !orgScale) {
+        renderError('Choose a target role and organisation scale first.');
+        return;
+      }
+
+      var formData = new FormData();
+      formData.append('resumeFile', cvFileInput.files[0]);
+      formData.append('targetRole', targetRole);
+      formData.append('orgScale', orgScale);
+
+      // Soft fade-out of whatever is currently showing (sample or a
+      // previous real result) before the loading state appears — keeps the
+      // sample → loading → real-result sequence feeling continuous rather
+      // than an abrupt swap.
+      card.classList.add('mh-preview-fade-out');
+      btn.disabled = true;
+
+      setTimeout(function () {
+        card.classList.remove('mh-score-visible');
+        loading.classList.add('mh-score-loading-visible');
+
+        fetch('/api/public-preview', { method: 'POST', body: formData })
+          .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+          .then(function (result) {
+            loading.classList.remove('mh-score-loading-visible');
+            btn.disabled = false;
+
+            if (!result.ok || result.data.status === 'error') {
+              resetButton(btn);
+              renderError((result.data && result.data.message) || 'Something went wrong. Please try again.');
+              return;
+            }
+            if (result.data.status === 'insufficient_signal') {
+              resetButton(btn);
+              renderError(result.data.message);
+              return;
+            }
+            renderPreview(result.data.preview, false);
+            card.classList.add('mh-score-visible');
+            // Next frame, so the browser registers display:block at
+            // opacity 0 first, then transitions to 1 — a genuine fade-in
+            // rather than an instant pop.
+            requestAnimationFrame(function () { card.classList.remove('mh-preview-fade-out'); });
+            setButtonComplete(btn);
+          })
+          .catch(function () {
+            loading.classList.remove('mh-score-loading-visible');
+            btn.disabled = false;
+            resetButton(btn);
+            renderError('Something went wrong reaching the server. Please try again.');
+          });
+      }, 300);
+    });
+  }
+
+  // ── Upload zone / role-select interaction — UNCHANGED from the original
+  // implementation. ─────────────────────────────────────────────────────
   var uploadZone = document.getElementById('mh-upload-zone');
   var cvFile = document.getElementById('mh-cv-file');
   var extracting = document.getElementById('mh-upload-extracting');
@@ -244,41 +400,50 @@
     });
   }
 
-  var roleSelect = document.getElementById('mh-role-select');
-  var customRoleInput = document.getElementById('mh-custom-role');
-  if (roleSelect && customRoleInput) {
-    roleSelect.addEventListener('change', function () {
-      if (roleSelect.value === 'Custom') {
-        roleSelect.style.display = 'none';
-        customRoleInput.style.display = 'block';
-        customRoleInput.value = '';
-        customRoleInput.focus();
-      } else {
-        customRoleInput.style.display = 'none';
-      }
-    });
-    function commitCustomRole() {
-      var val = customRoleInput.value.trim();
-      customRoleInput.style.display = 'none';
-      roleSelect.style.display = '';
-      if (val) {
-        var opt = document.getElementById('mh-custom-role-opt');
-        if (!opt) {
-          opt = document.createElement('option');
-          opt.id = 'mh-custom-role-opt';
-          roleSelect.appendChild(opt);
+  if (roleSelect) {
+    var customRoleInput = document.getElementById('mh-custom-role');
+    if (customRoleInput) {
+      roleSelect.addEventListener('change', function () {
+        if (roleSelect.value === 'Custom') {
+          roleSelect.style.display = 'none';
+          customRoleInput.style.display = 'block';
+          customRoleInput.value = '';
+          customRoleInput.focus();
+        } else {
+          customRoleInput.style.display = 'none';
         }
-        opt.value = val;
-        opt.textContent = val;
-        roleSelect.value = val;
-      } else {
-        roleSelect.value = '';
+      });
+      function commitCustomRole() {
+        var val = customRoleInput.value.trim();
+        customRoleInput.style.display = 'none';
+        roleSelect.style.display = '';
+        if (val) {
+          var opt = document.getElementById('mh-custom-role-opt');
+          if (!opt) {
+            opt = document.createElement('option');
+            opt.id = 'mh-custom-role-opt';
+            roleSelect.appendChild(opt);
+          }
+          opt.value = val;
+          opt.textContent = val;
+          roleSelect.value = val;
+        } else {
+          roleSelect.value = '';
+        }
       }
+      customRoleInput.addEventListener('blur', commitCustomRole);
+      customRoleInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); commitCustomRole(); }
+      });
     }
-    customRoleInput.addEventListener('blur', commitCustomRole);
-    customRoleInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); commitCustomRole(); }
-    });
+  }
+
+  // Show the illustrative sample immediately so the right panel is never
+  // empty for a first-time visitor. Purely presentational — no fetch, no
+  // network call, nothing sent anywhere.
+  if (card) {
+    renderPreview(SAMPLE_PREVIEW, true);
+    card.classList.add('mh-score-visible');
   }
 })();
 </script>

@@ -658,6 +658,8 @@ Phrasing rules:
 - If a story was retrieved but has no hook, build the question FROM that story more generally — name the company/achievement naturally, then ask the competency-relevant question about it.
 - If no story was retrieved but a JD requirement is listed, frame a role-specific scenario around that requirement instead — no resume reference.
 - If neither is present, ask a general competency question.
+${!story ? `
+CRITICAL — NO STORY WAS SELECTED FOR THIS TURN: the blueprint above deliberately chose not to use a resume story. This is a real decision, not an oversight, and it is not yours to override. Your question MUST NOT name, reference, or allude to ANY company, employer, customer, or project from the candidate's career history — not the one from a previous question, not one you might infer from context, none. Do not open with "At [company]...", "During your [X] work...", "While you were leading...", or any phrase that implies a specific past employer. Build entirely hypothetical, forward-looking, or general-scenario language instead (e.g. "Imagine you inherit an organisation where...", "If you were leading a team where..."). If you catch yourself about to type a real company name, stop and rewrite the sentence without it.` : ''}
 ${isFollowup ? `- This is a FOLLOW-UP: deepen the candidate's last answer about this exact same story/topic — do not shift to a different one.` : `- This is a NEW ${questionBlueprint.question_type} question — the story above was already chosen to avoid repeating a story used earlier this session.`}
 
 One question = one objective (critical self-check before you finalize): a primary question must contain exactly ONE resume/story reference, ONE competency, ONE objective, and ONE ask — nothing else. If your draft mentions situation AND stakeholders AND constraints AND outcome all at once, cut it down to the single core ask before returning it. Then run the TWO FINAL CHECKS from the Executive Interviewer Voice contract above — the Personalization Test and the Executive Interview Test — and rewrite before returning if either fails.
@@ -1387,6 +1389,51 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   const wordCount = (str) => String(str || '').trim().split(/\s+/).filter(Boolean).length;
   const HARD_WORD_CEILING = isFollowup ? 35 : 60;
 
+  // ── DETERMINISTIC BLUEPRINT/QUESTION CONSISTENCY CHECK ───────────────────
+  // The blueprint is the single source of truth: if it selected no story,
+  // the generated question must not reference any company from the
+  // candidate's actual career history, no matter how strongly the model is
+  // inclined to (Layer 8 conversation history and Layer 10's resume_context
+  // both still show real company names for phrasing/personalization
+  // elsewhere in the session, which is exactly the material that was
+  // leaking into "no story" turns). Checked against the union of
+  // resume_context.companies and every story's own company — not just the
+  // resolved story's company — since ANY real employer name showing up in
+  // a turn that deliberately selected none is the actual bug being guarded
+  // against here.
+  const knownCompanies = Array.from(new Set([
+    ...((rcForChain && Array.isArray(rcForChain.companies)) ? rcForChain.companies : []),
+    ...storiesForChain.map(s => s.company).filter(Boolean),
+  ])).filter(c => c && String(c).trim().length > 2);
+
+  function findMentionedCompany(txt, companies) {
+    const lower = String(txt || '').toLowerCase();
+    for (const c of companies) {
+      const cStr = String(c).trim();
+      if (!cStr) continue;
+      if (lower.includes(cStr.toLowerCase())) return c;
+      // Company names are frequently referenced by their common acronym,
+      // not the full legal name ("AWS" not "Amazon Web Services", "TCS"
+      // not "Tata Consultancy Services") — this is exactly what the real
+      // bug report showed. Check the first-letter acronym as a whole word.
+      const words = cStr.split(/\s+/).filter((w) => /^[A-Za-z]/.test(w));
+      if (words.length >= 2) {
+        const acronym = words.map((w) => w[0]).join('');
+        if (acronym.length >= 2 && new RegExp('\\b' + acronym + '\\b', 'i').test(txt)) return c;
+      }
+    }
+    return null;
+  }
+  // Fuzzy company-name match (not exact string equality) — the same
+  // company can be spelled two ways between resume_context.companies and
+  // a story's own company field ("AWS" vs "Amazon Web Services").
+  function companiesMatch(a, b) {
+    if (!a || !b) return false;
+    const aLower = String(a).toLowerCase();
+    const bLower = String(b).toLowerCase();
+    return aLower === bLower || aLower.includes(bLower) || bLower.includes(aLower);
+  }
+
   // ── Question Repetition & Length Intercept (max 2 retries, combined) ──
   // Compares against the SANITIZED text (matches what's actually persisted
   // in qaPairs on later turns, not the raw pre-sanitize model output).
@@ -1405,7 +1452,20 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
       }
     }
     const isTooLong = wordCount(text) > HARD_WORD_CEILING;
-    if (!isRepetitive && !isTooLong) break;
+    const mentionedCompanyWhenNoneExpected = resolvedStory ? null : findMentionedCompany(text, knownCompanies);
+    // Second validation direction: a story WAS selected — the question
+    // must not reference a DIFFERENT resume company than the one the
+    // blueprint actually chose. NOT mentioning any company by name is
+    // fine — the question can be grounded via the hook without ever
+    // naming the employer; only a WRONG company is a real problem.
+    const mentionedWrongCompany = resolvedStory
+      ? (() => {
+          const mentioned = findMentionedCompany(text, knownCompanies);
+          return (mentioned && !companiesMatch(mentioned, resolvedStory.company)) ? mentioned : null;
+        })()
+      : null;
+    const isInconsistent = !!mentionedCompanyWhenNoneExpected || !!mentionedWrongCompany;
+    if (!isRepetitive && !isTooLong && !isInconsistent) break;
 
     const warnings = [];
     if (isRepetitive) {
@@ -1414,6 +1474,12 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     if (isTooLong) {
       const target = isFollowup ? '12-25' : '30-45';
       warnings.push(`[CRITICAL WARNING: Your previous generation was ${wordCount(text)} words — far over target. Cut ALL scene-setting narration. State the resume anchor in a short opening clause (a few words, not a full sentence of context), then ask ONE tight question. Target ${target} words this time — that is a hard requirement, not a suggestion.]`);
+    }
+    if (mentionedCompanyWhenNoneExpected) {
+      warnings.push(`[CRITICAL WARNING: Your previous generation mentioned "${mentionedCompanyWhenNoneExpected}", but this blueprint deliberately selected NO resume story for this turn. Remove every reference to any past employer, customer, or project — ask a fully hypothetical or general scenario question instead, exactly per the CRITICAL instruction above.]`);
+    }
+    if (mentionedWrongCompany) {
+      warnings.push(`[CRITICAL WARNING: Your previous generation mentioned "${mentionedWrongCompany}", but the blueprint selected a story about ${resolvedStory.company}. Reference ONLY ${resolvedStory.company} — do not introduce a different employer from elsewhere in the candidate's history.]`);
     }
 
     const retryParsed = await chatJSON(prompt, {
@@ -1430,12 +1496,44 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   // already falls back to for broken/meta-leak output, so there's no new
   // fallback text to maintain — one consistent safety net for both failure
   // modes.
-  if (wordCount(text) > HARD_WORD_CEILING) {
-    console.warn(`[interview] question still ${wordCount(text)} words after retries (ceiling ${HARD_WORD_CEILING}) — using short fallback instead of shipping an overlong question.`);
+  const finalMentionedCompany = resolvedStory ? null : findMentionedCompany(text, knownCompanies);
+  const finalWrongCompany = resolvedStory
+    ? (() => {
+        const mentioned = findMentionedCompany(text, knownCompanies);
+        return (mentioned && !companiesMatch(mentioned, resolvedStory.company)) ? mentioned : null;
+      })()
+    : null;
+  if (wordCount(text) > HARD_WORD_CEILING || finalMentionedCompany || finalWrongCompany) {
+    if (finalMentionedCompany) {
+      console.warn(`[interview] question still mentions "${finalMentionedCompany}" after retries despite no story selected — using safe fallback instead of shipping an inconsistent question.`);
+    } else if (finalWrongCompany) {
+      console.warn(`[interview] question still mentions "${finalWrongCompany}" after retries, but blueprint selected a story about ${resolvedStory.company} — using safe fallback instead of shipping a mismatched question.`);
+    } else {
+      console.warn(`[interview] question still ${wordCount(text)} words after retries (ceiling ${HARD_WORD_CEILING}) — using short fallback instead of shipping an overlong question.`);
+    }
     text = COMPETENCY_PROMPTS[competency]
       ? `Tell me about a specific time you had to navigate a difficult trade-off related to ${competency.replace('_', ' ')}. Walk me through the situation, what you decided, and the outcome.`
       : (OPENING_QUESTIONS[roleKey]?.[levelKey] || OPENING_QUESTIONS.default.mid);
   }
+
+  // ── [CONSISTENCY CHECK] — permanent production safeguard, logged for
+  // EVERY generated question, not just failures. If a future prompt change
+  // ever reintroduces this mismatch, this line makes it immediately
+  // visible in the logs rather than silently reaching a candidate.
+  const consistencyQuestionCompany = resolvedStory
+    ? (findMentionedCompany(text, knownCompanies) || resolvedStory.company || null)
+    : (findMentionedCompany(text, knownCompanies) || null);
+  const consistencyPass = resolvedStory
+    ? companiesMatch(consistencyQuestionCompany, resolvedStory.company) || !findMentionedCompany(text, knownCompanies)
+    : !consistencyQuestionCompany;
+  console.log(
+    `[CONSISTENCY CHECK]\n` +
+    `Blueprint StoryKey : ${storyKey || 'null'}\n` +
+    `Question Company   : ${consistencyQuestionCompany || 'null'}\n` +
+    (consistencyPass
+      ? `PASS`
+      : `FAIL\nReason:\n${resolvedStory ? `Question references a different resume company than the blueprint's selected story (${resolvedStory.company}).` : 'Question references resume company but blueprint selected no story.'}`)
+  );
 
   console.log('[blueprint-debug] final output:', JSON.stringify({ storyKey, questionText: text }));
   return { text, competency, storyKey, questionBlueprint };

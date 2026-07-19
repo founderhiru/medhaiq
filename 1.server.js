@@ -49,7 +49,6 @@ app.use('/api/contact',    require('./routes/contact'));
 app.use('/auth',           require('./routes/auth'));
 app.use('/api/interview',  require('./routes/interview'));
 app.use('/api/dashboard',  require('./routes/dashboard'));
-app.use('/api/resume',     require('./routes/resume'));
 app.use('/api/admin',      require('./routes/admin'));
 app.use('/api/public-preview', require('./routes/public-preview'));
 app.use('/api',            require('./routes/vapi'));
@@ -373,16 +372,14 @@ app.get('/dashboard/history', async (req, res) => {
 
     const { getUserById } = require('./db/auth');
     const { getUserSessions, getUserAggregateScores } = require('./db/interview');
-    const { getCareerProfile } = require('./db/career-profile');
-    // These four queries only depend on `userId`, not on each other's
+    // These three queries only depend on `userId`, not on each other's
     // results — running them in parallel instead of one-after-another
-    // cuts the wait from the sum of the round-trips down to roughly
+    // cuts the wait from the sum of three round-trips down to roughly
     // whichever one is slowest. Same data, same behavior, just faster.
-    const [user, sessions, aggregateScores, careerProfile] = await Promise.all([
+    const [user, sessions, aggregateScores] = await Promise.all([
       getUserById(userId),
       getUserSessions(userId, { limit: 20 }),
       getUserAggregateScores(userId),
-      getCareerProfile(userId),
     ]);
     if (!user) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
     // Two bugs were compounding here:
@@ -400,7 +397,6 @@ app.get('/dashboard/history', async (req, res) => {
       id: s.id,
       personaId: s.persona_id,
       roleTitle: s.role_title,
-      orgPreset: s.org_preset,
       experienceLevel: s.experience_level,
       startedAt: s.started_at,
       endedAt: s.ended_at,
@@ -462,37 +458,6 @@ app.get('/dashboard/history', async (req, res) => {
     const lastSessionLabel = history[0] ? `Last session ${relativeDayLabel(history[0].startedAt)}` : 'No sessions yet';
     const lastReportLabel = lastCompleted ? `Last report ${relativeDayLabel(lastCompleted.startedAt)}` : 'No reports yet';
 
-    // Resume Intelligence KPI — real status from career_profiles.
-    // "Active" means the most recent parse attempt was a genuine success
-    // (same SUCCESS check already used in db/career-profile.js and
-    // routes/resume.js); anything else (no resume yet, or a failed parse)
-    // shows as "Inactive" rather than implying a capability that isn't there.
-    const resumeIntelActive = !!(careerProfile && careerProfile.resume_parse_status === 'SUCCESS');
-    const resumeIntelSubLabel = resumeIntelActive
-      ? `Updated ${relativeDayLabel(careerProfile.resume_parsed_at)}`
-      : null;
-
-    // Best Competency / Focus Next — reuses the exact same 5 metrics/labels
-    // already shown in Interview Insights (Structure, Domain Expertise,
-    // Strategic Thinking, Communication, Leadership & Execution), just
-    // picking the highest and lowest instead of listing all five. No new
-    // query, no fabricated data — null/placeholder until scores exist.
-    let bestCompetencyLabel = null, focusNextLabel = null;
-    if (aggregateScores && aggregateScores.starAvg !== null) {
-      const competencyScores = [
-        { label: 'Structure', val: aggregateScores.starAvg },
-        { label: 'Domain Expertise', val: aggregateScores.technicalAvg },
-        { label: 'Strategic Thinking', val: aggregateScores.executiveAvg },
-        { label: 'Communication', val: aggregateScores.frictionAvg },
-        { label: 'Leadership & Execution', val: aggregateScores.gccAvg },
-      ].filter(c => typeof c.val === 'number' && !Number.isNaN(c.val));
-      if (competencyScores.length > 0) {
-        const sorted = [...competencyScores].sort((a, b) => b.val - a.val);
-        bestCompetencyLabel = sorted[0].label;
-        focusNextLabel = sorted[sorted.length - 1].label;
-      }
-    }
-
     // "Preparing For" — real data: the in-progress session's role if one
     // exists, otherwise the most recent session's role. Not fabricated;
     // null (and hidden in the view) if there's no session at all yet.
@@ -505,31 +470,9 @@ app.get('/dashboard/history', async (req, res) => {
       interviewsCompletedCount, reportsGeneratedCount, practiceTimeLabel,
       readinessScore, readinessDeltaVsFirst, interruptedSession, aggregateScores,
       lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
-      resumeIntelActive, resumeIntelSubLabel,
-      bestCompetencyLabel, focusNextLabel,
     });
   } catch (err) {
     console.error('[dashboard/history]', err);
-    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
-  }
-});
-
-// Resume Intelligence page — same auth pattern as /settings. The page
-// itself fetches its own status/upload data client-side from
-// /api/resume/status and /api/resume/upload (see views/resume.ejs), so
-// this route only needs to supply shellUser for the workspace shell.
-app.get('/resume', async (req, res) => {
-  try {
-    const userId = req.cookies?.user_id;
-    if (!userId) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
-
-    const { getUserById } = require('./db/auth');
-    const user = await getUserById(userId);
-    if (!user) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
-
-    res.render('resume', { shellUser: user });
-  } catch (err) {
-    console.error('[resume]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });

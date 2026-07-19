@@ -1,0 +1,32 @@
+<%
+/* "What You'll Discover" — Section inserted between Hero and Company
+   Library per launch-polish pass. Fixed 5 items, intentionally NOT
+   data-driven (unlike companies/roles/guides) since this is a static
+   orientation strip, not content meant to scale. Emoji icons match the
+   existing pattern already used in partials/header.ejs's mega-menu
+   (🎤 ⭐ 📈 ⚡) — no new icon system introduced. Reuses .mh-explore-card
+   (same glass/hover treatment as company/role/guide cards below it). */
+const _discoverItems = [
+  { icon: '🏢', title: 'Company Interview Libraries', desc: 'Explore company-specific interview patterns.' },
+  { icon: '💼', title: 'Role Libraries', desc: 'Understand role-specific competencies and expectations.' },
+  { icon: '📄', title: 'Sample AI Reports', desc: 'Preview the insights generated after every interview.' },
+  { icon: '⭐', title: 'Interactive Scorecards', desc: 'See how MedhaIQ measures interview performance.' },
+  { icon: '📚', title: 'Interview Guides', desc: 'Learn practical interview frameworks and preparation strategies.' },
+];
+%>
+<section class="mh-explore-section reveal" aria-labelledby="mh-explore-discover-title">
+  <div class="mh-explore-section-inner">
+    <div class="mh-section-center">
+      <h2 id="mh-explore-discover-title" class="mh-section-title">What You'll Discover</h2>
+    </div>
+    <div class="mh-explore-discover-grid" role="list">
+      <% _discoverItems.forEach(function(item) { %>
+        <div class="mh-explore-card mh-explore-discover-card" role="listitem">
+          <div class="mh-explore-discover-icon" aria-hidden="true"><%= item.icon %></div>
+          <div class="mh-explore-discover-title"><%= item.title %></div>
+          <div class="mh-explore-discover-desc"><%= item.desc %></div>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</section>

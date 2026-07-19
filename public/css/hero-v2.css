@@ -334,3 +334,35 @@
 .mh-vec-icon-strategic   { color: #22c55e; }
 .mh-vec-icon-comm        { color: #fb923c; }
 .mh-vec-icon-leadership  { color: #f59e0b; }
+
+/* ============================================================
+   PHASE 20 — Three launch-polish refinements to the Hero:
+   1) Fit the Hero (incl. the "We're launching soon" trust bar) within
+      one viewport on standard desktop screens, accounting for the
+      fixed 68px nav (see .mh-nav-inner height in medhaiq.css). Scoped
+      to min-width:1025px only — the terminal panel already hides and
+      the Hero already stacks/scrolls normally below 1024px (see
+      medhaiq.css's existing @media (max-width: 1024px) block), so
+      mobile/tablet are untouched.
+   2) Trim a few of the larger vertical gaps (several were already
+      flagged with "reduce until it looks right" comments in
+      medhaiq.css) — nothing shrinks below what's needed to keep the
+      Hero feeling spacious, no font sizes or button sizes changed.
+   3) Soft left-edge fade on the Live Interview Terminal so it reads as
+      emerging from the Hero background rather than being cropped by
+      the column edge — a mask-image, not a layout change.
+   Append to the END of hero-v2.css.
+   ============================================================ */
+@media (min-width: 1025px) {
+  .mh-hero { padding-top: 76px; min-height: calc(100svh - 68px); } /* 68px nav + 8px buffer — guaranteed clearance regardless of which column (left text vs. terminal) is taller, since whichever one is tallest sits with its top at padding-top exactly */
+  .mh-hero-badge { margin-bottom: 14px; }
+  .mh-hero-h1 { margin-bottom: 10px; }
+  .mh-hero-chips { margin: 14px 0 18px; }
+  .mh-hero-tertiary-row { margin-bottom: 20px; }
+  .mh-hero-notify { margin-top: 20px; }
+}
+
+.mh-terminal-v2 {
+  -webkit-mask-image: linear-gradient(to right, transparent 0px, black 24px);
+  mask-image: linear-gradient(to right, transparent 0px, black 24px);
+}

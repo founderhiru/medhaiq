@@ -11,12 +11,23 @@ const { logUserActivity } = require('../services/activity-logger');
 const { sendMagicLinkEmail } = require('../services/email');
 const router = express.Router();
 
+// Validates a "next" redirect target so it can only ever point somewhere
+// internal — never an external site or protocol-relative URL (open-redirect
+// guard). Used everywhere a "return to where the user was headed" value is
+// read from a query string or form body.
+function safeReturnTo(value) {
+  if (typeof value !== 'string' || !value) return null;
+  if (!value.startsWith('/') || value.startsWith('//')) return null;
+  return value;
+}
+
 // GET /auth/google — initiate Google OAuth
 router.get('/google', (req, res, next) => {
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     return res.redirect('/auth/login?error=google-not-configured');
   }
-  passport.authenticate('google', { scope: ['email', 'profile'] })(req, res, next);
+  const returnTo = safeReturnTo(req.query.next);
+  passport.authenticate('google', { scope: ['email', 'profile'], state: returnTo || '' })(req, res, next);
 });
 
 // GET /auth/google/callback — Google OAuth callback
@@ -36,13 +47,15 @@ router.get('/google/callback',
       sameSite: 'lax',
     });
     logUserActivity({ userId: req.user.id, action: 'login_google', page: '/auth/google/callback', req });
-    res.redirect('/dashboard/history');
+    const returnTo = safeReturnTo(req.query.state);
+    res.redirect(returnTo || '/dashboard/history');
   }
 );
 
 // POST /auth/login — send magic link
 router.post('/login', async (req, res) => {
-  const { email, name } = req.body;
+  const { email, name, next: nextParam } = req.body;
+  const returnTo = safeReturnTo(nextParam);
   const trimmed = (email || '').trim();
   if (!trimmed || !/^[^\n\r@]+@[^\n\r@]+\.[^\n\r@]+$/.test(trimmed)) {
     return res.status(400).json({ error: 'Valid email required' });
@@ -68,7 +81,7 @@ router.post('/login', async (req, res) => {
     }
 
     const token = await createToken(user.id, 1);
-    const magicUrl = `${process.env.APP_URL || 'https://www.medhaiq.ai'}/auth/verify?token=${token}`;
+    const magicUrl = `${process.env.APP_URL || 'https://www.medhaiq.ai'}/auth/verify?token=${token}${returnTo ? '&next=' + encodeURIComponent(returnTo) : ''}`;
     await sendMagicLinkEmail(cleanEmail, magicUrl);
 
     logUserActivity({ userId: user.id, action: isNewUser ? 'signup_magic_link' : 'login_magic_link_requested', page: '/auth/login', req });
@@ -82,7 +95,8 @@ router.post('/login', async (req, res) => {
 
 // POST /auth/password-login — login with email + password
 router.post('/password-login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, next: nextParam } = req.body;
+  const returnTo = safeReturnTo(nextParam);
   const trimmed = (email || '').trim();
   if (!trimmed || !/^[^\n\r@]+@[^\n\r@]+\.[^\n\r@]+$/.test(trimmed)) {
     return res.status(401).json({ error: 'Invalid email or password' });
@@ -105,7 +119,7 @@ router.post('/password-login', async (req, res) => {
 
     logUserActivity({ userId: user.id, action: 'login_password', page: '/auth/password-login', req });
 
-    return res.json({ success: true });
+    return res.json({ success: true, next: returnTo || null });
   } catch (err) {
     console.error('[auth] password-login error:', err);
     return res.status(500).json({ error: 'An error occurred. Please try again.' });
@@ -154,6 +168,7 @@ router.post('/signup', async (req, res) => {
 // GET /auth/verify?token=xxx — consume token, set session
 router.get('/verify', async (req, res) => {
   const { token } = req.query;
+  const returnTo = safeReturnTo(req.query.next);
   if (!token) return res.redirect('/?error=no-token');
 
   try {
@@ -171,7 +186,7 @@ router.get('/verify', async (req, res) => {
 
     logUserActivity({ userId, action: 'login_magic_link_verified', page: '/auth/verify', req });
 
-    return res.redirect('/dashboard/history');
+    return res.redirect(returnTo || '/dashboard/history');
   } catch (err) {
     console.error('[auth] verify error:', err);
     return res.redirect('/?error=verify-failed');
@@ -188,13 +203,10 @@ router.get('/me', async (req, res) => {
   return res.json({ user: { id: user.id, email: user.email, name: user.name } });
 });
 
-// GET /auth/logout — clear cookie, then send the user back to the
-   // marketing page. Was returning raw JSON, which left visitors staring at
-   // {"success":true} because the only caller is a plain <a href> page link
-   // (views/partials/workspace-shell-top.ejs), not a fetch/AJAX call.
-   router.get('/logout', (req, res) => {
-     res.clearCookie('user_id');
-     return res.redirect('/');
-   });
+// GET /auth/logout — clear cookie
+router.get('/logout', (req, res) => {
+  res.clearCookie('user_id');
+  return res.json({ success: true });
+});
 
 module.exports = router;

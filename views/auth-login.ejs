@@ -350,7 +350,7 @@
   <div class="authv2-left">
     <div class="authv2-left-content">
  <div class="authv2-logo">
-        <%- include('partials/brand-logo', { size: 'lg', eager: true }) %>
+        <%- include('partials/brand-logo', { size: 'md', eager: true }) %>
       </div>
 
       <div class="authv2-eyebrow">Continuous Career Intelligence</div>
@@ -533,6 +533,14 @@
   const sendBtn = document.getElementById('sendBtn');
   const msg = document.getElementById('authMsg');
 
+  // Preserve the page the user was originally trying to reach (e.g. clicking
+  // "Career Progress" while logged out) through the whole login flow.
+  const returnTo = new URLSearchParams(window.location.search).get('next');
+  const googleLink = document.querySelector('a[href="/auth/google"]');
+  if (googleLink && returnTo) {
+    googleLink.href = '/auth/google?next=' + encodeURIComponent(returnTo);
+  }
+
   sendBtn.addEventListener('click', async function() {
     const email = emailInput.value.trim();
     if (!email || !email.includes('@')) {
@@ -550,7 +558,7 @@
       const resp = await fetch('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name: nameInput.value.trim() }),
+        body: JSON.stringify({ email, name: nameInput.value.trim(), next: returnTo }),
       });
       const data = await resp.json();
 
@@ -606,12 +614,12 @@
       const resp = await fetch('/auth/password-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, next: returnTo }),
       });
       const data = await resp.json();
 
       if (data.success) {
-        window.location.href = '/interview';
+        window.location.href = data.next || '/interview';
       } else {
         throw new Error(data.error || 'Invalid email or password');
       }

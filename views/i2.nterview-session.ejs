@@ -711,22 +711,44 @@
     // Text-only sessions (no Vapi keys) reveal instantly, exactly as before.
     window.MedhaIQ_Q1 = INITQ; // read by the Vapi call-start handshake
     var HASVOICE = Boolean('<%= vapiPublicKey %>' && '<%= vapiAssistantId %>');
-    window.MedhaIQ_HasVoice = HASVOICE; // read by the separate Vapi script block below (different IIFE scope)
     var revealQ1 = function(){ showQuestion({text:INITQ}, QTYPE, null); };
-    // ── REDESIGN — no sequential waits. Every prior version of this block
-    // GATED Q1's reveal behind a calibration overlay, waiting up to 8-15s
-    // for voice to certify (or its own fallback timer) before the
-    // candidate could see or answer anything. That's precisely backwards
-    // from how every OTHER question in this app already works:
-    // MedhaIQSync.hold() (used for Q2 onward — see ~line 146) reveals the
-    // question text IMMEDIATELY and unconditionally, and only ATTEMPTS
-    // voice as an independent addition alongside it — never a
-    // precondition. Q1 now follows that exact same pattern instead of a
-    // special-cased blocking one. The candidate can read and start
-    // answering Q1 the instant the page loads, regardless of whether
-    // voice is configured, connecting, slow, or never connects at all.
-    // No overlay, no fallback timer, no calibration gate of any kind.
-    revealQ1();
+    // ── REVISED FIX (v2) — restores the v1 guarantee that a regression
+    // in the previous patch silently removed.
+    //
+    // v1: calibrate() ran unconditionally at page load. Its fallback timer
+    // was a GUARANTEE — it fired regardless of whether the candidate ever
+    // touched the mic button, so the question always revealed eventually
+    // even for a candidate who never intends to use voice at all.
+    //
+    // Prior patch: moved that call into window.MedhaIQ_startCalibration,
+    // invoked ONLY from the mic button's click handler. This fixed the
+    // narrow race (clock starting before a connection attempt existed) but
+    // broke the broader guarantee: a candidate who never clicks the mic
+    // button at all now gets NO fallback, ever — the loading overlay is
+    // stuck permanently with no self-recovery. Confirmed via screenshot:
+    // session live 80+ seconds, still frozen on "Calibrating...".
+    //
+    // v2 — keep BOTH triggers. calibrate()'s own reveal() is idempotent
+    // (first caller wins, see interviewOrchestrator.js), so arming it twice
+    // is safe by construction:
+    //   (a) unconditional 15s fallback at page load — the restored
+    //       guarantee; fires regardless of any click, exactly like v1.
+    //   (b) the click handler (below) still calls calibrate() again at the
+    //       moment of actual connection attempt — harmless no-op if (a)
+    //       already fired or is still pending; on a fast click, (b) simply
+    //       re-confirms the same 15s window is running.
+    if (HASVOICE && window.MedhaIQOrchestrator) {
+      document.getElementById('questionCard').style.display = 'none';
+      document.querySelector('.answer-bar-wrap').style.display = 'none';
+      document.getElementById('loadingText').textContent = 'Calibrating Interviewer Persona…';
+      document.getElementById('loadingOverlay').classList.add('show');
+      window.MedhaIQ_startCalibration = function () {
+        window.MedhaIQOrchestrator.calibrate({ hasVoice: true, fallbackMs: 15000, onReveal: revealQ1 });
+      };
+      window.MedhaIQ_startCalibration(); // (a) unconditional — the restored guarantee
+    } else {
+      revealQ1();
+    }
   }
   slog('Session #'+SID+' initialised', 'ok');
   slog('Persona (internal): '+PNAME, 'info'); /* debug-console only, never shown in candidate UI */
@@ -938,10 +960,22 @@
   config: { position: 'hidden' } 
 });
 
-    // REDESIGN: the call-start-success listener is removed. It existed
-    // solely to certify a calibration GATE against a fragile connection
-    // signal — but there is no gate anymore (Q1 reveals immediately,
-    // unconditionally). Nothing is left for it to certify.
+    // Hardening: certify the calibration gate on 'call-start-success' as
+    // well as 'call-start'. This event fires once, from Vapi's own start()
+    // promise, purely from the technical connection succeeding — it cannot
+    // be blocked by a missed or malformed 'listening' app-message. It does
+    // NOT duplicate the opening-question speech logic below (that stays
+    // solely on 'call-start', which still fires normally when the
+    // 'listening' signal does arrive) — it only guarantees the UI is never
+    // stuck showing a stale fallback question when the connection is
+    // demonstrably live.
+    vapi.on('call-start-success', function() {
+      if (window.MedhaIQOrchestrator && !window.MedhaIQOrchestrator.isReady()) {
+        console.log('[Vapi] call-start-success received — certifying voice connection (fallback path, independent of the listening signal)');
+        window.MedhaIQOrchestrator.voiceConnected();
+      }
+    });
+
     vapi.on('call-start', function() {
       setState(STATES.LIVE, 'Voice active — speak your answer');
       window.MedhaIQVoiceLive = true;
@@ -1003,15 +1037,11 @@
           }
         });
       } catch (e) { console.error('[Vapi] sessionReadyContext injection failed', e); }
-      // REDESIGN: no lockInput() here anymore. Q1 was already visible and
-      // answerable before voice ever connected — the candidate may be
-      // mid-answer right now. Forcibly locking input the instant Vapi
-      // starts reading the SAME already-visible question aloud would cut
-      // off live typing. voiceConnected() is kept purely as harmless
-      // diagnostic bookkeeping (no UI effect: reveal() is already a
-      // permanent no-op by this point).
+      // Certify the calibration gate: the question card reveals now, in
+      // lockstep with the voice actually being connected.
       if (window.MedhaIQOrchestrator) {
         window.MedhaIQOrchestrator.voiceConnected();
+        window.MedhaIQOrchestrator.lockInput(); // unlocked on speech-end below
       }
     });
 
@@ -1169,14 +1199,7 @@
     });
   }
 
-  // ── Option A: auto-connect voice at page load ──────────────────────
-  // Extracted VERBATIM from the original click handler — every internal
-  // line, every guard, every state transition is byte-identical to what
-  // was already tested and audited. The ONLY change is that this logic
-  // now lives in a named function callable from two places (auto-start at
-  // page load, and manual retry via click) instead of being inline in
-  // exactly one place. No internal behavior, ordering, or guard changes.
-  async function connectVoice(){
+  btn.addEventListener('click', async function(){
     if(state===STATES.LIVE||state===STATES.STOPPING){
       setState(STATES.STOPPING,'Ending voice session…');
       if(vapi){try{vapi.stop();}catch(e){}}
@@ -1211,45 +1234,21 @@
     if(state!==STATES.CONNECTING&&state!==STATES.REQUESTING)return;
 
     setState(STATES.CONNECTING,'Connecting to AI interviewer…');
-    // REDESIGN: no calibration clock to start here anymore — Q1 was
-    // already revealed unconditionally at page load, regardless of this
-    // connection attempt's outcome or timing.
+    // Start the calibration clock NOW — the moment a real connection
+    // attempt begins — instead of at page load (see FIX above).
+    if (typeof window.MedhaIQ_startCalibration === 'function') {
+      window.MedhaIQ_startCalibration();
+      window.MedhaIQ_startCalibration = null; // once per session
+    }
     try{ initVapi(); vapi.start(VAST); }
     catch(e){ setErr('Failed to connect: '+e.message); return; }
 
     setTimeout(function(){
-      if(state===STATES.CONNECTING) {
-        // FIX: this used to only show an error and reset the UI to IDLE —
-        // it never actually stopped the stale connection attempt. That
-        // left the real Vapi object silently still trying in the
-        // background, with `this.started` still true internally. Any
-        // subsequent click called initVapi() (no-op, vapi already exists)
-        // and vapi.start() (no-op, already started, per Vapi's own SDK —
-        // it emits a failure event and returns immediately without
-        // attempting anything new). The "retry" therefore did nothing;
-        // what eventually succeeded was always the ORIGINAL attempt,
-        // finally landing late — which is exactly what produced "14s
-        // calibration fallback, then click, then another 15s wait."
-        // Actually calling stop() here resets Vapi's own internal
-        // `started` flag to false, so a genuine fresh attempt becomes
-        // possible on the next click (or auto-retry) instead of a silent
-        // no-op dressed up as one.
-        if (vapi) { try { vapi.stop(); } catch(e) {} }
-        setErr('Connection timed out — check your internet and retry');
-      }
+      if(state===STATES.CONNECTING) setErr('Connection timed out — check your internet and retry');
     },13000);
-  }
-
-  btn.addEventListener('click', connectVoice);
+  });
 
   setInterval(function(){ if(state===STATES.IDLE&&btn.disabled) btn.disabled=false; },3000);
-  // REDESIGN: voice connects ONLY on click, not automatically at page
-  // load. There's no longer a calibration gate for it to race against —
-  // Q1 is already visible and answerable regardless — so auto-starting
-  // has no benefit here and only means requesting mic permission before
-  // the candidate has chosen to use voice at all. connectVoice() runs
-  // fully in the background relative to the rest of the UI: nothing it
-  // does can block or delay reading/answering the current question.
 })();
 </script>
 

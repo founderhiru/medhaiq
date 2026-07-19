@@ -1,0 +1,7 @@
+Sam Torres
+Software Engineer I
+
+Wrote unit tests for the checkout service.
+Fixed bugs reported by QA during the sprint.
+Attended daily standups and updated ticket status.
+Assisted senior engineers with code reviews.

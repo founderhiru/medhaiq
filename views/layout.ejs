@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/hero-v2.css">
   <link rel="stylesheet" href="/css/value-footer.css">
+  <link rel="stylesheet" href="/css/career-preview.css">
 </head>
 <body>
   <%- include('partials/header') %>
@@ -38,6 +39,25 @@
   <%- include('partials/pricing-section') %>
   <%- include('partials/cta-banner') %>
   <%- include('partials/footer') %>
+
+  <!-- Fix: on a fresh page load with a URL hash (e.g. /#professional-horizons),
+       the browser scrolls to the anchor before the async Google Fonts finish
+       loading. When the font swaps in, every section above the anchor
+       reflows slightly, and those small shifts accumulate this far down the
+       page — the scroll position ends up wrong (usually back near the top)
+       even though the browser did the right thing initially. Re-applying
+       the scroll once fonts are confirmed ready corrects it. Purely
+       corrective; does nothing on pages/loads without a hash. -->
+  <script>
+  (function() {
+    if (!window.location.hash) return;
+    if (!document.fonts || !document.fonts.ready) return;
+    document.fonts.ready.then(function() {
+      var target = document.querySelector(window.location.hash);
+      if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+    });
+  })();
+  </script>
 
   <!-- Scroll reveal: IntersectionObserver for .reveal elements -->
   <script>

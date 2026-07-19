@@ -284,42 +284,97 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   };
 }
 
-// ── POST /api/interview/sessions/:id/answer ────────────────────────────────
-router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
+// ── Shared answer-processing core — used by BOTH the HTTP route below AND
+// routes/vapi.js. This is the single source of truth the whole "Backend
+// must be the single source of truth" requirement depends on: there is
+// exactly one implementation of "process this answer and decide what
+// happens next," not two independently-maintained copies that can drift
+// apart. Returns a plain { httpStatus, body } object rather than calling
+// res.json directly, so callers without a real Express req/res (like the
+// Vapi webhook) can use it identically to the HTTP route.
+async function processInterviewAnswer({ sessionId, questionId, answerText, skip, voiceMode, userId, userEmail, userName }) {
   const MAX_QUESTIONS = 5;
-  try {
-    const sessionId = parseInt(req.params.id, 10);
-    const { questionId, answerText, skip, voiceMode } = req.body;
+  // One turnId per invocation — the single correlating value threaded
+  // through every log line for this request/response round-trip, so
+  // backend generation, frontend receipt, UI render, and vapi.say() can
+  // all be matched up by grepping for the same TURN_ID.
+  const turnId = Math.random().toString(16).slice(2, 8);
+  console.log(`[turn-trace] TURN_ID=${turnId} processInterviewAnswer start: sessionId=${sessionId} questionId=${questionId} skip=${!!skip} voiceMode=${!!voiceMode}`);
 
-    if (!questionId) return res.status(400).json({ error: 'questionId required' });
+  if (!questionId) return { httpStatus: 400, body: { error: 'questionId required' } };
 
-    // Verify session ownership
-    const session = await getSession(sessionId);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (String(session.user_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' });
-    if (session.status !== 'active') return res.status(400).json({ error: 'Session is not active' });
+  // Verify session ownership
+  const session = await getSession(sessionId);
+  if (!session) return { httpStatus: 404, body: { error: 'Session not found' } };
+  if (String(session.user_id) !== String(userId)) return { httpStatus: 403, body: { error: 'Forbidden' } };
+  if (session.status !== 'active') return { httpStatus: 400, body: { error: 'Session is not active' } };
 
-    const allQuestions = await getSessionQuestions(sessionId);
+  const allQuestions = await getSessionQuestions(sessionId);
 
-    // ── RESPONSE QUALITY GATEWAY INTERCEPTOR ──
-    const cleanInput = (answerText || '').trim().replace(/\s+/g, ' ');
-    const wordCount = cleanInput.split(' ').filter(Boolean).length;
-    const sparsePhrases = new Set(["yes", "no", "ok", "sure", "yep", "nope", "yeah", "yes.", "no."]);
-    
-    if (!skip && (wordCount < 5 || sparsePhrases.has(cleanInput.toLowerCase()))) {
-      console.log(`[guardrail] Intercepted sparse answer: "${cleanInput}". Blocking database commit.`);
-      
-      const repromptText = "I see. Could you please expand on that answer with a bit more detail or a specific example from your professional experience?";
-      
-      return res.json({
+  // ── DETERMINISTIC SKIP/PASS INTENT DETECTION (no LLM) ──────────────────
+  // Fixes the real bug: a candidate typing "pass", "skip this", "I don't
+  // know, just move on", etc. was previously either reprompted with a
+  // generic "please expand" message or scored as a real (near-zero)
+  // answer — neither of which is what the candidate meant. This runs
+  // BEFORE the sparse-answer guardrail below, and produces the exact
+  // same effect as clicking the existing Skip button — same downstream
+  // code path, not a new one. Deliberately conservative: only considers
+  // SHORT inputs (<=15 words) — a genuine, substantive answer describing
+  // real experience is essentially never this short, even if it happens
+  // to mention "next" or "move on" in passing. This ALSO now applies
+  // identically to spoken answers via the Vapi webhook, since both paths
+  // call this exact same function.
+  const STRONG_SKIP_PHRASES = [
+    'skip this', 'pass this', 'just skip', 'just pass', 'skip it', 'pass it',
+    "let's skip", "lets skip", 'skip question', 'pass question', 'next question',
+    "i don't know", "i dont know", 'no idea', "don't know it", "dont know it",
+    'go next', 'go to next',
+  ];
+  // These are genuinely ambiguous — "I decided to move on from the vendor
+  // after repeated delivery failures" is a legitimate story that happens
+  // to contain "move on". They only count as skip-intent when they make
+  // up almost the entire short message (<=6 words), not when embedded in
+  // a longer, real answer.
+  const AMBIGUOUS_SKIP_PHRASES = ['move on', "let's move on", "lets move on", 'move forward', 'continue'];
+  const cleanInputForIntent = (answerText || '').trim();
+  const intentWordCount = cleanInputForIntent.split(/\s+/).filter(Boolean).length;
+  const detectedSkipIntent = (() => {
+    if (!cleanInputForIntent || intentWordCount > 15) return false;
+    const lower = cleanInputForIntent.toLowerCase().replace(/[.!?,]/g, ' ').replace(/\s+/g, ' ').trim();
+    // Also catch the single bare word "skip" or "pass" (not just phrases)
+    if (/^(skip|pass|next)$/.test(lower)) return true;
+    if (STRONG_SKIP_PHRASES.some((phrase) => lower.includes(phrase))) return true;
+    if (intentWordCount <= 6 && AMBIGUOUS_SKIP_PHRASES.some((phrase) => lower.includes(phrase))) return true;
+    return false;
+  })();
+  if (detectedSkipIntent) {
+    console.log(`[intent-router] Detected skip/pass intent in answer: "${cleanInputForIntent}" — routing as an explicit skip.`);
+  }
+  const effectiveSkip = !!skip || detectedSkipIntent;
+
+  // ── RESPONSE QUALITY GATEWAY INTERCEPTOR ──
+  const cleanInput = (answerText || '').trim().replace(/\s+/g, ' ');
+  const wordCount = cleanInput.split(' ').filter(Boolean).length;
+  const sparsePhrases = new Set(["yes", "no", "ok", "sure", "yep", "nope", "yeah", "yes.", "no."]);
+
+  if (!effectiveSkip && (wordCount < 5 || sparsePhrases.has(cleanInput.toLowerCase()))) {
+    console.log(`[guardrail] Intercepted sparse answer: "${cleanInput}". Blocking database commit.`);
+
+    const repromptText = "I see. Could you please expand on that answer with a bit more detail or a specific example from your professional experience?";
+    console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (REPROMPT, same question — must NOT advance): QuestionId=${questionId}`);
+
+    return {
+      httpStatus: 200,
+      body: {
         sessionEnded: false,
-        validationFailed: true, 
+        validationFailed: true,
+        turnId,
         scores: { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 },
         star_progress: { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 },
         intelligence_scores: { overallScore: 0, vectors: { structure: 0, technicalDepth: 0, executivePresence: 0, gccReadiness: 0, communicationClarity: 0 } },
         text: repromptText,
         question: {
-          id: questionId, 
+          id: questionId,
           text: repromptText,
           type: 'reprompt',
           order: allQuestions.filter(q => q.answer_text !== null).length
@@ -327,172 +382,174 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
         uiText: repromptText,
         audioPrompt: repromptText,
         competency_tag: null
-      });
-    }
-
-    // 1. Save valid answer to database
-    const savedAnswer = await addAnswer({
-      sessionId,
-      questionId,
-      answerText: answerText || '',
-    });
-    if (!savedAnswer) {
-      return res.status(409).json({
-        error: 'This question was already answered — ignoring duplicate submission.',
-        duplicate: true,
-      });
-    }
-
-    // 2. Score the validated answer
-    let scores;
-    if (!skip && answerText && answerText.trim()) {
-      scores = await scoreAnswer(answerText, session.persona_id, {
-        roleTitle: session.role_title,
-        experienceLevel: session.experience_level,
-        orgPreset: session.org_preset,
-      });
-    } else {
-      scores = { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 };
-    }
-
-    await addScore({
-      sessionId,
-      questionId,
-      star: scores.star,
-      technical: scores.technical,
-      executive: scores.executive,
-      gcc: scores.gcc,
-      friction: scores.friction,
-      weighted: scores.weighted,
-    });
-
-    const starProgress = skip
-      ? { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 }
-      : computeStarProgress(answerText);
-
-    const intelligenceScores = {
-      overallScore: scores.weighted,
-      vectors: {
-        structure: scores.star,
-        technicalDepth: scores.technical,
-        executivePresence: scores.executive,
-        gccReadiness: scores.gcc,
-        communicationClarity: scores.friction,
       },
     };
+  }
 
-    // 3. Recalculate answered counts safely — PRIMARY questions only.
-    // Follow-ups are real Q&A exchanges (still scored, still in the report
-    // below) but must never affect whether the session is considered
-    // "done" — only the 5 primary questions count toward that.
-    const updatedQuestions = await getSessionQuestions(sessionId);
-    const answeredCount = updatedQuestions.filter(q =>
-      isPrimaryQuestionType(q.question_type) && q.answer_text !== null && q.answer_text !== undefined
-    ).length;
+  // 1. Save valid answer to database
+  const savedAnswer = await addAnswer({
+    sessionId,
+    questionId,
+    answerText: effectiveSkip ? '' : (answerText || ''),
+  });
+  if (!savedAnswer) {
+    return {
+      httpStatus: 409,
+      body: { error: 'This question was already answered — ignoring duplicate submission.', duplicate: true },
+    };
+  }
 
-    // Shared finalize-and-report helper — used both when the 5th primary
-    // has just been answered directly, AND when pickAndPersistNextQuestion
-    // returns done:true for any other reason (time cap, or the GUARD1/
-    // GUARD2 safety nets). Without this shared path, a done:true result
-    // from the second case was previously returned to the candidate as if
-    // it were a real next question, and the report/session-complete state
-    // never actually got written.
-    async function finalizeSessionAndRespond() {
-      const allScores = await getSessionScores(sessionId);
-      const qaPairs = updatedQuestions
-        .filter(q => q.answer_text !== null && q.answer_text !== undefined)
-        .map(q => ({ question: q.question_text, answer: q.answer_text }));
+  // 2. Score the validated answer
+  let scores;
+  if (!effectiveSkip && answerText && answerText.trim()) {
+    scores = await scoreAnswer(answerText, session.persona_id, {
+      roleTitle: session.role_title,
+      experienceLevel: session.experience_level,
+      orgPreset: session.org_preset,
+    });
+  } else {
+    scores = { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 };
+  }
 
-      const reportData = await generateReport({
-        sessionId,
-        personaId: session.persona_id,
-        roleTitle: session.role_title,
-        experienceLevel: session.experience_level,
-        orgPreset: session.org_preset,
-        qaPairs,
-        scores: allScores,
-      });
+  await addScore({
+    sessionId,
+    questionId,
+    star: scores.star,
+    technical: scores.technical,
+    executive: scores.executive,
+    gcc: scores.gcc,
+    friction: scores.friction,
+    weighted: scores.weighted,
+  });
 
-      await saveReport({
-        sessionId,
-        overallScore: reportData.overall_score,
-        strengthsJson: reportData.strengths_json,
-        improvementsJson: reportData.improvements_json,
-        personaVerdict: reportData.persona_verdict,
-        nextStepsJson: reportData.next_steps_json,
-        reportMarkdown: reportData.report_markdown,
-        executiveSummary: reportData.executive_summary,
-        recommendation: reportData.recommendation,
-        strongestResponse: reportData.strongest_response,
-        weakestResponse: reportData.weakest_response,
-        structuralFlow: reportData.structural_flow,
-        linguisticNuances: reportData.linguistic_nuances,
-        scoreboard: reportData.scoreboard,
-      });
+  const starProgress = effectiveSkip
+    ? { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 }
+    : computeStarProgress(answerText);
 
-      await completeSession(sessionId, reportData.overall_score);
+  const intelligenceScores = {
+    overallScore: scores.weighted,
+    vectors: {
+      structure: scores.star,
+      technicalDepth: scores.technical,
+      executivePresence: scores.executive,
+      gccReadiness: scores.gcc,
+      communicationClarity: scores.friction,
+    },
+  };
 
-      try {
-        const persona   = PERSONAS[session.persona_id];
-        const userEmail = req.user.email || null;
-        if (userEmail) {
-          sendInterviewReportEmail({
-            toEmail:          userEmail,
-            userName:         req.user.name || '',
-            reportId:         sessionId,
-            personaName:      persona ? persona.name : 'Expert Interviewer',
-            roleTitle:        session.role_title || 'Professional',
-            overallScore:     reportData.overall_score,
-            recommendation:   reportData.recommendation,
-            executiveSummary: reportData.executive_summary,
-            scoreboard:       reportData.scoreboard,
-            topPriorities:    reportData.improvements_json || [],
-          }).catch(e => console.error('[email] report delivery failed (non-fatal):', e.message));
-        }
-      } catch (emailErr) {
-        console.error('[email] report setup failed (non-fatal):', emailErr.message);
+  // 3. Recalculate answered counts safely — PRIMARY questions only.
+  // Follow-ups are real Q&A exchanges (still scored, still in the report
+  // below) but must never affect whether the session is considered
+  // "done" — only the 5 primary questions count toward that.
+  const updatedQuestions = await getSessionQuestions(sessionId);
+  const answeredCount = updatedQuestions.filter(q =>
+    isPrimaryQuestionType(q.question_type) && q.answer_text !== null && q.answer_text !== undefined
+  ).length;
+
+  // Shared finalize-and-report helper — used both when the 5th primary
+  // has just been answered directly, AND when pickAndPersistNextQuestion
+  // returns done:true for any other reason (time cap, or the GUARD1/
+  // GUARD2 safety nets). Without this shared path, a done:true result
+  // from the second case was previously returned to the candidate as if
+  // it were a real next question, and the report/session-complete state
+  // never actually got written.
+  async function finalizeSessionAndRespond() {
+    const allScores = await getSessionScores(sessionId);
+    const qaPairs = updatedQuestions
+      .filter(q => q.answer_text !== null && q.answer_text !== undefined)
+      .map(q => ({ question: q.question_text, answer: q.answer_text }));
+
+    const reportData = await generateReport({
+      sessionId,
+      personaId: session.persona_id,
+      roleTitle: session.role_title,
+      experienceLevel: session.experience_level,
+      orgPreset: session.org_preset,
+      qaPairs,
+      scores: allScores,
+    });
+
+    await saveReport({
+      sessionId,
+      overallScore: reportData.overall_score,
+      strengthsJson: reportData.strengths_json,
+      improvementsJson: reportData.improvements_json,
+      personaVerdict: reportData.persona_verdict,
+      nextStepsJson: reportData.next_steps_json,
+      reportMarkdown: reportData.report_markdown,
+      executiveSummary: reportData.executive_summary,
+      recommendation: reportData.recommendation,
+      strongestResponse: reportData.strongest_response,
+      weakestResponse: reportData.weakest_response,
+      structuralFlow: reportData.structural_flow,
+      linguisticNuances: reportData.linguistic_nuances,
+      scoreboard: reportData.scoreboard,
+    });
+
+    await completeSession(sessionId, reportData.overall_score);
+
+    try {
+      const persona = PERSONAS[session.persona_id];
+      if (userEmail) {
+        sendInterviewReportEmail({
+          toEmail:          userEmail,
+          userName:         userName || '',
+          reportId:         sessionId,
+          personaName:      persona ? persona.name : 'Expert Interviewer',
+          roleTitle:        session.role_title || 'Professional',
+          overallScore:     reportData.overall_score,
+          recommendation:   reportData.recommendation,
+          executiveSummary: reportData.executive_summary,
+          scoreboard:       reportData.scoreboard,
+          topPriorities:    reportData.improvements_json || [],
+        }).catch(e => console.error('[email] report delivery failed (non-fatal):', e.message));
       }
+    } catch (emailErr) {
+      console.error('[email] report setup failed (non-fatal):', emailErr.message);
+    }
 
-      return res.json({
+    console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (SESSION ENDED): reportId=${sessionId}`);
+    return {
+      httpStatus: 200,
+      body: {
         sessionEnded: true,
         reportId: sessionId,
+        turnId,
         scores,
         star_progress: starProgress,
         intelligence_scores: intelligenceScores,
         text: null,
         audio_url: null,
         competency_tag: null,
-      });
-    }
+      },
+    };
+  }
 
-    // 4. Check if session should end
-    if (answeredCount >= MAX_QUESTIONS) {
-      return await finalizeSessionAndRespond();
-    }
+  // 4. Check if session should end
+  if (answeredCount >= MAX_QUESTIONS) {
+    return await finalizeSessionAndRespond();
+  }
 
-    // 5. Handle standard voiceMode response paths
-    if (voiceMode) {
-      return res.json({
-        sessionEnded: false,
-        scores,
-        star_progress: starProgress,
-        intelligence_scores: intelligenceScores,
-        voiceMode: true,
-        text: null,
-        question: null,
-        competency_tag: null,
-      });
-    }
-
-    const picked = await pickAndPersistNextQuestion(session, MAX_QUESTIONS);
-    if (picked.done) {
-      return await finalizeSessionAndRespond();
-    }
-    return res.json({
+  // 5. Generate the next question — this now ALWAYS happens, voiceMode or
+  // not. Previously voiceMode short-circuited here and returned
+  // text:null/question:null, meaning even a correctly-wired Vapi
+  // integration would never actually receive a real next question. There
+  // is no longer any behavioral reason for voice and text to diverge here
+  // — both need the real next question text to speak/display.
+  const picked = await pickAndPersistNextQuestion(session, MAX_QUESTIONS);
+  if (picked.done) {
+    return await finalizeSessionAndRespond();
+  }
+  console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (${picked.type === 'follow_up' ? 'FOLLOW_UP — must NOT advance progress' : 'PRIMARY — advances progress'}): QuestionId=${picked.id}`);
+  return {
+    httpStatus: 200,
+    body: {
       sessionEnded: false,
+      turnId,
       scores,
       star_progress: starProgress,
       intelligence_scores: intelligenceScores,
+      voiceMode: !!voiceMode,
       question: {
         id: picked.id,
         text: picked.text,
@@ -502,7 +559,23 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
       text: picked.text,
       audio_url: picked.audio_url,
       competency_tag: picked.competency,
+    },
+  };
+}
+
+// ── POST /api/interview/sessions/:id/answer ────────────────────────────────
+router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
+  try {
+    const sessionId = parseInt(req.params.id, 10);
+    const { questionId, answerText, skip, voiceMode } = req.body;
+
+    const result = await processInterviewAnswer({
+      sessionId, questionId, answerText, skip, voiceMode,
+      userId: req.user.id,
+      userEmail: req.user.email || null,
+      userName: req.user.name || '',
     });
+    return res.status(result.httpStatus).json(result.body);
   } catch (err) {
     console.error('[interview/sessions/:id/answer]', err);
     return res.status(500).json({ error: 'Failed to process answer. Please try again.' });
@@ -623,3 +696,4 @@ router.post('/tts', async (req, res) => {
 
 module.exports = router;
 module.exports.isPrimaryQuestionType = isPrimaryQuestionType;
+module.exports.processInterviewAnswer = processInterviewAnswer;

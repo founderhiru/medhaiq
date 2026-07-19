@@ -495,6 +495,35 @@ button { cursor: pointer; }
   margin-bottom: 12px; /* Reduce this number until the gap looks right */
 }
 
+/* Tertiary CTA — "See How It Works", demoted from its former outline-button
+   spot. Reuses --text-muted and the existing --white-border ring treatment
+   (same border already used elsewhere in this file); no new visual language. */
+.mh-hero-tertiary-row { margin-bottom: 36px; }
+.mh-hero-tertiary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+.mh-hero-tertiary:hover { color: var(--white); }
+.mh-hero-tertiary-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--white-border);
+  color: var(--white);
+  flex-shrink: 0;
+  transition: border-color 0.2s ease;
+}
+.mh-hero-tertiary:hover .mh-hero-tertiary-icon { border-color: var(--blue-bright); }
+
 .mh-btn-primary {
   display: inline-flex;
   align-items: center;
