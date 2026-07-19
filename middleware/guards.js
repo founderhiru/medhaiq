@@ -30,8 +30,8 @@ const { getCapabilities } = require('../lib/capabilities');
  * Requires authentication. On success, attaches req.capabilities and
  * req.user (kept for compatibility with existing handlers that already
  * read req.user.id — capabilities.js's getUserById already fetched this
- * internally, so this refetch is avoided by reading off the same shape
- * the old requireAuth implementations exposed).
+ * internally, so getCapabilities() now attaches that same object as
+ * capabilities.user, and this reads it off there instead of re-querying).
  */
 async function requireAuth(req, res, next) {
   const capabilities = await getCapabilities(req);
@@ -40,10 +40,9 @@ async function requireAuth(req, res, next) {
   }
   req.capabilities = capabilities;
   // Existing handlers (dashboard.js, feedback.js, interview.js, resume.js)
-  // read req.user.id directly — refetch here mirrors that exact prior
-  // contract rather than changing every downstream call site's shape.
-  const { getUserById } = require('../db/auth');
-  req.user = await getUserById(req.cookies.user_id);
+  // read req.user.id directly — this is the exact same user row
+  // getCapabilities() already fetched, just reused instead of re-queried.
+  req.user = capabilities.user;
   if (!req.user) return res.status(401).json({ error: 'Session expired' });
   next();
 }
@@ -79,8 +78,7 @@ async function requireInterviewEntitlement(req, res, next) {
     });
   }
 
-  const { getUserById } = require('../db/auth');
-  req.user = await getUserById(req.cookies.user_id);
+  req.user = capabilities.user;
   next();
 }
 
@@ -99,10 +97,9 @@ async function requireAuthPage(req, res, next) {
   req.capabilities = capabilities;
   // Several page routes (dashboard/history, resume, settings) immediately
   // did their own getUserById(userId) right after the old inline check —
-  // attaching it here means those call sites use req.user directly instead
-  // of re-fetching the same row a second time.
-  const { getUserById } = require('../db/auth');
-  req.user = await getUserById(req.cookies.user_id);
+  // this is the exact same user row getCapabilities() already fetched,
+  // reused here instead of re-queried a second time.
+  req.user = capabilities.user;
   next();
 }
 

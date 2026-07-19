@@ -406,18 +406,17 @@ app.get('/dashboard/history', requireAuthPage, async (req, res) => {
   try {
     const userId = req.cookies.user_id;
 
-    const { getUserSessions, getUserAggregateScores } = require('./db/interview');
-    const { getCareerProfile } = require('./db/career-profile');
-    // req.user was already fetched by requireAuthPage — no need to fetch it
-    // again here. These three queries only depend on `userId`, not on each
-    // other's results — running them in parallel instead of one-after-
-    // another cuts the wait from the sum of the round-trips down to
-    // roughly whichever one is slowest. Same data, same behavior, just faster.
-    const [sessions, aggregateScores, careerProfile] = await Promise.all([
+  const { getUserSessions, getUserAggregateScores } = require('./db/interview');
+    // req.user AND req.capabilities.careerProfile were already fetched by
+    // requireAuthPage (via getCapabilities()) — no need to query either
+    // again here. Only sessions/aggregateScores are still fetched fresh,
+    // since neither is part of the Capability Engine's shape.
+    const [sessions, aggregateScores] = await Promise.all([
       getUserSessions(userId, { limit: 20 }),
       getUserAggregateScores(userId),
-      getCareerProfile(userId),
+      
     ]);
+    const careerProfile = req.capabilities.careerProfile;
     const user = req.user;
     // Two bugs were compounding here:
     // 1) `s.overall_score || s.report_score || null` treats a real score of
