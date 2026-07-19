@@ -176,7 +176,7 @@ async function saveReport({ sessionId, overallScore, strengthsJson, improvements
 
 async function getReport(sessionId) {
   const result = await pool.query(
-    `SELECT r.*, s.user_id, s.persona_id, s.role_title, s.experience_level, s.org_preset, s.started_at, s.ended_at
+    `SELECT r.*, s.persona_id, s.role_title, s.experience_level, s.org_preset, s.started_at, s.ended_at
      FROM interview_reports r
      JOIN interview_sessions s ON s.id = r.session_id
      WHERE r.session_id = $1`,
