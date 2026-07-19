@@ -203,10 +203,14 @@ router.get('/me', async (req, res) => {
   return res.json({ user: { id: user.id, email: user.email, name: user.name } });
 });
 
-// GET /auth/logout — clear cookie
+// GET /auth/logout — clear cookie, then send the browser somewhere real.
+// This is a plain <a href="/auth/logout"> link (views/partials/
+// workspace-shell-top.ejs), not a fetch() call — a full browser navigation
+// needs a redirect response, not a JSON body, or the person just sees raw
+// JSON on screen instead of landing anywhere.
 router.get('/logout', (req, res) => {
   res.clearCookie('user_id');
-  return res.json({ success: true });
+  return res.redirect('/');
 });
 
 module.exports = router;
