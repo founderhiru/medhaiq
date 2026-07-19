@@ -23,7 +23,6 @@ const {
   completeSession,
   abandonSession,
 } = require('../db/interview');
-const { getUserById } = require('../db/auth');
 const { sendInterviewReportEmail } = require('../services/email');
 const {
   buildCompetencyMatrix,
@@ -33,6 +32,14 @@ const {
   MAX_JD_TEXT_CHARS,
 } = require('../services/competency-matrix');
 const sessionController = require('../controllers/sessionController');
+// requireAuth + requireInterviewEntitlement now live in middleware/guards.js
+// — single shared implementation built on the Capability Engine.
+const { requireAuth, requireInterviewEntitlement } = require('../middleware/guards');
+// Per the config-driven-business-rules directive: this was previously its
+// own local `const MAX_SESSION_MINUTES = 25`, defined independently of the
+// identical value in config/plans.js. Sourcing it from there means there is
+// now exactly one place this number can be changed.
+const { INTERVIEW_MAX_SESSION_MINUTES } = require('../config/plans');
 
 // NOTE: harmonicAlignmentEngine (services/harmonicAlignmentEngine.js) only
 // builds the JD/company/role competency matrix — it exports
@@ -42,19 +49,13 @@ const sessionController = require('../controllers/sessionController');
 // both the text-answer route and the Vapi webhook below call the same
 // pickAndPersistNextQuestion(), which now calls generateNextQuestion().
 
-// ── Auth middleware ────────────────────────────────────────────────────────
-async function requireAuth(req, res, next) {
-  const userId = req.cookies?.user_id;
-  if (!userId) return res.status(401).json({ error: 'Authentication required' });
-  const user = await getUserById(userId);
-  if (!user) return res.status(401).json({ error: 'Session expired' });
-  req.user = user;
-  next();
-}
-
 // ── POST /api/interview/sessions — create session + generate opening question
-router.post('/sessions', requireAuth, sessionController.initializeSession);
-router.post('/session/initialize', requireAuth, sessionController.initializeSession);
+// requireInterviewEntitlement runs AFTER requireAuth: blocks session
+// creation if the user already has an active session (409) or has
+// exhausted their plan's interview minutes (403) — the action-level gate
+// per spec Section 5, not a page-level one.
+router.post('/sessions', requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
+router.post('/session/initialize', requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
 
 // ── Primary vs follow-up question type helper ───────────────────────────────
 // 'opening' and 'primary' are the current values; 'drill_down' is the legacy
@@ -70,7 +71,6 @@ function isPrimaryQuestionType(questionType) {
 // Hard session time cap — independent of the 5-primary / 5-follow-up
 // structural bound. A candidate spending 8 minutes on one answer would
 // otherwise be able to stretch a "10 turns max" session indefinitely.
-const MAX_SESSION_MINUTES = 25;
 
 async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   const allQuestions = await getSessionQuestions(session.id);
@@ -83,7 +83,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   // simply run too long ends immediately regardless of question counts.
   if (session.started_at) {
     const elapsedMinutes = (Date.now() - new Date(session.started_at).getTime()) / 60000;
-    if (elapsedMinutes >= MAX_SESSION_MINUTES) {
+    if (elapsedMinutes >= INTERVIEW_MAX_SESSION_MINUTES) {
       return {
         done: true,
         text: "We're at the time limit for this session — thank you. I'll put together your intelligence report now.",
