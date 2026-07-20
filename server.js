@@ -66,7 +66,16 @@ app.use('/preview',        require('./routes/preview'));
 app.use('/api',            require('./routes/vapi'));
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
-app.get('/', (_req, res) => res.render('layout', buildLandingContext()));
+app.get('/', async (req, res) => {
+  try {
+    const { getCapabilities } = require('./lib/capabilities');
+    const homeCapabilities = await getCapabilities(req);
+    res.render('layout', { ...buildLandingContext(), homeCapabilities });
+  } catch (err) {
+    console.error('[homepage] capabilities resolution failed, rendering as visitor:', err.message);
+    res.render('layout', buildLandingContext());
+  }
+});
 app.get('/privacy', (_req, res) => res.redirect('/'));
 app.get('/terms',   (_req, res) => res.redirect('/'));
 app.get('/architecture', (_req, res) => res.render('architecture'));
@@ -459,6 +468,11 @@ app.get('/founder', requireFounderPage, async (req, res) => {
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });
+
+// Thin alias so "Go to Workspace" can link to /dashboard (a clean, memorable
+// path) without duplicating any of the real page's logic — the actual
+// Career Workspace page lives at /dashboard/history and is unchanged.
+app.get('/dashboard', requireAuthPage, (_req, res) => res.redirect('/dashboard/history'));
 
 app.get('/dashboard/history', requireAuthPage, async (req, res) => {
   try {
