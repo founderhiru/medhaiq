@@ -17,6 +17,19 @@
   <link rel="stylesheet" href="/css/brand-logo.css">
   <link rel="stylesheet" href="/css/interview-session.css">
   <style>
+    /* Hide Vapi's own default floating call widget (html-script-tag's
+       built-in "vapi-support-btn" — the green phone-icon button seen in
+       the upper-left corner). Confirmed via the actual deployed bundle:
+       this app never uses that widget to start/manage calls — our own
+       connectVoice()/mic button calls vapi.start() directly and
+       independently — so this button is purely redundant here. Hiding it
+       via display:none also means it can no longer be clicked at all,
+       which removes a real (if unlikely) risk: that widget almost
+       certainly has its own bound click handler that could otherwise
+       start a second, completely uncontrolled call attempt outside this
+       app's state machine. CSS-only change — zero effect on
+       vapiSDK.run(), any vapi.on(...) handler, or our own call flow. */
+    #vapi-support-btn { display: none !important; }
     /* ── STAR skip/miss indicators (additive — safe to remove anytime) ──
        box-shadow instead of border/outline so node sizes never shift. */
     [id^="starNode-"].skipped { box-shadow: 0 0 0 2px #f59e0b, 0 0 10px rgba(245,158,11,.45); animation: starSkipPulse 1.2s ease-in-out infinite; }
