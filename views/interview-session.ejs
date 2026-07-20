@@ -537,7 +537,8 @@
     document.getElementById('questionText').textContent = text;
   }
   function showQuestion(q, type, competency) {
-    hashTrace('3_before_showQuestion', window.MedhaIQ_LastTurnId, q && q.id, q && q.text);
+    try { hashTrace('3_before_showQuestion', window.MedhaIQ_LastTurnId, q && q.id, q && q.text); }
+    catch (e) { console.warn('[HASH-TRACE] stage 3 failed (non-fatal, instrumentation only):', e); }
     showQuestionMeta(q, type, competency);
     showQuestionText(q.text);
     // v2.4 — live snapshot for the voice handshake. The call-start handler
@@ -632,7 +633,9 @@
 
       if (data.turnId) slog('[turn-trace] TURN_ID='+data.turnId+' Frontend received: QuestionId='+(data.question ? data.question.id : QID), 'info');
       window.MedhaIQ_LastTurnId = data.turnId || null; // diagnostic correlation only — read by stage 3, which has no turnId parameter of its own
-      hashTrace('2_frontend_json_parsed', data.turnId, data.question ? data.question.id : QID, data.text || (data.question ? data.question.text : ''));
+      try { hashTrace('2_frontend_json_parsed', data.turnId, data.question ? data.question.id : QID, data.text || (data.question ? data.question.text : '')); }
+      catch (e) { console.warn('[HASH-TRACE] stage 2 failed (non-fatal, instrumentation only):', e); }
+      try {
       if (DEBUG_HASH_TRACE) {
         var _flagLine = '[HASH-TRACE] stage=2_response_flags turnId=' + (data.turnId || 'null')
           + ' validationFailed=' + (data.validationFailed === undefined ? 'undefined' : data.validationFailed)
@@ -642,6 +645,7 @@
         console.log(_flagLine);
         if (typeof slog === 'function') slog(_flagLine, 'info');
       }
+      } catch (e) { console.warn('[HASH-TRACE] stage 2 flags failed (non-fatal, instrumentation only):', e); }
 
       if (data.sessionEnded) {
       clearInterval(timerInt);
@@ -856,6 +860,23 @@
 ═══════════════════════════════════════════════════════════════ -->
 <script>
 (function(){
+  // ── FAIL-SAFE diagnostic wrappers (bug fix) — hashTrace()/vapiPathTrace()
+  // live in a DIFFERENT script block than every call site in this one.
+  // These wrappers read the window-exposed versions and are guaranteed to
+  // never throw, regardless of whether those functions exist, are still
+  // loading, or ever fail internally. Instrumentation must never be able
+  // to stop production logic — this is the enforcement point for that.
+  function safeHashTrace() {
+    try {
+      if (typeof window.MedhaIQ_hashTrace === 'function') window.MedhaIQ_hashTrace.apply(null, arguments);
+    } catch (e) { console.warn('[HASH-TRACE] safeHashTrace failed (non-fatal, instrumentation only):', e); }
+  }
+  function safeVapiPathTrace() {
+    try {
+      if (typeof window.MedhaIQ_vapiPathTrace === 'function') window.MedhaIQ_vapiPathTrace.apply(null, arguments);
+    } catch (e) { console.warn('[HASH-TRACE] safeVapiPathTrace failed (non-fatal, instrumentation only):', e); }
+  }
+
   var VKEY = '<%= vapiPublicKey %>';
   var VAST = '<%= vapiAssistantId %>';
 
@@ -902,7 +923,7 @@
        anti-drift guard only (no longer carrying the question text itself),
        sent first so it can never delay or precede the forced utterance. */
     instructNext: function(questionText, wasSkipped, turnId, questionId){
-      hashTrace('4_before_instructNext', turnId, questionId, questionText);
+      safeHashTrace('4_before_instructNext', turnId, questionId, questionText);
       if (state !== STATES.LIVE || !vapi) return false;
       try {
         var lead = wasSkipped
@@ -936,9 +957,9 @@
         // and the spoken audio; no LLM step sits between them.
         if (typeof vapi.say === 'function') {
           var vapiPayload = lead + String(questionText);
-          hashTrace('5a_vapi_payload_raw_question_text', turnId, questionId, questionText);
-          hashTrace('5b_vapi_payload_final_with_prefix', turnId, questionId, vapiPayload, 'hasPrefix=' + (lead.length > 0));
-          vapiPathTrace('5_vapi_speech_path', turnId, questionId, 'vapi.say');
+          safeHashTrace('5a_vapi_payload_raw_question_text', turnId, questionId, questionText);
+          safeHashTrace('5b_vapi_payload_final_with_prefix', turnId, questionId, vapiPayload, 'hasPrefix=' + (lead.length > 0));
+          safeVapiPathTrace('5_vapi_speech_path', turnId, questionId, 'vapi.say');
           vapi.say(vapiPayload);
           slog('Forced speech via vapi.say()', 'ok');
           if (turnId) slog('[turn-trace] TURN_ID='+turnId+' vapi.say(): QuestionId='+questionId, 'info');
@@ -953,7 +974,7 @@
           // vapi.say() isn't available on the loaded SDK build
           // (window.vapiSDK from html-script-tag), and every question in
           // this session is running on the unreliable fallback path.
-          vapiPathTrace('5_vapi_speech_path', turnId, questionId, 'fallback_add_message');
+          safeVapiPathTrace('5_vapi_speech_path', turnId, questionId, 'fallback_add_message');
           console.warn('[Vapi] vapi.say() unavailable on this SDK build — falling back to context injection');
           slog('WARNING: vapi.say() unavailable — question sent as a suggestion only, not forced', 'err');
           if (turnId) slog('[turn-trace] TURN_ID='+turnId+' vapi.say() UNAVAILABLE — fallback used for QuestionId='+questionId, 'err');
@@ -1032,13 +1053,13 @@
             ? 'Thanks, voice is on now \u2014 let\u2019s continue. Here\u2019s the current question again: '
             : ('Hi, I\u2019m ' + _pname + '. Let\u2019s get started. ');
           var _openingPayload = opening + currentQ;
-          hashTrace('5a_vapi_payload_raw_question_text', window.MedhaIQ_LastTurnId, null, currentQ);
-          hashTrace('5b_vapi_payload_final_with_prefix', window.MedhaIQ_LastTurnId, null, _openingPayload, 'hasPrefix=true (persona intro)');
-          vapiPathTrace('5_vapi_speech_path', window.MedhaIQ_LastTurnId, null, 'vapi.say');
+          safeHashTrace('5a_vapi_payload_raw_question_text', window.MedhaIQ_LastTurnId, null, currentQ);
+          safeHashTrace('5b_vapi_payload_final_with_prefix', window.MedhaIQ_LastTurnId, null, _openingPayload, 'hasPrefix=true (persona intro)');
+          safeVapiPathTrace('5_vapi_speech_path', window.MedhaIQ_LastTurnId, null, 'vapi.say');
           vapi.say(_openingPayload);
           slog('Opening question forced via vapi.say()', 'ok');
         } else {
-          vapiPathTrace('5_vapi_speech_path', window.MedhaIQ_LastTurnId, null, 'fallback_add_message');
+          safeVapiPathTrace('5_vapi_speech_path', window.MedhaIQ_LastTurnId, null, 'fallback_add_message');
           console.warn('[Vapi] vapi.say() unavailable on this SDK build — falling back to context injection');
           slog('WARNING: vapi.say() unavailable — opening question sent as a suggestion only, not forced', 'err');
           vapi.send({
@@ -1103,7 +1124,7 @@
         if (message.transcriptType === 'final' && message.transcript) {
           if (!assistantTranscriptBuf) {
             // First chunk of this turn's speech (buffer was empty going in).
-            hashTrace('6_first_assistant_transcript', currentSpokenTurnId, currentSpokenQuestionId, message.transcript);
+            safeHashTrace('6_first_assistant_transcript', currentSpokenTurnId, currentSpokenQuestionId, message.transcript);
           }
           assistantTranscriptBuf = (assistantTranscriptBuf ? assistantTranscriptBuf + ' ' : '') + message.transcript;
         }
