@@ -466,7 +466,7 @@ button { cursor: pointer; }
   line-height: 1.0;
   letter-spacing: var(--hero-h1-tracking);
   color: var(--white);
-  margin-bottom: 14px;
+  margin-bottom: 20px;
 }
 
 .mh-hero-h2 {
@@ -476,7 +476,7 @@ button { cursor: pointer; }
                        450 would silently fall back to 400 and render no different */
   font-size: 20px;
   color: var(--hero-sub-color);
-  margin-bottom: 8px;
+  margin-bottom: 24px;
   line-height: 1.5;
 }
 .mh-hero-sub {
@@ -527,13 +527,15 @@ button { cursor: pointer; }
 .mh-btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
   background: var(--royal-blue);
   color: var(--white);
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  padding: var(--btn-pad-y) var(--btn-pad-x);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  padding: var(--btn-pad-y) 38px;
   border-radius: 40px;
   border: none;
   cursor: pointer;
@@ -2131,7 +2133,7 @@ button { cursor: pointer; }
 .mh-footer-logo { display: flex; align-items: center; gap: 8px; }
 .mh-footer-tagline { font-size: 13px; font-weight: 700; color: var(--white); }
 .mh-footer-desc { font-size: 12px; color: var(--text-faint); }
-.mh-footer-links-col { display: flex; gap: 40px; }
+.mh-footer-links-col { display: flex; flex-wrap: wrap; gap: 32px 40px; }
 .mh-footer-link-group { display: flex; flex-direction: column; gap: 8px; }
 .mh-footer-link-heading { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
 .mh-footer-link { font-size: 13px; color: var(--text-faint); transition: color 0.15s ease; }
