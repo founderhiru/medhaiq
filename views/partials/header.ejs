@@ -13,6 +13,17 @@ const _menuHref = (key, fallback) => {
   const item = _megaMenuItems.find(i => i.key === key);
   return item ? item.href : fallback;
 };
+// Homepage session-awareness: homeCapabilities is passed explicitly by the
+// '/' route in server.js (calling the real lib/capabilities.js Capability
+// Engine) — distinct from megaMenuItems above, which comes from the
+// separate, tier-only mega-menu system. Only used to swap Sign In/Start
+// Free Trial for Go to Workspace + avatar; homepage content itself is
+// unchanged, per spec ("Navigation Principles").
+const _homeCaps = typeof homeCapabilities !== 'undefined' && homeCapabilities ? homeCapabilities : null;
+const _isHomeAuthed = !!(_homeCaps && _homeCaps.isAuthenticated);
+const _homeUserInitial = _isHomeAuthed
+  ? ((_homeCaps.user && _homeCaps.user.name || '').trim().split(/\s+/).filter(Boolean).map(function(w) { return w.charAt(0).toUpperCase(); }).slice(0, 2).join('') || '?')
+  : '?';
 %>
 <header class="mh-nav" id="mh-nav">
   <div class="mh-nav-inner">
@@ -100,8 +111,26 @@ const _menuHref = (key, fallback) => {
          header version, along with its CSS in medhaiq.css, but the link
          itself was dropped during later nav refactoring rounds) -->
     <div class="mh-nav-actions">
-      <a href="/auth/login" class="mh-nav-signin">Sign In</a>
-      <a href="/login" class="mh-nav-cta" style="margin-right: 8px;">Start Free Trial</a>
+      <% if (_isHomeAuthed) { %>
+        <a href="<%= _homeCaps.primaryNavigation.href %>" class="mh-nav-cta" style="margin-right: 8px;"><%= _homeCaps.primaryNavigation.label %></a>
+        <!-- Avatar: minimal profile menu for launch (Logout only).
+             Foundation for Profile/Settings/Subscription — those get added
+             as additional rows above the divider, once designed. Follows
+             the same open/close-on-click/Escape/outside-click pattern as
+             the Platform mega menu below, for consistency. -->
+        <div class="mh-profile-wrap" id="mh-profile-wrap" style="position:relative;margin-right:8px;">
+          <button type="button" id="mh-profile-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account menu for <%= (_homeCaps.user && _homeCaps.user.name) || 'your account' %>" style="display:inline-flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;padding:0;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#3b82f6;color:#fff;font-weight:700;font-size:13px;flex-shrink:0;"><%= _homeUserInitial %></span>
+            <svg id="mh-profile-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div id="mh-profile-menu" role="menu" style="display:none;position:absolute;top:calc(100% + 10px);right:0;min-width:150px;background:#12172a;border:1px solid rgba(255,255,255,0.08);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.45);overflow:hidden;z-index:60;">
+            <a href="/auth/logout" role="menuitem" style="display:block;padding:11px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:500;">Logout</a>
+          </div>
+        </div>
+      <% } else { %>
+        <a href="/auth/login" class="mh-nav-signin">Sign In</a>
+        <a href="/login" class="mh-nav-cta" style="margin-right: 8px;">Start Free Trial</a>
+      <% } %>
       <button class="mh-hamburger" id="mh-hamburger" aria-label="Toggle menu" aria-expanded="false">
         <span></span>
         <span></span>
@@ -135,8 +164,16 @@ const _menuHref = (key, fallback) => {
       <a href="/architecture" class="mh-mobile-link">Architecture</a>
       <a href="/#pricing" class="mh-mobile-link">Pricing</a>
       <a href="/about" class="mh-mobile-link">About</a>
-      <a href="/auth/login" class="mh-mobile-link mh-mobile-signin">Sign In</a>
-      <a href="/login" class="mh-mobile-cta">Start Free Trial</a>
+      <% if (_isHomeAuthed) { %>
+        <a href="<%= _homeCaps.primaryNavigation.href %>" class="mh-mobile-cta"><%= _homeCaps.primaryNavigation.label %></a>
+        <!-- Same as desktop: static for now, foundation for a future Profile menu. -->
+        <!-- Same as desktop: static for now, foundation for a future Profile menu. -->
+        <div class="mh-mobile-link" aria-label="Your account" style="display:flex;align-items:center;"><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#3b82f6;color:#fff;font-weight:700;font-size:12px;margin-right:8px;flex-shrink:0;"><%= _homeUserInitial %></span><%= (_homeCaps.user && _homeCaps.user.name) || 'Your account' %></div>
+        <a href="/auth/logout" class="mh-mobile-link">Logout</a>
+      <% } else { %>
+        <a href="/auth/login" class="mh-mobile-link mh-mobile-signin">Sign In</a>
+        <a href="/login" class="mh-mobile-cta">Start Free Trial</a>
+      <% } %>
     </nav>
   </div>
 </header>
@@ -260,5 +297,44 @@ const _menuHref = (key, fallback) => {
     var isOpen = mobPanel.classList.toggle('mh-mobile-accordion-panel-open');
     mobTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
   });
+
+  /* ---- NEW: avatar profile menu (Logout only, for launch) — same
+     click/Escape/outside-click pattern as the Platform mega menu above.
+     Guarded with an if-check: this markup only renders for authenticated
+     users, so these elements are null on the visitor-facing homepage and
+     this whole block must safely no-op there rather than throw. ---- */
+  var profileWrap = document.getElementById('mh-profile-wrap');
+  if (profileWrap) {
+    var profileTrigger = document.getElementById('mh-profile-trigger');
+    var profileMenu = document.getElementById('mh-profile-menu');
+
+    function openProfileMenu() {
+      profileMenu.style.display = 'block';
+      profileTrigger.setAttribute('aria-expanded', 'true');
+    }
+    function closeProfileMenu() {
+      profileMenu.style.display = 'none';
+      profileTrigger.setAttribute('aria-expanded', 'false');
+    }
+
+    profileTrigger.addEventListener('click', function(e) {
+      e.stopPropagation(); // don't let this click immediately trigger the document click-outside listener below
+      if (profileMenu.style.display === 'block') { closeProfileMenu(); }
+      else { openProfileMenu(); }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && profileMenu.style.display === 'block') {
+        closeProfileMenu();
+        profileTrigger.focus();
+      }
+    });
+
+    document.addEventListener('click', function(e) {
+      if (profileMenu.style.display === 'block' && !profileWrap.contains(e.target)) {
+        closeProfileMenu();
+      }
+    });
+  }
 })();
 </script>
