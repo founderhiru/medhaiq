@@ -48,7 +48,7 @@
   --btn-pad-x: 22px;
   --hero-h1-size: clamp(36px, 6vw, 48px);
   --hero-h1-tracking: -0.04em;
-  --h2-size: clamp(24px, 5vw, 32px);
+  --h2-size: clamp(22px, 4.5vw, 29px);
   --h2-tracking: -0.03em;
   --eyebrow-size: 13px;
   --eyebrow-tracking: 0.1em;
@@ -3091,7 +3091,7 @@ button { cursor: pointer; }
 .mh-res-tag-gold { background: rgba(217, 119, 6, 0.1); color: var(--gold); }
 .mh-res-card-title {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--navy-rich);
   margin-bottom: 10px;
@@ -3348,7 +3348,7 @@ button { cursor: pointer; }
 }
 .mh-pricing-tier {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--white);
   margin-bottom: 12px;
@@ -3853,10 +3853,10 @@ button { cursor: pointer; }
 .mh-cta-banner-inner { max-width: 720px; margin: 0 auto; }
 .mh-cta-headline {
   font-family: var(--font-display);
-  font-size: clamp(36px, 5vw, 60px);
+  font-size: clamp(30px, 4vw, 46px);
   font-weight: 800;
   color: var(--white);
-  letter-spacing: -2px;
+  letter-spacing: -1.5px;
   line-height: 1.0;
   margin-bottom: 16px;
 }
