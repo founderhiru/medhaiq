@@ -1,35 +1,167 @@
-<%- include('partials/workspace-shell-top', { pageTitle: 'Settings — MedhaIQ', activeNav: 'settings', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'] }) %>
+<%
+/* views/settings.ejs — Account Settings (Beta)
+   Reuses partials/workspace-shell-top/bottom, .panel/.panel-header-row
+   (career-workspace.css), and .cta-btn.primary — the exact same
+   components dashboard-history.ejs and settings.ejs already use. No new
+   page design, per spec.
 
-<h1>Settings</h1>
+   Tabs are client-side show/hide (no page reload between them), but the
+   server picks the initially-active one from ?tab=, so a direct link like
+   /settings?tab=subscription opens straight to that tab.
+*/
+const _activeTab = ['profile', 'subscription', 'preferences'].includes(activeTab) ? activeTab : 'profile';
+const _signInMethod = hasPassword ? 'Email & Password' : 'Passwordless (Magic Link or Google)';
+const _plan = (shellUser.subscription_plan || 'free');
+const _planLabel = _plan.charAt(0).toUpperCase() + _plan.slice(1);
+const _status = shellUser.subscription_status || 'active';
+%>
+<%- include('partials/workspace-shell-top', { pageTitle: 'Account Settings — MedhaIQ', activeNav: 'settings', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'] }) %>
+
+<h1>Account Settings</h1>
 <p class="subtitle">Manage your profile, subscription, and preferences.</p>
 
-<div class="panel" style="margin-bottom:16px;">
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-    <h3 style="margin-bottom:0;">Profile</h3>
-    <span style="font-size:12.5px; font-weight:600; color:var(--dim); cursor:default;" title="Not yet wired to a save action — needs a profile-update endpoint first">Edit (coming soon)</span>
+<div style="display:flex; gap:6px; margin-bottom:20px; border-bottom:1px solid var(--border);">
+  <button type="button" class="acct-tab-btn" data-tab="profile" style="background:none;border:none;cursor:pointer;padding:10px 16px;font-size:14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;">Profile</button>
+  <button type="button" class="acct-tab-btn" data-tab="subscription" style="background:none;border:none;cursor:pointer;padding:10px 16px;font-size:14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;">Subscription</button>
+  <button type="button" class="acct-tab-btn" data-tab="preferences" style="background:none;border:none;cursor:pointer;padding:10px 16px;font-size:14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;">Preferences</button>
+</div>
+
+<!-- ═══ Profile ═══ -->
+<div class="acct-tab-panel" data-tab-panel="profile">
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-header-row">
+      <h3>Profile</h3>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:12.5px;color:var(--dim);margin-bottom:5px;">Full Name</label>
+      <input type="text" id="acct-name-input" value="<%= shellUser.name || '' %>" style="width:100%;max-width:360px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card-hover,#1E2A45);color:var(--white,#fff);font-size:14px;">
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:12.5px;color:var(--dim);margin-bottom:5px;">Email Address</label>
+      <p style="font-size:14px;color:var(--muted);margin:0;"><%= shellUser.email || '—' %></p>
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="display:block;font-size:12.5px;color:var(--dim);margin-bottom:5px;">Sign-in Method</label>
+      <p style="font-size:14px;color:var(--muted);margin:0;"><%= _signInMethod %></p>
+    </div>
+    <button type="button" id="acct-save-profile" class="cta-btn primary" style="display:inline-block;">Save Changes</button>
+    <span id="acct-profile-status" style="margin-left:10px;font-size:13px;color:var(--dim);"></span>
   </div>
-  <p style="font-size:14px; margin-bottom:6px;"><strong>Name:</strong> <%= shellUser.name || '—' %></p>
-  <p style="font-size:14px; color:var(--muted);"><strong style="color:var(--white);">Email:</strong> <%= shellUser.email || '—' %></p>
 </div>
 
-<div class="panel" style="margin-bottom:16px;">
-  <h3>Account (Subscription &amp; Billing)</h3>
-  <p style="font-size:14px; margin-bottom:6px;">
-    <strong>Plan:</strong> <%= shellUser.subscription_plan || 'Free' %>
-  </p>
-  <p style="font-size:14px; color:var(--muted);">
-    <strong style="color:var(--white);">Status:</strong>
-    <%= shellUser.subscription_status || '—' %>
-  </p>
-  <p style="font-size:12.5px; color:var(--dim); margin-top:14px;">
-    This is the only place subscription/plan information appears in the app —
-    it's intentionally not shown on the Dashboard or in the sidebar.
-  </p>
+<!-- ═══ Subscription ═══ -->
+<div class="acct-tab-panel" data-tab-panel="subscription" style="display:none;">
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-header-row">
+      <h3>Subscription</h3>
+    </div>
+    <p style="font-size:14px;margin-bottom:6px;"><strong>Current Plan:</strong> <%= _planLabel %></p>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:14px;"><strong style="color:var(--white);">Status:</strong> <%= _status.charAt(0).toUpperCase() + _status.slice(1) %></p>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:18px;">
+      <strong style="color:var(--white);">Interview Minutes:</strong>
+      <% if (interviewEntitlement.unlimited) { %>
+        Unlimited
+      <% } else { %>
+        <%= Math.round(interviewEntitlement.minutesRemaining) %> of <%= interviewEntitlement.minutesIncluded %> minutes remaining
+      <% } %>
+    </p>
+    <a href="/#pricing" class="cta-btn primary" style="display:inline-block;">Upgrade Plan</a>
+  </div>
 </div>
 
-<div class="panel">
-  <h3>Preferences</h3>
-  <p style="font-size:13px; color:var(--dim);">Notification and interview-experience preferences will live here.</p>
+<!-- ═══ Preferences ═══ -->
+<div class="acct-tab-panel" data-tab-panel="preferences" style="display:none;">
+  <div class="panel">
+    <div class="panel-header-row">
+      <h3>Preferences</h3>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;max-width:420px;margin-bottom:14px;">
+      <span style="font-size:14px;">Email Notifications</span>
+      <input type="checkbox" id="acct-pref-email" <%= preferences.email_notifications ? 'checked' : '' %> style="width:18px;height:18px;">
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;max-width:420px;margin-bottom:18px;">
+      <span style="font-size:14px;">Product Updates</span>
+      <input type="checkbox" id="acct-pref-updates" <%= preferences.product_updates ? 'checked' : '' %> style="width:18px;height:18px;">
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;max-width:420px;margin-bottom:18px;">
+      <span style="font-size:14px;">Theme</span>
+      <select disabled title="Theme switching isn't available yet" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card-hover,#1E2A45);color:var(--dim);font-size:13px;">
+        <option>Dark (default)</option>
+      </select>
+    </div>
+    <button type="button" id="acct-save-preferences" class="cta-btn primary" style="display:inline-block;">Save Changes</button>
+    <span id="acct-preferences-status" style="margin-left:10px;font-size:13px;color:var(--dim);"></span>
+  </div>
 </div>
+
+<script>
+(function() {
+  var tabButtons = document.querySelectorAll('.acct-tab-btn');
+  var panels = document.querySelectorAll('.acct-tab-panel');
+
+  function activateTab(tab) {
+    tabButtons.forEach(function(btn) {
+      var isActive = btn.getAttribute('data-tab') === tab;
+      btn.style.color = isActive ? 'var(--white, #fff)' : 'var(--muted)';
+      btn.style.borderBottomColor = isActive ? 'var(--bright, #3B82F6)' : 'transparent';
+    });
+    panels.forEach(function(panel) {
+      panel.style.display = panel.getAttribute('data-tab-panel') === tab ? 'block' : 'none';
+    });
+    if (history.replaceState) {
+      var url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      history.replaceState(null, '', url);
+    }
+  }
+
+  tabButtons.forEach(function(btn) {
+    btn.addEventListener('click', function() { activateTab(btn.getAttribute('data-tab')); });
+  });
+
+  activateTab('<%= _activeTab %>');
+
+  // Profile save
+  document.getElementById('acct-save-profile').addEventListener('click', async function() {
+    var statusEl = document.getElementById('acct-profile-status');
+    var name = document.getElementById('acct-name-input').value;
+    statusEl.textContent = 'Saving...';
+    try {
+      const res = await fetch('/api/settings/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      statusEl.textContent = 'Saved ✓';
+      setTimeout(function() { statusEl.textContent = ''; }, 2500);
+    } catch (err) {
+      statusEl.textContent = err.message || 'Failed to save';
+    }
+  });
+
+  // Preferences save
+  document.getElementById('acct-save-preferences').addEventListener('click', async function() {
+    var statusEl = document.getElementById('acct-preferences-status');
+    var emailNotifications = document.getElementById('acct-pref-email').checked;
+    var productUpdates = document.getElementById('acct-pref-updates').checked;
+    statusEl.textContent = 'Saving...';
+    try {
+      const res = await fetch('/api/settings/preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email_notifications: emailNotifications, product_updates: productUpdates })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      statusEl.textContent = 'Saved ✓';
+      setTimeout(function() { statusEl.textContent = ''; }, 2500);
+    } catch (err) {
+      statusEl.textContent = err.message || 'Failed to save';
+    }
+  });
+})();
+</script>
 
 <%- include('partials/workspace-shell-bottom') %>

@@ -433,6 +433,18 @@ async function runMigrations() {
           await c.query(`ALTER TABLE interview_questions ADD COLUMN IF NOT EXISTS strategy_purpose TEXT`);
         }
       },
+      {
+        name: '014_preferences_product_updates',
+        up: async (c) => {
+          // Account Settings > Preferences needs a third toggle beyond the
+          // two (theme, email_notifications) the preferences table already
+          // had. Purely additive — one column on an existing table, not a
+          // new table. Defaults to true so existing rows (created via
+          // db/profile-bootstrap.js's ensureUserBootstrap) get a sensible
+          // value without needing a backfill.
+          await c.query(`ALTER TABLE preferences ADD COLUMN IF NOT EXISTS product_updates BOOLEAN DEFAULT true`);
+        }
+      },
     ];
 
     for (const m of migrations) {
