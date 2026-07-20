@@ -61,6 +61,7 @@ app.use('/api/dashboard',  require('./routes/dashboard'));
 app.use('/api/resume',     require('./routes/resume'));
 app.use('/api/admin',      require('./routes/admin'));
 app.use('/api/founder',    require('./routes/founder'));
+app.use('/api/settings',   require('./routes/account'));
 app.use('/api/public-preview', require('./routes/public-preview'));
 app.use('/preview',        require('./routes/preview'));
 app.use('/api',            require('./routes/vapi'));
@@ -634,14 +635,31 @@ app.get('/resume', requireAuthPage, (req, res) => {
 
 // Settings — new, minimal (Profile / Account / Preferences). No page
 // existed at this route before; same auth pattern as dashboard/history.
-app.get('/settings', requireAuthPage, (req, res) => {
+app.get('/settings', requireAuthPage, async (req, res) => {
   try {
-    res.render('settings', { shellUser: req.user });
+    const { hasPasswordSet } = require('./db/auth');
+    const { getPreferences } = require('./db/preferences');
+    const [hasPassword, preferences] = await Promise.all([
+      hasPasswordSet(req.user.id),
+      getPreferences(req.user.id),
+    ]);
+    res.render('settings', {
+      shellUser: req.user,
+      hasPassword,
+      preferences,
+      interviewEntitlement: req.capabilities.interviewEntitlement,
+      activeTab: req.query.tab,
+    });
   } catch (err) {
     console.error('[settings]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });
+
+// /account is kept only as a redirect alias to /settings (preserving
+// ?tab=, so /account?tab=subscription still lands on the right tab) —
+// /settings is the real, primary route per product decision.
+app.get('/account', (req, res) => res.redirect('/settings' + (req.query.tab ? '?tab=' + encodeURIComponent(req.query.tab) : '')));
 
 // Global error handler
 app.use((err, req, res, _next) => {
