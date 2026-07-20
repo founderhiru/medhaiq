@@ -3,11 +3,6 @@
 // Interview API routes — Full Session Lifecycle with Quality Guardrails
 // ═══════════════════════════════════════════════════════════════════════════
 const express = require('express');
-const crypto = require('crypto'); // built-in Node module — used ONLY for the diagnostic hash trace below, no new dependency
-// FEATURE FLAG — set DEBUG_HASH_TRACE=true in the environment to enable
-// the diagnostic hash-trace logging below. Leave unset/false to disable
-// cleanly after diagnosis — no code changes needed, just the env var.
-const DEBUG_HASH_TRACE = process.env.DEBUG_HASH_TRACE === 'true';
 const router = express.Router();
 const {
   generateNextQuestion,
@@ -367,9 +362,6 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
 
     const repromptText = "I see. Could you please expand on that answer with a bit more detail or a specific example from your professional experience?";
     console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (REPROMPT, same question — must NOT advance): QuestionId=${questionId}`);
-    if (DEBUG_HASH_TRACE) {
-      console.log(`[HASH-TRACE] stage=1_backend_answer_response turnId=${turnId} questionId=${questionId} type=reprompt validationFailed=true len=${repromptText.length} first80=${JSON.stringify(repromptText.slice(0, 80))} sha256=${crypto.createHash('sha256').update(repromptText).digest('hex')}`);
-    }
 
     return {
       httpStatus: 200,
@@ -549,19 +541,6 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     return await finalizeSessionAndRespond();
   }
   console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (${picked.type === 'follow_up' ? 'FOLLOW_UP — must NOT advance progress' : 'PRIMARY — advances progress'}): QuestionId=${picked.id}`);
-
-  // ── HASH-TRACE STAGE 1 — backend, immediately before returning /answer.
-  // Diagnostic only: does not alter picked.text, the response body, or any
-  // control flow. Logs the exact question text's SHA-256 so it can be
-  // compared byte-for-byte against every later stage (frontend receipt,
-  // showQuestion(), instructNext(), the literal Vapi payload, and the
-  // first assistant transcript back). Whichever stage's hash first
-  // differs from this one is where the divergence begins.
-  if (DEBUG_HASH_TRACE) {
-    const _t1 = String(picked.text || '');
-    console.log(`[HASH-TRACE] stage=1_backend_answer_response turnId=${turnId} questionId=${picked.id} type=${picked.type} len=${_t1.length} first80=${JSON.stringify(_t1.slice(0, 80))} sha256=${crypto.createHash('sha256').update(_t1).digest('hex')}`);
-  }
-
   return {
     httpStatus: 200,
     body: {
