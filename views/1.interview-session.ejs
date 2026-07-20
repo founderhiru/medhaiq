@@ -596,6 +596,14 @@
   async function submitAnswer(skip) {
     if (isSubmitting) return;
     isSubmitting = true;
+    // Immediately silence any in-progress assistant speech — applies to
+    // both Skip and a normal answer submission, since either action means
+    // we're moving on and any speech still playing for the OLD question
+    // should stop now, not finish on its own. Fail-safe: no-ops if the
+    // bridge function isn't available for any reason.
+    if (typeof window.MedhaIQ_silenceCurrentSpeech === 'function') {
+      try { window.MedhaIQ_silenceCurrentSpeech(); } catch (e) { console.warn('[Vapi] silence-on-submit failed (non-fatal):', e); }
+    }
     var ans = skip ? '' : answerInput.value.trim();
     if (!skip && !ans) { isSubmitting = false; return; }
     document.getElementById('submitBtn').disabled = true;
@@ -893,6 +901,48 @@
   var VKEY = '<%= vapiPublicKey %>';
   var VAST = '<%= vapiAssistantId %>';
 
+  // Silences the assistant's current speech IMMEDIATELY by locally
+  // unsubscribing from their audio track — does not end the call, does
+  // not depend on any say() parameter (confirmed not present in this
+  // build). Fully defensive: any missing method/unexpected shape just
+  // means this silently no-ops.
+  function silenceCurrentSpeech() {
+    try {
+      if (!vapi || !vapi.call || typeof vapi.call.participants !== 'function'
+          || typeof vapi.call.updateParticipant !== 'function') return;
+      var parts = vapi.call.participants();
+      if (!parts) return;
+      Object.keys(parts).forEach(function(key) {
+        var p = parts[key];
+        if (p && !p.local) {
+          try { vapi.call.updateParticipant(p.session_id, { setSubscribedTracks: { audio: false } }); }
+          catch (e) { console.warn('[Vapi] silenceCurrentSpeech: updateParticipant failed (non-fatal):', e); }
+        }
+      });
+      slog('[Vapi] Current speech silenced locally (skip/submit)', 'info');
+    } catch (e) { console.warn('[Vapi] silenceCurrentSpeech failed (non-fatal, no behavior change):', e); }
+  }
+  window.MedhaIQ_silenceCurrentSpeech = silenceCurrentSpeech;
+
+  // Re-subscribes to the assistant's audio so the NEXT question is
+  // actually audible. Called right before every subsequent vapi.say().
+  function resumeAudioSubscription() {
+    try {
+      if (!vapi || !vapi.call || typeof vapi.call.participants !== 'function'
+          || typeof vapi.call.updateParticipant !== 'function') return;
+      var parts = vapi.call.participants();
+      if (!parts) return;
+      Object.keys(parts).forEach(function(key) {
+        var p = parts[key];
+        if (p && !p.local) {
+          try { vapi.call.updateParticipant(p.session_id, { setSubscribedTracks: { audio: true } }); }
+          catch (e) { console.warn('[Vapi] resumeAudioSubscription: updateParticipant failed (non-fatal):', e); }
+        }
+      });
+    } catch (e) { console.warn('[Vapi] resumeAudioSubscription failed (non-fatal, no behavior change):', e); }
+  }
+  window.MedhaIQ_resumeAudioSubscription = resumeAudioSubscription;
+
   var btn = document.getElementById('vapiBtn');
   var sub = document.getElementById('vapiSub');
   var slog = window.MedhaIQ_log || function(){};
@@ -937,6 +987,7 @@
        sent first so it can never delay or precede the forced utterance. */
     instructNext: function(questionText, wasSkipped, turnId, questionId){
       safeHashTrace('4_before_instructNext', turnId, questionId, questionText);
+      resumeAudioSubscription(); // re-enable audio before speaking the new question
       if (state !== STATES.LIVE || !vapi) return false;
       try {
         var lead = wasSkipped
@@ -973,7 +1024,6 @@
           safeHashTrace('5a_vapi_payload_raw_question_text', turnId, questionId, questionText);
           safeHashTrace('5b_vapi_payload_final_with_prefix', turnId, questionId, vapiPayload, 'hasPrefix=' + (lead.length > 0));
           safeVapiPathTrace('5_vapi_speech_path', turnId, questionId, 'vapi.say');
-          slog('[LIFECYCLE-TRACE] vapi.say() CALLED (instructNext) at ' + Date.now() + ' turnId=' + turnId + ' questionId=' + questionId + ' text="' + vapiPayload.slice(0,60) + '..."', 'info');
           vapi.say(vapiPayload);
           slog('Forced speech via vapi.say()', 'ok');
           if (turnId) slog('[turn-trace] TURN_ID='+turnId+' vapi.say(): QuestionId='+questionId, 'info');
@@ -1038,7 +1088,6 @@
     // signal — but there is no gate anymore (Q1 reveals immediately,
     // unconditionally). Nothing is left for it to certify.
     vapi.on('call-start', function() {
-      slog('[LIFECYCLE-TRACE] call-start fired at ' + Date.now(), 'info');
       setState(STATES.LIVE, 'Voice active — speak your answer');
       window.MedhaIQVoiceLive = true;
       /* ── v2.2 sessionReadyContext handshake (cold-start amnesia + latency
@@ -1071,7 +1120,6 @@
           safeHashTrace('5a_vapi_payload_raw_question_text', window.MedhaIQ_LastTurnId, null, currentQ);
           safeHashTrace('5b_vapi_payload_final_with_prefix', window.MedhaIQ_LastTurnId, null, _openingPayload, 'hasPrefix=true (persona intro)');
           safeVapiPathTrace('5_vapi_speech_path', window.MedhaIQ_LastTurnId, null, 'vapi.say');
-          slog('[LIFECYCLE-TRACE] vapi.say() CALLED (opening) at ' + Date.now() + ' text="' + _openingPayload.slice(0,60) + '..."', 'info');
           vapi.say(_openingPayload);
           slog('Opening question forced via vapi.say()', 'ok');
         } else {
@@ -1239,7 +1287,6 @@
     });
 
     vapi.on('speech-start', function() {
-      slog('[LIFECYCLE-TRACE] speech-start fired at ' + Date.now() + ' (turnId=' + currentSpokenTurnId + ' questionId=' + currentSpokenQuestionId + ')', 'info');
       // Hard sync fix: Tell the orchestrator that the speaker audio track has started playing
       if (window.MedhaIQOrchestrator) {
         window.MedhaIQOrchestrator.interviewerStartedSpeaking();
@@ -1250,7 +1297,6 @@
     });
 
     vapi.on('speech-end', function() {
-      slog('[LIFECYCLE-TRACE] speech-end fired at ' + Date.now() + ' actuallySpoken="' + (assistantTranscriptBuf||'').slice(0,80) + '..."', 'info');
       aiIsSpeaking = false;
       sub.textContent = 'Your turn — speak clearly';
       if (currentSpokenTurnId) {
@@ -1261,7 +1307,6 @@
     });
     
     vapi.on('call-end', function() {
-      slog('[LIFECYCLE-TRACE] call-end fired at ' + Date.now(), 'info');
       window.MedhaIQVoiceLive = false;
       setState(STATES.IDLE, 'Speak directly with your AI interviewer');
     });
