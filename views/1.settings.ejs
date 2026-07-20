@@ -21,16 +21,16 @@ const _status = shellUser.subscription_status || 'active';
 <p class="subtitle">Manage your profile, subscription, and preferences.</p>
 
 <div style="display:flex; gap:6px; margin-bottom:20px; border-bottom:1px solid var(--border);">
-  <button type="button" class="acct-tab-btn" data-tab="profile" style="background:none;border:none;cursor:pointer;padding:10px 16px;font-size:14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;">Personal Information</button>
+  <button type="button" class="acct-tab-btn" data-tab="profile" style="background:none;border:none;cursor:pointer;padding:10px 16px;font-size:14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;">Profile</button>
   <button type="button" class="acct-tab-btn" data-tab="subscription" style="background:none;border:none;cursor:pointer;padding:10px 16px;font-size:14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;">Subscription</button>
-  <button type="button" class="acct-tab-btn" data-tab="preferences" style="background:none;border:none;cursor:pointer;padding:10px 16px;font-size:14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;">Notifications &amp; Preferences</button>
+  <button type="button" class="acct-tab-btn" data-tab="preferences" style="background:none;border:none;cursor:pointer;padding:10px 16px;font-size:14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;">Preferences</button>
 </div>
 
-<!-- ═══ Personal Information ═══ -->
+<!-- ═══ Profile ═══ -->
 <div class="acct-tab-panel" data-tab-panel="profile">
   <div class="panel" style="margin-bottom:16px;">
     <div class="panel-header-row">
-      <h3>Personal Information</h3>
+      <h3>Profile</h3>
     </div>
     <div style="margin-bottom:14px;">
       <label style="display:block;font-size:12.5px;color:var(--dim);margin-bottom:5px;">Full Name</label>
@@ -43,10 +43,6 @@ const _status = shellUser.subscription_status || 'active';
     <div style="margin-bottom:18px;">
       <label style="display:block;font-size:12.5px;color:var(--dim);margin-bottom:5px;">Sign-in Method</label>
       <p style="font-size:14px;color:var(--muted);margin:0;"><%= _signInMethod %></p>
-    </div>
-    <div style="margin-bottom:18px;">
-      <label style="display:block;font-size:12.5px;color:var(--dim);margin-bottom:5px;">Member Since</label>
-      <p style="font-size:14px;color:var(--muted);margin:0;"><%= shellUser.created_at ? new Date(shellUser.created_at).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : '—' %></p>
     </div>
     <button type="button" id="acct-save-profile" class="cta-btn primary" style="display:inline-block;">Save Changes</button>
     <span id="acct-profile-status" style="margin-left:10px;font-size:13px;color:var(--dim);"></span>
@@ -73,11 +69,11 @@ const _status = shellUser.subscription_status || 'active';
   </div>
 </div>
 
-<!-- ═══ Notifications &amp; Preferences ═══ -->
+<!-- ═══ Preferences ═══ -->
 <div class="acct-tab-panel" data-tab-panel="preferences" style="display:none;">
   <div class="panel">
     <div class="panel-header-row">
-      <h3>Notifications &amp; Preferences</h3>
+      <h3>Preferences</h3>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;max-width:420px;margin-bottom:14px;">
       <span style="font-size:14px;">Email Notifications</span>

@@ -26,7 +26,7 @@ async function getUserByEmailAndPassword(email, password) {
 
 async function getUserById(id) {
   try {
-    const res = await pool.query('SELECT id, email, name, subscription_plan, subscription_status, created_at FROM users WHERE id = $1 LIMIT 1', [id]);
+    const res = await pool.query('SELECT id, email, name, subscription_plan, subscription_status FROM users WHERE id = $1 LIMIT 1', [id]);
     return res.rows[0] || null;
   } catch (error) {
     console.error('[auth] getUserById error:', error.message);
