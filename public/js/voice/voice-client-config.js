@@ -19,8 +19,9 @@
 
   var VOICE_CLIENT_CONFIG = {
     sttProvider: 'vapi',
-    ttsProvider: 'elevenlabs',
-    defaultVoice: 'pNInz6obpgDQGcFmaJgB', // TEMP TEST 2: "Adam" (premade) -- decisive test for whether this is plan-level API restriction vs voice-specific
+    ttsProvider: 'elevenlabseleven_multilingual_v2',
+    defaultVoice: 'TbMNBJ27fH2U0VgpSNko', // TEMP TEST 2: "Claire" (premade) -- decisive test for whether this is plan-level API restriction vs voice-specific
+    modelId: "eleven_v3",
     language: 'en-US',
     streaming: true,
   };
