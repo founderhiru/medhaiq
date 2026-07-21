@@ -156,6 +156,16 @@
   // State Machine IIFE, further down).
   window.VOICE_PIPELINE_MODE = (window.VOICE_PLAYBACK_PROVIDER === 'tts_pipeline') ? 'tts_pipeline' : 'legacy_vapi';
   window.questionSpeechService = null; // constructed later, in the Vapi Voice State Machine block, if VOICE_PIPELINE_MODE is tts_pipeline
+
+  // Impossible-to-misinterpret startup banner -- fires immediately, before
+  // either IIFE runs, regardless of Vapi/ElevenLabs connection state. If
+  // this doesn't show tts_pipeline after flipping the Render env var, the
+  // deploy hasn't picked up the change (or the flag itself is wrong) --
+  // that's a config problem, not a code problem.
+  console.log('==============================');
+  console.log('Voice Playback Provider');
+  console.log(window.VOICE_PIPELINE_MODE);
+  console.log('==============================');
 </script>
 <script>
 (function() {
