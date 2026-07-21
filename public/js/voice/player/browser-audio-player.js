@@ -3,6 +3,10 @@
 // PR2A of the MedhaIQ Voice Platform Architecture v1.0 (frozen).
 // See MedhaIQ_Voice_Platform_Architecture_v1.0.docx §5.4, §6.4.
 //
+// PR2B addition: temporary [PLAYER] structured logging on play/pause/
+// resume/stop/ended. REMOVE IN PR5 -- kept through PR3/PR4 to make
+// integration issues easy to isolate via a single grep across logs.
+//
 // Real implementation. Still must NEVER know: interview, questions,
 // versions, skip, queueing, Vapi, or ElevenLabs. It is a plain wrapper
 // around `new Audio()` and nothing more.
@@ -40,6 +44,15 @@
 
   function isBlobLike(value) {
     return !!value && typeof value === 'object' && typeof value.type === 'string';
+  }
+
+  // Temporary structured logging, added PR2B, REMOVE IN PR5 per the
+  // architecture doc's migration plan. Kept through PR3/PR4 specifically
+  // to make integration issues (e.g. a stray double-play, a missed stop)
+  // easy to isolate from a single grep across the console.
+  function logPlayer(event, detail) {
+    var line = '[PLAYER] ' + event + (detail ? ' ' + JSON.stringify(detail) : '');
+    if (global.console && global.console.log) global.console.log(line);
   }
 
   function BrowserAudioPlayer(options) {
@@ -83,6 +96,8 @@
   };
 
   BrowserAudioPlayer.prototype.play = function (audioSource) {
+    logPlayer('play', { sourceType: typeof audioSource === 'string' ? 'url' : 'blob' });
+
     // Defensive stop of whatever is currently playing before starting
     // the new source -- this is the exact overlap the Vapi-based
     // design could never guarantee against (see architecture doc §1).
@@ -94,6 +109,7 @@
 
     var self = this;
     var endedHandler = function () {
+      logPlayer('ended');
       self._endedCallbacks.forEach(function (cb) {
         try { cb(); } catch (e) { /* one listener's error must not break others */ }
       });
@@ -122,6 +138,7 @@
   // provider. Real, synchronous pause + position reset -- nothing remote
   // to wait on.
   BrowserAudioPlayer.prototype.stop = function () {
+    logPlayer('stop');
     if (this._audio) {
       try { this._audio.pause(); } catch (e) { /* already stopped/detached */ }
       try { this._audio.currentTime = 0; } catch (e) { /* not seekable/not loaded */ }
@@ -131,12 +148,14 @@
   };
 
   BrowserAudioPlayer.prototype.pause = function () {
+    logPlayer('pause');
     if (this._audio) {
       this._audio.pause();
     }
   };
 
   BrowserAudioPlayer.prototype.resume = function () {
+    logPlayer('resume');
     if (!this._audio) return;
     var playResult = this._audio.play();
     if (playResult && typeof playResult.catch === 'function') {

@@ -136,18 +136,6 @@
      INTERVIEW OS ENGINE
 ═══════════════════════════════════════════════════════════════ -->
 <script src="/js/interviewOrchestrator.js"></script>
-<!-- PR3: voice/ modules, loaded but only USED when VOICE_PLAYBACK_PROVIDER=tts_pipeline
-     (see PR3 Integration Plan §4). Safe to load unconditionally -- these files are
-     inert until explicitly constructed. -->
-<script src="/js/voice/stt/stt-adapter.js"></script>
-<script src="/js/voice/tts/tts-adapter.js"></script>
-<script src="/js/voice/tts/elevenlabs-tts-adapter.js"></script>
-<script src="/js/voice/player/browser-audio-player.js"></script>
-<script src="/js/voice/services/question-speech-service.js"></script>
-<script src="/js/voice/voice-client-config.js"></script>
-<script>
-  window.VOICE_PLAYBACK_PROVIDER = '<%= voicePlaybackProvider %>';
-</script>
 <script>
 (function() {
   /* ══ Sync engine — fixes the UI/audio desync bug ══
@@ -618,9 +606,7 @@
     // we're moving on and any speech still playing for the OLD question
     // should stop now, not finish on its own. Fail-safe: no-ops if the
     // bridge function isn't available for any reason.
-    if (VOICE_PIPELINE_MODE === 'tts_pipeline' && questionSpeechService) {
-      try { questionSpeechService.stop(); } catch (e) { console.warn('[VoicePipeline] stop() on submit failed (non-fatal):', e); }
-    } else if (typeof window.MedhaIQ_silenceCurrentSpeech === 'function') {
+    if (typeof window.MedhaIQ_silenceCurrentSpeech === 'function') {
       try { window.MedhaIQ_silenceCurrentSpeech(); } catch (e) { console.warn('[Vapi] silence-on-submit failed (non-fatal):', e); }
     }
     var ans = skip ? '' : answerInput.value.trim();
@@ -973,36 +959,6 @@
 
   if(!VKEY||!VAST){ btn.disabled = true; btn.style.opacity='0.4'; sub.textContent='Voice not configured — add VAPI keys in Render'; return; }
 
-  // ── PR3: voice playback pipeline selection ──
-  // Resolved ONCE here, not re-read at each call site (PR3 Integration
-  // Plan §4). Vapi mic/STT stays live and required regardless of this
-  // flag's value -- it only governs how QUESTIONS are spoken.
-  var VOICE_PIPELINE_MODE = (window.VOICE_PLAYBACK_PROVIDER === 'tts_pipeline') ? 'tts_pipeline' : 'legacy_vapi';
-  var questionSpeechService = null;
-  if (VOICE_PIPELINE_MODE === 'tts_pipeline') {
-    try {
-      var _voiceClientConfig = (window.MedhaIQVoice && window.MedhaIQVoice.VOICE_CLIENT_CONFIG) || {};
-      var _ttsAdapter = new window.MedhaIQVoice.ElevenLabsTTSAdapter(
-        { voice: _voiceClientConfig.defaultVoice, language: _voiceClientConfig.language, streaming: _voiceClientConfig.streaming },
-        { proxyUrl: '/api/voice/synthesize' }
-      );
-      var _audioPlayer = new window.MedhaIQVoice.BrowserAudioPlayer();
-      questionSpeechService = new window.MedhaIQVoice.QuestionSpeechService({
-        ttsAdapter: _ttsAdapter,
-        audioPlayer: _audioPlayer,
-        config: _voiceClientConfig
-      });
-      slog('[VoicePipeline] tts_pipeline active -- QuestionSpeechService constructed', 'info');
-    } catch (e) {
-      // Fail OPEN to the proven legacy path, never fail closed on a
-      // construction error -- a broken new pipeline must not be able
-      // to silence the interview entirely (Design Principle 8).
-      console.error('[VoicePipeline] Failed to construct tts_pipeline chain -- falling back to legacy_vapi', e);
-      VOICE_PIPELINE_MODE = 'legacy_vapi';
-      questionSpeechService = null;
-    }
-  }
-
   var STATES={ IDLE:'IDLE',REQUESTING:'REQUESTING',CONNECTING:'CONNECTING',LIVE:'LIVE',STOPPING:'STOPPING' };
   var state=STATES.IDLE, vapi=null;
   var assistantTranscriptBuf = '';
@@ -1047,22 +1003,9 @@
       }
       activeSpokenVersion = request.version; // Speech Correlation: this is now the ONE request future events may be checked against
       speechState = SPEECH_STATE.SPEAKING;
+      resumeAudioSubscription();
       currentSpokenTurnId = request.turnId || null;
       currentSpokenQuestionId = (request.questionId !== undefined && request.questionId !== null) ? request.questionId : null;
-
-      // ── PR3: new path ──
-      if (VOICE_PIPELINE_MODE === 'tts_pipeline' && questionSpeechService) {
-        var qspText = (request.wasSkipped ? 'No problem, let\u2019s move on. ' : '') + String(request.text);
-        safeHashTrace('5a_vapi_payload_raw_question_text', request.turnId, request.questionId, request.text);
-        safeHashTrace('5b_vapi_payload_final_with_prefix', request.turnId, request.questionId, qspText, 'hasPrefix=' + (request.wasSkipped));
-        safeVapiPathTrace('5_vapi_speech_path', request.turnId, request.questionId, 'question_speech_service');
-        slog('[LIFECYCLE-TRACE] QuestionSpeechService.speak() CALLED at ' + Date.now() + ' turnId=' + request.turnId + ' questionId=' + request.questionId + ' version=' + request.version + ' text="' + qspText.slice(0,60) + '..."', 'info');
-        questionSpeechService.speak({ text: qspText, questionId: request.questionId, turnId: request.turnId });
-        return;
-      }
-
-      // ── legacy_vapi path (unchanged) ──
-      resumeAudioSubscription();
       try {
         var lead = request.wasSkipped ? 'No problem, let\u2019s move on. ' : '';
         vapi.send({
@@ -1173,16 +1116,6 @@
       onIntentionalCancel: function () {
         speechState = SPEECH_STATE.FREE;
       },
-      // PR3 Required Change 1: a playback error (synthesis failure, or
-      // the QuestionSpeechService speak()-timeout safety net) must not
-      // leave the controller stuck in SPEAKING/SPEAKING_PENDING. Reuses
-      // the exact same release-and-continue mechanism as onCallEnd/
-      // onError, since the correct response is identical: give up the
-      // gate and let the interview continue.
-      onPlaybackError: function (err) {
-        slog('[VoiceController] Playback error -- releasing gate: ' + (err && err.message), 'err');
-        _releaseAndMaybeSpeakPending('playback-error');
-      },
 
       isLive: function () { return state === STATES.LIVE && !!vapi; },
       getCurrentQuestion: function () { return CurrentQuestion; },
@@ -1190,36 +1123,6 @@
     };
   })();
   window.InterviewVoiceController = InterviewVoiceController;
-
-  // ── PR3: wire QuestionSpeechService events, now that the controller
-  // exists. These replace, for the tts_pipeline path only, the UI
-  // side-effects that used to live inside vapi.on('speech-start'/
-  // 'speech-end') -- see the gated versions of those handlers below. ──
-  if (VOICE_PIPELINE_MODE === 'tts_pipeline' && questionSpeechService) {
-    questionSpeechService.onStarted(function () {
-      slog('[LIFECYCLE-TRACE] QuestionSpeechService onStarted fired at ' + Date.now() + ' (turnId=' + currentSpokenTurnId + ' questionId=' + currentSpokenQuestionId + ')', 'info');
-      InterviewVoiceController.onSpeechStart();
-      if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.interviewerStartedSpeaking();
-      assistantTranscriptBuf = '';
-      aiIsSpeaking = true;
-      sub.textContent = '● AI is speaking…';
-    });
-    questionSpeechService.onFinished(function () {
-      slog('[LIFECYCLE-TRACE] QuestionSpeechService onFinished fired at ' + Date.now(), 'info');
-      aiIsSpeaking = false;
-      sub.textContent = 'Your turn — speak clearly';
-      if (currentSpokenTurnId) slog('[turn-trace] TURN_ID='+currentSpokenTurnId+' Speech finished: QuestionId='+currentSpokenQuestionId, 'info');
-      InterviewVoiceController.onSpeechEnd();
-      if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.unlockInput();
-    });
-    questionSpeechService.onPlaybackError(function (err) {
-      console.error('[VoicePipeline] Playback error', err);
-      aiIsSpeaking = false;
-      sub.textContent = 'Voice hiccup — continuing by text';
-      InterviewVoiceController.onPlaybackError(err);
-      if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.unlockInput();
-    });
-  }
 
   function setState(s,msg,isErr){
     state=s;
@@ -1464,10 +1367,6 @@
 
     vapi.on('speech-start', function() {
       slog('[LIFECYCLE-TRACE] speech-start fired at ' + Date.now() + ' (turnId=' + currentSpokenTurnId + ' questionId=' + currentSpokenQuestionId + ')', 'info');
-      if (VOICE_PIPELINE_MODE !== 'legacy_vapi') {
-        slog('[LIFECYCLE-TRACE] speech-start ignored -- tts_pipeline active, Vapi is STT-only', 'info');
-        return;
-      }
       InterviewVoiceController.onSpeechStart(); // observation only -- does not itself advance anything (Invariant 4)
       // Hard sync fix: Tell the orchestrator that the speaker audio track has started playing
       if (window.MedhaIQOrchestrator) {
@@ -1480,10 +1379,6 @@
 
     vapi.on('speech-end', function() {
       slog('[LIFECYCLE-TRACE] speech-end fired at ' + Date.now() + ' actuallySpoken="' + (assistantTranscriptBuf||'').slice(0,80) + '..."', 'info');
-      if (VOICE_PIPELINE_MODE !== 'legacy_vapi') {
-        slog('[LIFECYCLE-TRACE] speech-end ignored -- tts_pipeline active, Vapi is STT-only', 'info');
-        return;
-      }
       aiIsSpeaking = false; // unchanged: barge-in guard, separate from the controller
       sub.textContent = 'Your turn — speak clearly';
       if (currentSpokenTurnId) {

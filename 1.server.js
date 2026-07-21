@@ -65,8 +65,6 @@ app.use('/api/settings',   require('./routes/account'));
 app.use('/api/public-preview', require('./routes/public-preview'));
 app.use('/preview',        require('./routes/preview'));
 app.use('/api',            require('./routes/vapi'));
-app.use('/api/voice',      require('./routes/voice-tts'));   // PR3: ElevenLabs proxy, requireAuth-gated
-app.use('/debug/voice',    require('./routes/debug-voice')); // PR3: internal diagnostic page, requireFounder-gated
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/', async (req, res) => {
@@ -177,7 +175,6 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
   orgPreset:        session.org_preset || '',
   vapiPublicKey:    process.env.VAPI_PUBLIC_KEY   || '',
   vapiAssistantId:  process.env.VAPI_ASSISTANT_ID || '',
-  voicePlaybackProvider: process.env.VOICE_PLAYBACK_PROVIDER || 'legacy_vapi', // PR3 feature flag, see PR3 Integration Plan §4
 });
   } catch (err) {
     console.error('[interview/session]', err);

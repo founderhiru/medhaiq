@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MedhaIQ — Voice Diagnostic</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 20px; background: #0f1420; color: #e6e9f0; }
+    h1 { font-size: 20px; }
+    textarea { width: 100%; min-height: 100px; padding: 10px; font-size: 14px; box-sizing: border-box; }
+    select, button { padding: 8px 14px; font-size: 14px; margin-right: 8px; margin-bottom: 8px; }
+    button { cursor: pointer; }
+    #log { background: #05070c; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 300px; overflow-y: auto; margin-top: 16px; }
+    .state { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>MedhaIQ Voice Diagnostic (internal only)</h1>
+  <p>Exercises the exact same QuestionSpeechService -> ElevenLabsTTSAdapter -> BrowserAudioPlayer chain used in a live interview when VOICE_PLAYBACK_PROVIDER=tts_pipeline. Not linked from any nav.</p>
+
+  <label>Voice:
+    <select id="voiceSelect">
+      <option value="Rachel">Rachel</option>
+      <option value="Adam">Adam</option>
+      <option value="Domi">Domi</option>
+    </select>
+  </label>
+  <br>
+  <textarea id="textInput">Tell me about a time you led a challenging project.</textarea>
+  <div>
+    <button id="playBtn">Play</button>
+    <button id="stopBtn">Stop</button>
+    <button id="pauseBtn">Pause</button>
+    <button id="resumeBtn">Resume</button>
+  </div>
+  <p>State: <span id="stateLabel" class="state">idle</span></p>
+  <div id="log"></div>
+
+  <script src="/js/voice/stt/stt-adapter.js"></script>
+  <script src="/js/voice/tts/tts-adapter.js"></script>
+  <script src="/js/voice/tts/elevenlabs-tts-adapter.js"></script>
+  <script src="/js/voice/player/browser-audio-player.js"></script>
+  <script src="/js/voice/services/question-speech-service.js"></script>
+  <script src="/js/voice/voice-client-config.js"></script>
+  <script>
+  (function () {
+    var logEl = document.getElementById('log');
+    var stateLabel = document.getElementById('stateLabel');
+    function log(line) {
+      logEl.textContent += line + '\n';
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    function setState(s) { stateLabel.textContent = s; }
+
+    var audioPlayer = new window.MedhaIQVoice.BrowserAudioPlayer();
+    var currentAdapter = null;
+    var qss = null;
+
+    function rebuildForVoice(voice) {
+      var cfg = window.MedhaIQVoice.VOICE_CLIENT_CONFIG || {};
+      currentAdapter = new window.MedhaIQVoice.ElevenLabsTTSAdapter(
+        { voice: voice, language: cfg.language, streaming: cfg.streaming },
+        { proxyUrl: '/api/voice/synthesize' }
+      );
+      qss = new window.MedhaIQVoice.QuestionSpeechService({ ttsAdapter: currentAdapter, audioPlayer: audioPlayer, config: cfg });
+      qss.onStarted(function () { setState('speaking'); log('[onStarted]'); });
+      qss.onFinished(function () { setState('idle'); log('[onFinished]'); });
+      qss.onPlaybackError(function (err) { setState('error'); log('[onPlaybackError] ' + (err && err.message)); });
+    }
+    rebuildForVoice(document.getElementById('voiceSelect').value);
+
+    document.getElementById('voiceSelect').addEventListener('change', function (e) {
+      rebuildForVoice(e.target.value);
+    });
+    document.getElementById('playBtn').addEventListener('click', function () {
+      var text = document.getElementById('textInput').value;
+      log('[Play] "' + text.slice(0, 60) + '..."');
+      setState('requesting');
+      qss.speak({ text: text });
+    });
+    document.getElementById('stopBtn').addEventListener('click', function () {
+      log('[Stop]');
+      qss.stop();
+      setState('idle');
+    });
+    document.getElementById('pauseBtn').addEventListener('click', function () {
+      log('[Pause]');
+      audioPlayer.pause();
+      setState('paused');
+    });
+    document.getElementById('resumeBtn').addEventListener('click', function () {
+      log('[Resume]');
+      audioPlayer.resume();
+      setState('speaking');
+    });
+  })();
+  </script>
+</body>
+</html>
