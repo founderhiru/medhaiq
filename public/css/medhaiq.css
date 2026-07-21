@@ -527,21 +527,30 @@ button { cursor: pointer; }
 .mh-btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
   background: var(--royal-blue);
   color: var(--white);
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 18px;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  padding: var(--btn-pad-y) 38px;
+  font-weight: 700;
+  font-size: 15px;
+  padding: var(--btn-pad-y) var(--btn-pad-x);
   border-radius: 40px;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 0 30px rgba(30, 64, 175, 0.4);
   white-space: nowrap;
+}
+/* Explore-page closing CTA ("Ready to measure your interview readiness?")
+   keeps the larger, lighter-weight treatment on purpose — scoped here so it
+   never affects the Hero CTA or any other .mh-btn-primary usage. */
+.mh-explore-cta .mh-btn-primary {
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  gap: 16px;
+  padding: var(--btn-pad-y) 38px;
 }
 .mh-btn-primary:hover {
   background: #2563eb;
