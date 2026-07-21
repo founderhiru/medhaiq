@@ -20,7 +20,7 @@
   var VOICE_CLIENT_CONFIG = {
     sttProvider: 'vapi',
     ttsProvider: 'elevenlabs',
-    defaultVoice: '21m00Tcm4TlvDq8ikWAM', // ElevenLabs Voice ID for "Janet"
+    defaultVoice: 'pNInz6obpgDQGcFmaJgB', // TEMP TEST 2: "Adam" (premade) -- decisive test for whether this is plan-level API restriction vs voice-specific
     language: 'en-US',
     streaming: true,
   };
