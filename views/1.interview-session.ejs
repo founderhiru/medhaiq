@@ -1024,6 +1024,7 @@
           safeHashTrace('5a_vapi_payload_raw_question_text', turnId, questionId, questionText);
           safeHashTrace('5b_vapi_payload_final_with_prefix', turnId, questionId, vapiPayload, 'hasPrefix=' + (lead.length > 0));
           safeVapiPathTrace('5_vapi_speech_path', turnId, questionId, 'vapi.say');
+          slog('[LIFECYCLE-TRACE] vapi.say() CALLED (instructNext) at ' + Date.now() + ' turnId=' + turnId + ' questionId=' + questionId + ' text="' + vapiPayload.slice(0,60) + '..."', 'info');
           vapi.say(vapiPayload);
           slog('Forced speech via vapi.say()', 'ok');
           if (turnId) slog('[turn-trace] TURN_ID='+turnId+' vapi.say(): QuestionId='+questionId, 'info');
@@ -1088,6 +1089,7 @@
     // signal — but there is no gate anymore (Q1 reveals immediately,
     // unconditionally). Nothing is left for it to certify.
     vapi.on('call-start', function() {
+      slog('[LIFECYCLE-TRACE] call-start fired at ' + Date.now(), 'info');
       setState(STATES.LIVE, 'Voice active — speak your answer');
       window.MedhaIQVoiceLive = true;
       /* ── v2.2 sessionReadyContext handshake (cold-start amnesia + latency
@@ -1120,6 +1122,7 @@
           safeHashTrace('5a_vapi_payload_raw_question_text', window.MedhaIQ_LastTurnId, null, currentQ);
           safeHashTrace('5b_vapi_payload_final_with_prefix', window.MedhaIQ_LastTurnId, null, _openingPayload, 'hasPrefix=true (persona intro)');
           safeVapiPathTrace('5_vapi_speech_path', window.MedhaIQ_LastTurnId, null, 'vapi.say');
+          slog('[LIFECYCLE-TRACE] vapi.say() CALLED (opening) at ' + Date.now() + ' text="' + _openingPayload.slice(0,60) + '..."', 'info');
           vapi.say(_openingPayload);
           slog('Opening question forced via vapi.say()', 'ok');
         } else {
@@ -1287,6 +1290,7 @@
     });
 
     vapi.on('speech-start', function() {
+      slog('[LIFECYCLE-TRACE] speech-start fired at ' + Date.now() + ' (turnId=' + currentSpokenTurnId + ' questionId=' + currentSpokenQuestionId + ')', 'info');
       // Hard sync fix: Tell the orchestrator that the speaker audio track has started playing
       if (window.MedhaIQOrchestrator) {
         window.MedhaIQOrchestrator.interviewerStartedSpeaking();
@@ -1297,6 +1301,7 @@
     });
 
     vapi.on('speech-end', function() {
+      slog('[LIFECYCLE-TRACE] speech-end fired at ' + Date.now() + ' actuallySpoken="' + (assistantTranscriptBuf||'').slice(0,80) + '..."', 'info');
       aiIsSpeaking = false;
       sub.textContent = 'Your turn — speak clearly';
       if (currentSpokenTurnId) {
@@ -1307,6 +1312,7 @@
     });
     
     vapi.on('call-end', function() {
+      slog('[LIFECYCLE-TRACE] call-end fired at ' + Date.now(), 'info');
       window.MedhaIQVoiceLive = false;
       setState(STATES.IDLE, 'Speak directly with your AI interviewer');
     });

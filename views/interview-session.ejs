@@ -139,47 +139,52 @@
 <script>
 (function() {
   /* ══ Sync engine — fixes the UI/audio desync bug ══
-     THE ROOT BUG: two independent AI calls were generating "the next
-     question" — our own backend text call, AND whatever Vapi's own voice
-     assistant decided to actually say — with nothing forcing them to
-     match. The card showed our backend's guess the moment it arrived,
-     regardless of what the voice assistant was really saying a beat
-     later, so the two drifted apart on almost every question.
-     THE FIX: when voice is live, our backend's text is sent to Vapi as an
-     instruction for what to ask (via window.MedhaIQVoice.instructNext,
-     wired up in the Vapi script below), and the on-screen card is ONLY
-     ever painted from Vapi's own live transcript of what it actually
-     says (see vapi.on('message') below) — never from our own guess. In
-     text-only mode (no voice connected) there's nothing to wait for, so
-     it still paints our backend text immediately, same as before. */
+     THE ROOT BUG (historical): two independent AI calls were generating
+     "the next question" — our own backend text call, AND whatever Vapi's
+     own voice assistant decided to actually say — with nothing forcing
+     them to match.
+     CURRENT DESIGN (Architecture Doc Rev 4): question progression owns
+     the on-screen card unconditionally (Invariant 4) — showQuestion() is
+     called immediately here in hold(), regardless of voice state. When
+     voice is live, the SAME backend text is separately handed to
+     InterviewVoiceController.notify() (wired up in the Vapi script
+     below), which is the single owner of if/when Vapi actually speaks it
+     — see InterviewVoiceController in the Vapi script block for the
+     full gating/queueing/version/correlation model. Text and speech are
+     deliberately two independent concerns now: text never waits on
+     voice, and voice always speaks the exact text already on screen. */
   var pendingQuestion = null;
   var pendingAudioUrl = null;
   var qAudioEl = new Audio();
   var MedhaIQSync = {
     hold: function(question, type, competency, wasSkipped, turnId) {
+      // Question lifecycle owns progression (Architecture Doc Rev 4,
+      // Invariant 4): text ALWAYS renders immediately and unconditionally,
+      // regardless of voice state. Whether or not Vapi is live, ever
+      // speaks, or falls behind has zero bearing on whether the candidate
+      // sees the current question right now.
       pendingQuestion = { question: question, type: type, competency: competency, turnId: turnId };
-      var voice = window.MedhaIQVoice;
-      if (voice && voice.isLive && voice.isLive()) {
-        // v2 FIX (repeat/ghost bugs): the backend's question is the single
-        // source of truth ON SCREEN — painted in full, immediately. Vapi is
-        // instructed to SPEAK this same text (with an explicit no-repeat
-        // directive), but its transcript never overwrites the card again.
-        var instructed = voice.instructNext(question.text, !!wasSkipped, turnId, question.id);
-        if (instructed) {
-          pendingAudioUrl = null; // Vapi is speaking now — our own TTS clip (if any) must not fire later
-          if (turnId) (window.MedhaIQ_log||function(){})('[turn-trace] TURN_ID='+turnId+' UI rendered: QuestionId='+question.id, 'info');
-          showQuestion(question, type, competency);
-          pendingQuestion = null;
-          // Input gate: uiText is drawn; lock typing until the audio
-          // playback of this same text finishes (speech-end unlocks).
-          if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.lockInput();
-          return;
-        }
-        // instructNext failed (voice flagged live but the call object
-        // isn't actually usable) — fall back to the text reveal below so
-        // the candidate never gets stuck on the placeholder.
+      if (turnId) (window.MedhaIQ_log||function(){})('[turn-trace] TURN_ID='+turnId+' UI rendered: QuestionId='+question.id, 'info');
+      showQuestion(question, type, competency);
+      pendingQuestion = null;
+
+      var vc = window.InterviewVoiceController;
+      if (vc && vc.isLive && vc.isLive()) {
+        // Single entry point for all voice progression (Invariant 3/5) --
+        // Skip and Pass both arrive here identically; only wasSkipped
+        // differs, which only affects spoken wording, never the gating.
+        vc.notify({ questionId: question.id, text: question.text, turnId: turnId, wasSkipped: !!wasSkipped });
+        pendingAudioUrl = null; // Vapi owns speech now -- our own TTS clip (if any) must not fire later
+        if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.lockInput();
+        return;
       }
-      MedhaIQSync.reveal();
+      // No live voice -- preserve the exact legacy fallback behavior
+      // reveal() has always provided: a pre-rendered audio_url clip, if
+      // the backend supplied one for a text-only/no-voice session.
+      if (pendingAudioUrl) {
+        try { qAudioEl.src = pendingAudioUrl; qAudioEl.play().catch(function(){}); } catch(e){}
+        pendingAudioUrl = null;
+      }
     },
     reveal: function() {
       if (!pendingQuestion) return;
@@ -919,6 +924,11 @@
           catch (e) { console.warn('[Vapi] silenceCurrentSpeech: updateParticipant failed (non-fatal):', e); }
         }
       });
+      // INTENTIONAL CANCEL: release the controller's gate immediately --
+      // do not wait for a speech-end that this forced local mute may
+      // never cleanly emit. Without this, a queued request from the
+      // next question could stay stuck indefinitely.
+      InterviewVoiceController.onIntentionalCancel();
       slog('[Vapi] Current speech silenced locally (skip/submit)', 'info');
     } catch (e) { console.warn('[Vapi] silenceCurrentSpeech failed (non-fatal, no behavior change):', e); }
   }
@@ -955,6 +965,165 @@
   var aiIsSpeaking = false; // true between vapi 'speech-start' and 'speech-end' — guards verbal skip/submit commands
   var currentSpokenTurnId = null, currentSpokenQuestionId = null; // set by instructNext(), logged at speech-end for the final trace stage
 
+  // =====================================================================
+  // InterviewVoiceController -- single owner of the browser-side voice
+  // lifecycle. Implements Architecture Doc Revision 4:
+  //   - Question lifecycle owns progression (notify() is the ONLY entry
+  //     point that can cause forward motion); speech-start/speech-end/
+  //     call-end/error are OBSERVATIONS the controller consults, never
+  //     triggers that themselves advance anything (Invariant 4).
+  //   - Exactly ONE function calls vapi.say() for ANY question, Q1
+  //     included -- Q1's opening handshake calls the SAME notify() entry
+  //     point as every later question; it is simply the first caller
+  //     (Invariant 3).
+  //   - Question Version: a monotonically increasing number stamped on
+  //     every question change, checked immediately before ever actually
+  //     speaking -- a stale request is discarded silently (Invariant 2).
+  //   - Speech Correlation: the version of whichever request the
+  //     controller most recently actually spoke is remembered separately
+  //     as activeSpokenVersion. Incoming speech-start/speech-end events
+  //     are checked against it -- an event that doesn't match what the
+  //     controller believes is currently playing is logged and ignored,
+  //     never allowed to move the state machine (Invariant 6). This is
+  //     deliberately correlation against the controller's OWN record, not
+  //     an SDK-native id -- this exact deployed bundle carries no
+  //     per-utterance identifier to correlate against instead.
+  // =====================================================================
+  var InterviewVoiceController = (function () {
+    var SPEECH_STATE = { FREE: 'FREE', SPEAKING: 'SPEAKING', SPEAKING_PENDING: 'SPEAKING_PENDING' };
+    var speechState = SPEECH_STATE.FREE;
+    var CurrentQuestion = { questionId: null, version: 0, text: null, turnId: null };
+    var pendingRequest = null;       // { text, wasSkipped, turnId, questionId, version } | null
+    var activeSpokenVersion = null;  // version of whatever we most recently actually called vapi.say() for
+
+    function _speak(request) {
+      if (request.version !== CurrentQuestion.version) {
+        slog('[VoiceController] DISCARDED stale speech request (v' + request.version + ', current is v' + CurrentQuestion.version + '): questionId=' + request.questionId, 'info');
+        return;
+      }
+      activeSpokenVersion = request.version; // Speech Correlation: this is now the ONE request future events may be checked against
+      speechState = SPEECH_STATE.SPEAKING;
+      resumeAudioSubscription();
+      currentSpokenTurnId = request.turnId || null;
+      currentSpokenQuestionId = (request.questionId !== undefined && request.questionId !== null) ? request.questionId : null;
+      try {
+        var lead = request.wasSkipped ? 'No problem, let\u2019s move on. ' : '';
+        vapi.send({
+          type: 'add-message',
+          triggerResponseEnabled: false,
+          message: {
+            role: 'system',
+            content: 'Do not add any commentary, acknowledgment, or remarks of your own beyond exactly what you are about to be told to say next. Do not repeat, summarize, or reference any earlier question or answer.'
+          }
+        });
+        if (typeof vapi.say === 'function') {
+          var vapiPayload = lead + String(request.text);
+          safeHashTrace('5a_vapi_payload_raw_question_text', request.turnId, request.questionId, request.text);
+          safeHashTrace('5b_vapi_payload_final_with_prefix', request.turnId, request.questionId, vapiPayload, 'hasPrefix=' + (lead.length > 0));
+          safeVapiPathTrace('5_vapi_speech_path', request.turnId, request.questionId, 'vapi.say');
+          slog('[LIFECYCLE-TRACE] vapi.say() CALLED (InterviewVoiceController) at ' + Date.now() + ' turnId=' + request.turnId + ' questionId=' + request.questionId + ' version=' + request.version + ' text="' + vapiPayload.slice(0,60) + '..."', 'info');
+          vapi.say(vapiPayload);
+          slog('Forced speech via vapi.say()', 'ok');
+          if (request.turnId) slog('[turn-trace] TURN_ID='+request.turnId+' vapi.say(): QuestionId='+request.questionId, 'info');
+        } else {
+          safeVapiPathTrace('5_vapi_speech_path', request.turnId, request.questionId, 'fallback_add_message');
+          console.warn('[Vapi] vapi.say() unavailable on this SDK build -- falling back to context injection');
+          slog('WARNING: vapi.say() unavailable -- question sent as a suggestion only, not forced', 'err');
+          if (request.turnId) slog('[turn-trace] TURN_ID='+request.turnId+' vapi.say() UNAVAILABLE -- fallback used for QuestionId='+request.questionId, 'err');
+          vapi.send({
+            type: 'add-message',
+            message: {
+              role: 'system',
+              content: 'Now read aloud, verbatim and word for word, exactly this next question: "' + String(request.text).replace(/"/g, "'") + '". Say it once, then stop and listen.'
+            }
+          });
+        }
+      } catch (e) {
+        console.error('[Vapi] InterviewVoiceController._speak failed', e);
+      }
+    }
+
+    function _releaseAndMaybeSpeakPending(reason) {
+      speechState = SPEECH_STATE.FREE;
+      if (pendingRequest) {
+        var req = pendingRequest;
+        pendingRequest = null;
+        slog('[VoiceController] mic free (' + reason + ') -- speaking queued request: questionId=' + req.questionId, 'info');
+        _speak(req); // _speak() re-checks version -- safe even if stale by now
+      }
+    }
+
+    return {
+      notify: function (question) {
+        CurrentQuestion = {
+          questionId: question.questionId,
+          version: CurrentQuestion.version + 1,
+          text: question.text,
+          turnId: question.turnId
+        };
+        var request = {
+          text: CurrentQuestion.text,
+          wasSkipped: !!question.wasSkipped,
+          turnId: CurrentQuestion.turnId,
+          questionId: CurrentQuestion.questionId,
+          version: CurrentQuestion.version
+        };
+        if (speechState === SPEECH_STATE.FREE) {
+          _speak(request);
+        } else {
+          pendingRequest = request;
+          speechState = SPEECH_STATE.SPEAKING_PENDING;
+          slog('[VoiceController] speech request QUEUED (assistant still speaking) questionId=' + question.questionId + ' version=' + CurrentQuestion.version, 'info');
+        }
+        return true;
+      },
+
+      // Speech Correlation gate: an event not matching activeSpokenVersion
+      // is logged and ignored -- it does not belong to what we currently
+      // believe is playing, so it must not be allowed to move the state
+      // machine (Invariant 6).
+      onSpeechStart: function () {
+        // Speech Correlation: only meaningful if we're actually expecting
+        // this event (state SPEAKING). A speech-start arriving while
+        // already FREE (e.g. a duplicate/echoed event, or one that
+        // arrived after an intentional cancel already released the gate)
+        // does not belong to the controller's current activity and must
+        // not be trusted.
+        if (speechState !== SPEECH_STATE.SPEAKING) {
+          slog('[VoiceController] IGNORED speech-start -- does not correlate to an active request (state=' + speechState + ')', 'info');
+          return;
+        }
+        slog('[VoiceController] speech-start observed for active version ' + activeSpokenVersion, 'info');
+      },
+      onSpeechEnd: function () {
+        // Speech Correlation gate (Invariant 6): a speech-end that arrives
+        // while the controller is already FREE does not correlate to the
+        // active request -- it is a duplicate/delayed echo and must not be
+        // allowed to re-trigger pending-request logic a second time.
+        if (speechState !== SPEECH_STATE.SPEAKING && speechState !== SPEECH_STATE.SPEAKING_PENDING) {
+          slog('[VoiceController] IGNORED speech-end -- does not correlate to an active request (state=' + speechState + ')', 'info');
+          return;
+        }
+        _releaseAndMaybeSpeakPending('speech-end');
+      },
+      onCallEnd: function () {
+        pendingRequest = null;
+        _releaseAndMaybeSpeakPending('call-end');
+      },
+      onError: function () {
+        _releaseAndMaybeSpeakPending('error');
+      },
+      onIntentionalCancel: function () {
+        speechState = SPEECH_STATE.FREE;
+      },
+
+      isLive: function () { return state === STATES.LIVE && !!vapi; },
+      getCurrentQuestion: function () { return CurrentQuestion; },
+      getActiveSpokenVersion: function () { return activeSpokenVersion; } // exposed for the correlation checks at the vapi.on() call sites
+    };
+  })();
+  window.InterviewVoiceController = InterviewVoiceController;
+
   function setState(s,msg,isErr){
     state=s;
     btn.classList.toggle('live', s===STATES.LIVE);
@@ -969,95 +1138,7 @@
   /* ── Exposed to the main engine's MedhaIQSync so it can (a) check
      whether voice is actually live and (b) hand Vapi the exact question
      our backend chose, instead of letting the two AI systems diverge. ── */
-  window.MedhaIQVoice = {
-    isLive: function(){ return state === STATES.LIVE && !!vapi; },
-    /* v2.2 FIX — Vapi split-brain / 4-5s latency bug:
-       `vapi.send({type:'add-message', role:'system', ...})` (the previous
-       implementation) only INJECTS CONTEXT — it still requires Vapi's own
-       LLM turn-taking logic to decide when, and whether, to actually speak
-       the instructed text. That LLM-mediation is exactly what produced the
-       symptom: several seconds of latency while it "thought", and
-       occasional drift into a generic/hardcoded question instead of the
-       backend's exact text.
-       Vapi's Web SDK exposes a separate, documented method for this exact
-       case — `vapi.say(text)` — which invokes speech of the given text
-       DIRECTLY, bypassing LLM generation entirely. That is now the primary
-       mechanism. The system add-message is kept, but demoted to a short
-       anti-drift guard only (no longer carrying the question text itself),
-       sent first so it can never delay or precede the forced utterance. */
-    instructNext: function(questionText, wasSkipped, turnId, questionId){
-      safeHashTrace('4_before_instructNext', turnId, questionId, questionText);
-      resumeAudioSubscription(); // re-enable audio before speaking the new question
-      if (state !== STATES.LIVE || !vapi) return false;
-      try {
-        var lead = wasSkipped
-          ? 'No problem, let\u2019s move on. '
-          : '';
-        // Track the in-flight turn so the speech-end handler below can log
-        // the final stage of the trace against the same TURN_ID/QuestionId.
-        currentSpokenTurnId = turnId || null;
-        currentSpokenQuestionId = (questionId !== undefined && questionId !== null) ? questionId : null;
-        // Anti-drift guard only — no question text here, so there is
-        // nothing left for the LLM to mediate, paraphrase, or delay.
-        vapi.send({
-          type: 'add-message',
-          // FIX: without this flag, the Vapi SDK's default behavior lets
-          // the assistant's model take a free, unconstrained turn in
-          // response to this injected message — on EVERY question, right
-          // before the forced vapi.say() below. That free turn is a
-          // documented, concrete explanation for "Vapi says something
-          // different than the screen": the model generates its own
-          // response to this context injection, and it can win the race
-          // against the forced speech that follows. Setting this false
-          // makes the injection silent — no model turn, just context.
-          triggerResponseEnabled: false,
-          message: {
-            role: 'system',
-            content: 'Do not add any commentary, acknowledgment, or remarks of your own beyond exactly what you are about to be told to say next. Do not repeat, summarize, or reference any earlier question or answer.'
-          }
-        });
-        // Force deterministic, immediate speech of the EXACT backend text —
-        // this is the single source of truth for both the on-screen card
-        // and the spoken audio; no LLM step sits between them.
-        if (typeof vapi.say === 'function') {
-          var vapiPayload = lead + String(questionText);
-          safeHashTrace('5a_vapi_payload_raw_question_text', turnId, questionId, questionText);
-          safeHashTrace('5b_vapi_payload_final_with_prefix', turnId, questionId, vapiPayload, 'hasPrefix=' + (lead.length > 0));
-          safeVapiPathTrace('5_vapi_speech_path', turnId, questionId, 'vapi.say');
-          slog('[LIFECYCLE-TRACE] vapi.say() CALLED (instructNext) at ' + Date.now() + ' turnId=' + turnId + ' questionId=' + questionId + ' text="' + vapiPayload.slice(0,60) + '..."', 'info');
-          vapi.say(vapiPayload);
-          slog('Forced speech via vapi.say()', 'ok');
-          if (turnId) slog('[turn-trace] TURN_ID='+turnId+' vapi.say(): QuestionId='+questionId, 'info');
-        } else {
-          // Defensive fallback only, in case an older SDK build lacks
-          // say() — keeps the session functional rather than silent.
-          // IMPORTANT: this fallback is context injection, not forced
-          // speech — the model can still choose to ignore it, paraphrase
-          // it, or ask something else entirely. If you're seeing Vapi ask
-          // a generic/"standard" question that doesn't match the screen,
-          // check the Live Terminal / console for THIS warning — it means
-          // vapi.say() isn't available on the loaded SDK build
-          // (window.vapiSDK from html-script-tag), and every question in
-          // this session is running on the unreliable fallback path.
-          safeVapiPathTrace('5_vapi_speech_path', turnId, questionId, 'fallback_add_message');
-          console.warn('[Vapi] vapi.say() unavailable on this SDK build — falling back to context injection');
-          slog('WARNING: vapi.say() unavailable — question sent as a suggestion only, not forced', 'err');
-          if (turnId) slog('[turn-trace] TURN_ID='+turnId+' vapi.say() UNAVAILABLE — fallback used for QuestionId='+questionId, 'err');
-          vapi.send({
-            type: 'add-message',
-            message: {
-              role: 'system',
-              content: 'Now read aloud, verbatim and word for word, exactly this next question: "' + String(questionText).replace(/"/g, "'") + '". Say it once, then stop and listen.'
-            }
-          });
-        }
-        return true;
-      } catch (e) {
-        console.error('[Vapi] instructNext failed', e);
-        return false;
-      }
-    }
-  };
+
 
   function initVapi(){
     if(vapi||!window.vapiSDK)return;
@@ -1112,32 +1193,27 @@
       var _pname = String(window.MedhaIQ_PNAME || 'your interviewer');
       var _role  = String(window.MedhaIQ_ROLE  || '');
       var _level = String(window.MedhaIQ_LEVEL || '');
+      // Q1 is a deliberate bootstrap exception (Architecture Doc Rev 4,
+      // section 9): spoken from inside the call-start handshake, before
+      // InterviewVoiceController has any prior state to reason about.
+      // It is NOT a separate code path for actually speaking, though --
+      // it calls the SAME single entry point (notify()) every later
+      // question uses, so there remains exactly one function in this
+      // entire file that ever calls vapi.say() (Invariant 3). The
+      // persona-intro / catch-up prefix is composed here (Q1-specific
+      // wording) and passed as already-final text, with wasSkipped:false
+      // so the controller's own skip-prefix logic adds nothing further.
       try {
-        if (typeof vapi.say === 'function') {
-          var currentQ = String(window.MedhaIQ_CurrentQ || window.MedhaIQ_Q1 || '');
-          var opening = window.MedhaIQ_SessionAdvanced
-            ? 'Thanks, voice is on now \u2014 let\u2019s continue. Here\u2019s the current question again: '
-            : ('Hi, I\u2019m ' + _pname + '. Let\u2019s get started. ');
-          var _openingPayload = opening + currentQ;
-          safeHashTrace('5a_vapi_payload_raw_question_text', window.MedhaIQ_LastTurnId, null, currentQ);
-          safeHashTrace('5b_vapi_payload_final_with_prefix', window.MedhaIQ_LastTurnId, null, _openingPayload, 'hasPrefix=true (persona intro)');
-          safeVapiPathTrace('5_vapi_speech_path', window.MedhaIQ_LastTurnId, null, 'vapi.say');
-          slog('[LIFECYCLE-TRACE] vapi.say() CALLED (opening) at ' + Date.now() + ' text="' + _openingPayload.slice(0,60) + '..."', 'info');
-          vapi.say(_openingPayload);
-          slog('Opening question forced via vapi.say()', 'ok');
-        } else {
-          safeVapiPathTrace('5_vapi_speech_path', window.MedhaIQ_LastTurnId, null, 'fallback_add_message');
-          console.warn('[Vapi] vapi.say() unavailable on this SDK build — falling back to context injection');
-          slog('WARNING: vapi.say() unavailable — opening question sent as a suggestion only, not forced', 'err');
-          vapi.send({
-            type: 'add-message',
-            message: {
-              role: 'system',
-              content: 'Open with your assigned interviewer persona introduction in ONE short sentence, then read aloud, verbatim and word for word, exactly this question: "'
-                + String(window.MedhaIQ_CurrentQ || window.MedhaIQ_Q1 || '').replace(/"/g, "'") + '". Then stop and listen.'
-            }
-          });
-        }
+        var currentQ = String(window.MedhaIQ_CurrentQ || window.MedhaIQ_Q1 || '');
+        var opening = window.MedhaIQ_SessionAdvanced
+          ? 'Thanks, voice is on now \u2014 let\u2019s continue. Here\u2019s the current question again: '
+          : ('Hi, I\u2019m ' + _pname + '. Let\u2019s get started. ');
+        window.InterviewVoiceController.notify({
+          questionId: null,
+          text: opening + currentQ,
+          turnId: window.MedhaIQ_LastTurnId,
+          wasSkipped: false
+        });
       } catch (e) { console.error('[Vapi] opening speech failed', e); }
       try {
         vapi.send({
@@ -1291,34 +1367,42 @@
 
     vapi.on('speech-start', function() {
       slog('[LIFECYCLE-TRACE] speech-start fired at ' + Date.now() + ' (turnId=' + currentSpokenTurnId + ' questionId=' + currentSpokenQuestionId + ')', 'info');
+      InterviewVoiceController.onSpeechStart(); // observation only -- does not itself advance anything (Invariant 4)
       // Hard sync fix: Tell the orchestrator that the speaker audio track has started playing
       if (window.MedhaIQOrchestrator) {
         window.MedhaIQOrchestrator.interviewerStartedSpeaking();
       }
       assistantTranscriptBuf = ''; // fresh buffer — don't carry over last question's text
-      aiIsSpeaking = true;
+      aiIsSpeaking = true; // unchanged: still guards verbal skip/submit barge-in, a separate concern from the controller's own speechState
       sub.textContent = '● AI is speaking…';
     });
 
     vapi.on('speech-end', function() {
       slog('[LIFECYCLE-TRACE] speech-end fired at ' + Date.now() + ' actuallySpoken="' + (assistantTranscriptBuf||'').slice(0,80) + '..."', 'info');
-      aiIsSpeaking = false;
+      aiIsSpeaking = false; // unchanged: barge-in guard, separate from the controller
       sub.textContent = 'Your turn — speak clearly';
       if (currentSpokenTurnId) {
         slog('[turn-trace] TURN_ID='+currentSpokenTurnId+' Speech finished: QuestionId='+currentSpokenQuestionId, 'info');
       }
+      // This is an OBSERVATION consulted by the controller -- it may
+      // release the gate and speak a queued request, but the event itself
+      // never "advances" the interview (Invariant 4); question progression
+      // already happened earlier, in hold().
+      InterviewVoiceController.onSpeechEnd();
       // Input gate: the question has fully finished playing — unlock.
       if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.unlockInput();
     });
     
     vapi.on('call-end', function() {
       slog('[LIFECYCLE-TRACE] call-end fired at ' + Date.now(), 'info');
+      InterviewVoiceController.onCallEnd(); // reset speech ownership -- a dropped call has nothing left to finish speaking
       window.MedhaIQVoiceLive = false;
       setState(STATES.IDLE, 'Speak directly with your AI interviewer');
     });
 
     vapi.on('error',function(e){
       console.error('[Vapi]',e);
+      InterviewVoiceController.onError(); // treat as "mic not reliably busy" -- release rather than risk a permanent stall
       var msg='Connection error — retry';
       if(e&&e.message){
         if(/permission|not allowed/i.test(e.message)) msg='Microphone blocked — check browser settings';
