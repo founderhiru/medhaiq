@@ -67,7 +67,6 @@ app.use('/preview',        require('./routes/preview'));
 app.use('/api',            require('./routes/vapi'));
 app.use('/api/voice',      require('./routes/voice-tts'));   // PR3: ElevenLabs proxy, requireAuth-gated
 app.use('/debug/voice',    require('./routes/debug-voice')); // PR3: internal diagnostic page, requireFounder-gated
-app.use('/api/debug/elevenlabs/voices', require('./routes/debug-elevenlabs-voices')); // TEMPORARY -- delete once a working voice is identified
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/', async (req, res) => {
