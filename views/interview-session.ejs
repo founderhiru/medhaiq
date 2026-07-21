@@ -1003,7 +1003,7 @@
       var _voiceClientConfig = (window.MedhaIQVoice && window.MedhaIQVoice.VOICE_CLIENT_CONFIG) || {};
       var _ttsAdapter = new window.MedhaIQVoice.ElevenLabsTTSAdapter(
         { voice: _voiceClientConfig.defaultVoice, language: _voiceClientConfig.language, streaming: _voiceClientConfig.streaming },
-        { proxyUrl: '/api/voice/synthesize' }
+        { proxyUrl: '/api/voice/synthesize', timeoutMs: 20000 } // matches Render's VOICE_TTS_TIMEOUT_MS -- keep these two in sync
       );
       var _audioPlayer = new window.MedhaIQVoice.BrowserAudioPlayer();
       window.questionSpeechService = new window.MedhaIQVoice.QuestionSpeechService({
