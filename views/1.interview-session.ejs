@@ -1533,34 +1533,12 @@
       slog('[LIFECYCLE-TRACE] call-end fired at ' + Date.now(), 'info');
       InterviewVoiceController.onCallEnd(); // reset speech ownership -- a dropped call has nothing left to finish speaking
       window.MedhaIQVoiceLive = false;
-      // FIX (STT-side, mirrors the already-proven connectVoice() timeout
-      // fix above): call-end can fire for reasons other than the user
-      // deliberately ending the call -- e.g. "Meeting ended due to
-      // ejection". Without this, `vapi` stays truthy and internally
-      // believes it's still started, so initVapi() silently no-ops on
-      // the next click and vapi.start() returns immediately without
-      // actually reconnecting (same mechanism as the documented timeout
-      // bug this file already fixed once). Resetting here means a real
-      // reconnect becomes possible the next time the mic button is
-      // clicked, instead of a silent no-op that looks like it worked.
-      //
-      // Before the TTS pipeline redesign, this failure mode was hard to
-      // miss -- vapi.say() also died with the same connection, so the
-      // interviewer's voice stopping was an obvious, immediate signal.
-      // With tts_pipeline decoupling speech from Vapi entirely, TTS keeps
-      // working fine after an ejection, silently masking a dead mic --
-      // which is exactly why this went unnoticed until now.
-      try { vapi.stop(); } catch (e) {}
       setState(STATES.IDLE, 'Speak directly with your AI interviewer');
     });
 
     vapi.on('error',function(e){
       console.error('[Vapi]',e);
       InterviewVoiceController.onError(); // treat as "mic not reliably busy" -- release rather than risk a permanent stall
-      // Same reset as call-end above -- an error can also leave Vapi's
-      // internal `started` flag stuck true, silently no-op'ing the next
-      // reconnect attempt.
-      try { vapi.stop(); } catch (e2) {}
       var msg='Connection error — retry';
       if(e&&e.message){
         if(/permission|not allowed/i.test(e.message)) msg='Microphone blocked — check browser settings';
