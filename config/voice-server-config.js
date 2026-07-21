@@ -1,25 +1,22 @@
-// config/voice-config.js
+// config/voice-server-config.js
 //
 // PR1 of the MedhaIQ Voice Platform Architecture v1.0 (frozen).
-// See MedhaIQ_Voice_Platform_Architecture_v1.0.docx §7.
+// Server-side ONLY. Never require() this from anything that bridges
+// values into a view/response body wholesale (e.g. never
+// `res.render(..., { voiceConfig: VOICE_SERVER_CONFIG })`).
 //
-// Provider selection lives here, not hardcoded in services or routes
-// (Design Principle 7: Configuration over hardcoding). Switching
-// providers later (e.g. elevenlabs -> cartesia) is a change to this
-// file plus one new adapter -- never a change to InterviewVoiceController
-// or QuestionSpeechService.
+// Holds provider secrets. Splitting this from the browser-facing
+// public/js/voice/voice-client-config.js means browser code
+// structurally cannot read API keys, even by accident -- there is no
+// single VoiceConfig object that both sides share.
 //
-// NOT YET WIRED: nothing in server.js, routes/, or interview-session.ejs
-// reads this file as of PR1. It is added now so PR2/PR3 have a single,
-// already-reviewed place to read provider selection from -- this PR
-// introduces the file, not its consumption.
+// NOT YET WIRED: no route or service requires this in PR1. The actual
+// ElevenLabs network call (which needs this key) is a server-side
+// proxy route added in a later PR -- the browser's ElevenLabsTTSAdapter
+// will call that proxy, never ElevenLabs directly with this key.
 
-const VOICE_CONFIG = {
-  sttProvider: 'vapi',
-  ttsProvider: 'elevenlabs',
-  defaultVoice: 'Rachel',
-  language: 'en-US',
-  streaming: true,
+const VOICE_SERVER_CONFIG = {
+  elevenLabsApiKey: process.env.ELEVENLABS_API_KEY || null,
 };
 
-module.exports = { VOICE_CONFIG };
+module.exports = { VOICE_SERVER_CONFIG };
