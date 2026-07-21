@@ -115,6 +115,14 @@
     var token = this._requestToken;
     var self = this;
     var text = question && question.text;
+    var questionId = question && question.questionId;
+
+    // Requested diagnostic format: which question this request belongs to,
+    // and which token, at every decision point -- not just "synthesize
+    // started" in isolation. Logged here (not inside TTSAdapter/the proxy)
+    // because this is the one layer allowed to know "question" and "token"
+    // exist -- TTSAdapter must stay provider-agnostic (Design Principle 9).
+    console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' start');
 
     this._clearPendingTimeout(); // any previous request's timer is no longer relevant
 
@@ -126,6 +134,7 @@
       if (token !== self._requestToken) return; // already superseded/handled
       self._requestToken += 1; // invalidate -- a late synthesize() resolution must not play
       self._pendingTimeoutHandle = null;
+      console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' timeout (currentToken=' + self._requestToken + ')');
       var timeoutErr = new Error('QuestionSpeechService: onStarted was not received within ' + self._speakTimeoutMs + 'ms of speak()');
       timeoutErr.code = 'SPEAK_TIMEOUT';
       self._emitPlaybackError(timeoutErr);
@@ -136,8 +145,10 @@
         // A stop(), a newer speak(), or the timeout above already
         // superseded this request. Discard silently -- this is exactly
         // the race this service exists to guard against.
+        console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' discarded (stale, currentToken=' + self._requestToken + ')');
         return;
       }
+      console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' complete -- playing');
       self._clearPendingTimeout();
       self._audioPlayer.play(audioSource);
       self._startedCallbacks.forEach(function (cb) {
@@ -145,8 +156,10 @@
       });
     }).catch(function (err) {
       if (token !== self._requestToken) {
+        console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' error discarded (stale, currentToken=' + self._requestToken + '): ' + err.message);
         return; // superseded before the failure even arrived
       }
+      console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' error: ' + err.message);
       self._clearPendingTimeout();
       // PR3 change 1: synthesis failure is a playback error, not a
       // "finished" -- onFinished now means ONLY genuine natural
@@ -157,6 +170,7 @@
   };
 
   QuestionSpeechService.prototype.stop = function () {
+    console.log('[TTS] speechToken=' + this._requestToken + ' stop() -- invalidating (new currentToken=' + (this._requestToken + 1) + ')');
     this._requestToken += 1; // invalidate any in-flight synthesize() for the previous token
     this._clearPendingTimeout();
     this._audioPlayer.stop();

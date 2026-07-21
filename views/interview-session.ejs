@@ -638,7 +638,19 @@
     // should stop now, not finish on its own. Fail-safe: no-ops if the
     // bridge function isn't available for any reason.
     if (window.VOICE_PIPELINE_MODE === 'tts_pipeline' && window.questionSpeechService) {
-      try { window.questionSpeechService.stop(); } catch (e) { console.warn('[VoicePipeline] stop() on submit failed (non-fatal):', e); }
+      try {
+        window.questionSpeechService.stop();
+        // THE FIX: QuestionSpeechService.stop() only manages its own token +
+        // tells BrowserAudioPlayer to stop -- it has no way to reach into
+        // InterviewVoiceController. BrowserAudioPlayer.stop() deliberately
+        // never fires 'ended' (that's what makes stop() a real, synchronous
+        // guarantee), so onFinished never fires either. Without this call,
+        // speechState stays stuck at SPEAKING after any skip/submit that
+        // happens mid-utterance, and every subsequent notify() silently
+        // queues instead of speaking. Mirrors exactly what the legacy
+        // path's silenceCurrentSpeech() already does.
+        window.InterviewVoiceController.onIntentionalCancel();
+      } catch (e) { console.warn('[VoicePipeline] stop() on submit failed (non-fatal):', e); }
     } else if (typeof window.MedhaIQ_silenceCurrentSpeech === 'function') {
       try { window.MedhaIQ_silenceCurrentSpeech(); } catch (e) { console.warn('[Vapi] silence-on-submit failed (non-fatal):', e); }
     }
