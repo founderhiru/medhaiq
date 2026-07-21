@@ -20,7 +20,7 @@
   var VOICE_CLIENT_CONFIG = {
     sttProvider: 'vapi',
     ttsProvider: 'elevenlabs',
-    defaultVoice: 'Rachel',
+    defaultVoice: 'EIsgvJT3rwoPvRFG6c4n', // ElevenLabs Voice ID for "Clara"
     language: 'en-US',
     streaming: true,
   };
