@@ -169,84 +169,6 @@
     console.log('[TIMELINE] questionId=' + qid + ' step="' + step + '" ' + (ok ? '\u2705' : '\u274c') + (extra ? ' ' + extra : ''));
   };
 
-  // ══════════════════════════════════════════════════════════════════
-  // CandidateTurnComplete -- provider-independent turn-detection layer.
-  //
-  // Explicit architectural requirement: the Interview Engine must never
-  // depend on one specific Vapi callback again. Evidence gathered this
-  // session showed vapi.on('speech-start') is NOT reliably available --
-  // some sessions fire it repeatedly, others (confirmed via raw event
-  // instrumentation) never fire it at all. A design built on it alone
-  // has no fallback when it's absent.
-  //
-  // This module is the single source of truth for "has the candidate
-  // finished their turn." It combines whatever signals are ACTUALLY
-  // available today, using neither exclusively:
-  //   1. FAST PATH (optional): if speech-start ever fires, that's Vapi's
-  //      own endpointing telling us the turn just ended -- take it
-  //      immediately, don't wait.
-  //   2. GUARANTEED FALLBACK: every real transcript event (partial or
-  //      final) resets a short debounce. If no further transcript
-  //      activity arrives within TURN_SILENCE_MS, the turn is declared
-  //      complete on that basis alone -- this works even in a session
-  //      where speech-start never fires at all, which is exactly the
-  //      gap the old design had no answer for. This is the same
-  //      underlying concept as Deepgram's own UtteranceEnd (a
-  //      silence-duration heuristic) -- correctly implemented here, at
-  //      the turn-detection layer, rather than banned outright; the
-  //      difference from a "polling timer" is that this is a real
-  //      debounce keyed off genuine transcript activity, not an
-  //      artificial interval unrelated to anything the candidate did.
-  //
-  // The Interview Engine (auto-submit logic, below) listens ONLY to
-  // onTurnComplete() -- it has no knowledge of speech-start, Vapi, or
-  // any other provider-specific event. Swapping STT providers in the
-  // future only means feeding this module's notifyTranscriptActivity()
-  // from wherever the new provider's transcripts arrive.
-  var CandidateTurnComplete = (function () {
-    var TURN_SILENCE_MS = 1200; // the one tunable knob if this needs adjusting later
-    var debounceHandle = null;
-    var callbacks = [];
-    var turnActive = false; // true once real transcript activity has been seen for the current turn
-
-    function fire(source) {
-      if (!turnActive) return; // nothing to complete -- avoids a stray fast-path signal firing on an empty/not-yet-started turn
-      turnActive = false;
-      if (debounceHandle) { clearTimeout(debounceHandle); debounceHandle = null; }
-      console.log('[CandidateTurnComplete] fired via ' + source + ' at ' + Date.now());
-      callbacks.forEach(function (cb) {
-        try { cb({ source: source }); } catch (e) { /* isolate listener errors */ }
-      });
-    }
-
-    return {
-      // Call on EVERY real transcript event (partial or final) for the
-      // candidate. Marks the turn as genuinely in-progress and
-      // (re)schedules the guaranteed fallback.
-      notifyTranscriptActivity: function () {
-        turnActive = true;
-        if (debounceHandle) clearTimeout(debounceHandle);
-        debounceHandle = setTimeout(function () { fire('silence-debounce'); }, TURN_SILENCE_MS);
-      },
-      // Call when any optional, provider-specific fast-path signal
-      // fires (today: Vapi's speech-start). Fires immediately if a
-      // turn is genuinely in progress; otherwise a harmless no-op.
-      notifyFastPathSignal: function (label) {
-        fire(label || 'fast-path');
-      },
-      // Reset when a new question begins being asked -- clears any
-      // stale debounce/turn-state left over from the previous turn.
-      reset: function () {
-        turnActive = false;
-        if (debounceHandle) { clearTimeout(debounceHandle); debounceHandle = null; }
-      },
-      onTurnComplete: function (cb) {
-        if (typeof cb === 'function') callbacks.push(cb);
-      }
-    };
-  })();
-  window.CandidateTurnComplete = CandidateTurnComplete;
-
   // Impossible-to-misinterpret startup banner -- fires immediately, before
   // either IIFE runs, regardless of Vapi/ElevenLabs connection state. If
   // this doesn't show tts_pipeline after flipping the Render env var, the
@@ -1508,7 +1430,6 @@
       assistantTranscriptBuf = '';
       window.aiIsSpeaking = true;
       sub.textContent = '● AI is speaking…';
-      window.CandidateTurnComplete.reset(); // a new question just started -- clear any stale turn-state from the previous one
     });
     window.questionSpeechService.onFinished(function () {
       slog('[LIFECYCLE-TRACE] QuestionSpeechService onFinished fired at ' + Date.now(), 'info');
@@ -1524,24 +1445,6 @@
       sub.textContent = 'Voice hiccup — continuing by text';
       InterviewVoiceController.onPlaybackError(err);
       if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.unlockInput();
-    });
-
-    // ── Interview Engine's ONLY connection to turn-detection ──
-    // Per explicit architectural requirement: this listens to the
-    // provider-independent CandidateTurnComplete event exclusively --
-    // it has no knowledge of speech-start, Vapi, or any other
-    // provider-specific signal. If the STT provider changes entirely in
-    // the future, this line never needs to change.
-    window.CandidateTurnComplete.onTurnComplete(function (info) {
-      try {
-        var _submitBtn = document.getElementById('submitBtn');
-        if (_submitBtn && !_submitBtn.disabled && typeof window.MedhaIQ_requestSubmit === 'function') {
-          console.log('[AUTO-SUBMIT] triggered via CandidateTurnComplete (source=' + info.source + ') at ' + Date.now());
-          window.MedhaIQ_requestSubmit();
-        } else {
-          console.log('[AUTO-SUBMIT] CandidateTurnComplete fired but answer box has no content yet (source=' + info.source + ') -- nothing to submit');
-        }
-      } catch (e) { console.warn('[AUTO-SUBMIT] failed (non-fatal, Submit button remains available):', e); }
     });
   }
 
@@ -1668,38 +1571,16 @@
       // wording) and passed as already-final text, with wasSkipped:false
       // so the controller's own skip-prefix logic adds nothing further.
       try {
-        var isReconnect = window._vapiConnectionAttempts && window._vapiConnectionAttempts > 1;
         var currentQ = String(window.MedhaIQ_CurrentQ || window.MedhaIQ_Q1 || '');
-        if (isReconnect) {
-          // P1 fix: no spoken announcement on a genuine reconnect of an
-          // already-working voice session. The current question is
-          // already visible on screen the entire time -- the mic
-          // silently healing in the background (including our own
-          // automatic reconnect logic, which can retry repeatedly)
-          // needs no audible interruption.
-          console.log('[RECONNECT] skipping spoken re-announcement (attempt #' + window._vapiConnectionAttempts + ') -- question stays visible on screen, no audible interruption needed');
-        } else if (window.MedhaIQ_SessionAdvanced) {
-          // Distinct from a reconnect: this is the FIRST time voice has
-          // ever connected this session, but the candidate already
-          // progressed via text before turning it on. They've never
-          // heard anything in this modality yet, so a short orientation
-          // is genuinely useful here -- unlike a background reconnect,
-          // this isn't noise. Kept brief rather than removed entirely.
-          window.InterviewVoiceController.notify({
-            questionId: null,
-            text: 'Voice is on now \u2014 here\u2019s the current question: ' + currentQ,
-            turnId: window.MedhaIQ_LastTurnId,
-            wasSkipped: false
-          });
-        } else {
-          var opening = 'Hi, I\u2019m ' + _pname + '. Let\u2019s get started. ';
-          window.InterviewVoiceController.notify({
-            questionId: null,
-            text: opening + currentQ,
-            turnId: window.MedhaIQ_LastTurnId,
-            wasSkipped: false
-          });
-        }
+        var opening = window.MedhaIQ_SessionAdvanced
+          ? 'Thanks, voice is on now \u2014 let\u2019s continue. Here\u2019s the current question again: '
+          : ('Hi, I\u2019m ' + _pname + '. Let\u2019s get started. ');
+        window.InterviewVoiceController.notify({
+          questionId: null,
+          text: opening + currentQ,
+          turnId: window.MedhaIQ_LastTurnId,
+          wasSkipped: false
+        });
       } catch (e) { console.error('[Vapi] opening speech failed', e); }
       try {
         vapi.send({
@@ -1880,19 +1761,23 @@
           window.timelineLog('star_update_dispatched', currentSpokenQuestionId, true, 'inputLength=' + input.value.length);
           input.dispatchEvent(new Event('input', { bubbles: true }));
 
-          // Feed the provider-independent turn detector -- this final
-          // chunk landing is real transcript activity, whether or not
-          // this turns out to be the last chunk of the turn. The
-          // detector's own debounce (or a fast-path signal, if one
-          // fires) decides when the turn is actually complete; this
-          // file no longer makes that decision inline.
-          window.CandidateTurnComplete.notifyTranscriptActivity();
+          // AUTO-SUBMIT RACE FIX (other direction): if speech-start
+          // already fired and found the box empty (flag armed above),
+          // this transcript chunk landing is the moment the box finally
+          // has real content -- complete the auto-submit here instead
+          // of leaving the candidate stuck waiting for manual Submit.
+          if (window._pendingAutoSubmitOnTranscript) {
+            window._pendingAutoSubmitOnTranscript = false;
+            try {
+              var _submitBtn2 = document.getElementById('submitBtn');
+              if (_submitBtn2 && !_submitBtn2.disabled && typeof window.MedhaIQ_requestSubmit === 'function') {
+                console.log('[AUTO-SUBMIT] completed on final-transcript arrival (pending flag from earlier speech-start) at ' + Date.now());
+                window.MedhaIQ_requestSubmit();
+              }
+            } catch (e) { console.warn('[AUTO-SUBMIT] pending completion failed (non-fatal, Submit button remains available):', e); }
+          }
         } else if (window.MedhaIQ_liveStar) {
           window.MedhaIQ_liveStar((input.value ? input.value + ' ' : '') + (message.transcript || ''));
-          // Partial transcripts are real activity too -- feeding them in
-          // means the debounce correctly keeps resetting while the
-          // candidate is still mid-sentence, not just on final chunks.
-          window.CandidateTurnComplete.notifyTranscriptActivity();
         }
       }
     });
@@ -1912,16 +1797,36 @@
       slog('[LIFECYCLE-TRACE] speech-start fired at ' + Date.now() + ' (turnId=' + currentSpokenTurnId + ' questionId=' + currentSpokenQuestionId + ')', 'info');
       if (window.VOICE_PIPELINE_MODE !== 'legacy_vapi') {
         slog('[LIFECYCLE-TRACE] speech-start ignored for UI/controller purposes -- tts_pipeline active, Vapi is supposed to be STT-only (see SPEECH SOURCE log above for confirmed leak evidence)', 'info');
-        // ARCHITECTURAL FIX (per explicit requirement): this no longer
-        // decides anything itself. speech-start firing here means
-        // Vapi's own endpointing decided the candidate is done talking
-        // -- that's real, useful information -- but it is only ONE of
-        // potentially several signals CandidateTurnComplete considers.
-        // If this event never fires in a given session (confirmed to
-        // happen), the module's own transcript-activity debounce is
-        // still sufficient on its own. This file no longer contains any
-        // logic that only works when speech-start happens to be present.
-        window.CandidateTurnComplete.notifyFastPathSignal('vapi-speech-start');
+        // AUTO-SUBMIT FIX: speech-start firing here means Vapi's own
+        // endpointing/turn-detection just decided the candidate finished
+        // speaking (that's what triggers its model to respond in the
+        // first place) -- its audio is muted, but the underlying
+        // decision already happened. This reuses that exact signal
+        // instead of reimplementing turn detection with a timer.
+        //
+        // RACE FIX: speech-start can fire before OUR OWN final-transcript
+        // handler has finished writing the answer into the box (Vapi's
+        // internal endpointing and our own STT-transcript event are two
+        // independent event sources with no guaranteed order). Checking
+        // submitBtn.disabled here alone silently no-ops whenever
+        // speech-start wins that race -- confirmed directly in a real
+        // session log: speech-start fired repeatedly, but the answer
+        // never auto-submitted. Fix: if the box is empty right now, set
+        // a flag instead of giving up -- the final-transcript handler
+        // (below, same message event stream) checks this flag the
+        // moment it finishes writing real text, and completes the
+        // auto-submit itself. Whichever of the two events arrives
+        // second is the one that actually triggers it. No timer.
+        try {
+          var _submitBtn = document.getElementById('submitBtn');
+          if (_submitBtn && !_submitBtn.disabled && typeof window.MedhaIQ_requestSubmit === 'function') {
+            console.log('[AUTO-SUBMIT] triggered by Vapi end-of-turn signal (speech-start) at ' + Date.now());
+            window.MedhaIQ_requestSubmit();
+          } else {
+            console.log('[AUTO-SUBMIT] speech-start arrived before the answer box had content -- arming pending flag for the final-transcript handler at ' + Date.now());
+            window._pendingAutoSubmitOnTranscript = true;
+          }
+        } catch (e) { console.warn('[AUTO-SUBMIT] failed (non-fatal, Submit button remains available):', e); }
         return;
       }
       InterviewVoiceController.onSpeechStart(); // observation only -- does not itself advance anything (Invariant 4)
