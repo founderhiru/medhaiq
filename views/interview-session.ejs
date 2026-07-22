@@ -1757,6 +1757,22 @@
       slog('[LIFECYCLE-TRACE] speech-start fired at ' + Date.now() + ' (turnId=' + currentSpokenTurnId + ' questionId=' + currentSpokenQuestionId + ')', 'info');
       if (window.VOICE_PIPELINE_MODE !== 'legacy_vapi') {
         slog('[LIFECYCLE-TRACE] speech-start ignored for UI/controller purposes -- tts_pipeline active, Vapi is supposed to be STT-only (see SPEECH SOURCE log above for confirmed leak evidence)', 'info');
+        // AUTO-SUBMIT FIX: speech-start firing here means Vapi's own
+        // endpointing/turn-detection just decided the candidate finished
+        // speaking (that's what triggers its model to respond in the
+        // first place) -- its audio is muted, but the underlying
+        // decision already happened. This reuses that exact signal
+        // instead of reimplementing turn detection with a timer. Only
+        // fires if there's real, un-submitted content waiting -- an
+        // empty/trivial box (nothing said, or already submitted) is
+        // left alone.
+        try {
+          var _submitBtn = document.getElementById('submitBtn');
+          if (_submitBtn && !_submitBtn.disabled && typeof window.MedhaIQ_requestSubmit === 'function') {
+            console.log('[AUTO-SUBMIT] triggered by Vapi end-of-turn signal (speech-start) at ' + Date.now());
+            window.MedhaIQ_requestSubmit();
+          }
+        } catch (e) { console.warn('[AUTO-SUBMIT] failed (non-fatal, Submit button remains available):', e); }
         return;
       }
       InterviewVoiceController.onSpeechStart(); // observation only -- does not itself advance anything (Invariant 4)
