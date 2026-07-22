@@ -1760,6 +1760,22 @@
           input.value = (input.value ? input.value.replace(/\s+$/, '') + ' ' : '') + chunk;
           window.timelineLog('star_update_dispatched', currentSpokenQuestionId, true, 'inputLength=' + input.value.length);
           input.dispatchEvent(new Event('input', { bubbles: true }));
+
+          // AUTO-SUBMIT RACE FIX (other direction): if speech-start
+          // already fired and found the box empty (flag armed above),
+          // this transcript chunk landing is the moment the box finally
+          // has real content -- complete the auto-submit here instead
+          // of leaving the candidate stuck waiting for manual Submit.
+          if (window._pendingAutoSubmitOnTranscript) {
+            window._pendingAutoSubmitOnTranscript = false;
+            try {
+              var _submitBtn2 = document.getElementById('submitBtn');
+              if (_submitBtn2 && !_submitBtn2.disabled && typeof window.MedhaIQ_requestSubmit === 'function') {
+                console.log('[AUTO-SUBMIT] completed on final-transcript arrival (pending flag from earlier speech-start) at ' + Date.now());
+                window.MedhaIQ_requestSubmit();
+              }
+            } catch (e) { console.warn('[AUTO-SUBMIT] pending completion failed (non-fatal, Submit button remains available):', e); }
+          }
         } else if (window.MedhaIQ_liveStar) {
           window.MedhaIQ_liveStar((input.value ? input.value + ' ' : '') + (message.transcript || ''));
         }
@@ -1786,15 +1802,29 @@
         // speaking (that's what triggers its model to respond in the
         // first place) -- its audio is muted, but the underlying
         // decision already happened. This reuses that exact signal
-        // instead of reimplementing turn detection with a timer. Only
-        // fires if there's real, un-submitted content waiting -- an
-        // empty/trivial box (nothing said, or already submitted) is
-        // left alone.
+        // instead of reimplementing turn detection with a timer.
+        //
+        // RACE FIX: speech-start can fire before OUR OWN final-transcript
+        // handler has finished writing the answer into the box (Vapi's
+        // internal endpointing and our own STT-transcript event are two
+        // independent event sources with no guaranteed order). Checking
+        // submitBtn.disabled here alone silently no-ops whenever
+        // speech-start wins that race -- confirmed directly in a real
+        // session log: speech-start fired repeatedly, but the answer
+        // never auto-submitted. Fix: if the box is empty right now, set
+        // a flag instead of giving up -- the final-transcript handler
+        // (below, same message event stream) checks this flag the
+        // moment it finishes writing real text, and completes the
+        // auto-submit itself. Whichever of the two events arrives
+        // second is the one that actually triggers it. No timer.
         try {
           var _submitBtn = document.getElementById('submitBtn');
           if (_submitBtn && !_submitBtn.disabled && typeof window.MedhaIQ_requestSubmit === 'function') {
             console.log('[AUTO-SUBMIT] triggered by Vapi end-of-turn signal (speech-start) at ' + Date.now());
             window.MedhaIQ_requestSubmit();
+          } else {
+            console.log('[AUTO-SUBMIT] speech-start arrived before the answer box had content -- arming pending flag for the final-transcript handler at ' + Date.now());
+            window._pendingAutoSubmitOnTranscript = true;
           }
         } catch (e) { console.warn('[AUTO-SUBMIT] failed (non-fatal, Submit button remains available):', e); }
         return;

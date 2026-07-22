@@ -138,9 +138,19 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
     if (String(session.user_id) !== String(userId)) return res.status(403).send('Forbidden');
 
     const questions = await getSessionQuestions(req.params.id);
-    const currentQ = questions.find(q => q.answer_text === null || q.answer_text === undefined)
-      || questions[questions.length - 1];
-    if (!currentQ) return res.redirect('/interview/report/' + req.params.id);
+    const currentQ = questions.find(q => q.answer_text === null || q.answer_text === undefined);
+    // ROOT CAUSE FIX (P0 "Question 6 of 5"): the old fallback --
+    // `|| questions[questions.length - 1]` -- made currentQ truthy even
+    // when every question was already answered (it just grabbed Q5
+    // again), which made the `if (!currentQ)` redirect-to-report guard
+    // below it unreachable for any completed session. Checking for a
+    // genuine unanswered question, and independently checking the
+    // session's actual persisted status (already correctly set to
+    // 'completed' by completeSession() -- confirmed in routes/interview.js),
+    // is what actually distinguishes "still in progress" from "done."
+    if (!currentQ || session.status !== 'active') {
+      return res.redirect('/interview/report/' + req.params.id);
+    }
 
     const { PERSONAS } = require('./services/interview');
     const persona = PERSONAS[session.persona_id] || PERSONAS.alex_chen;
