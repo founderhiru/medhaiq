@@ -343,11 +343,6 @@
   window.MedhaIQ_ROLE  = ROLE;
   window.MedhaIQ_LEVEL = LEVEL;
   window.MedhaIQ_PNAME = PNAME;
-  // Dynamic Interviewer Greeting bridge -- server.js only ever computes a
-  // real value for the render that starts a fresh session (answeredCount
-  // === 0); every other render passes null, so this can never resurface
-  // mid-interview even on a reload or reconnect.
-  window.MedhaIQ_GREETING = <%- JSON.stringify(typeof greetingText !== 'undefined' ? greetingText : null) %>;
 
   /* Persona (PNAME/PTITLE/PINIT/PCOL) is retained purely as internal
      session data for scoring/report generation — it is never rendered.
@@ -1697,12 +1692,7 @@
             wasSkipped: false
           });
         } else {
-          // Dynamic Interviewer Greeting: one of six rotating templates,
-          // resolved server-side (services/interview-greetings.js) with
-          // the persona's first name already substituted. Falls back to
-          // the original fixed greeting if unavailable for any reason --
-          // never silently says nothing here.
-          var opening = window.MedhaIQ_GREETING || ('Hi, I\u2019m ' + _pname + '. Let\u2019s get started. ');
+          var opening = 'Hi, I\u2019m ' + _pname + '. Let\u2019s get started. ';
           window.InterviewVoiceController.notify({
             questionId: null,
             text: opening + currentQ,

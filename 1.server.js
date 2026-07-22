@@ -171,26 +171,6 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
     };
     const personaStyleLabel = STYLE_LABELS[session.persona_id] || 'Helpful';
 
-    // Dynamic Interviewer Greeting — only ever selected for the render
-    // that starts a fresh session (Q1, nothing answered yet). Any
-    // reload of a later question renders greetingText = null, so the
-    // greeting can never resurface mid-interview (see the
-    // window.MedhaIQ_GREETING bridge in interview-session.ejs, which
-    // gates on this being truthy).
-    const { pickGreetingIndex, resolveGreeting } = require('./services/interview-greetings');
-    let greetingText = null;
-    if (answeredCount === 0) {
-      const rawLastIdx = parseInt(req.cookies.mh_last_greeting_idx, 10);
-      const lastIdx = Number.isInteger(rawLastIdx) ? rawLastIdx : null;
-      const greetingIdx = pickGreetingIndex(lastIdx);
-      greetingText = resolveGreeting(greetingIdx, persona.name);
-      res.cookie('mh_last_greeting_idx', String(greetingIdx), {
-        httpOnly: true,
-        maxAge: 365 * 24 * 60 * 60 * 1000,
-        sameSite: 'lax',
-      });
-    }
-
    res.render('interview-session', {
   sessionId:        req.params.id,
   questionId:       currentQ.id,
@@ -203,7 +183,6 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
   personaInitials:  initials,
   personaStyleColor:persona.styleColor,
   personaStyleLabel,
-  greetingText,
   roleTitle:        session.role_title || '',
   experienceLevel:  session.experience_level || '',
   orgPreset:        session.org_preset || '',
