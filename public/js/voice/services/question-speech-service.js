@@ -156,7 +156,15 @@
       timeoutErr.code = 'SPEAK_TIMEOUT';
       self._emitPlaybackError(timeoutErr);
     }, this._speakTimeoutMs);
-
+console.log(
+  "[TTS] synthesize",
+  {
+    questionId: questionId,
+    token: token,
+    textLength: text.length,
+    preview: text.substring(0, 50)
+  }
+);
     this._ttsAdapter.synthesize(text, abortController ? { signal: abortController.signal } : undefined).then(function (audioSource) {
       if (token !== self._requestToken) {
         // A stop(), a newer speak(), or the timeout above already
