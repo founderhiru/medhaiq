@@ -1444,6 +1444,23 @@
         // Model/Voice remain active server-side. A hard local guarantee,
         // not a prompt-based request.
         permanentlyMuteVapiAssistantAudio();
+        // CONFIRMED RACE CONDITION FIX: Vapi's own SDK source
+        // (client-sdk-web/vapi.ts) subscribes newly-joined participants
+        // to their tracks via its own 'participant-joined' handler,
+        // independent of and not necessarily bundled into call-start.
+        // If the assistant ("Vapi Speaker") participant joins after the
+        // line above already ran, that one-shot call finds zero remote
+        // participants and silently does nothing -- the assistant's
+        // audio would then play, unmuted, via Vapi's own internal
+        // track-started handler. Re-running the mute on every
+        // participant-joined closes this gap completely.
+        try {
+          if (vapi && vapi.call && typeof vapi.call.on === 'function') {
+            vapi.call.on('participant-joined', function () {
+              permanentlyMuteVapiAssistantAudio();
+            });
+          }
+        } catch (e) { console.warn('[Vapi] could not attach participant-joined mute listener (non-fatal):', e); }
       }
       if (window._vapiConnectionAttempts === 1) {
         console.log('[STT]\nconnected');
