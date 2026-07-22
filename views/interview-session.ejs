@@ -629,6 +629,26 @@
      regardless of which control the candidate mashes. */
   var isSubmitting = false;
 
+  // Item 2 (rotating acknowledgements): a small natural-sounding set,
+  // picked randomly but never the same phrase twice in a row -- avoids
+  // the "Understood, let's move on" sounding robotic by the third skip.
+  var SKIP_ACK_PHRASES = [
+    "Alright, let's continue.",
+    "That's fine. Let's move to the next question.",
+    "We'll come back to that later. Here's the next one.",
+    "No problem. Let's keep going.",
+    "Let's move ahead.",
+    "That's okay. Here's your next question."
+  ];
+  var _lastSkipAckIndex = -1;
+  function pickSkipAcknowledgement() {
+    if (SKIP_ACK_PHRASES.length <= 1) return SKIP_ACK_PHRASES[0];
+    var idx;
+    do { idx = Math.floor(Math.random() * SKIP_ACK_PHRASES.length); } while (idx === _lastSkipAckIndex);
+    _lastSkipAckIndex = idx;
+    return SKIP_ACK_PHRASES[idx];
+  }
+
   async function submitAnswer(skip) {
     if (isSubmitting) return;
     isSubmitting = true;
@@ -664,7 +684,16 @@
         // plumbing needed for that to work correctly.
         if (skip) {
           try {
-            window.questionSpeechService.speak({ text: "Understood, let's move to the next question.", questionId: 'skip-ack', turnId: null });
+            // Item 3: the final question deserves a real wrap-up, not a
+            // "let's move on" that implies another question is coming.
+            // QN/MAXQ are already tracked client-side (same scope as
+            // submitAnswer), so we know this before the backend even
+            // responds -- no need to wait for data.sessionEnded to decide
+            // what to say.
+            var ackText = (QN >= MAXQ)
+              ? "That's the final question. I'll prepare your report now."
+              : pickSkipAcknowledgement();
+            window.questionSpeechService.speak({ text: ackText, questionId: 'skip-ack', turnId: null });
           } catch (e) { console.warn('[VoicePipeline] skip acknowledgement failed (non-fatal):', e); }
         }
       } catch (e) { console.warn('[VoicePipeline] stop() on submit failed (non-fatal):', e); }

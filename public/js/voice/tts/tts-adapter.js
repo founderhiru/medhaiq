@@ -20,10 +20,16 @@
   /**
    * @interface TTSAdapter
    *
-   * synthesize(text): Promise<AudioSource>
+   * synthesize(text, options): Promise<AudioSource>
    *   Given plain text, resolve to an AudioSource that BrowserAudioPlayer
    *   can play (e.g. a URL, Blob, or ArrayBuffer -- finalized in PR2).
    *   Must not play, queue, or cache audio itself.
+   *
+   *   options.signal (optional, added post-PR3): an AbortSignal the
+   *   caller may pass so a superseded request can actually cancel the
+   *   underlying network call, rather than letting it run to completion
+   *   in the background. Additive, backward-compatible -- adapters that
+   *   don't check it simply ignore it.
    */
   function TTSAdapter() {
     if (this.constructor === TTSAdapter) {

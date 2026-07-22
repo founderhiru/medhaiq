@@ -87,6 +87,7 @@
 
     this._requestToken = 0;
     this._pendingTimeoutHandle = null;
+    this._activeAbortController = null;
     this._startedCallbacks = [];
     this._finishedCallbacks = [];
     this._playbackErrorCallbacks = [];
@@ -111,6 +112,22 @@
   };
 
   QuestionSpeechService.prototype.speak = function (question) {
+    // Root-cause fix (traced from the "Q4 mic dead / Q5 silent after
+    // rapid skips" investigation): a superseded request's underlying
+    // network fetch previously kept running in the background for up
+    // to the adapter's full timeout, even though this service had
+    // already logically moved on. Under rapid skipping (2 speak() calls
+    // per skip -- acknowledgement + next question), several of these
+    // could be simultaneously in flight, competing for the browser's
+    // limited per-origin concurrent connection pool and starving the
+    // CURRENT request behind now-irrelevant ones. Aborting the previous
+    // controller here actually cancels that fetch immediately.
+    if (this._activeAbortController) {
+      try { this._activeAbortController.abort(); } catch (e) { /* already aborted/settled */ }
+    }
+    var abortController = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    this._activeAbortController = abortController;
+
     this._requestToken += 1;
     var token = this._requestToken;
     var self = this;
@@ -140,7 +157,7 @@
       self._emitPlaybackError(timeoutErr);
     }, this._speakTimeoutMs);
 
-    this._ttsAdapter.synthesize(text).then(function (audioSource) {
+    this._ttsAdapter.synthesize(text, abortController ? { signal: abortController.signal } : undefined).then(function (audioSource) {
       if (token !== self._requestToken) {
         // A stop(), a newer speak(), or the timeout above already
         // superseded this request. Discard silently -- this is exactly
@@ -171,6 +188,10 @@
 
   QuestionSpeechService.prototype.stop = function () {
     console.log('[TTS] speechToken=' + this._requestToken + ' stop() -- invalidating (new currentToken=' + (this._requestToken + 1) + ')');
+    if (this._activeAbortController) {
+      try { this._activeAbortController.abort(); } catch (e) { /* already aborted/settled */ }
+      this._activeAbortController = null;
+    }
     this._requestToken += 1; // invalidate any in-flight synthesize() for the previous token
     this._clearPendingTimeout();
     this._audioPlayer.stop();
