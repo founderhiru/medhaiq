@@ -157,6 +157,18 @@
   window.VOICE_PIPELINE_MODE = (window.VOICE_PLAYBACK_PROVIDER === 'tts_pipeline') ? 'tts_pipeline' : 'legacy_vapi';
   window.questionSpeechService = null; // constructed later, in the Vapi Voice State Machine block, if VOICE_PIPELINE_MODE is tts_pipeline
 
+  // Diagnostic-only timeline tracker (no behavior change). Correlates
+  // every checkpoint of a single turn by questionId, so the console
+  // shows exactly where a given turn's journey stopped, rather than
+  // leaving that to be inferred from scattered, uncorrelated logs.
+  window._timelineSteps = window._timelineSteps || {}; // { questionId: { stepName: true/false, ... } }
+  window.timelineLog = function (step, questionId, ok, extra) {
+    var qid = (questionId === undefined || questionId === null) ? '(none)' : questionId;
+    if (!window._timelineSteps[qid]) window._timelineSteps[qid] = {};
+    window._timelineSteps[qid][step] = ok;
+    console.log('[TIMELINE] questionId=' + qid + ' step="' + step + '" ' + (ok ? '\u2705' : '\u274c') + (extra ? ' ' + extra : ''));
+  };
+
   // Impossible-to-misinterpret startup banner -- fires immediately, before
   // either IIFE runs, regardless of Vapi/ElevenLabs connection state. If
   // this doesn't show tts_pipeline after flipping the Render env var, the
@@ -749,6 +761,7 @@
       setAIState('GENERATING');
 
       if (data.turnId) slog('[turn-trace] TURN_ID='+data.turnId+' Frontend received: QuestionId='+(data.question ? data.question.id : QID), 'info');
+      window.timelineLog('backend_generated_question', (data.question ? data.question.id : QID), !!(data.text || data.question), 'sessionEnded=' + !!data.sessionEnded);
       window.MedhaIQ_LastTurnId = data.turnId || null; // diagnostic correlation only — read by stage 3, which has no turnId parameter of its own
       try { hashTrace('2_frontend_json_parsed', data.turnId, data.question ? data.question.id : QID, data.text || (data.question ? data.question.text : '')); }
       catch (e) { console.warn('[HASH-TRACE] stage 2 failed (non-fatal, instrumentation only):', e); }
@@ -1050,6 +1063,35 @@
   }
   window.MedhaIQ_silenceCurrentSpeech = silenceCurrentSpeech;
 
+  // Vapi has no supported platform-level "transcription only" assistant
+  // mode (Model/Transcriber/Voice are always co-present per Vapi's own
+  // docs) -- prompting the assistant into silence cannot guarantee true
+  // silence, only ask for it, which is exactly what produced "I'm only
+  // a transcriber..." being spoken aloud. This is the actual, hard
+  // guarantee: permanently refuse to receive the assistant's remote
+  // audio track at all, for the entire tts_pipeline session, regardless
+  // of what the Model generates or the Voice would have said. Unlike
+  // silenceCurrentSpeech() (per-question, later re-subscribed via
+  // resumeAudioSubscription()), this is called ONCE at call-start and
+  // never undone -- tts_pipeline never needs to hear Vapi at all.
+  function permanentlyMuteVapiAssistantAudio() {
+    try {
+      if (!vapi || !vapi.call || typeof vapi.call.participants !== 'function'
+          || typeof vapi.call.updateParticipant !== 'function') return;
+      var parts = vapi.call.participants();
+      if (!parts) return;
+      Object.keys(parts).forEach(function(key) {
+        var p = parts[key];
+        if (p && !p.local) {
+          try {
+            vapi.call.updateParticipant(p.session_id, { setSubscribedTracks: { audio: false } });
+            console.log('[STT]\nvapi_assistant_audio_permanently_muted\n(tts_pipeline mode -- browser will never receive this track regardless of Model/Voice activity)');
+          } catch (e) { console.warn('[Vapi] permanentlyMuteVapiAssistantAudio: updateParticipant failed (non-fatal):', e); }
+        }
+      });
+    } catch (e) { console.warn('[Vapi] permanentlyMuteVapiAssistantAudio failed (non-fatal, no behavior change):', e); }
+  }
+
   // Re-subscribes to the assistant's audio so the NEXT question is
   // actually audible. Called right before every subsequent vapi.say().
   function resumeAudioSubscription() {
@@ -1225,6 +1267,7 @@
 
     function _releaseAndMaybeSpeakPending(reason) {
       speechState = SPEECH_STATE.FREE;
+      window.timelineLog('listening_resumed', currentSpokenQuestionId, true, 'reason=' + reason + (pendingRequest ? ' (pending request queued: questionId=' + pendingRequest.questionId + ')' : ''));
       if (pendingRequest) {
         var req = pendingRequest;
         pendingRequest = null;
@@ -1394,6 +1437,14 @@
       window._vapiCallStartedAt = Date.now();
       console.log('[VAPI-LIFECYCLE] call-start #' + window._vapiConnectionAttempts + ' at ' + window._vapiCallStartedAt
         + (window._vapiLastCallEndedAt ? ' (' + (window._vapiCallStartedAt - window._vapiLastCallEndedAt) + 'ms since previous call-end)' : ' (first connection this page load)'));
+      if (window.VOICE_PIPELINE_MODE === 'tts_pipeline') {
+        // THE actual fix for "I'm only a transcriber..." being spoken:
+        // this guarantees the browser never receives Vapi's assistant
+        // audio for the rest of the session, regardless of whether the
+        // Model/Voice remain active server-side. A hard local guarantee,
+        // not a prompt-based request.
+        permanentlyMuteVapiAssistantAudio();
+      }
       if (window._vapiConnectionAttempts === 1) {
         console.log('[STT]\nconnected');
       } else {
@@ -1530,6 +1581,23 @@
         if (!input) return;
         if (message.transcriptType === 'final' && message.transcript) {
           var chunk = String(message.transcript).trim();
+          window.timelineLog('final_transcript_received', currentSpokenQuestionId, true, 'text="' + chunk.slice(0, 60) + '..."');
+
+          // DIAGNOSTIC ONLY (no behavior change): if this "user" transcript
+          // closely matches the assistant's own recently-buffered speech,
+          // this is very likely an acoustic echo of Vapi's own voice being
+          // re-transcribed as if the candidate said it -- not a patch, a
+          // way to CONFIRM the hypothesis directly from real logs instead
+          // of continuing to reason about it in the abstract.
+          if (assistantTranscriptBuf) {
+            var chunkLower = chunk.toLowerCase();
+            var assistantLower = assistantTranscriptBuf.toLowerCase();
+            var overlapsSubstantially = assistantLower.indexOf(chunkLower) !== -1
+              || chunkLower.indexOf(assistantLower.slice(0, 40)) !== -1;
+            if (chunk.length > 8 && overlapsSubstantially) {
+              console.log('[ECHO-SUSPECTED]\nuser transcript closely matches recent assistant speech\nuserTranscript="' + chunk + '"\nrecentAssistantSpeech="' + assistantTranscriptBuf.slice(0, 120) + '"');
+            }
+          }
 
           /* ── Spoken intent classifier (v3 — sentence-aware) ──
              v1/v2 required the ENTIRE utterance to be nothing but a bare
@@ -1588,15 +1656,24 @@
             var answerWords = input.value.trim().split(/\s+/).filter(Boolean).length;
             if (answerWords >= 8 && window.MedhaIQ_requestSubmit) {
               slog('Voice intent: submit ("'+chunk+'")', 'info');
+              window.timelineLog('answer_auto_submitted', currentSpokenQuestionId, true, 'via voice, answerWords=' + answerWords);
               window.MedhaIQ_requestSubmit();
             } else if (window.MedhaIQ_requestSkip) {
+              // NOTE: this branch also fires when the spoken command was
+              // "submit"/"done"/"that's my answer" but the answer was
+              // under 8 words -- it silently calls requestSkip(), not
+              // requestSubmit(). Logged explicitly so this is visible,
+              // not inferred: from the candidate's perspective this can
+              // look exactly like "I said submit and nothing happened."
               slog('Voice intent: skip ("'+chunk+'")', 'info');
+              window.timelineLog('answer_auto_submitted', currentSpokenQuestionId, false, 'routed to SKIP instead -- answerWords=' + answerWords + ' (< 8 threshold), matchedPhrase="' + matchedCommand + '"');
               window.MedhaIQ_requestSkip();
             }
             return; // command phrases are never written into the answer
           }
 
           input.value = (input.value ? input.value.replace(/\s+$/, '') + ' ' : '') + chunk;
+          window.timelineLog('star_update_dispatched', currentSpokenQuestionId, true, 'inputLength=' + input.value.length);
           input.dispatchEvent(new Event('input', { bubbles: true }));
         } else if (window.MedhaIQ_liveStar) {
           window.MedhaIQ_liveStar((input.value ? input.value + ' ' : '') + (message.transcript || ''));

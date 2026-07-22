@@ -50,10 +50,9 @@
   ElevenLabsTTSAdapter.prototype = Object.create(TTSAdapter.prototype);
   ElevenLabsTTSAdapter.prototype.constructor = ElevenLabsTTSAdapter;
 
-  ElevenLabsTTSAdapter.prototype.synthesize = function (text, options) {
+  ElevenLabsTTSAdapter.prototype.synthesize = function (text) {
     var self = this;
     var startedAt = Date.now();
-    var externalSignal = options && options.signal;
     log('synthesize:start', { textLength: (text || '').length, voice: this._options.voice, language: this._options.language });
 
     if (!text || typeof text !== 'string') {
@@ -64,26 +63,8 @@
 
     var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     var timeoutId = null;
-    var timedOut = false;
     if (controller) {
-      timeoutId = setTimeout(function () { timedOut = true; controller.abort(); }, this._timeoutMs);
-      // Root-cause fix: previously, a superseded speak() call had no way
-      // to actually cancel this fetch -- it would keep running in the
-      // background for up to timeoutMs regardless of what the caller
-      // (QuestionSpeechService) had already moved on to. Under rapid
-      // skipping, this let multiple simultaneous in-flight requests to
-      // the same origin pile up, competing for the browser's limited
-      // per-origin concurrent connection pool -- starving the CURRENT
-      // request behind several now-irrelevant ones. Chaining an external
-      // signal here means stop()/a newer speak() can genuinely cancel
-      // this fetch immediately, freeing the connection right away.
-      if (externalSignal) {
-        if (externalSignal.aborted) {
-          controller.abort();
-        } else {
-          externalSignal.addEventListener('abort', function () { controller.abort(); });
-        }
-      }
+      timeoutId = setTimeout(function () { controller.abort(); }, this._timeoutMs);
     }
 
     var fetchOptions = {
@@ -117,19 +98,14 @@
       })
       .catch(function (err) {
         if (timeoutId) clearTimeout(timeoutId);
-        var reason = timedOut ? 'timeout' : (controller && controller.signal.aborted) ? 'cancelled' : (err.code || err.message);
+        var reason = (controller && controller.signal.aborted) ? 'timeout' : (err.code || err.message);
         log('synthesize:error', { reason: reason, elapsedMs: Date.now() - startedAt });
         // Re-throw a clean, consistent Error regardless of failure mode
         // (network failure, invalid key surfaced as UPSTREAM_AUTH by the
         // proxy, timeout) -- callers only ever see "synthesize failed",
         // never a raw fetch/network exception shape.
         if (controller && controller.signal.aborted) {
-          if (timedOut) {
-            throw new Error('TTS synthesis timed out after ' + self._timeoutMs + 'ms');
-          }
-          var cancelledErr = new Error('TTS synthesis cancelled (superseded by a newer request)');
-          cancelledErr.code = 'CANCELLED';
-          throw cancelledErr;
+          throw new Error('TTS synthesis timed out after ' + self._timeoutMs + 'ms');
         }
         throw err;
       });

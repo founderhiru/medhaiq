@@ -31,22 +31,11 @@ function logTTS(event, detail) {
 /**
  * @param {{ text: string, voice: string, language: string, streaming: boolean }} params
  * @returns {Promise<{ buffer: Buffer, contentType: string }>}
- * @throws {Error} with a `.code` of 'CONFIG_MISSING' | 'UPSTREAM_AUTH' | 'PAYMENT_REQUIRED' | 'UPSTREAM_ERROR' | 'TIMEOUT' | 'NETWORK_ERROR'
+ * @throws {Error} with a `.code` of 'CONFIG_MISSING' | 'UPSTREAM_AUTH' | 'UPSTREAM_ERROR' | 'TIMEOUT' | 'NETWORK_ERROR'
  */
 async function synthesizeViaElevenLabs(params) {
   const startedAt = Date.now();
-  const voiceId = params.voice || 'Rachel';
-  const resolvedUrl = VOICE_SERVER_CONFIG.elevenLabsApiBaseUrl.replace(/\/$/, '') + '/v1/text-to-speech/' + encodeURIComponent(voiceId);
-
-  // Existence/length only -- NEVER the key value itself, in logs or anywhere else.
-  logTTS('synthesize:start', {
-    textLength: (params.text || '').length,
-    voice: params.voice,
-    language: params.language,
-    endpoint: resolvedUrl,
-    apiKeyPresent: !!VOICE_SERVER_CONFIG.elevenLabsApiKey,
-    apiKeyLength: VOICE_SERVER_CONFIG.elevenLabsApiKey ? VOICE_SERVER_CONFIG.elevenLabsApiKey.length : 0,
-  });
+  logTTS('synthesize:start', { textLength: (params.text || '').length, voice: params.voice, language: params.language });
 
   if (!VOICE_SERVER_CONFIG.elevenLabsApiKey) {
     const err = new Error('VOICE_SERVER_CONFIG.elevenLabsApiKey is not set');
@@ -58,7 +47,8 @@ async function synthesizeViaElevenLabs(params) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), VOICE_SERVER_CONFIG.requestTimeoutMs);
 
-  const url = resolvedUrl;
+  const voiceId = params.voice || 'Rachel';
+  const url = VOICE_SERVER_CONFIG.elevenLabsApiBaseUrl.replace(/\/$/, '') + '/v1/text-to-speech/' + encodeURIComponent(voiceId);
 
   let response;
   try {
@@ -71,17 +61,12 @@ async function synthesizeViaElevenLabs(params) {
       },
       body: JSON.stringify({
         text: params.text,
-        // model_id is REQUIRED by ElevenLabs' real API -- every documented
-        // example includes it. Previously omitted entirely, which may have
-        // been defaulting to a model this account/plan doesn't have access
-        // to (a plausible explanation for a 402 despite full credits).
-        // eleven_multilingual_v2 is ElevenLabs' broadly-available default
-        // across plans; language/streaming were never real accepted fields
-        // (language_code is, and must be a 2-letter ISO 639-1 code, not a
-        // locale string like "en-US"; streaming is a different endpoint
-        // path, not a body flag -- not implemented here yet).
-        model_id: 'eleven_multilingual_v2',
-        language_code: (params.language || 'en-US').split('-')[0],
+        // language/streaming forwarded as-is; ElevenLabs-specific request
+        // shape lives ENTIRELY inside this function -- nothing above this
+        // line (routes/voice-tts.js, and everything client-side) knows
+        // ElevenLabs' request/response format.
+        language: params.language,
+        streaming: !!params.streaming,
       }),
     });
   } catch (err) {
@@ -100,33 +85,16 @@ async function synthesizeViaElevenLabs(params) {
   clearTimeout(timeout);
 
   if (response.status === 401 || response.status === 403) {
-    const bodyText = await response.text().catch(() => '(could not read response body)');
-    const authErr = new Error('ElevenLabs rejected the API key (status ' + response.status + '): ' + bodyText);
+    const authErr = new Error('ElevenLabs rejected the API key (status ' + response.status + ')');
     authErr.code = 'UPSTREAM_AUTH';
-    authErr.upstreamBody = bodyText;
-    logTTS('synthesize:error', { code: authErr.code, status: response.status, upstreamBody: bodyText });
+    logTTS('synthesize:error', { code: authErr.code, status: response.status });
     throw authErr;
   }
 
-  if (response.status === 402) {
-    // 402 Payment Required -- this is ElevenLabs telling us something about
-    // the ACCOUNT (quota/credits/billing), not our request shape or auth.
-    // Distinct code from UPSTREAM_AUTH/UPSTREAM_ERROR specifically so this
-    // is never mistaken for a code bug when it shows up in logs.
-    const bodyText = await response.text().catch(() => '(could not read response body)');
-    const paymentErr = new Error('ElevenLabs returned 402 Payment Required: ' + bodyText);
-    paymentErr.code = 'PAYMENT_REQUIRED';
-    paymentErr.upstreamBody = bodyText;
-    logTTS('synthesize:error', { code: paymentErr.code, status: response.status, upstreamBody: bodyText });
-    throw paymentErr;
-  }
-
   if (!response.ok) {
-    const bodyText = await response.text().catch(() => '(could not read response body)');
-    const upstreamErr = new Error('ElevenLabs returned status ' + response.status + ': ' + bodyText);
+    const upstreamErr = new Error('ElevenLabs returned status ' + response.status);
     upstreamErr.code = 'UPSTREAM_ERROR';
-    upstreamErr.upstreamBody = bodyText;
-    logTTS('synthesize:error', { code: upstreamErr.code, status: response.status, upstreamBody: bodyText });
+    logTTS('synthesize:error', { code: upstreamErr.code, status: response.status });
     throw upstreamErr;
   }
 

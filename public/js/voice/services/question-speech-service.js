@@ -174,8 +174,10 @@ console.log(
         return;
       }
       console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' complete -- playing');
+      if (global.timelineLog) global.timelineLog('elevenlabs_synthesized', questionId, true, 'bytes=' + (audioSource && audioSource.size));
       self._clearPendingTimeout();
       self._audioPlayer.play(audioSource);
+      if (global.timelineLog) global.timelineLog('browser_started_playback', questionId, true, '(play() invoked -- BrowserAudioPlayer stays provider/interview-agnostic by design, so this confirms play() was called, not independently that audio is audibly playing)');
       self._startedCallbacks.forEach(function (cb) {
         try { cb(); } catch (e) { /* one listener's error must not break others */ }
       });
@@ -206,6 +208,7 @@ console.log(
   };
 
   QuestionSpeechService.prototype._handleNaturalEnd = function () {
+    if (global.timelineLog) global.timelineLog('playback_finished', null, true, '(natural completion via BrowserAudioPlayer onEnded)');
     this._finishedCallbacks.forEach(function (cb) {
       try { cb(); } catch (e) { /* isolate listener errors */ }
     });
