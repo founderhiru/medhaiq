@@ -27,11 +27,20 @@ const { processInterviewAnswer } = require('./interview');
  * finishes speaking.
  */
 router.post('/vapi-webhook', async (req, res) => {
+  // TEMPORARY diagnostic logging -- added to prove/disprove whether this
+  // webhook is actually being invoked during a live interview, before any
+  // gating decision is made. Remove once confirmed either way.
+  console.log('[WEBHOOK] request received at ' + Date.now()
+    + ' messageType=' + (req.body && req.body.message && req.body.message.type)
+    + ' sessionId=' + (req.body && req.body.message && req.body.message.call && req.body.message.call.metadata
+        ? req.body.message.call.metadata.sessionId : '(none)'));
+
   try {
     const payload = req.body;
 
     // 1. Check if Vapi is asking our engine what to say next
     if (payload.message && payload.message.type === 'assistant-request') {
+      console.log('[WEBHOOK] assistant-request confirmed -- this call WILL invoke processInterviewAnswer and return spoken text to Vapi');
 
       // Extract what the user said from Vapi's text stream
       const userTranscript = payload.message.transcript;
@@ -89,6 +98,7 @@ router.post('/vapi-webhook', async (req, res) => {
       // sparse-answer guardrail, same scoring, same Question Blueprint /
       // Executive Interview Strategy, same follow-up logic. Not a
       // reimplementation — the identical function the HTTP route calls.
+      console.log('[WEBHOOK] calling processInterviewAnswer sessionId=' + sessionId + ' questionId=' + pending.id + ' answerText="' + String(userTranscript).slice(0, 80) + '"');
       const result = await processInterviewAnswer({
         sessionId,
         questionId: pending.id,
@@ -117,6 +127,7 @@ router.post('/vapi-webhook', async (req, res) => {
         spokenText = "Thank you for sharing that. Let's continue.";
       }
 
+      console.log('[WEBHOOK] responding to Vapi -- it WILL speak this text via its own voice: "' + spokenText.slice(0, 100) + '"');
       return res.status(201).json({
         response: {
           output: [

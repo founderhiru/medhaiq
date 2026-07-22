@@ -1185,6 +1185,7 @@
         safeHashTrace('5b_vapi_payload_final_with_prefix', request.turnId, request.questionId, qspText, 'wasSkipped=' + (request.wasSkipped) + ' (ack spoken separately, no text prefix in tts_pipeline)');
         safeVapiPathTrace('5_vapi_speech_path', request.turnId, request.questionId, 'question_speech_service');
         slog('[LIFECYCLE-TRACE] QuestionSpeechService.speak() CALLED at ' + Date.now() + ' turnId=' + request.turnId + ' questionId=' + request.questionId + ' version=' + request.version + ' text="' + qspText.slice(0,60) + '..."', 'info');
+        console.log('SPEECH SOURCE:\nQuestionSpeechService\n(questionId=' + request.questionId + ' turnId=' + request.turnId + ')');
         window.questionSpeechService.speak({ text: qspText, questionId: request.questionId, turnId: request.turnId });
         return;
       }
@@ -1199,6 +1200,7 @@
           safeHashTrace('5b_vapi_payload_final_with_prefix', request.turnId, request.questionId, vapiPayload, 'hasPrefix=' + (lead.length > 0));
           safeVapiPathTrace('5_vapi_speech_path', request.turnId, request.questionId, 'vapi.say');
           slog('[LIFECYCLE-TRACE] vapi.say() CALLED (InterviewVoiceController) at ' + Date.now() + ' turnId=' + request.turnId + ' questionId=' + request.questionId + ' version=' + request.version + ' text="' + vapiPayload.slice(0,60) + '..."', 'info');
+          console.log('SPEECH SOURCE:\nLegacy Vapi\n(vapi.say(), questionId=' + request.questionId + ' turnId=' + request.turnId + ')');
           vapi.say(vapiPayload);
           slog('Forced speech via vapi.say()', 'ok');
           if (request.turnId) slog('[turn-trace] TURN_ID='+request.turnId+' vapi.say(): QuestionId='+request.questionId, 'info');
@@ -1207,6 +1209,7 @@
           console.warn('[Vapi] vapi.say() unavailable on this SDK build -- falling back to context injection');
           slog('WARNING: vapi.say() unavailable -- question sent as a suggestion only, not forced', 'err');
           if (request.turnId) slog('[turn-trace] TURN_ID='+request.turnId+' vapi.say() UNAVAILABLE -- fallback used for QuestionId='+request.questionId, 'err');
+          console.log('SPEECH SOURCE:\nLegacy Vapi\n(fallback add-message, vapi.say unavailable, questionId=' + request.questionId + ')');
           vapi.send({
             type: 'add-message',
             message: {
@@ -1486,6 +1489,14 @@
              staff debug console. */
       if (message.role === 'assistant') {
         if (message.transcriptType === 'final' && message.transcript) {
+          if (window.VOICE_PIPELINE_MODE !== 'legacy_vapi') {
+            // Independent confirmation from speech-start: a final assistant
+            // transcript arriving at all while tts_pipeline is active is
+            // additional, separate evidence of the same leak -- transcript
+            // and speech-start don't always arrive in lockstep, so this
+            // catches cases the speech-start log might miss.
+            console.log('SPEECH SOURCE:\nVapi Assistant\n(confirmed via transcript, UNEXPECTED in tts_pipeline mode): "' + message.transcript.slice(0, 80) + '"');
+          }
           if (!assistantTranscriptBuf) {
             // First chunk of this turn's speech (buffer was empty going in).
             safeHashTrace('6_first_assistant_transcript', currentSpokenTurnId, currentSpokenQuestionId, message.transcript);
@@ -1587,9 +1598,20 @@
     });
 
     vapi.on('speech-start', function() {
+      // Instrumentation (audit request): speech-start firing AT ALL while
+      // tts_pipeline is active is undeniable proof Vapi's own assistant
+      // generated and is speaking content -- nothing in our code calls
+      // vapi.say() on this path, so there is no other way this event
+      // could fire. This is the single source of truth for "is there a
+      // second speech source," not an inference.
+      if (window.VOICE_PIPELINE_MODE !== 'legacy_vapi') {
+        console.log('SPEECH SOURCE:\nVapi Assistant\n(UNEXPECTED -- tts_pipeline is active; Vapi should be STT-only. This assistant response was NOT requested by QuestionSpeechService.)');
+      } else {
+        console.log('SPEECH SOURCE:\nLegacy Vapi\n(expected -- legacy_vapi mode)');
+      }
       slog('[LIFECYCLE-TRACE] speech-start fired at ' + Date.now() + ' (turnId=' + currentSpokenTurnId + ' questionId=' + currentSpokenQuestionId + ')', 'info');
       if (window.VOICE_PIPELINE_MODE !== 'legacy_vapi') {
-        slog('[LIFECYCLE-TRACE] speech-start ignored -- tts_pipeline active, Vapi is STT-only', 'info');
+        slog('[LIFECYCLE-TRACE] speech-start ignored for UI/controller purposes -- tts_pipeline active, Vapi is supposed to be STT-only (see SPEECH SOURCE log above for confirmed leak evidence)', 'info');
         return;
       }
       InterviewVoiceController.onSpeechStart(); // observation only -- does not itself advance anything (Invariant 4)
