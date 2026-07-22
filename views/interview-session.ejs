@@ -1074,21 +1074,41 @@
   // silenceCurrentSpeech() (per-question, later re-subscribed via
   // resumeAudioSubscription()), this is called ONCE at call-start and
   // never undone -- tts_pipeline never needs to hear Vapi at all.
-  function permanentlyMuteVapiAssistantAudio() {
+  function permanentlyMuteVapiAssistantAudio(callerContext) {
+    window._muteInvocationCount = (window._muteInvocationCount || 0) + 1;
+    var invocationId = window._muteInvocationCount;
+    console.log('[MUTE-CALL] invocation #' + invocationId + ' triggered by: ' + (callerContext || '(unspecified)') + ' at ' + Date.now());
     try {
       if (!vapi || !vapi.call || typeof vapi.call.participants !== 'function'
-          || typeof vapi.call.updateParticipant !== 'function') return;
+          || typeof vapi.call.updateParticipant !== 'function') {
+        console.log('[MUTE-CALL] invocation #' + invocationId + ' aborted -- vapi.call/participants/updateParticipant not available yet');
+        return;
+      }
       var parts = vapi.call.participants();
-      if (!parts) return;
+      if (!parts) {
+        console.log('[MUTE-CALL] invocation #' + invocationId + ' aborted -- participants() returned nothing');
+        return;
+      }
+      var allSessionIds = Object.keys(parts).map(function (k) {
+        var p = parts[k];
+        return (p ? (p.session_id + (p.local ? ' (local)' : ' (remote)')) : k);
+      });
+      console.log('[MUTE-CALL] invocation #' + invocationId + ' sees ' + allSessionIds.length + ' participant(s): ' + JSON.stringify(allSessionIds));
+      var mutedAny = false;
       Object.keys(parts).forEach(function(key) {
         var p = parts[key];
         if (p && !p.local) {
           try {
             vapi.call.updateParticipant(p.session_id, { setSubscribedTracks: { audio: false } });
-            console.log('[STT]\nvapi_assistant_audio_permanently_muted\n(tts_pipeline mode -- browser will never receive this track regardless of Model/Voice activity)');
+            mutedAny = true;
+            console.log('[MUTE-CALL] invocation #' + invocationId + ' -- updateParticipant(audio:false) applied to session_id=' + p.session_id);
+            console.log('[STT]\nvapi_assistant_audio_permanently_muted\n(tts_pipeline mode -- browser will never receive this track regardless of Model/Voice activity, session_id=' + p.session_id + ')');
           } catch (e) { console.warn('[Vapi] permanentlyMuteVapiAssistantAudio: updateParticipant failed (non-fatal):', e); }
         }
       });
+      if (!mutedAny) {
+        console.log('[MUTE-CALL] invocation #' + invocationId + ' -- NO remote participant found to mute (this is the exact race condition window if the assistant joins right after this)');
+      }
     } catch (e) { console.warn('[Vapi] permanentlyMuteVapiAssistantAudio failed (non-fatal, no behavior change):', e); }
   }
 
@@ -1443,7 +1463,7 @@
         // audio for the rest of the session, regardless of whether the
         // Model/Voice remain active server-side. A hard local guarantee,
         // not a prompt-based request.
-        permanentlyMuteVapiAssistantAudio();
+        permanentlyMuteVapiAssistantAudio('call-start');
         // CONFIRMED RACE CONDITION FIX: Vapi's own SDK source
         // (client-sdk-web/vapi.ts) subscribes newly-joined participants
         // to their tracks via its own 'participant-joined' handler,
@@ -1456,11 +1476,18 @@
         // participant-joined closes this gap completely.
         try {
           if (vapi && vapi.call && typeof vapi.call.on === 'function') {
-            vapi.call.on('participant-joined', function () {
-              permanentlyMuteVapiAssistantAudio();
+            vapi.call.on('participant-joined', function (e) {
+              var sid = (e && e.participant) ? e.participant.session_id : '(unknown)';
+              var uname = (e && e.participant) ? e.participant.user_name : '(unknown)';
+              console.log('[VAPI-LIFECYCLE] participant-joined session_id=' + sid + ' user_name=' + uname + ' at ' + Date.now());
+              permanentlyMuteVapiAssistantAudio('participant-joined:' + sid);
+            });
+            vapi.call.on('participant-left', function (e) {
+              var sid = (e && e.participant) ? e.participant.session_id : '(unknown)';
+              console.log('[VAPI-LIFECYCLE] participant-left session_id=' + sid + ' at ' + Date.now());
             });
           }
-        } catch (e) { console.warn('[Vapi] could not attach participant-joined mute listener (non-fatal):', e); }
+        } catch (e) { console.warn('[Vapi] could not attach participant-joined/left mute listeners (non-fatal):', e); }
       }
       if (window._vapiConnectionAttempts === 1) {
         console.log('[STT]\nconnected');
@@ -1801,6 +1828,11 @@
       } else {
         console.log('[STT]\npermanently_failed\n(exhausted ' + MAX_AUTO_RECONNECTS + ' automatic reconnect attempts after call-end)');
       }
+    });
+
+    vapi.on('call-start-failed', function (e) {
+      console.log('[VAPI-LIFECYCLE] call-start-failed at ' + Date.now() + ' detail=' + JSON.stringify(e || {}));
+      console.log('[STT]\ncall_start_failed\n(this is a distinct, documented Vapi SDK event -- relevant to "Failed to load... then succeeds" -- confirms the FIRST connection attempt genuinely failed before a later one succeeded, rather than a UI/timing illusion)');
     });
 
     vapi.on('error',function(e){

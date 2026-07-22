@@ -64,6 +64,7 @@
     this._objectUrl = null;
     this._endedHandler = null;
     this._endedCallbacks = [];
+    this._playSequence = 0; // monotonic counter for cross-correlating with QuestionSpeechService's own questionId logs by timestamp/sequence
   }
 
   BrowserAudioPlayer.prototype._resolveSrc = function (audioSource) {
@@ -96,11 +97,17 @@
   };
 
   BrowserAudioPlayer.prototype.play = function (audioSource) {
-    logPlayer('play', { sourceType: typeof audioSource === 'string' ? 'url' : 'blob' });
+    this._playSequence += 1;
+    var seq = this._playSequence;
+    console.log('[PLAYBACK] NEW PLAY REQUEST seq=' + seq + ' at ' + Date.now());
+    logPlayer('play', { sourceType: typeof audioSource === 'string' ? 'url' : 'blob', seq: seq });
 
     // Defensive stop of whatever is currently playing before starting
     // the new source -- this is the exact overlap the Vapi-based
     // design could never guarantee against (see architecture doc §1).
+    if (this._audio) {
+      console.log('[PLAYBACK] INTERRUPTED seq=' + (seq - 1) + ' (or earlier) -- superseded by seq=' + seq + ' before it finished naturally');
+    }
     this.stop();
 
     var resolved = this._resolveSrc(audioSource);
@@ -109,6 +116,7 @@
 
     var self = this;
     var endedHandler = function () {
+      console.log('[PLAYBACK] FINISHED seq=' + seq + ' at ' + Date.now());
       logPlayer('ended');
       self._endedCallbacks.forEach(function (cb) {
         try { cb(); } catch (e) { /* one listener's error must not break others */ }
@@ -119,10 +127,13 @@
     this._audio = audio;
     this._objectUrl = resolved.objectUrl;
     this._endedHandler = endedHandler;
+    this._currentSeq = seq;
 
     var playResult = audio.play();
+    console.log('[PLAYBACK] START PLAY seq=' + seq + ' at ' + Date.now() + ' (play() called, not yet confirmed actually audible -- see ABORT PLAY below if the browser rejects it)');
     if (playResult && typeof playResult.catch === 'function') {
       playResult.catch(function (err) {
+        console.log('[PLAYBACK] ABORT PLAY seq=' + seq + ' at ' + Date.now() + ' reason=' + (err && err.message));
         // No onError hook exists in the frozen contract at this stage
         // (matches the same open question noted for STTAdapter/TTSAdapter
         // in PR1). Logged, not thrown -- a playback failure must never
@@ -132,12 +143,16 @@
         }
       });
     }
+    return seq; // additive, backward-compatible -- lets callers correlate this specific play() with their own questionId/turn logs
   };
 
   // FROZEN: guarantees local playback ceases immediately, regardless of
   // provider. Real, synchronous pause + position reset -- nothing remote
   // to wait on.
   BrowserAudioPlayer.prototype.stop = function () {
+    if (this._audio && this._currentSeq) {
+      console.log('[PLAYBACK] STOP PLAY seq=' + this._currentSeq + ' at ' + Date.now());
+    }
     logPlayer('stop');
     if (this._audio) {
       try { this._audio.pause(); } catch (e) { /* already stopped/detached */ }
@@ -145,6 +160,7 @@
     }
     this._teardownCurrentAudio();
     this._audio = null;
+    this._currentSeq = null;
   };
 
   BrowserAudioPlayer.prototype.pause = function () {
