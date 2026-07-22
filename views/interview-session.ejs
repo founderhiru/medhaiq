@@ -1394,6 +1394,13 @@
       window._vapiCallStartedAt = Date.now();
       console.log('[VAPI-LIFECYCLE] call-start #' + window._vapiConnectionAttempts + ' at ' + window._vapiCallStartedAt
         + (window._vapiLastCallEndedAt ? ' (' + (window._vapiCallStartedAt - window._vapiLastCallEndedAt) + 'ms since previous call-end)' : ' (first connection this page load)'));
+      if (window._vapiConnectionAttempts === 1) {
+        console.log('[STT]\nconnected');
+      } else {
+        console.log('[STT]\nreconnected\n(attempt #' + window._vapiConnectionAttempts + ')');
+        window._sttConsecutiveFailures = 0; // a real reconnect resets the failure streak
+        window._sttAutoReconnectCount = 0;
+      }
       slog('[LIFECYCLE-TRACE] call-start fired at ' + Date.now(), 'info');
       setState(STATES.LIVE, 'Voice active — speak your answer');
       window.MedhaIQVoiceLive = true;
@@ -1646,6 +1653,7 @@
     
     vapi.on('call-end', function(reason) {
       window._vapiLastCallEndedAt = Date.now();
+      console.log('[STT]\ndisconnected\n(via call-end, connectionDurationMs=' + (window._vapiCallStartedAt ? window._vapiLastCallEndedAt - window._vapiCallStartedAt : 'unknown') + ')');
       var elapsed = window._vapiCallStartedAt ? (window._vapiLastCallEndedAt - window._vapiCallStartedAt) : null;
       // Log whatever Vapi actually passes here, if anything -- this is
       // the instrumentation requested to determine WHY a disconnect
@@ -1680,6 +1688,25 @@
       // which is exactly why this went unnoticed until now.
       try { vapi.stop(); } catch (e) {}
       setState(STATES.IDLE, 'Speak directly with your AI interviewer');
+
+      // THE ACTUAL FIX (not another investigation): auto-reconnect unless
+      // this was the user deliberately clicking Stop. Every symptom this
+      // session traced back to STT reliability -- live STAR detection,
+      // auto-advance, and follow-ups all depend on message events that
+      // simply never arrive while disconnected. Requiring a human to
+      // notice and click a button is the actual defect; this closes it.
+      window._sttAutoReconnectCount = (window._sttAutoReconnectCount || 0) + 1;
+      var MAX_AUTO_RECONNECTS = 5;
+      if (!window._sttIntentionalStop && window._sttAutoReconnectCount <= MAX_AUTO_RECONNECTS) {
+        console.log('[STT]\nreconnecting\n(automatic, after call-end, attempt ' + window._sttAutoReconnectCount + '/' + MAX_AUTO_RECONNECTS + ')');
+        setTimeout(function () {
+          if (state === STATES.IDLE && !window._sttIntentionalStop) connectVoice();
+        }, 1500);
+      } else if (window._sttIntentionalStop) {
+        window._sttAutoReconnectCount = 0; // deliberate stop -- don't carry a stale count into the next manual connect
+      } else {
+        console.log('[STT]\npermanently_failed\n(exhausted ' + MAX_AUTO_RECONNECTS + ' automatic reconnect attempts after call-end)');
+      }
     });
 
     vapi.on('error',function(e){
@@ -1690,17 +1717,50 @@
       console.log('[VAPI-LIFECYCLE] error at ' + Date.now() + ' connectionDurationMs=' + elapsed + ' detail=' + errStr);
       console.error('[Vapi]',e);
       InterviewVoiceController.onError(); // treat as "mic not reliably busy" -- release rather than risk a permanent stall
+
+      // Source classification: bucket the error by what it actually
+      // mentions, so real samples self-sort into one of the four
+      // candidate layers instead of all landing in one guess.
+      var msgText = (e && e.message) ? e.message : errStr;
+      var source = 'Vapi SDK (unclassified)';
+      if (/permission|not allowed|NotAllowedError/i.test(msgText)) source = 'Browser microphone permissions';
+      else if (/network|fetch|timeout/i.test(msgText)) source = 'Network interruption';
+      else if (/ice|webrtc|daily|ejection|meeting/i.test(msgText)) source = 'Daily WebRTC';
+      else if (/assistant/i.test(msgText)) source = 'Vapi SDK (assistant config)';
+      console.log('[STT]\ndisconnected\n(source=' + source + ', raw=' + msgText + ')');
+
+      var PERMANENT_FAILURE_THRESHOLD = 3;
+      window._sttConsecutiveFailures = (window._sttConsecutiveFailures || 0) + 1;
+
       // Same reset as call-end above -- an error can also leave Vapi's
       // internal `started` flag stuck true, silently no-op'ing the next
       // reconnect attempt.
       try { vapi.stop(); } catch (e2) {}
       var msg='Connection error — retry';
-      if(e&&e.message){
-        if(/permission|not allowed/i.test(e.message)) msg='Microphone blocked — check browser settings';
-        else if(/network|fetch/i.test(e.message))     msg='Network error — check your connection';
-        else if(/assistant/i.test(e.message))         msg='Config error — check VAPI_ASSISTANT_ID';
-      }
+      if (source === 'Browser microphone permissions') msg='Microphone blocked — check browser settings';
+      else if (source === 'Network interruption')       msg='Network error — check your connection';
+      else if (source === 'Vapi SDK (assistant config)') msg='Config error — check VAPI_ASSISTANT_ID';
       setErr(msg);
+
+      // THE ACTUAL FIX (not another investigation): auto-reconnect on
+      // Vapi-level errors, same mechanism as call-end below. Every
+      // symptom traced this session -- live STAR detection, auto-advance,
+      // follow-ups going silent -- depends on message events that simply
+      // never arrive while disconnected. Requiring a human to notice and
+      // click a button was the actual defect. Skipped only for
+      // microphone-permission failures (need the user to change a
+      // browser setting -- retrying automatically would just spin) and
+      // once the failure threshold is hit.
+      if (source === 'Browser microphone permissions') {
+        console.log('[STT]\npermanently_failed\n(source=' + source + ' -- will not self-resolve without the user changing browser settings)');
+      } else if (window._sttConsecutiveFailures >= PERMANENT_FAILURE_THRESHOLD) {
+        console.log('[STT]\npermanently_failed\n(' + window._sttConsecutiveFailures + ' consecutive failures with no successful reconnect between them, source=' + source + ')');
+      } else if (!window._sttIntentionalStop) {
+        console.log('[STT]\nreconnecting\n(automatic, after error, attempt ' + window._sttConsecutiveFailures + '/' + PERMANENT_FAILURE_THRESHOLD + ')');
+        setTimeout(function () {
+          if (state === STATES.IDLE && !window._sttIntentionalStop) connectVoice();
+        }, 1500);
+      }
     });
   }
 
@@ -1714,16 +1774,26 @@
   async function connectVoice(){
     if(state===STATES.LIVE||state===STATES.STOPPING){
       setState(STATES.STOPPING,'Ending voice session…');
+      window._sttIntentionalStop = true; // user deliberately stopped -- do not auto-reconnect
       if(vapi){try{vapi.stop();}catch(e){}}
       return;
     }
     if(state!==STATES.IDLE)return;
+    window._sttIntentionalStop = false; // this is a real connection attempt -- any future drop should be treated as unexpected again
+    if (window._vapiConnectionAttempts && window._vapiConnectionAttempts > 0) {
+      console.log('[STT]\nreconnecting\n(manual, this will be attempt #' + (window._vapiConnectionAttempts + 1) + ')');
+    }
 
     setState(STATES.REQUESTING,'Requesting microphone access…');
     try{
       var ms=await navigator.mediaDevices.getUserMedia({audio:true});
       ms.getTracks().forEach(function(t){t.stop();});
     }catch(e){
+      // Browser microphone PERMISSION failures are caught HERE, distinctly
+      // from Vapi/Daily connection errors -- getUserMedia() is a browser
+      // API call, not a Vapi/Daily event, so this can never be confused
+      // with a Vapi SDK or WebRTC-layer failure.
+      console.log('[STT]\npermanently_failed\n(source=Browser microphone permissions, name=' + e.name + ') -- will not self-resolve without the user changing browser settings');
       if(e.name==='NotAllowedError') setErr('Microphone access required — click the lock icon in your browser bar');
       else if(e.name==='NotFoundError') setErr('No microphone detected');
       else setErr('Mic error: '+e.message);
