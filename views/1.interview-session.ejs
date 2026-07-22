@@ -702,15 +702,10 @@
             // submitAnswer), so we know this before the backend even
             // responds -- no need to wait for data.sessionEnded to decide
             // what to say.
-            var isFinalQuestion = (QN >= MAXQ);
-            var ackText = isFinalQuestion
+            var ackText = (QN >= MAXQ)
               ? "That's the final question. I'll prepare your report now."
               : pickSkipAcknowledgement();
-            // TEMPORARY DEBUG FIELD (ElevenLabs usage investigation):
-            // 'reason' is pure diagnostic metadata for the console logs
-            // below -- never read or branched on anywhere else, so this
-            // does not change any business logic.
-            window.questionSpeechService.speak({ text: ackText, questionId: 'skip-ack', turnId: null, reason: isFinalQuestion ? 'closing' : 'skip' });
+            window.questionSpeechService.speak({ text: ackText, questionId: 'skip-ack', turnId: null });
           } catch (e) { console.warn('[VoicePipeline] skip acknowledgement failed (non-fatal):', e); }
         }
       } catch (e) { console.warn('[VoicePipeline] stop() on submit failed (non-fatal):', e); }
@@ -1253,19 +1248,7 @@
         safeVapiPathTrace('5_vapi_speech_path', request.turnId, request.questionId, 'question_speech_service');
         slog('[LIFECYCLE-TRACE] QuestionSpeechService.speak() CALLED at ' + Date.now() + ' turnId=' + request.turnId + ' questionId=' + request.questionId + ' version=' + request.version + ' text="' + qspText.slice(0,60) + '..."', 'info');
         console.log('SPEECH SOURCE:\nQuestionSpeechService\n(questionId=' + request.questionId + ' turnId=' + request.turnId + ')');
-        // TEMPORARY DEBUG FIELD (ElevenLabs usage investigation): pure
-        // diagnostic classification from data already in scope here --
-        // never read or branched on anywhere else, so this does not
-        // change any business logic. Honest limitation: this call site
-        // is shared by Q1's bootstrap, every normal next question, AND
-        // follow-ups/reprompts alike (Invariant 3 -- one entry point) --
-        // there is no reliable existing signal here to distinguish a
-        // genuine follow-up from a normal primary question, so both
-        // currently log as 'question'.
-        var _speakReason = (request.version === 1) ? 'initial-question'
-          : request.wasSkipped ? 'post-skip-question'
-          : 'question';
-        window.questionSpeechService.speak({ text: qspText, questionId: request.questionId, turnId: request.turnId, version: request.version, reason: _speakReason });
+        window.questionSpeechService.speak({ text: qspText, questionId: request.questionId, turnId: request.turnId });
         return;
       }
 
