@@ -208,6 +208,19 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     score: Number.isFinite(scoreByQuestionId.get(q.id)) ? scoreByQuestionId.get(q.id) : null,
     wasSkipped: q.answer_text === '',
     storyKey: q.story_key || null,
+    // ROOT CAUSE FIX (P0 "skip generates paraphrase of same competency"):
+    // `competency` was never included here even though it's already
+    // present on every `q` row (getSessionQuestions selects q.*, and
+    // addQuestion() already persists it correctly on write). Without
+    // it, qaBelongsToCompetency() in the Coverage/Memory Engine could
+    // never attribute any past question to its actual competency, so
+    // lastAskedTurn stayed -1 forever for every competency and the
+    // recency penalty in selectNextCompetency() never engaged --
+    // leaving the array's first-priority competency (e.g. 'technical'
+    // for Data Engineer/AI Engineer roles) selected on every turn,
+    // regardless of questionCount. This one field is the fix; no
+    // change to the Coverage Engine's scoring logic itself.
+    competency: q.competency || null,
   }));
 
   let competencyMatrix = session.competency_matrix;
