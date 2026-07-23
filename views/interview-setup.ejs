@@ -804,39 +804,27 @@ function switchTab(tab) {
     }
     btn.textContent = 'Initializing...';
 
-    // P0 FIX (real root cause, confirmed via live staging console): the
-    // previous retry logic worked exactly as designed, but retrying
-    // can't fix THIS condition -- the backend was correctly rejecting
-    // creation because a previous session was left 'active' (e.g. the
-    // candidate closed the tab without clicking "End Session"). Three
-    // pointless retries just delayed an unhelpful "Failed to launch"
-    // alert with zero explanation. Checked FIRST, before any retry
-    // loop, since retrying a persistent state condition only wastes
-    // time -- then the candidate gets a real, actionable choice instead
-    // of a dead end.
+    // PRIORITY 1 FIX (invisible session recovery -- explicit product
+    // decision): session management must never surface to the
+    // candidate. A stale active session (e.g. from closing a previous
+    // tab without clicking "End Session") is now cleaned up completely
+    // silently -- no dialog, no choice, no visible indication anything
+    // needed recovering at all. The UI stays on "Initializing..." the
+    // entire time, exactly as if this were a normal first launch.
     var first = await createSessionOnce().catch(function (e) { return { status: 0, data: { error: String(e) } }; });
     if (first.status === 409 && first.data && first.data.reason === 'ACTIVE_SESSION_EXISTS') {
       var activeId = first.data.activeSessionId;
-      var wantsResume = activeId
-        ? confirm('You have an interview already in progress. Click OK to resume it, or Cancel to end it and start a new one.')
-        : confirm('You have an interview already in progress, but it could not be located to resume directly. Click OK to end it and start a new one.');
-      if (wantsResume && activeId) {
-        window.location.href = '/interview/session/' + activeId;
-        return;
-      }
-      // Either no activeId to resume, or the candidate chose to end it --
-      // reuses the exact same DELETE endpoint the "End Session" button
-      // already calls, then retries creation once, fresh.
+      console.log('[Launch] stale active session detected (id=' + activeId + ') -- cleaning up silently, no dialog');
       if (activeId) {
         try { await fetch('/api/interview/sessions/' + activeId, { method: 'DELETE' }); }
         catch (e) { console.warn('[Launch] could not end previous session (non-fatal, will still retry creation):', e); }
       }
-      var afterEnding = await createSessionOnce().catch(function (e) { return { status: 0, data: { error: String(e) } }; });
-      if (afterEnding.data && afterEnding.data.sessionId) {
-        window.location.href = '/interview/session/' + afterEnding.data.sessionId;
+      var afterCleanup = await createSessionOnce().catch(function (e) { return { status: 0, data: { error: String(e) } }; });
+      if (afterCleanup.data && afterCleanup.data.sessionId) {
+        window.location.href = '/interview/session/' + afterCleanup.data.sessionId;
         return;
       }
-      console.error('[Launch] failed even after ending the previous session:', afterEnding);
+      console.error('[Launch] failed even after silent cleanup:', afterCleanup);
       alert('Failed to launch. Please check console.');
       btn.textContent = 'Initialize Session →';
       return;
