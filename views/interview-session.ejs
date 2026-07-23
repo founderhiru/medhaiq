@@ -1861,6 +1861,73 @@
             }
           }
 
+          /* ── Conversational intent classifier (NEW) ──
+             Biggest missing feature per product review: NOT every
+             utterance is an answer. "Can you repeat the question?" was
+             being fed straight into answer scoring, producing a
+             reprompt asking for more detail instead of just replaying
+             the question. Checked FIRST, before the skip/submit
+             classifier below -- same sentence-aware, last-sentence-
+             backward approach, same reasoning: a genuine answer is
+             extremely unlikely to contain an isolated short sentence
+             that exactly matches one of these phrases.
+             Implemented now: "repeat" (100% client-side -- replays the
+             exact question already on screen, no backend call, no
+             scoring, no advancement) and "pause" (stops the visible
+             countdown timer; resumes automatically the moment the
+             candidate speaks again).
+             NOT yet implemented (needs backend LLM support to genuinely
+             rephrase/simplify a question or invent an example -- out of
+             scope for a client-side-only change): "simplify this
+             question" and "give me an example." Flagged clearly rather
+             than silently left unhandled. */
+          var REPEAT_INTENT_RE = /^(can you |could you |please |)(repeat|say (that|it) again|repeat (the|that) question|repeat that|come again|say again)( please)?$|^(i |)(missed|didn'?t (hear|catch)) (that|the question|it)( please)?$|^what was the question\??$|^sorry,? (can you |could you )?(repeat|say that again)( please)?$/i;
+          var PAUSE_INTENT_RE = /^(give me |i need |can i (get |have )?|)(a |one )?(moment|second|minute)( please)?$|^(please )?(hold on|wait|hang on)( a (moment|second|minute))?( please)?$|^(i'?m |)not ready( yet)?$/i;
+
+          var convSentences = chunk
+            .split(/[.!?]+/)
+            .map(function (s) { return s.replace(/[,;:]+/g, ' ').replace(/\s+/g, ' ').trim(); })
+            .filter(Boolean);
+          var matchedRepeat = false, matchedPause = false;
+          for (var _ci = convSentences.length - 1; _ci >= 0; _ci--) {
+            var _cs = convSentences[_ci];
+            if (_cs.split(/\s+/).length <= 8) {
+              if (REPEAT_INTENT_RE.test(_cs)) { matchedRepeat = true; break; }
+              if (PAUSE_INTENT_RE.test(_cs)) { matchedPause = true; break; }
+            }
+          }
+
+          if (matchedRepeat) {
+            slog('Conversational intent: repeat question ("' + chunk + '")', 'info');
+            window.timelineLog('conversational_intent', currentSpokenQuestionId, true, 'intent=repeat');
+            try {
+              var _repeatText = String(window.MedhaIQ_CurrentQ || '');
+              if (_repeatText && window.VOICE_PIPELINE_MODE === 'tts_pipeline' && window.questionSpeechService) {
+                window.questionSpeechService.speak({ text: _repeatText, questionId: currentSpokenQuestionId, turnId: null, reason: 'repeat' });
+              }
+            } catch (e) { console.warn('[Conversational Intent] repeat failed (non-fatal):', e); }
+            return; // never written to the answer box, never scored, never advances
+          }
+          if (matchedPause) {
+            slog('Conversational intent: pause ("' + chunk + '")', 'info');
+            window.timelineLog('conversational_intent', currentSpokenQuestionId, true, 'intent=pause');
+            try {
+              clearInterval(timerInt);
+              sub.textContent = 'Take your time — timer paused';
+              // Resume automatically the moment the candidate speaks
+              // again (any further transcript activity), rather than
+              // requiring a separate "resume" phrase -- the candidate
+              // resuming to answer IS the resume signal.
+              window._timerPausedForConversationalIntent = true;
+            } catch (e) { console.warn('[Conversational Intent] pause failed (non-fatal):', e); }
+            return; // never written to the answer box, never scored, never advances
+          }
+          if (window._timerPausedForConversationalIntent) {
+            // Any real speech after a pause resumes the timer automatically.
+            window._timerPausedForConversationalIntent = false;
+            try { timerInt = setInterval(tick, 1000); } catch (e) { console.warn('[Conversational Intent] resume failed (non-fatal):', e); }
+          }
+
           /* ── Spoken intent classifier (v3 — sentence-aware) ──
              v1/v2 required the ENTIRE utterance to be nothing but a bare
              command phrase ("skip", "next question, please"). Real speech

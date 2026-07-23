@@ -16,12 +16,12 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 const GREETINGS = [
-  "Welcome to MedhaIQ. I'm {NAME}, and I'll be your interviewer today. I'll ask a few practical questions to understand your experience and approach. Let's start with the first question.",
-  "Hi, and welcome to MedhaIQ. I'm {NAME}, and I'll be interviewing you today. Thanks for taking the time to join. Let's get started with our first question.",
-  "Welcome to MedhaIQ. I'm {NAME}. Today's interview is designed to understand how you approach real situations and communicate your thinking. Let's begin with the first question.",
-  "Hello, and welcome to MedhaIQ. I'm {NAME}, and I'll be guiding today's interview. There are no trick questions, just answer as naturally as you would in a real interview. Let's start with the first question.",
-  "Welcome to MedhaIQ. I'm {NAME}, and I'll be interviewing you today. We'll discuss a few practical scenarios to better understand your experience and perspective. Let's begin with the first question.",
-  "Welcome to MedhaIQ. I'm {NAME}, and I'll be your interviewer today. Thanks for being here. Let's start with the first question.",
+  "Welcome. I'm {NAME}. We'll have a short conversation about your experience. Let's begin.",
+  "Hi, I'm {NAME}. Thanks for joining. Let's get started.",
+  "Welcome to MedhaIQ. I'm {NAME}. Let's dive right in.",
+  "Hello, I'm {NAME}. Just answer naturally, like a real conversation. Let's begin.",
+  "Hi, I'm {NAME}. Let's talk through your experience. Here's the first question.",
+  "Welcome. I'm {NAME}, your interviewer today. Let's get started.",
 ];
 
 /**

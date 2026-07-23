@@ -777,25 +777,6 @@ function switchTab(tab) {
         : 'AI systems ready. Complete steps 1\u20133 to begin.');
   }
 
-  async function createSessionOnce() {
-    const res = await fetch('/api/interview/sessions', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-          personaId: state.persona,
-          roleTitle: state.role || state.tailorRole || 'General Professional',
-          experienceLevel: state.exp,
-          vapiVoiceId: state.voice,
-          // Tailored-context pipeline: packaged ONLY when the tailor track
-          // is the active Step 1 choice (strict single-selection model).
-          orgPreset: state.tailorApplied ? (state.org || null) : null,
-          jdText: state.tailorApplied ? (state.jdText || '') : ''
-      })
-    });
-    const data = await res.json();
-    return data;
-  }
-
   document.getElementById('beginBtn').addEventListener('click', async () => {
     const btn = document.getElementById('beginBtn');
     if (IS_PREVIEW) {
@@ -803,37 +784,32 @@ function switchTab(tab) {
       return;
     }
     btn.textContent = 'Initializing...';
-
-    // P0 FIX: silently retry before ever showing "Failed to launch" --
-    // a single transient hiccup (backend cold start, brief network
-    // blip) should never surface an alarming error to the candidate if
-    // a retry would have succeeded moments later. The UI stays
-    // identical ("Initializing...") across all attempts -- launching
-    // should look the same whether it succeeds on try 1 or try 3.
-    const MAX_ATTEMPTS = 3;
-    const RETRY_DELAY_MS = 800;
-    let lastError = null;
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-      try {
-        const data = await createSessionOnce();
-        if (data && data.sessionId) {
-          window.location.href = '/interview/session/' + data.sessionId;
-          return;
-        }
-        console.warn('[Launch] attempt ' + attempt + ' returned no sessionId:', data);
-        lastError = data && data.error;
-      } catch (e) {
-        console.warn('[Launch] attempt ' + attempt + ' threw:', e);
-        lastError = e;
+    try {
+      const res = await fetch('/api/interview/sessions', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            personaId: state.persona,
+            roleTitle: state.role || state.tailorRole || 'General Professional',
+            experienceLevel: state.exp,
+            vapiVoiceId: state.voice,
+            // Tailored-context pipeline: packaged ONLY when the tailor track
+            // is the active Step 1 choice (strict single-selection model).
+            orgPreset: state.tailorApplied ? (state.org || null) : null,
+            jdText: state.tailorApplied ? (state.jdText || '') : ''
+        })
+      });
+      const data = await res.json();
+      if (data.sessionId) {
+        window.location.href = '/interview/session/' + data.sessionId;
+      } else {
+        alert('Failed to launch. Please check console.');
+        btn.textContent = 'Initialize Session →';
       }
-      if (attempt < MAX_ATTEMPTS) {
-        await new Promise(function (r) { setTimeout(r, RETRY_DELAY_MS); });
-      }
+    } catch (e) {
+      console.error(e);
+      btn.textContent = 'Initialize Session →';
     }
-    // Only reached if ALL attempts failed.
-    console.error('[Launch] all ' + MAX_ATTEMPTS + ' attempts failed:', lastError);
-    alert('Failed to launch. Please check console.');
-    btn.textContent = 'Initialize Session →';
   });
 })();
 </script>
