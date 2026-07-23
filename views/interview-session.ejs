@@ -507,9 +507,9 @@
      services/interview.js so the live view and the server verdict agree.
      If you edit one, edit both. */
   var STAR_PATTERNS = {
-    situation: /\b(when i|at my (previous|last|current)|in my role|while (working|leading)|the (context|situation|background) was|we (were|had) facing|a few (months|years|weeks) ago|during|last (year|quarter|month|week)|in (19|20)\d{2}|i was working (on|at|with)|we were (building|working|running|struggling)|at (a|an|the|our) (company|startup|client|firm))\b/i,
-    task: /\b(my (task|responsibility|goal|objective|job) was|i was (responsible|asked|tasked|expected)|needed to|had to (deliver|fix|solve|build|reduce|improve)|the (goal|objective|target|challenge|problem|ask) was|asked me to|i had to)\b/i,
-    action: /\b(i (led|built|designed|implemented|created|drove|decided|initiated|coordinated|proposed|negotiated|restructured|launched|rolled out|owned|developed|managed|organi[sz]ed|automated|migrated|deployed|fixed|resolved|refactored|presented|convinced|persuaded|established|introduced|analy[sz]ed|started|began|took|worked)|we (implemented|built|created|designed|launched|migrated|deployed|developed|automated|redesigned|rolled out|restructured)|my approach was|so i\b|then i\b)/i,
+    situation: /\b(when i|at my (previous|last|current)|in my role|while (working|leading)|the (context|situation|background) was|we (were|had) facing|a few (months|years|weeks) ago|during|last (year|quarter|month|week)|in (19|20)\d{2}|i was working (on|at|with)|we were (building|working|running|struggling)|at (a|an|the|our) (company|startup|client|firm)|(our|the|a) (customer|client)s? (wanted|needed|was (asking|looking)|had a)|we had a (customer|client))\b/i,
+    task: /\b(my (task|responsibility|goal|objective|job)([^.]{0,25})? was|i was (responsible|asked|tasked|expected)|needed to|had to (deliver|fix|solve|build|reduce|improve)|the (goal|objective|target|challenge|problem|ask) was|asked me to|i had to)\b/i,
+    action: /\b(i (led|built|designed|redesigned|rebuilt|reimplemented|rearchitected|re-?architected|recreated|implemented|created|drove|decided|initiated|coordinated|proposed|negotiated|restructured|launched|rolled out|owned|developed|managed|organi[sz]ed|automated|migrated|deployed|fixed|resolved|refactored|presented|convinced|persuaded|established|introduced|analy[sz]ed|started|began|took|worked|ended up (redesigning|rebuilding|building|designing|creating))|we (implemented|built|created|designed|redesigned|rebuilt|launched|migrated|deployed|developed|automated|redesigned|rolled out|restructured)|my approach was|so i\b|then i\b)/i,
     result: /\b(as a result|resulted in|which (led to|resulted)|(reduced|increased|improved|grew|cut|saved|boosted)[^.]{0,40}(\d+%|\$|percent)|the (outcome|impact) was|(we|i) (achieved|delivered)|ended up|in the end|leading to|\d+%)\b/i,
   };
   function liveDetectStar(text) {
@@ -723,7 +723,33 @@
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 140)+'px';
     paintStarProgress(liveDetectStar(this.value), false);
+    logStarDetection(this.value, 'typed');
   });
+
+  // TEMPORARY INSTRUMENTATION (Priority 0.5 validation request) --
+  // remove after validation is complete. Logs exactly the requested
+  // fields for every significant transcript update. "Confidence" is
+  // reported honestly as detected-elements/4 (a simple proxy; no other
+  // confidence metric currently exists in this pipeline). "Live Score"
+  // is reported as N/A with an explicit note -- confirmed via direct
+  // code trace that the Overall Intelligence Score does NOT update
+  // during an answer, only after that question is submitted and scored
+  // by the server (see updateMetrics()/updateScoreRing(), called only
+  // from the answer-submission response handler). This instrumentation
+  // does not fabricate a live score that doesn't exist.
+  function logStarDetection(text, source) {
+    var progress = liveDetectStar(text);
+    var detectedCount = ['situation', 'task', 'action', 'result'].filter(function (k) { return progress[k]; }).length;
+    console.log('[STAR-DETECTION]\n'
+      + 'source=' + source + '\n'
+      + 'Transcript Length: ' + (text || '').length + '\n'
+      + 'Situation: ' + progress.situation + '\n'
+      + 'Task: ' + progress.task + '\n'
+      + 'Action: ' + progress.action + '\n'
+      + 'Result: ' + progress.result + '\n'
+      + 'Confidence: ' + detectedCount + '/4\n'
+      + 'Live Score: N/A (does not update until this question is submitted -- confirmed, not a bug being masked here)');
+  }
 
   document.getElementById('submitBtn').addEventListener('click', function(){ submitAnswer(false); });
   document.getElementById('skipBtn').addEventListener('click', function(){ submitAnswer(true); });
@@ -1063,7 +1089,10 @@
   /* Exposed so the Vapi block can pulse STAR nodes live WHILE the candidate
      is mid-sentence (using partial speech transcripts that we deliberately do
      NOT write into the answer box — only finalized phrases get written). */
-  window.MedhaIQ_liveStar = function(text){ paintStarProgress(liveDetectStar(text), false); };
+  window.MedhaIQ_liveStar = function(text){
+    paintStarProgress(liveDetectStar(text), false);
+    logStarDetection(text, 'voice');
+  };
   /* Voice intents (Bug fix: frozen counter on spoken "skip"). These call the
      EXACT same submitAnswer used by the on-screen buttons, so the question
      counter, server-side answeredCount, scoring, and session-end logic all
@@ -1537,6 +1566,7 @@
       window.aiIsSpeaking = true;
       sub.textContent = '● AI is speaking…';
       window.CandidateTurnComplete.reset(); // a new question just started -- clear any stale turn-state from the previous one
+      window._turnClosedForQuestionId = null; // PRIORITY 5: a new question is a fresh conversation boundary
     });
     window.questionSpeechService.onFinished(function () {
       slog('[LIFECYCLE-TRACE] QuestionSpeechService onFinished fired at ' + Date.now(), 'info');
@@ -1565,6 +1595,7 @@
         var _submitBtn = document.getElementById('submitBtn');
         if (_submitBtn && !_submitBtn.disabled && typeof window.MedhaIQ_requestSubmit === 'function') {
           console.log('[AUTO-SUBMIT] triggered via CandidateTurnComplete (source=' + info.source + ') at ' + Date.now());
+          window._turnClosedForQuestionId = currentSpokenQuestionId; // PRIORITY 5: same hard boundary as the voice-command path
           window.MedhaIQ_requestSubmit();
         } else {
           console.log('[AUTO-SUBMIT] CandidateTurnComplete fired but answer box has no content yet (source=' + info.source + ') -- nothing to submit');
@@ -1822,6 +1853,22 @@
         var input = document.getElementById('answerInput');
         if (!input) return;
 
+        // PRIORITY 5 FIX: Skip/Submit is a hard conversation boundary.
+        // Confirmed via live log evidence: transcript fragments for the
+        // SAME utterance can continue arriving (STT delivery lag) after
+        // a skip/submit command already fired and the session moved on
+        // to the next question. Any fragment tagged for the question
+        // that was just closed is discarded entirely here -- before
+        // barge-in, before conversational intents, before anything --
+        // so it can never write to the answer box, never feed
+        // CandidateTurnComplete, never influence STAR, and never leak
+        // into the next question's history.
+        if (window._turnClosedForQuestionId !== null && window._turnClosedForQuestionId !== undefined
+            && String(window._turnClosedForQuestionId) === String(currentSpokenQuestionId)) {
+          console.log('[FLUSH] discarding late transcript fragment for already-closed questionId=' + currentSpokenQuestionId + ' at ' + Date.now());
+          return;
+        }
+
         // BARGE-IN SUPPORT: the candidate always has priority. If the AI
         // is currently speaking (a question, an acknowledgement, or
         // anything else) and ANY candidate speech is detected -- even a
@@ -1881,7 +1928,7 @@
              scope for a client-side-only change): "simplify this
              question" and "give me an example." Flagged clearly rather
              than silently left unhandled. */
-          var REPEAT_INTENT_RE = /^(can you |could you |please |)(repeat|say (that|it) again|repeat (the|that) question|repeat that|come again|say again)( please)?$|^(i |)(missed|didn'?t (hear|catch)) (that|the question|it)( please)?$|^what was the question\??$|^sorry,? (can you |could you )?(repeat|say that again)( please)?$/i;
+          var REPEAT_INTENT_RE = /^(can you |could you |please |)(repeat|say (that|it) again|repeat (the|that) question( again| once more| one more time)?|repeat that( again)?|come again|say again|say (that|it) one more time)( please)?$|^(i |)(missed|didn'?t (hear|catch)) (that|the question|it)( please)?$|^what was the question\??$|^sorry,? (can you |could you )?(repeat|say that again)( please)?$/i;
           var PAUSE_INTENT_RE = /^(give me |i need |can i (get |have )?|)(a |one )?(moment|second|minute)( please)?$|^(please )?(hold on|wait|hang on)( a (moment|second|minute))?( please)?$|^(i'?m |)not ready( yet)?$/i;
 
           var convSentences = chunk
@@ -1983,6 +2030,7 @@
               slog('Barge-in: "'+chunk+'" received while interviewer was still speaking — proceeding anyway', 'info');
             }
             var answerWords = input.value.trim().split(/\s+/).filter(Boolean).length;
+            window._turnClosedForQuestionId = currentSpokenQuestionId; // PRIORITY 5: hard boundary -- any further transcript for this question is discarded from here on
             if (answerWords >= 8 && window.MedhaIQ_requestSubmit) {
               slog('Voice intent: submit ("'+chunk+'")', 'info');
               window.timelineLog('answer_auto_submitted', currentSpokenQuestionId, true, 'via voice, answerWords=' + answerWords);
