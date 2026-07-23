@@ -507,10 +507,10 @@
      services/interview.js so the live view and the server verdict agree.
      If you edit one, edit both. */
   var STAR_PATTERNS = {
-    situation: /\b(when i|at my (previous|last|current)|in my role|while (working|leading)|the (context|situation|background) was|we (were|had) facing|a few (months|years|weeks) ago|during|last (year|quarter|month|week)|in (19|20)\d{2}|i was working (on|at|with)|we were (building|working|running|struggling)|at (a|an|the|our) (company|startup|client|firm)|(our|the|a) (customer|client)s? (wanted|needed|was (asking|looking)|had a)|we had a (customer|client))\b/i,
-    task: /\b(my (task|responsibility|goal|objective|job)([^.]{0,25})? was|i was (responsible|asked|tasked|expected)|needed to|had to (deliver|fix|solve|build|reduce|improve)|the (goal|objective|target|challenge|problem|ask) was|asked me to|i had to)\b/i,
-    action: /\b(i (led|built|designed|redesigned|rebuilt|reimplemented|rearchitected|re-?architected|recreated|implemented|created|drove|decided|initiated|coordinated|proposed|negotiated|restructured|launched|rolled out|owned|developed|managed|organi[sz]ed|automated|migrated|deployed|fixed|resolved|refactored|presented|convinced|persuaded|established|introduced|analy[sz]ed|started|began|took|worked|ended up (redesigning|rebuilding|building|designing|creating))|we (implemented|built|created|designed|redesigned|rebuilt|launched|migrated|deployed|developed|automated|redesigned|rolled out|restructured)|my approach was|so i\b|then i\b)/i,
-    result: /\b(as a result|resulted in|which (led to|resulted)|(reduced|increased|improved|grew|cut|saved|boosted)[^.]{0,40}(\d+%|\$|percent)|the (outcome|impact) was|(we|i) (achieved|delivered)|ended up|in the end|leading to|\d+%)\b/i,
+    situation: /\b(when i|at my (previous|last|current)|in my role|while (working|leading)|the (context|situation|background) was|we (were|had) facing|a few (months|years|weeks) ago|during|last (year|quarter|month|week)|in (19|20)\s?\d{2}|i was working (on|at|with)|we were (building|working|running|struggling)|at (a|an|the|our) (company|startup|client|firm)|(our|the|a) (customer|client)s? (wanted|needed|was (asking|looking)|had a)|we had a (customer|client))\b/i,
+    task: /\b(my (task|responsibility|goal|objective|job)([^.]{0,25})? was|i was (responsible|asked|tasked|expected)|(we|i) need(ed)? to|had to (deliver|fix|solve|build|reduce|improve)|the (goal|objective|target|challenge|problem|ask) was|asked me to|i had to|(we|i) (had to|needed to) assess)\b/i,
+    action: /\b(i (led|built|designed|redesigned|rebuilt|reimplemented|rearchitected|re-?architected|recreated|implemented|created|drove|decided|initiated|coordinated|proposed|negotiated|restructured|launched|rolled out|owned|developed|managed|organi[sz]ed|automated|migrated|deployed|fixed|resolved|refactored|presented|convinced|persuaded|established|introduced|analy[sz]ed|started|began|took|worked|ended up (redesigning|rebuilding|building|designing|creating))|i (was|am|'m)[\s,]*(uh|um|like)?[\s,]*(leading|building|designing|managing|driving|running|developing|creating|working on|coordinating|organi[sz]ing)|we (implemented|built|created|designed|redesigned|rebuilt|launched|migrated|deployed|developed|automated|redesigned|rolled out|restructured)|my approach was|so i\b|then i\b)/i,
+    result: /\b(as a result|resulted in|which (led to|resulted)|(reduced|increased|improved|grew|cut|saved|boosted)[^.]{0,40}(\d+%|\$|percent)|the (outcome|impact) was|(we|i) (achieved|delivered)|ended up|in the end|leading to|\d+%|that'?s how (we|i) decided)\b/i,
   };
   function liveDetectStar(text) {
     var t = (text || '').toLowerCase();
@@ -784,6 +784,23 @@
     return SKIP_ACK_PHRASES[idx];
   }
 
+  // ROOT CAUSE FIX (Bug 1, "silent transition"): confirmed via direct log
+  // trace that acknowledgement was ONLY ever spoken on the skip path --
+  // a genuine answer submission went straight from CandidateTurnComplete
+  // -> AUTO-SUBMIT -> backend -> next question with nothing in between.
+  // Same rotating-phrase mechanism, same one-line-in-the-list rule,
+  // exactly the phrases requested: short, never repeated consecutively,
+  // no verbal evaluation of the answer.
+  var ANSWER_ACK_PHRASES = ['Got it.', 'Thanks.', 'Understood.', 'Makes sense.', 'Thank you.'];
+  var _lastAnswerAckIndex = -1;
+  function pickAnswerAcknowledgement() {
+    if (ANSWER_ACK_PHRASES.length <= 1) return ANSWER_ACK_PHRASES[0];
+    var idx;
+    do { idx = Math.floor(Math.random() * ANSWER_ACK_PHRASES.length); } while (idx === _lastAnswerAckIndex);
+    _lastAnswerAckIndex = idx;
+    return ANSWER_ACK_PHRASES[idx];
+  }
+
   async function submitAnswer(skip) {
     // TEMPORARY DEBUG LOGGING ONLY -- no behavior change. Placed before
     // the existing isSubmitting guard so both a call that proceeds AND
@@ -845,6 +862,19 @@
             // does not change any business logic.
             window.questionSpeechService.speak({ text: ackText, questionId: 'skip-ack', turnId: null, reason: isFinalQuestion ? 'closing' : 'skip' });
           } catch (e) { console.warn('[VoicePipeline] skip acknowledgement failed (non-fatal):', e); }
+        } else {
+          // ROOT CAUSE FIX (Bug 1): a genuine answer also gets a short
+          // acknowledgement before the next question -- previously this
+          // branch did nothing at all, confirmed via log trace. Same
+          // "final question" override as skip, since a genuine last
+          // answer also deserves the wrap-up rather than "Got it."
+          try {
+            var _isFinalAnswer = (QN >= MAXQ);
+            var _answerAckText = _isFinalAnswer
+              ? "That's the final question. I'll prepare your report now."
+              : pickAnswerAcknowledgement();
+            window.questionSpeechService.speak({ text: _answerAckText, questionId: 'answer-ack', turnId: null, reason: _isFinalAnswer ? 'closing' : 'acknowledgement' });
+          } catch (e) { console.warn('[VoicePipeline] answer acknowledgement failed (non-fatal):', e); }
         }
       } catch (e) { console.warn('[VoicePipeline] stop() on submit failed (non-fatal):', e); }
     } else if (typeof window.MedhaIQ_silenceCurrentSpeech === 'function') {
