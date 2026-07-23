@@ -179,39 +179,61 @@
   // instrumentation) never fire it at all. A design built on it alone
   // has no fallback when it's absent.
   //
-  // This module is the single source of truth for "has the candidate
-  // finished their turn." It combines whatever signals are ACTUALLY
-  // available today, using neither exclusively:
-  //   1. FAST PATH (optional): if speech-start ever fires, that's Vapi's
-  //      own endpointing telling us the turn just ended -- take it
-  //      immediately, don't wait.
-  //   2. GUARANTEED FALLBACK: every real transcript event (partial or
-  //      final) resets a short debounce. If no further transcript
-  //      activity arrives within TURN_SILENCE_MS, the turn is declared
-  //      complete on that basis alone -- this works even in a session
-  //      where speech-start never fires at all, which is exactly the
-  //      gap the old design had no answer for. This is the same
-  //      underlying concept as Deepgram's own UtteranceEnd (a
-  //      silence-duration heuristic) -- correctly implemented here, at
-  //      the turn-detection layer, rather than banned outright; the
-  //      difference from a "polling timer" is that this is a real
-  //      debounce keyed off genuine transcript activity, not an
-  //      artificial interval unrelated to anything the candidate did.
+  // OPTION C (root-cause fix, not a timeout tune): logs proved
+  // transcript-arrival timing alone is an unreliable proxy for "the
+  // candidate is done talking" -- STT delivery lag can create a gap in
+  // transcript EVENTS while the candidate is still actively speaking.
+  // Vapi's own public `volume-level` event is explicitly "Assistant
+  // volume level" (confirmed in Vapi's own docs) -- wrong participant,
+  // unusable here. But vapi.call is the real underlying Daily.js call
+  // object (already used elsewhere in this file for participants()/
+  // updateParticipant()/participant-joined), and Daily.js has a genuine,
+  // documented LOCAL participant audio-level API:
+  // startLocalAudioLevelObserver() + the 'local-audio-level' event --
+  // the candidate's own real-time mic level, independent of and parallel
+  // to STT transcript delivery entirely.
   //
-  // The Interview Engine (auto-submit logic, below) listens ONLY to
-  // onTurnComplete() -- it has no knowledge of speech-start, Vapi, or
-  // any other provider-specific event. Swapping STT providers in the
-  // future only means feeding this module's notifyTranscriptActivity()
-  // from wherever the new provider's transcripts arrive.
+  // TURN_SILENCE_MS is UNCHANGED. The fix is an AND-gate, not a bigger
+  // number: the silence-debounce firing is now also required to observe
+  // the candidate's mic level below a noise floor. If the debounce
+  // expires while the mic still shows real activity (the exact pattern
+  // the logs showed -- STT delivery lagging behind continued speech),
+  // completion is deferred until the mic level ALSO confirms silence,
+  // using the next 'local-audio-level' event itself (arriving as often
+  // as every 100ms) -- not a new timer, the existing event stream.
+  //
+  // FAILS OPEN: if the audio-level observer never starts or never
+  // fires for any reason, candidateAudioLevel stays at its initial
+  // value (below the noise floor), and behavior is IDENTICAL to the
+  // debounce-only design -- no regression risk if this signal is ever
+  // unavailable.
+  //
+  // The Interview Engine (auto-submit logic, below) still listens ONLY
+  // to onTurnComplete() -- it has no knowledge of speech-start, Daily
+  // audio levels, or any other provider-specific signal. This module
+  // remains the single, provider-independent boundary.
   var CandidateTurnComplete = (function () {
-    var TURN_SILENCE_MS = 1200; // the one tunable knob if this needs adjusting later
+    var TURN_SILENCE_MS = 1200; // UNCHANGED per explicit instruction
+    var MIC_ACTIVE_THRESHOLD = 0.05; // Daily's 0.0-1.0 local-audio-level scale -- tune after real testing (quiet/loud speakers, mic types, noisy rooms)
+    var MIC_SILENCE_CONFIRM_MS = 300; // sustained-silence requirement -- protects against breathing/clicks/fan noise/headset hiss reading as a momentary dip
     var debounceHandle = null;
+    var confirmHandle = null; // backstop timer for the sustained-silence window, cancelled if a higher reading arrives first
     var callbacks = [];
     var turnActive = false; // true once real transcript activity has been seen for the current turn
+    var candidateAudioLevel = 0; // updated by notifyAudioLevel(); 0 = fail-open default (behaves as pure debounce if never updated)
+    var awaitingAudioLevelConfirmation = false; // true when the debounce expired but the mic still showed activity
+    var belowThresholdSince = null; // timestamp when level first dropped below MIC_ACTIVE_THRESHOLD while awaiting confirmation
+
+    function clearConfirmTimer() {
+      if (confirmHandle) { clearTimeout(confirmHandle); confirmHandle = null; }
+      belowThresholdSince = null;
+    }
 
     function fire(source) {
       if (!turnActive) return; // nothing to complete -- avoids a stray fast-path signal firing on an empty/not-yet-started turn
       turnActive = false;
+      awaitingAudioLevelConfirmation = false;
+      clearConfirmTimer();
       if (debounceHandle) { clearTimeout(debounceHandle); debounceHandle = null; }
       console.log('[CandidateTurnComplete] fired via ' + source + ' at ' + Date.now());
       callbacks.forEach(function (cb) {
@@ -225,8 +247,62 @@
       // (re)schedules the guaranteed fallback.
       notifyTranscriptActivity: function () {
         turnActive = true;
+        awaitingAudioLevelConfirmation = false; // new transcript activity supersedes any pending audio-level wait
+        clearConfirmTimer();
         if (debounceHandle) clearTimeout(debounceHandle);
-        debounceHandle = setTimeout(function () { fire('silence-debounce'); }, TURN_SILENCE_MS);
+        debounceHandle = setTimeout(function () {
+          if (candidateAudioLevel >= MIC_ACTIVE_THRESHOLD) {
+            // Transcript went quiet, but the mic still shows real
+            // activity -- exactly the pattern the logs proved: STT
+            // delivery lagging behind continued speech. Defer instead
+            // of firing; subsequent local-audio-level events (or fresh
+            // transcript activity, which supersedes this entirely) will
+            // resolve it.
+            console.log('[CandidateTurnComplete] debounce expired but candidateAudioLevel=' + candidateAudioLevel.toFixed(3) + ' still active -- deferring completion, awaiting SUSTAINED audio-level confirmation at ' + Date.now());
+            awaitingAudioLevelConfirmation = true;
+            return;
+          }
+          fire('silence-debounce');
+        }, TURN_SILENCE_MS);
+      },
+      // Feed the candidate's real-time mic level (Daily's
+      // 'local-audio-level' event, 0.0-1.0). Purely additive: if this is
+      // never called, candidateAudioLevel stays 0 and behavior is
+      // identical to the pre-existing debounce-only design.
+      //
+      // Requires SUSTAINED silence (MIC_SILENCE_CONFIRM_MS), not a single
+      // instantaneous dip -- a momentary drop between words, or a
+      // breathing gap, must not be mistaken for the turn actually ending.
+      notifyAudioLevel: function (level) {
+        candidateAudioLevel = level;
+        if (!awaitingAudioLevelConfirmation) return;
+
+        if (level >= MIC_ACTIVE_THRESHOLD) {
+          // Activity resumed before the confirm window elapsed -- candidate
+          // is still audibly present. Cancel and wait for a fresh dip.
+          if (belowThresholdSince !== null) {
+            console.log('[CandidateTurnComplete] audio level rose again (' + level.toFixed(3) + ') before sustained-silence window elapsed -- resetting confirm window at ' + Date.now());
+          }
+          clearConfirmTimer();
+          return;
+        }
+
+        // Level is below threshold. Start (or continue) timing the
+        // sustained-silence window if not already doing so.
+        if (belowThresholdSince === null) {
+          belowThresholdSince = Date.now();
+          var self = this;
+          confirmHandle = setTimeout(function () {
+            // Backstop: fires only if no higher reading arrived to cancel
+            // this in the meantime -- confirms MIC_SILENCE_CONFIRM_MS of
+            // genuinely sustained silence, not a momentary dip.
+            if (awaitingAudioLevelConfirmation && candidateAudioLevel < MIC_ACTIVE_THRESHOLD) {
+              console.log('[CandidateTurnComplete] sustained silence confirmed (' + MIC_SILENCE_CONFIRM_MS + 'ms below ' + MIC_ACTIVE_THRESHOLD + ') -- completing deferred turn at ' + Date.now());
+              awaitingAudioLevelConfirmation = false;
+              fire('silence-debounce-plus-audio-level-confirmed');
+            }
+          }, MIC_SILENCE_CONFIRM_MS);
+        }
       },
       // Call when any optional, provider-specific fast-path signal
       // fires (today: Vapi's speech-start). Fires immediately if a
@@ -238,6 +314,8 @@
       // stale debounce/turn-state left over from the previous turn.
       reset: function () {
         turnActive = false;
+        awaitingAudioLevelConfirmation = false;
+        clearConfirmTimer();
         if (debounceHandle) { clearTimeout(debounceHandle); debounceHandle = null; }
       },
       onTurnComplete: function (cb) {
@@ -1643,6 +1721,34 @@
             });
           }
         } catch (e) { console.warn('[Vapi] could not attach participant-joined/left mute listeners (non-fatal):', e); }
+
+        // Option C fix (root cause, not a timeout tune): start Daily's
+        // genuine local-participant audio-level observer -- the
+        // candidate's real mic level, independent of STT transcript
+        // delivery entirely. Feeds CandidateTurnComplete.notifyAudioLevel()
+        // so the silence-debounce can be gated by actual voice activity,
+        // not just transcript timing. Wrapped defensively: if this fails
+        // to start for any reason, candidateAudioLevel simply never
+        // updates and the module falls back to its original debounce-
+        // only behavior automatically -- fails open, no regression risk.
+        try {
+          if (vapi && vapi.call && typeof vapi.call.startLocalAudioLevelObserver === 'function') {
+            vapi.call.startLocalAudioLevelObserver(100); // Daily's own minimum supported interval
+            vapi.call.on('local-audio-level', function (e) {
+              var level = (e && typeof e.audioLevel === 'number') ? e.audioLevel : 0;
+              // VALIDATION-PROOF LOGGING (temporary, per explicit request):
+              // every raw reading, so a real test run can be visually
+              // confirmed -- does audio level actually track speech vs
+              // silence sensibly in this environment (mic types, room
+              // noise, etc.) before this signal is trusted further.
+              console.log('[AUDIO-LEVEL] ' + level.toFixed(3) + ' at ' + Date.now());
+              window.CandidateTurnComplete.notifyAudioLevel(level);
+            });
+            console.log('[VAPI-LIFECYCLE] local-audio-level observer started at ' + Date.now());
+          } else {
+            console.warn('[Vapi] startLocalAudioLevelObserver not available on this vapi.call -- CandidateTurnComplete falls back to debounce-only behavior (fail-open, no regression)');
+          }
+        } catch (e) { console.warn('[Vapi] could not start local-audio-level observer (non-fatal, fails open to debounce-only behavior):', e); }
       }
       if (window._vapiConnectionAttempts === 1) {
         console.log('[STT]\nconnected');
