@@ -793,7 +793,7 @@ function switchTab(tab) {
       })
     });
     const data = await res.json();
-    return data;
+    return { status: res.status, data: data };
   }
 
   document.getElementById('beginBtn').addEventListener('click', async () => {
@@ -804,30 +804,68 @@ function switchTab(tab) {
     }
     btn.textContent = 'Initializing...';
 
-    // P0 FIX: silently retry before ever showing "Failed to launch" --
-    // a single transient hiccup (backend cold start, brief network
-    // blip) should never surface an alarming error to the candidate if
-    // a retry would have succeeded moments later. The UI stays
-    // identical ("Initializing...") across all attempts -- launching
-    // should look the same whether it succeeds on try 1 or try 3.
+    // P0 FIX (real root cause, confirmed via live staging console): the
+    // previous retry logic worked exactly as designed, but retrying
+    // can't fix THIS condition -- the backend was correctly rejecting
+    // creation because a previous session was left 'active' (e.g. the
+    // candidate closed the tab without clicking "End Session"). Three
+    // pointless retries just delayed an unhelpful "Failed to launch"
+    // alert with zero explanation. Checked FIRST, before any retry
+    // loop, since retrying a persistent state condition only wastes
+    // time -- then the candidate gets a real, actionable choice instead
+    // of a dead end.
+    var first = await createSessionOnce().catch(function (e) { return { status: 0, data: { error: String(e) } }; });
+    if (first.status === 409 && first.data && first.data.reason === 'ACTIVE_SESSION_EXISTS') {
+      var activeId = first.data.activeSessionId;
+      var wantsResume = activeId
+        ? confirm('You have an interview already in progress. Click OK to resume it, or Cancel to end it and start a new one.')
+        : confirm('You have an interview already in progress, but it could not be located to resume directly. Click OK to end it and start a new one.');
+      if (wantsResume && activeId) {
+        window.location.href = '/interview/session/' + activeId;
+        return;
+      }
+      // Either no activeId to resume, or the candidate chose to end it --
+      // reuses the exact same DELETE endpoint the "End Session" button
+      // already calls, then retries creation once, fresh.
+      if (activeId) {
+        try { await fetch('/api/interview/sessions/' + activeId, { method: 'DELETE' }); }
+        catch (e) { console.warn('[Launch] could not end previous session (non-fatal, will still retry creation):', e); }
+      }
+      var afterEnding = await createSessionOnce().catch(function (e) { return { status: 0, data: { error: String(e) } }; });
+      if (afterEnding.data && afterEnding.data.sessionId) {
+        window.location.href = '/interview/session/' + afterEnding.data.sessionId;
+        return;
+      }
+      console.error('[Launch] failed even after ending the previous session:', afterEnding);
+      alert('Failed to launch. Please check console.');
+      btn.textContent = 'Initialize Session →';
+      return;
+    }
+    if (first.data && first.data.sessionId) {
+      window.location.href = '/interview/session/' + first.data.sessionId;
+      return;
+    }
+
+    // Any OTHER failure (transient network/backend hiccup) still gets
+    // the silent-retry treatment from before -- that part was already
+    // correct, just never reached previously because this specific,
+    // persistent condition was exhausting all 3 attempts pointlessly.
     const MAX_ATTEMPTS = 3;
     const RETRY_DELAY_MS = 800;
-    let lastError = null;
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    let lastError = first.data && first.data.error;
+    for (let attempt = 2; attempt <= MAX_ATTEMPTS; attempt++) {
+      await new Promise(function (r) { setTimeout(r, RETRY_DELAY_MS); });
       try {
-        const data = await createSessionOnce();
-        if (data && data.sessionId) {
-          window.location.href = '/interview/session/' + data.sessionId;
+        const result = await createSessionOnce();
+        if (result.data && result.data.sessionId) {
+          window.location.href = '/interview/session/' + result.data.sessionId;
           return;
         }
-        console.warn('[Launch] attempt ' + attempt + ' returned no sessionId:', data);
-        lastError = data && data.error;
+        console.warn('[Launch] attempt ' + attempt + ' returned no sessionId:', result.data);
+        lastError = result.data && result.data.error;
       } catch (e) {
         console.warn('[Launch] attempt ' + attempt + ' threw:', e);
         lastError = e;
-      }
-      if (attempt < MAX_ATTEMPTS) {
-        await new Promise(function (r) { setTimeout(r, RETRY_DELAY_MS); });
       }
     }
     // Only reached if ALL attempts failed.

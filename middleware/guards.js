@@ -68,6 +68,7 @@ async function requireInterviewEntitlement(req, res, next) {
     return res.status(409).json({
       error: 'An interview session is already active',
       reason: 'ACTIVE_SESSION_EXISTS',
+      activeSessionId: capabilities.interviewEntitlement.activeSessionId,
     });
   }
   if (!capabilities.actions.canStartInterview) {

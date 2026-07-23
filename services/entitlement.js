@@ -64,6 +64,11 @@ async function getInterviewEntitlement(userId, tier) {
 
   const hasActiveInterview = sessions.some(s => s.status === 'active');
   const hasCompletedInterview = sessions.some(s => s.status === 'completed');
+  // P0 fix: expose WHICH session is active, not just whether one is.
+  // Previously hasActiveInterview was a bare boolean -- callers had no
+  // way to offer "resume your existing session," only "no."
+  const activeSession = sessions.find(s => s.status === 'active');
+  const activeSessionId = activeSession ? activeSession.id : null;
 
   // .unlimited lives one level up from .interview in PLAN_CONFIG — read it
   // off the plan root, not off the `plan` local (which is already
@@ -80,6 +85,7 @@ async function getInterviewEntitlement(userId, tier) {
       maxSessionMinutes: plan.maxSessionMinutes,
       hasActiveInterview,
       hasCompletedInterview,
+      activeSessionId,
     };
   }
 
@@ -90,7 +96,6 @@ async function getInterviewEntitlement(userId, tier) {
     .filter(s => s.status === 'completed' || s.status === 'abandoned')
     .reduce((sum, s) => sum + cappedSessionMinutes(s, plan.maxSessionMinutes), 0);
 
-  const activeSession = sessions.find(s => s.status === 'active');
   const activeMinutes = activeSession ? cappedSessionMinutes(activeSession, plan.maxSessionMinutes) : 0;
 
   const minutesUsed = finishedMinutes + activeMinutes;
@@ -109,6 +114,7 @@ async function getInterviewEntitlement(userId, tier) {
     maxSessionMinutes: plan.maxSessionMinutes,
     hasActiveInterview,
     hasCompletedInterview,
+    activeSessionId,
   };
 }
 
