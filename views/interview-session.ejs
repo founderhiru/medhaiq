@@ -748,6 +748,16 @@
   }
 
   async function submitAnswer(skip) {
+    // TEMPORARY DEBUG LOGGING ONLY -- no behavior change. Placed before
+    // the existing isSubmitting guard so both a call that proceeds AND
+    // one that gets blocked by it are equally visible; wasAlreadyInFlight
+    // is read BEFORE isSubmitting is set below, so it reflects the true
+    // state at the moment THIS call started, not after.
+    window._submitAnswerRequestId = (window._submitAnswerRequestId || 0) + 1;
+    var _thisRequestId = window._submitAnswerRequestId;
+    var _wasAlreadyInFlight = isSubmitting;
+    console.log('[SUBMIT-TRACE] requestId=' + _thisRequestId + ' questionId=' + QID + ' timestamp=' + Date.now() + ' wasAlreadyInFlight=' + _wasAlreadyInFlight + (_wasAlreadyInFlight ? ' -- WILL BE BLOCKED by isSubmitting guard below' : ' -- will proceed'));
+
     if (isSubmitting) return;
     isSubmitting = true;
     // Immediately silence any in-progress assistant speech — applies to
@@ -811,11 +821,13 @@
     showLoading('Analyzing your response...');
     slog('Q'+QN+' submitted — AI scoring...','info');
     try {
+      console.log('[SUBMIT-TRACE] requestId=' + _thisRequestId + ' questionId=' + QID + ' NETWORK CALL STARTING at ' + Date.now());
       var resp = await fetch('/api/interview/sessions/'+SID+'/answer', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ questionId: QID, answerText: ans, skip: skip }),
       });
       var data = await resp.json();
+      console.log('[SUBMIT-TRACE] requestId=' + _thisRequestId + ' questionId=' + QID + ' NETWORK CALL RESOLVED at ' + Date.now() + ' status=' + resp.status + ' error=' + (data && data.error) + ' sessionEnded=' + (data && data.sessionEnded));
       if (resp.status === 409 && data.duplicate) {
         // A duplicate/raced submission for a question that's already been
         // answered — expected now and then if a click slipped through
