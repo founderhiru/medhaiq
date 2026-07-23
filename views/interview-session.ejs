@@ -215,7 +215,7 @@
   // onTurnComplete() -- it has no knowledge of speech-start, Vapi, or
   // any other provider-specific event.
   var CandidateTurnComplete = (function () {
-    var TURN_SILENCE_MS = 1200; // UNCHANGED per explicit instruction
+    var TURN_SILENCE_MS = 3500; // Explicit spec: "wait approximately 3-4 seconds of continuous silence before treating the answer as complete." 3500ms is the midpoint of that range. Also matches real staging evidence (P1.log) showing candidates cut off mid-sentence, including one case where the candidate literally said "I'm not done yet," at the previous 1200ms threshold.
     var debounceHandle = null;
     var callbacks = [];
     var turnActive = false; // true once real transcript activity has been seen for the current turn
@@ -1821,6 +1821,26 @@
       if (message.role === 'user') {
         var input = document.getElementById('answerInput');
         if (!input) return;
+
+        // BARGE-IN SUPPORT: the candidate always has priority. If the AI
+        // is currently speaking (a question, an acknowledgement, or
+        // anything else) and ANY candidate speech is detected -- even a
+        // tiny partial fragment, before we know what they're saying --
+        // stop the AI immediately and return to listening. Reuses the
+        // exact same stop()+onIntentionalCancel() mechanism already used
+        // for skip/submit interruption (see submitAnswer()) -- no new
+        // stop mechanism, just a new trigger condition. Checked first,
+        // before any other transcript handling, so it fires as early as
+        // possible regardless of transcript type.
+        if (window.aiIsSpeaking && window.VOICE_PIPELINE_MODE === 'tts_pipeline' && window.questionSpeechService) {
+          console.log('[BARGE-IN] candidate speech detected while AI speaking -- stopping AI immediately at ' + Date.now());
+          try {
+            window.questionSpeechService.stop();
+            window.InterviewVoiceController.onIntentionalCancel();
+          } catch (e) { console.warn('[BARGE-IN] stop failed (non-fatal):', e); }
+          window.aiIsSpeaking = false;
+          sub.textContent = 'Your turn — speak clearly';
+        }
         if (message.transcriptType === 'final' && message.transcript) {
           var chunk = String(message.transcript).trim();
           window.timelineLog('final_transcript_received', currentSpokenQuestionId, true, 'text="' + chunk.slice(0, 60) + '..."');
@@ -1950,16 +1970,15 @@
       slog('[LIFECYCLE-TRACE] speech-start fired at ' + Date.now() + ' (turnId=' + currentSpokenTurnId + ' questionId=' + currentSpokenQuestionId + ')', 'info');
       if (window.VOICE_PIPELINE_MODE !== 'legacy_vapi') {
         slog('[LIFECYCLE-TRACE] speech-start ignored for UI/controller purposes -- tts_pipeline active, Vapi is supposed to be STT-only (see SPEECH SOURCE log above for confirmed leak evidence)', 'info');
-        // ARCHITECTURAL FIX (per explicit requirement): this no longer
-        // decides anything itself. speech-start firing here means
-        // Vapi's own endpointing decided the candidate is done talking
-        // -- that's real, useful information -- but it is only ONE of
-        // potentially several signals CandidateTurnComplete considers.
-        // If this event never fires in a given session (confirmed to
-        // happen), the module's own transcript-activity debounce is
-        // still sufficient on its own. This file no longer contains any
-        // logic that only works when speech-start happens to be present.
-        window.CandidateTurnComplete.notifyFastPathSignal('vapi-speech-start');
+        // FIX (defense-in-depth): speech-start is NOT used as a
+        // turn-complete signal. Confirmed unreliable two ways: (1)
+        // absent entirely in some sessions, and (2) Vapi's assistant is
+        // confirmed still generating spurious responses (SPEECH SOURCE
+        // evidence), and every one of those also fires speech-start,
+        // which would prematurely end the candidate's turn for reasons
+        // unrelated to their actual speech. The silence-debounce (fed by
+        // real transcript activity only) is the sole signal now.
+        console.log('[CandidateTurnComplete] speech-start received but NOT used as a signal (see fix rationale above) at ' + Date.now());
         return;
       }
       InterviewVoiceController.onSpeechStart(); // observation only -- does not itself advance anything (Invariant 4)
