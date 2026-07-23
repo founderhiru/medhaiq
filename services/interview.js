@@ -302,64 +302,15 @@ function styleKeyForLevel(levelNum) {
 const COMPETENCY_UNIVERSE = Object.keys(SUBSKILL_MATRIX).filter(k => k !== 'default');
 
 // ── A. The Coverage & Memory Engine ──
-// Attributes each qaPair to a competency using a 3-layer fallback, since
-// the bracket tag a question is generated with never survives to the DB
-// (sanitizeQuestionOutput strips it before save, and db/interview.js's
-// addQuestion() has no competency column — a pre-existing gap flagged
-// and deliberately deferred in an earlier round):
-//   1. Metadata (safest): an explicit qa.competency / qa.metadata.competency
-//      field, if the qa object ever carries one (it doesn't today via the
-//      DB-backed qaPairs built in routes/interview.js, but this stays
-//      forward-compatible and costs nothing to check first).
-//   2. Keyword/subskill heuristic (tested in the previous round): does the
-//      question/answer text mention one of this competency's subskills?
-//   3. Raw bracket tag: in case this ever runs against un-sanitized text
-//      evaluated in-memory before it hits the DB.
-// Layers only cascade when the prior layer gives NO signal at all — if
-// metadata is present but names a different competency, that's treated
-// as authoritative and layers 2/3 are skipped for that qa/comp pair.
-function textMentionsSubskill(qa, subskill) {
-  const haystack = `${qa?.question || ''} ${qa?.answer || ''}`.toLowerCase();
-  return haystack.includes(String(subskill).toLowerCase());
-}
-
-function qaBelongsToCompetency(qa, comp) {
-  const metaComp = String(qa?.competency || qa?.metadata?.competency || '').toLowerCase().trim();
-  if (metaComp) return metaComp === comp.toLowerCase();
-
-  const subskills = SUBSKILL_MATRIX[comp] || SUBSKILL_MATRIX.default;
-  if (subskills.some(sub => textMentionsSubskill(qa, sub))) return true;
-
-  return Boolean(qa?.question && qa.question.toLowerCase().includes('[' + comp.toLowerCase() + ']'));
-}
-
-function runCoverageAndMemoryEngine(competencyPriority, qaPairs, currentTurn) {
-  const profile = {};
-  competencyPriority.forEach(comp => {
-    profile[comp] = { totalQuestionsAsked: 0, scores: [], observedSubskills: new Set(), lastAskedTurn: -1 };
-  });
-
-  (Array.isArray(qaPairs) ? qaPairs : []).forEach((qa, turnIdx) => {
-    if (!qa || !qa.question) return;
-    competencyPriority.forEach(comp => {
-      if (qaBelongsToCompetency(qa, comp)) {
-        profile[comp].totalQuestionsAsked++;
-        profile[comp].lastAskedTurn = turnIdx;
-        if (qa.score !== null && qa.score !== undefined && !qa.wasSkipped) {
-          profile[comp].scores.push(Number(qa.score));
-        }
-        const subskills = SUBSKILL_MATRIX[comp] || SUBSKILL_MATRIX.default;
-        subskills.forEach(sub => {
-          const token = sub.toLowerCase();
-          if (qa.question.toLowerCase().includes(token) || (qa.answer && qa.answer.toLowerCase().includes(token))) {
-            profile[comp].observedSubskills.add(sub);
-          }
-        });
-      }
-    });
-  });
-  return profile;
-}
+// Extracted to services/interview/conversation-memory.js per Architecture
+// Specification v1.1 Migration Blueprint, Phase 1 (pure relocation, zero
+// logic change — see that file's header for the full ownership doc and
+// tests/conversation-memory-characterization.js for the before/after proof).
+// SUBSKILL_MATRIX is defined below in this file and passed in once here;
+// every call site downstream (runCoverageAndMemoryEngine(...), etc.) is
+// unchanged from before this extraction.
+const createConversationMemory = require('./interview/conversation-memory');
+const { runCoverageAndMemoryEngine, textMentionsSubskill, qaBelongsToCompetency } = createConversationMemory(SUBSKILL_MATRIX);
 
 // ── B. The Hypothesis & Evidence Engine ──
 // Returns STRUCTURED DATA ONLY (per production-readiness audit item 2/7)
