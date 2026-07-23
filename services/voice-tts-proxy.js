@@ -28,6 +28,72 @@ function logTTS(event, detail) {
   console.log('[TTS][server] ' + event + (detail ? ' ' + JSON.stringify(detail) : ''));
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Spoken currency/number normalization (bug fix, 2026-07-23)
+//
+// ElevenLabs was reading "$25M" literally as "twenty-five em" instead of
+// "twenty-five million dollars". Deliberately applied ONLY here, at the
+// TTS synthesis seam — this is the one place in the codebase that holds
+// the actual spoken text right before it goes to ElevenLabs, so the
+// written form ("$25M") shown in the UI / stored in the DB is completely
+// untouched; only what gets spoken changes. Deterministic, no LLM call.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const CURRENCY_WORDS = { '$': 'dollars', '₹': 'rupees', '€': 'euros', '£': 'pounds' };
+const MAGNITUDE_WORDS = { K: 'thousand', L: 'lakh', CR: 'crore', M: 'million', B: 'billion', T: 'trillion' };
+const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+  'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+// Supports 0-999 — sufficient here since the magnitude word (thousand /
+// lakh / crore / million / etc.) carries the scale; the number in front of
+// an abbreviation is essentially always a small integer or one-decimal value.
+function integerToWords(n) {
+  if (n === 0) return 'zero';
+  let str = '';
+  if (n >= 100) {
+    str += ONES[Math.floor(n / 100)] + ' hundred';
+    n %= 100;
+    if (n) str += ' ';
+  }
+  if (n >= 20) {
+    str += TENS[Math.floor(n / 10)];
+    if (n % 10) str += '-' + ONES[n % 10];
+  } else if (n > 0) {
+    str += ONES[n];
+  }
+  return str;
+}
+
+function numberToWords(numStr) {
+  const [intPart, decPart] = String(numStr).split('.');
+  let spoken = integerToWords(parseInt(intPart, 10) || 0);
+  if (decPart) {
+    spoken += ' point ' + decPart.split('').map((d) => ONES[parseInt(d, 10)]).join(' ');
+  }
+  return spoken;
+}
+
+/**
+ * Expands abbreviated monetary values into natural spoken English.
+ * "$25M" -> "twenty-five million dollars", "₹5Cr" -> "five crore rupees".
+ * Leaves everything else (already-natural text, unknown symbols) untouched.
+ */
+function normalizeSpokenCurrency(text) {
+  if (!text || typeof text !== 'string') return text;
+  const pattern = /([$₹€£])\s?(\d+(?:\.\d+)?)\s?(Cr|CR|cr|K|k|M|m|B|b|T|t|L|l)?(?![a-zA-Z])/g;
+  return text.replace(pattern, (match, symbol, numStr, suffix) => {
+    const currencyWord = CURRENCY_WORDS[symbol];
+    if (!currencyWord) return match; // unknown symbol — leave untouched
+    let spoken = numberToWords(numStr);
+    if (suffix) {
+      const key = suffix.toLowerCase() === 'cr' ? 'CR' : suffix.toUpperCase();
+      if (MAGNITUDE_WORDS[key]) spoken += ' ' + MAGNITUDE_WORDS[key];
+    }
+    return `${spoken} ${currencyWord}`;
+  });
+}
+
 /**
  * @param {{ text: string, voice: string, language: string, streaming: boolean }} params
  * @returns {Promise<{ buffer: Buffer, contentType: string }>}
@@ -35,6 +101,10 @@ function logTTS(event, detail) {
  */
 async function synthesizeViaElevenLabs(params) {
   const startedAt = Date.now();
+  const spokenText = normalizeSpokenCurrency(params.text);
+  if (spokenText !== params.text) {
+    logTTS('currency-normalized', { original: params.text, spoken: spokenText });
+  }
   logTTS('synthesize:start', { textLength: (params.text || '').length, voice: params.voice, language: params.language });
 
   if (!VOICE_SERVER_CONFIG.elevenLabsApiKey) {
@@ -60,7 +130,7 @@ async function synthesizeViaElevenLabs(params) {
         'xi-api-key': VOICE_SERVER_CONFIG.elevenLabsApiKey,
       },
       body: JSON.stringify({
-        text: params.text,
+        text: spokenText,
         // language/streaming forwarded as-is; ElevenLabs-specific request
         // shape lives ENTIRELY inside this function -- nothing above this
         // line (routes/voice-tts.js, and everything client-side) knows

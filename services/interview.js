@@ -609,8 +609,14 @@ Phrasing rules:
 - If a story was retrieved but has no hook, build the question FROM that story more generally — name the company/achievement naturally, then ask the competency-relevant question about it.
 - If no story was retrieved but a JD requirement is listed, frame a role-specific scenario around that requirement instead — no resume reference.
 - If neither is present, ask a general competency question.
-${!story ? `
+${(!story && !(isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt)) ? `
 CRITICAL — NO STORY WAS SELECTED FOR THIS TURN: the blueprint above deliberately chose not to use a resume story. This is a real decision, not an oversight, and it is not yours to override. Your question MUST NOT name, reference, or allude to ANY company, employer, customer, or project from the candidate's career history — not the one from a previous question, not one you might infer from context, none. Do not open with "At [company]...", "During your [X] work...", "While you were leading...", or any phrase that implies a specific past employer. Build entirely hypothetical, forward-looking, or general-scenario language instead (e.g. "Imagine you inherit an organisation where...", "If you were leading a team where..."). If you catch yourself about to type a real company name, stop and rewrite the sentence without it.` : ''}
+${(!story && isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt) ? `
+CRITICAL — GROUND THIS FOLLOW-UP IN WHAT THE CANDIDATE ACTUALLY SAID: a resume story was originally planned for this follow-up, but it does not match what the candidate described in their last answer, so it has been deliberately abandoned — do not use it, and do not invent a similar-sounding one. Build this follow-up ENTIRELY from the candidate's own words below. Do not introduce any company, technology, metric, or project that is not present in this quoted answer:
+"""
+${questionBlueprint.grounding_answer_excerpt}
+"""
+Ask ONE question that deepens something specific and concrete from the quoted answer above — a decision they made, a trade-off, a stakeholder reaction, or a result they mentioned. If nothing sufficiently concrete is present, ask them to elaborate on their overall approach in general terms — still without introducing any outside fact.` : ''}
 ${isFollowup ? `- This is a FOLLOW-UP: deepen the candidate's last answer about this exact same story/topic — do not shift to a different one.` : `- This is a NEW ${questionBlueprint.question_type} question — the story above was already chosen to avoid repeating a story used earlier this session.`}
 
 One question = one objective (critical self-check before you finalize): a primary question must contain exactly ONE resume/story reference, ONE competency, ONE objective, and ONE ask — nothing else. If your draft mentions situation AND stakeholders AND constraints AND outcome all at once, cut it down to the single core ask before returning it. Then run the TWO FINAL CHECKS from the Executive Interviewer Voice contract above — the Personalization Test and the Executive Interview Test — and rewrite before returning if either fails.
@@ -855,6 +861,128 @@ function selectStoryForCompetency({ storyLibrary, competency, usedStoryKeys, jdT
 
   scored.sort((a, b) => b.score - a.score);
   return (scored[0] && scored[0].score > 0) ? scored[0].story_key : null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Story Consistency Validator (bug fix, 2026-07-23)
+//
+// Bug: a primary question's story_key is pre-assigned from the résumé's
+// Career Story Library BEFORE the candidate ever answers (selectStoryForCompetency
+// above). If the candidate's actual spoken answer diverges from that
+// pre-assigned story, the follow-up turn still blindly trusted forcedStoryKey
+// (routes/interview.js: forcedStoryKey = lastPrimary.story_key) and asked
+// about résumé facts the candidate never said out loud — e.g. a candidate
+// who answered about a Salesforce/Heroku decision got asked about a "$25M
+// containerization engagement" from a completely different résumé story.
+//
+// Fix: before trusting forcedStoryKey for a follow-up, check whether the
+// candidate's actual last answer supports it. Deterministic, no LLM call —
+// same scoring philosophy as selectStoryForCompetency above: compare
+// concrete entities (technologies, customer, company, industry, distinctive
+// narrative keywords), not exact wording.
+//
+// The interviewer follows the candidate's story, not the résumé's story —
+// the résumé is a planning aid; the spoken answer is the source of truth.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const STORY_SIGNAL_STOPWORDS = new Set([
+  'the', 'and', 'with', 'from', 'that', 'this', 'were', 'have', 'their', 'which',
+  'into', 'over', 'under', 'through', 'about', 'while', 'when', 'where', 'after',
+  'before', 'because', 'been', 'being', 'also', 'more', 'than', 'such', 'some',
+  'each', 'every', 'both', 'only', 'very', 'across', 'using', 'used', 'based',
+]);
+
+// Concrete, checkable entities a story actually carries — weighted so
+// specific, unlikely-to-coincide facts (a named technology, a named
+// customer) count for more than a shared employer name (many stories in
+// the same library share the same employer, so it's the weakest signal).
+function extractStorySignals(story) {
+  const signals = [];
+  (Array.isArray(story.technologies) ? story.technologies : []).forEach((t) => {
+    if (t && String(t).trim().length > 1) signals.push({ type: 'technology', value: String(t).trim(), weight: 3 });
+  });
+  if (story.customer && String(story.customer).trim().length > 2) signals.push({ type: 'customer', value: story.customer, weight: 3 });
+  if (story.company && String(story.company).trim().length > 2) signals.push({ type: 'company', value: story.company, weight: 1 });
+  if (story.industry && String(story.industry).trim().length > 2) signals.push({ type: 'industry', value: story.industry, weight: 1 });
+  const narrative = [story.challenge, story.decision, story.outcome].filter(Boolean).join(' ');
+  const words = narrative.toLowerCase().split(/[^a-z0-9$₹€£]+/i).filter((w) => w.length > 5 && !STORY_SIGNAL_STOPWORDS.has(w));
+  Array.from(new Set(words)).slice(0, 8).forEach((w) => signals.push({ type: 'keyword', value: w, weight: 1 }));
+  return signals;
+}
+
+// Same fuzzy match as findMentionedCompany below (acronym fallback for
+// multi-word entities — "AWS" for "Amazon Web Services") generalized to
+// any entity value, not just companies. Also stems single-word technical
+// terms (containerization/containerized, migration/migrating) so a
+// candidate paraphrasing a technology they genuinely used isn't scored as
+// a mismatch — this matters because a false NEGATIVE here (treating a
+// correct story as inconsistent) is exactly the regression this fix must
+// not introduce.
+function fuzzyStem(word) {
+  return String(word).toLowerCase().replace(/(ization|izing|ised|ized|ising|ation|ing|ers|er|ed|es|s)$/, '').slice(0, 6);
+}
+function textMentionsValue(haystackLower, value) {
+  const v = String(value).trim();
+  if (!v) return false;
+  if (haystackLower.includes(v.toLowerCase())) return true;
+  const words = v.split(/\s+/).filter((w) => /^[A-Za-z]/.test(w));
+  if (words.length >= 2) {
+    const acronym = words.map((w) => w[0]).join('');
+    if (acronym.length >= 2 && new RegExp('\\b' + acronym + '\\b', 'i').test(haystackLower)) return true;
+  }
+  if (words.length === 1) {
+    const stem = fuzzyStem(v);
+    if (stem.length >= 4 && haystackLower.includes(stem)) return true;
+  }
+  return false;
+}
+
+/**
+ * Does the candidate's actual answer support the planned story?
+ * @returns {{confidence:number, label:'high'|'medium'|'low'|'no_story'|'insufficient_signal'|'insufficient_answer', matched:Array, totalSignals:number}}
+ */
+function computeStoryConsistency(answerText, story) {
+  if (!story) return { confidence: 0, label: 'no_story', matched: [], totalSignals: 0 };
+  const answerLower = String(answerText || '').toLowerCase();
+  if (!answerLower.trim()) return { confidence: 0.5, label: 'insufficient_answer', matched: [], totalSignals: 0 };
+
+  const signals = extractStorySignals(story);
+  if (!signals.length) return { confidence: 0.5, label: 'insufficient_signal', matched: [], totalSignals: 0 };
+
+  let matchedWeight = 0;
+  let totalWeight = 0;
+  const matched = [];
+  signals.forEach((sig) => {
+    totalWeight += sig.weight;
+    if (textMentionsValue(answerLower, sig.value)) { matchedWeight += sig.weight; matched.push(sig); }
+  });
+  const confidence = totalWeight > 0 ? matchedWeight / totalWeight : 0.5;
+  // Deliberately conservative: only a near-zero overlap counts as 'low'
+  // (a genuine mismatch — the actual bug scenario scored 0.0 here). Any
+  // real signal overlap, even partial, is treated as 'medium' and kept —
+  // candidates paraphrase; a partial match is far more likely to be the
+  // SAME story described loosely than a coincidence. Only the complete
+  // absence of overlap should override the planned story.
+  const label = confidence >= 0.5 ? 'high' : (confidence >= 0.15 ? 'medium' : 'low');
+  return { confidence: Number(confidence.toFixed(2)), label, matched, totalSignals: signals.length };
+}
+
+// Story rebinding: if the forced story doesn't match, check whether the
+// candidate's answer actually matches a DIFFERENT story already in their
+// own library (same scoring, run against every candidate story). Only
+// rebinds to a story that itself scores 'high' — otherwise there's nothing
+// concrete enough to safely rebind to, and the caller should fall back to
+// grounding the follow-up in the answer text directly instead.
+function findRebindStory(answerText, stories, excludeKey) {
+  let best = null;
+  (stories || []).forEach((s) => {
+    if (!s || s.story_key === excludeKey) return;
+    const result = computeStoryConsistency(answerText, s);
+    if (result.label === 'high' && (!best || result.confidence > best.result.confidence)) {
+      best = { story: s, result };
+    }
+  });
+  return best;
 }
 
 /**
@@ -1169,12 +1297,72 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   // using signals already available to orchestration (qaPairs carries each
   // past turn's storyKey, so "already used" is derived with zero new state).
   const usedStoryKeys = new Set(qaPairs.map(p => p.storyKey).filter(Boolean));
-  const selectedStoryKey = isFollowup
-    ? (forcedStoryKey || null)
-    : selectStoryForCompetency({ storyLibrary: storiesForChain, competency, usedStoryKeys, jdText });
+
+  // ── Story Consistency Validator (bug fix, 2026-07-23) — see functions
+  // above. A follow-up no longer blindly trusts forcedStoryKey; it checks
+  // the candidate's actual last answer against the planned story first.
+  const lastAnswerText = (isFollowup && qaPairs && qaPairs.length)
+    ? (qaPairs[qaPairs.length - 1].answer || '')
+    : '';
+
+  let selectedStoryKey;
+  let groundingAnswerText = null;
+  let storyConsistencyLog = null;
+
+  if (isFollowup) {
+    const plannedStory = forcedStoryKey ? storiesForChain.find(s => s.story_key === forcedStoryKey) || null : null;
+    if (!plannedStory) {
+      selectedStoryKey = null; // nothing was ever planned — unchanged from before this fix
+    } else {
+      const consistency = computeStoryConsistency(lastAnswerText, plannedStory);
+      if (consistency.label !== 'low') {
+        // High/medium confidence, or nothing concrete enough to check
+        // against — keep the planned story exactly as before. Deliberately
+        // conservative: only a genuine 'low' (near-zero overlap) overrides
+        // the plan, so a candidate who paraphrases but stays on the same
+        // story is never second-guessed. This is the common case and
+        // behaves identically to before this fix.
+        selectedStoryKey = forcedStoryKey;
+        storyConsistencyLog = { decision: 'kept', forcedStoryKey, ...consistency };
+      } else {
+        // Genuine mismatch (near-zero overlap): the candidate's answer
+        // doesn't support the planned story at all. Try rebinding to a
+        // DIFFERENT story in their own library that actually matches what
+        // they said; if nothing matches, abandon story-specific framing
+        // entirely and ground the follow-up in the candidate's own words
+        // instead (never invent a story).
+        const rebind = findRebindStory(lastAnswerText, storiesForChain, forcedStoryKey);
+        if (rebind) {
+          selectedStoryKey = rebind.story.story_key;
+          storyConsistencyLog = { decision: 'rebound', forcedStoryKey, reboundTo: rebind.story.story_key, ...consistency };
+        } else {
+          selectedStoryKey = null;
+          groundingAnswerText = lastAnswerText;
+          storyConsistencyLog = { decision: 'abandoned', forcedStoryKey, ...consistency };
+        }
+      }
+    }
+  } else {
+    selectedStoryKey = selectStoryForCompetency({ storyLibrary: storiesForChain, competency, usedStoryKeys, jdText });
+  }
+
   const resolvedStory = selectedStoryKey
     ? storiesForChain.find(s => s.story_key === selectedStoryKey) || null
     : null;
+
+  // Permanent production safeguard — logged for EVERY follow-up turn, not
+  // just failures, mirroring the existing [CONSISTENCY CHECK] convention
+  // below. If this bug ever regresses, it's immediately visible in logs.
+  if (storyConsistencyLog) {
+    console.log(
+      `[STORY CONSISTENCY]\n` +
+      `Forced StoryKey    : ${storyConsistencyLog.forcedStoryKey || 'null'}\n` +
+      `Confidence         : ${storyConsistencyLog.confidence} (${storyConsistencyLog.label})\n` +
+      `Decision           : ${storyConsistencyLog.decision}` +
+      (storyConsistencyLog.reboundTo ? `\nRebound To         : ${storyConsistencyLog.reboundTo}` : '') +
+      (storyConsistencyLog.decision === 'abandoned' ? `\nGrounding follow-up in candidate's own answer instead of any resume story.` : '')
+    );
+  }
   const jdObjectiveForBlueprint = extractJdObjective(jdText, competency);
 
   // Deterministic "reason" — built from what code already knows (the JD
@@ -1233,6 +1421,11 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     question_position: Number.isInteger(questionPosition) ? questionPosition : null,
     strategy_source: strategyIntent ? strategyIntent.source : null,
     strategy_purpose: strategyIntent ? strategyIntent.purpose : null,
+    // Story Consistency Validator (bug fix, 2026-07-23): set only when a
+    // follow-up's planned story was abandoned for lacking support in the
+    // candidate's actual answer and no rebind target was found — see
+    // composePrompt's grounding branch below.
+    grounding_answer_excerpt: groundingAnswerText || null,
   } : null;
 
   // ── DEBUG LOGGING (temporary) — the full retrieval/selection outcome for
