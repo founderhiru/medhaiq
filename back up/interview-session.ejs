@@ -14,6 +14,47 @@
     g.defer=true; g.async=true; s.parentNode.insertBefore(g,s);
   })(document,'script');
   </script>
+  <script>
+  /* ── setSinkId AbortError noise suppression (bug fix, 2026-07-24) ──
+     Vapi's own bundled SDK polls to keep each <audio>/<video> element's
+     output device in sync with the browser's preferred sink
+     (startPollingToSyncPreferredAudioOutputToDOM, confirmed in the deployed
+     bundle) -- calling element.setSinkId(...) repeatedly for the life of
+     the call. On many browsers/devices this legitimately rejects with
+     AbortError (unsupported output-selection change mid-stream, or a
+     transient device-switch race) with ZERO effect on whether the user
+     actually hears audio -- playback itself goes through a completely
+     separate path (BrowserAudioPlayer). Confirmed via a real staging log:
+     55 of these in a single session, once every couple of seconds,
+     drowning out everything else in the console.
+     This wraps the native setSinkId once, globally, before Vapi's SDK (or
+     anything else) ever calls it: the FIRST AbortError still logs once, so
+     the condition remains visible; every repeat after that is silently
+     swallowed. Any error that ISN'T an AbortError still throws/rejects
+     normally -- this only quiets the one specific, confirmed-harmless,
+     confirmed-noisy case. */
+  (function suppressRepeatedSetSinkIdAbortNoise() {
+    if (typeof HTMLMediaElement === 'undefined' || typeof HTMLMediaElement.prototype.setSinkId !== 'function') return;
+    var nativeSetSinkId = HTMLMediaElement.prototype.setSinkId;
+    var hasLoggedOnce = false;
+    HTMLMediaElement.prototype.setSinkId = function () {
+      var result = nativeSetSinkId.apply(this, arguments);
+      if (result && typeof result.catch === 'function') {
+        return result.catch(function (err) {
+          if (err && err.name === 'AbortError') {
+            if (!hasLoggedOnce) {
+              hasLoggedOnce = true;
+              console.warn('[MedhaIQ] setSinkId AbortError (audio-output-device sync) -- confirmed harmless to playback, further repeats this session are suppressed to reduce log noise.');
+            }
+            return; // swallow -- do not propagate a rejection for this specific, expected case
+          }
+          throw err; // any other error is real and must still surface
+        });
+      }
+      return result;
+    };
+  })();
+  </script>
   <link rel="stylesheet" href="/css/brand-logo.css">
   <link rel="stylesheet" href="/css/interview-session.css">
   <style>

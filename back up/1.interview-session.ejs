@@ -14,47 +14,6 @@
     g.defer=true; g.async=true; s.parentNode.insertBefore(g,s);
   })(document,'script');
   </script>
-  <script>
-  /* ── setSinkId AbortError noise suppression (bug fix, 2026-07-24) ──
-     Vapi's own bundled SDK polls to keep each <audio>/<video> element's
-     output device in sync with the browser's preferred sink
-     (startPollingToSyncPreferredAudioOutputToDOM, confirmed in the deployed
-     bundle) -- calling element.setSinkId(...) repeatedly for the life of
-     the call. On many browsers/devices this legitimately rejects with
-     AbortError (unsupported output-selection change mid-stream, or a
-     transient device-switch race) with ZERO effect on whether the user
-     actually hears audio -- playback itself goes through a completely
-     separate path (BrowserAudioPlayer). Confirmed via a real staging log:
-     55 of these in a single session, once every couple of seconds,
-     drowning out everything else in the console.
-     This wraps the native setSinkId once, globally, before Vapi's SDK (or
-     anything else) ever calls it: the FIRST AbortError still logs once, so
-     the condition remains visible; every repeat after that is silently
-     swallowed. Any error that ISN'T an AbortError still throws/rejects
-     normally -- this only quiets the one specific, confirmed-harmless,
-     confirmed-noisy case. */
-  (function suppressRepeatedSetSinkIdAbortNoise() {
-    if (typeof HTMLMediaElement === 'undefined' || typeof HTMLMediaElement.prototype.setSinkId !== 'function') return;
-    var nativeSetSinkId = HTMLMediaElement.prototype.setSinkId;
-    var hasLoggedOnce = false;
-    HTMLMediaElement.prototype.setSinkId = function () {
-      var result = nativeSetSinkId.apply(this, arguments);
-      if (result && typeof result.catch === 'function') {
-        return result.catch(function (err) {
-          if (err && err.name === 'AbortError') {
-            if (!hasLoggedOnce) {
-              hasLoggedOnce = true;
-              console.warn('[MedhaIQ] setSinkId AbortError (audio-output-device sync) -- confirmed harmless to playback, further repeats this session are suppressed to reduce log noise.');
-            }
-            return; // swallow -- do not propagate a rejection for this specific, expected case
-          }
-          throw err; // any other error is real and must still surface
-        });
-      }
-      return result;
-    };
-  })();
-  </script>
   <link rel="stylesheet" href="/css/brand-logo.css">
   <link rel="stylesheet" href="/css/interview-session.css">
   <style>
@@ -552,24 +511,13 @@
      1) A real-time client-side regex pass, run on every keystroke, paints
         nodes as "active" (pulsing) the instant a STAR signal appears in
         the answer as it's being typed/spoken.
-     2) The server's own computeStarProgress() (moved to
-        services/star/star-engine.js in Phase 2A, 2026-07-24 — same
-        function, same behavior, new file location), returned as
-        `star_progress` on submit, is the source of truth and
+     2) The server's own computeStarProgress() (services/interview.js),
+        returned as `star_progress` on submit, is the source of truth and
         repaints the same nodes as solid "done" once the answer lands. */
   var STAR_ORDER = ['situation','task','action','result'];
   /* NOTE: these patterns are intentionally kept IDENTICAL to STAR_PATTERNS in
-     services/star/star-engine.js (relocated there in Phase 2A, 2026-07-24 —
-     previously services/interview.js) so the live view and the server
-     verdict agree. If you edit one, edit both.
-     TODO (future phase, NOT Phase 2A/2B): this hand-synced duplication is a
-     known, documented architectural finding — a single shared STAR
-     detection library consumable by both server and client (e.g. an
-     isomorphic module bundled for the browser, or the client calling a
-     lightweight endpoint instead of re-implementing the regex set) would
-     close this risk structurally instead of by convention. Deliberately
-     left as-is for this checkpoint, which is a pure, behavior-preserving
-     relocation. */
+     services/interview.js so the live view and the server verdict agree.
+     If you edit one, edit both. */
   var STAR_PATTERNS = {
     situation: /\b(when i|at my (previous|last|current)|in my role|while (working|leading)|the (context|situation|background) was|we (were|had) facing|a few (months|years|weeks) ago|during|last (year|quarter|month|week)|in (19|20)\s?\d{2}|i was working (on|at|with)|we were (building|working|running|struggling)|at (a|an|the|our) (company|startup|client|firm)|(our|the|a) (customer|client)s? (wanted|needed|was (asking|looking)|had a)|we had a (customer|client))\b/i,
     task: /\b(my (task|responsibility|goal|objective|job)([^.]{0,25})? was|i was (responsible|asked|tasked|expected)|(we|i) need(ed)? to|had to (deliver|fix|solve|build|reduce|improve)|the (goal|objective|target|challenge|problem|ask) was|asked me to|i had to|(we|i) (had to|needed to) assess)\b/i,
