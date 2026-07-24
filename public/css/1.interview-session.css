@@ -71,21 +71,6 @@ button{font-family:inherit}
 .tb-live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:ping 1.4s ease-out infinite}
 .tb-timer{font-family:var(--mono);font-size:13px;color:var(--text2)}
 .tb-meta{font-size:13px;color:var(--text2)}
-/* ── Question counter (feature, 2026-07-23) — the current question number
-   is the most visually prominent element in this group; the Follow-up
-   badge is deliberately smaller/quieter supporting information, never
-   replacing the main "Question N / 5" text (per design direction: keep
-   both visible, badge only ADDS context). white-space:nowrap on both the
-   group and its children prevents ambiguous wrapping on narrow viewports
-   — the counter shrinks in font-size at the existing 820px breakpoint
-   below rather than wrapping to a second line. ── */
-.tb-qcounter-group{display:flex;align-items:center;gap:8px;white-space:nowrap}
-.tb-qcounter{font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;letter-spacing:-.01em}
-.tb-followup-badge{
-  font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;
-  color:var(--amber);background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);
-  border-radius:999px;padding:3px 9px;white-space:nowrap;line-height:1;
-}
 .tb-end{
   border:1px solid rgba(248,113,113,.5);background:transparent;color:#F87171;
   font-size:13px;font-weight:600;padding:7px 14px;border-radius:10px;cursor:pointer;transition:background .15s;
@@ -351,9 +336,4 @@ button{font-family:inherit}
   .video-panel{min-height:300px}
   .it-trustbar ul{grid-template-columns:1fr 1fr;gap:10px}
   .it-trustbar li{border-left:none;justify-content:flex-start}
-  /* Question counter (feature, 2026-07-23) — shrink rather than wrap on
-     narrow viewports; the topbar itself scrolls/compresses horizontally
-     on real phones, so this only needs to not be the widest element in it. */
-  .tb-qcounter{font-size:13px}
-  .tb-followup-badge{font-size:10px;padding:2px 7px}
 }
