@@ -55,10 +55,7 @@
   <div class="tb-right">
     <div class="tb-live"><div class="tb-live-dot"></div>LIVE</div>
     <div class="tb-timer" id="timer">00:00</div>
-    <div class="tb-qcounter-group">
-      <div class="tb-qcounter" id="qCounter">Question 1 / 5</div>
-      <div class="tb-followup-badge" id="qFollowupBadge" style="display:none;">Follow-up</div>
-    </div>
+    <div class="tb-meta" id="qCounter">Q1 / 5</div>
     <button class="tb-end" id="endBtn">End Session</button>
   </div>
 </div>
@@ -390,17 +387,8 @@
   timerInt = setInterval(tick, 1000);
   tick();
 
-  /* Follow-up state (feature, 2026-07-23) — whether the CURRENT turn on
-     screen is a follow-up. Initialized from the server-rendered QTYPE (a
-     reload/reconnect can land directly on a pending follow-up — server.js
-     passes questionType: currentQ.question_type, which is exactly QTYPE
-     here), then kept live by the response handler below on every
-     subsequent turn. */
-  window.MedhaIQ_IsFollowupTurn = (QTYPE === 'follow_up');
-
   function updateCounter() {
-    document.getElementById('qCounter').textContent = 'Question '+QN+' / '+MAXQ;
-    document.getElementById('qFollowupBadge').style.display = window.MedhaIQ_IsFollowupTurn ? '' : 'none';
+    document.getElementById('qCounter').textContent = 'Q'+QN+' / '+MAXQ;
     document.getElementById('sbProgNum').textContent = QN;
     var pct = Math.round(((QN-1)/MAXQ)*100);
     document.getElementById('sbProgFill').style.width = pct+'%';
@@ -690,9 +678,7 @@
     document.querySelector('.answer-bar-wrap').style.display='block';
 
     var label = competency ? competency.replace(/_/g,' ').toUpperCase() : (type==='drill_down' ? 'DEEP DIVE' : 'BEHAVIORAL');
-    document.getElementById('qEyebrow').textContent = window.MedhaIQ_IsFollowupTurn
-      ? 'FOLLOW-UP · '+label
-      : 'QUESTION '+QN+' OF '+MAXQ+' · '+label;
+    document.getElementById('qEyebrow').textContent = 'QUESTION '+QN+' OF '+MAXQ+' · '+label;
     var why = document.getElementById('qWhyText');
     why.textContent = QUESTION_WHY[type] || QUESTION_WHY.behavioral;
     why.classList.remove('shown');
@@ -1018,7 +1004,6 @@
       // but QN must not — previously this incremented unconditionally for
       // every response type, including follow_up.
       QID = data.question.id;
-      window.MedhaIQ_IsFollowupTurn = (data.question.type === 'follow_up'); // feature, 2026-07-23 — drives the topbar Follow-up badge
       if (data.question.type !== 'follow_up') {
         QN = Math.min(QN + 1, MAXQ); // clamp — never display past MAXQ even if something upstream misbehaves
       }
