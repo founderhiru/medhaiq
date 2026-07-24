@@ -7,6 +7,8 @@
       camVideo, camPlaceholder, camBadge, camBadgeText, camToggle,
       .answer-bar-wrap, answerInput, charCount, submitBtn, skipBtn,
       vapiBtn, vapiSub
+    Interview Guidance strip below the question card is new static UI
+    (no engine-bound IDs) — see interview-session.css .guidance-* rules.
 ══════════════════════════════════════════════════════════════════ %>
 <main class="col col-center">
 
@@ -22,6 +24,27 @@
       Why this question?
     </button>
     <p class="q-why-text" id="qWhyText"></p>
+  </section>
+
+  <!-- Interview Guidance strip (new, 2026-07-25) — static coaching copy,
+       not tied to live scoring data; purely orients the candidate on what
+       this stage of the interview is evaluating. -->
+  <section class="card guidance-strip">
+    <div class="guidance-row">
+      <span class="guidance-ic">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6v.5h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3Z"/></svg>
+      </span>
+      <div class="guidance-txt">
+        <p class="guidance-title">Interview Guidance</p>
+        <p class="guidance-main">Evaluating: Strategic Thinking &middot; Influence &middot; Executive Judgment</p>
+      </div>
+    </div>
+    <div class="guidance-chips">
+      <span class="chip"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/></svg>Structure your response</span>
+      <span class="chip"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20V10M8 20v-6M16 20V4"/></svg>Quantify impact</span>
+      <span class="chip"><svg class="ic" viewBox="0 0 24 24"><path d="M9 11 12 8l3 3M12 8v8M4 20h16"/></svg>Highlight decisions</span>
+      <span class="chip"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15Z"/></svg>Share key learnings</span>
+    </div>
   </section>
 
   <!-- Loading overlay (engine toggles .show) -->
