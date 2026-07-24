@@ -320,17 +320,6 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   const turnId = Math.random().toString(16).slice(2, 8);
   console.log(`[turn-trace] TURN_ID=${turnId} processInterviewAnswer start: sessionId=${sessionId} questionId=${questionId} skip=${!!skip} voiceMode=${!!voiceMode}`);
 
-  // ── Per-stage timing instrumentation (diagnostics only, 2026-07-24) ──
-  // Purely additive: measures the existing call sequence, changes nothing
-  // about it. Correlates with turnId, same value already threaded through
-  // every other log line here, so a full turn's timing (this server-side
-  // breakdown plus the client's own STT/TTS/playback timing, already
-  // logged separately) can be reconstructed by grepping one turnId across
-  // both server and browser console logs.
-  const _timing = { turnStart: process.hrtime.bigint() };
-  function _msSince(mark) { return Number(process.hrtime.bigint() - mark) / 1e6; }
-  function _msBetween(a, b) { return Number(b - a) / 1e6; }
-
   if (!questionId) return { httpStatus: 400, body: { error: 'questionId required' } };
 
   // Verify session ownership
@@ -420,13 +409,11 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   }
 
   // 1. Save valid answer to database
-  _timing.beforeAnswerSave = process.hrtime.bigint();
   const savedAnswer = await addAnswer({
     sessionId,
     questionId,
     answerText: effectiveSkip ? '' : (answerText || ''),
   });
-  _timing.afterAnswerSave = process.hrtime.bigint();
   if (!savedAnswer) {
     return {
       httpStatus: 409,
@@ -436,7 +423,6 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
 
   // 2. Score the validated answer
   let scores;
-  _timing.beforeScoring = process.hrtime.bigint();
   if (!effectiveSkip && answerText && answerText.trim()) {
     scores = await scoreAnswer(answerText, session.persona_id, {
       roleTitle: session.role_title,
@@ -446,10 +432,7 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   } else {
     scores = { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 };
   }
-  _timing.afterScoring = process.hrtime.bigint();
-  _timing.scoringWasSkipped = effectiveSkip || !answerText || !answerText.trim(); // for the diagnostic log below — a skip legitimately has ~0ms here, not a fast scoreAnswer() call
 
-  _timing.beforeDbScore = process.hrtime.bigint();
   await addScore({
     sessionId,
     questionId,
@@ -460,7 +443,6 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     friction: scores.friction,
     weighted: scores.weighted,
   });
-  _timing.afterDbScore = process.hrtime.bigint();
 
   const starProgress = effectiveSkip
     ? { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 }
@@ -576,41 +558,11 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   // integration would never actually receive a real next question. There
   // is no longer any behavioral reason for voice and text to diverge here
   // — both need the real next question text to speak/display.
-  const picked = await (async () => {
-    _timing.beforeQuestionGen = process.hrtime.bigint();
-    const result = await pickAndPersistNextQuestion(session, MAX_QUESTIONS);
-    _timing.afterQuestionGen = process.hrtime.bigint();
-    return result;
-  })();
+  const picked = await pickAndPersistNextQuestion(session, MAX_QUESTIONS);
   if (picked.done) {
     return await finalizeSessionAndRespond();
   }
   console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (${picked.type === 'follow_up' ? 'FOLLOW_UP — must NOT advance progress' : 'PRIMARY — advances progress'}): QuestionId=${picked.id}`);
-
-  // ── [TURN-TIMING] final breakdown (diagnostics only, 2026-07-24) ──────
-  // Matches the requested format exactly. "Answered Count" doubles as a
-  // human-readable turn number (Interview Turn N) without needing a
-  // separate counter — this IS the count after this exact answer was
-  // saved. Total is measured end-to-end across this function, not summed
-  // from the stages, so it also reflects anything NOT individually
-  // instrumented (getSessionQuestions re-fetch, star progress compute,
-  // etc.) rather than silently under-reporting.
-  {
-    const scoringMs = _timing.scoringWasSkipped ? 0 : _msBetween(_timing.beforeScoring, _timing.afterScoring);
-    const dbSaveMs = _msBetween(_timing.beforeAnswerSave, _timing.afterAnswerSave) + _msBetween(_timing.beforeDbScore, _timing.afterDbScore);
-    const questionGenMs = _msBetween(_timing.beforeQuestionGen, _timing.afterQuestionGen);
-    const totalMs = _msSince(_timing.turnStart);
-    console.log(
-      `[TURN-TIMING] Interview Turn ${answeredCount} (turnId=${turnId})\n` +
-      `  Answer Save (DB):     ${_msBetween(_timing.beforeAnswerSave, _timing.afterAnswerSave).toFixed(0)} ms\n` +
-      `  Scoring (scoreAnswer): ${scoringMs.toFixed(0)} ms${_timing.scoringWasSkipped ? ' (skipped — skip/empty answer, no AI call made)' : ''}\n` +
-      `  Score Save (DB):      ${_msBetween(_timing.beforeDbScore, _timing.afterDbScore).toFixed(0)} ms\n` +
-      `  Database (total):     ${dbSaveMs.toFixed(0)} ms\n` +
-      `  Question Generation:  ${questionGenMs.toFixed(0)} ms\n` +
-      `  Total (backend):      ${totalMs.toFixed(0)} ms\n` +
-      `  (STT finalization, TTS synthesis, and browser playback start are logged client-side — see [TIMELINE] step=final_transcript_received, [TTS] synthesize:start/complete, and step=browser_started_playback for the same turnId/questionId, to complete the full picture.)`
-    );
-  }
 
   // ── HASH-TRACE STAGE 1 — backend, immediately before returning /answer.
   // Diagnostic only: does not alter picked.text, the response body, or any

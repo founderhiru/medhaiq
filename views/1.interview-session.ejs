@@ -138,13 +138,16 @@
 
 </div><!-- /os-grid -->
 
-<!-- Trust bar removed from the Live Interview page (UX polish, 2026-07-24):
-     redundant once inside the authenticated workspace and mid-interview —
-     kept on landing/marketing pages and (if desired) the Setup page,
-     neither of which share this markup with this file. .os-grid above is
-     flex:1 inside a flex-column body (see public/css/interview-session.css),
-     so removing this sibling lets the grid naturally fill the freed
-     vertical space — no layout/spacing change needed elsewhere. -->
+<!-- ═══ TRUST BAR — pinned inside the viewport (TS1), never causes page scroll ═══ -->
+<footer class="it-trustbar">
+  <ul>
+    <li><svg class="ic tb-c1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 3 3c1.5 0 3-1 3-3V7c0-2-1.5-3-3-3Z"/><path d="M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-3 3c-1.5 0-3-1-3-3V7c0-2 1.5-3 3-3Z"/></svg><div class="trust-txt"><b>AI Personalization</b><span>Built for you</span></div></li>
+    <li><svg class="ic tb-c2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1.2-3.2 4-4 6.5-4s5.3.8 6.5 4"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 15.5c2 .3 3.8 1.3 4.5 3.5"/></svg><div class="trust-txt"><b>Role-Specific</b><span>Interviews</span></div></li>
+    <li><svg class="ic tb-c3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2L12 3Z"/></svg><div class="trust-txt"><b>Real-time Feedback</b><span>&amp; Scoring</span></div></li>
+    <li><svg class="ic tb-c4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 9h8M8 12.5h8M8 16h5"/></svg><div class="trust-txt"><b>Industry-Aligned</b><span>Questions</span></div></li>
+    <li><svg class="ic tb-c5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4.5"/></svg><div class="trust-txt"><b>Secure &amp; Private</b><span>Enterprise Grade</span></div></li>
+  </ul>
+</footer>
 
 <!-- Score toast -->
 <div class="score-toast" id="scoreToast">
