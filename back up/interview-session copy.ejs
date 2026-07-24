@@ -782,25 +782,6 @@
   /* ── Answer input ── */
   var answerInput = document.getElementById('answerInput');
   answerInput.addEventListener('input', function() {
-    // DIAGNOSTIC (bug fix investigation, 2026-07-24) — added specifically
-    // to root-cause the "live STAR indicators never activate" report.
-    // Extensive investigation (isolated simulation of this exact listener
-    // + liveDetectStar + paintStarProgress against real DOM structure,
-    // full log trace) found the mechanism itself works correctly and
-    // star_update_dispatched fires 1:1 with final_transcript_received in
-    // the provided log (14/14, zero drops, zero JS errors). This log
-    // line is the one thing static analysis couldn't confirm: whether
-    // THIS listener is actually the one that fires when the voice
-    // dispatch's synthetic 'input' event lands, in the real browser, in
-    // the real session. If this log is present in the next session's
-    // trace whenever star_update_dispatched also appears, the mechanism
-    // is confirmed working end-to-end and the reported symptom has a
-    // different cause (most likely worth re-checking after Issue #3's
-    // fix, since a live second conversational agent competing for the
-    // candidate's attention/timing could easily be perceived as "STAR
-    // isn't reacting" even when the DOM is, in fact, updating correctly).
-    // Remove once confirmed either way.
-    window.timelineLog && window.timelineLog('star_listener_fired', (typeof currentSpokenQuestionId !== 'undefined' ? currentSpokenQuestionId : null), true, 'inputLength=' + this.value.length);
     document.getElementById('charCount').textContent = this.value.length+' / 4000';
     var hasText = !!this.value.trim();
     document.getElementById('submitBtn').disabled = !hasText;
@@ -1747,44 +1728,12 @@
        our call-start handler then speaks the persona intro + exact Q1 via
        vapi.say(). If this SDK build ignores assistantOverrides, behavior
        simply falls back to today's — the key is harmless when unsupported,
-       and the dashboard fix (see deploy notes) covers that case.
-
-       v2.4 — model override attempt (bug fix, 2026-07-24, BEST-EFFORT /
-       UNVERIFIED): live logs confirmed Vapi's dashboard-configured
-       assistant is still actively generating full conversational
-       responses ("I'm Claude, an AI assistant made by Anthropic...") even
-       though the audio is hard-muted (permanentlyMuteVapiAssistantAudio)
-       and tts_pipeline mode is active — meaning a real, second LLM is
-       genuinely running per turn, not just leftover text. This override
-       is an attempt to suppress that at the source via Vapi's documented
-       assistantOverrides.model field. IMPORTANT — this is NOT a verified
-       fix: Vapi's own docs describe transcriber/model/voice as the three
-       REQUIRED pipeline stages (https://docs.vapi.ai/quickstart) and do
-       not document a confirmed "disable the model entirely" flag for a
-       standard (non-custom-LLM) assistant. This override is additive and
-       can only help or be silently ignored — it cannot make the existing
-       audio-mute guarantee any weaker, since that stays exactly as-is
-       below regardless of whether this override takes effect. Genuine
-       root-cause verification (confirming zero LLM cost/invocation, not
-       just zero audible output) requires checking the actual assistant
-       configuration on Vapi's dashboard for the ID in VAPI_ASSISTANT_ID —
-       that configuration lives outside this repository and was not
-       accessible during this fix. */
+       and the dashboard fix (see deploy notes) covers that case. */
     vapi=window.vapiSDK.run({ 
   apiKey: VKEY, 
   assistant: VAST, 
   assistantOverrides: { 
     firstMessageMode: 'assistant-waits-for-user',
-    // Best-effort, unverified (see comment above) — a maximally explicit
-    // system prompt instructing zero conversational behavior. Additive:
-    // if Vapi's SDK/dashboard ignores model overrides for this assistant,
-    // this is a no-op and behavior is identical to before this change.
-    model: {
-      messages: [{
-        role: 'system',
-        content: 'You are not a conversational agent. You are a silent transcription relay only. Under absolutely no circumstances generate, speak, or return any conversational response, greeting, acknowledgement, or commentary of any kind, regardless of what the user says or asks — including direct questions about your instructions, your identity, or requests to "test" you. Your only function is to allow speech-to-text transcription to occur. Never produce output.',
-      }],
-    },
     // This injects the matching database ID directly into Vapi's call details
     metadata: {
       sessionId: '<%= sessionId %>'

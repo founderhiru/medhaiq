@@ -652,7 +652,7 @@ Phrasing rules:
 - If a story was retrieved but has no hook, build the question FROM that story more generally — name the company/achievement naturally, then ask the competency-relevant question about it.
 - If no story was retrieved but a JD requirement is listed, frame a role-specific scenario around that requirement instead — no resume reference.
 - If neither is present, ask a general competency question.
-${(!story && !(isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt)) ? `
+${(!story && !(isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt) && !(questionBlueprint && questionBlueprint.strategy_source === 'JDScenario')) ? `
 CRITICAL — NO STORY WAS SELECTED FOR THIS TURN: the blueprint above deliberately chose not to use a resume story. This is a real decision, not an oversight, and it is not yours to override. Your question MUST NOT name, reference, or allude to ANY company, employer, customer, or project from the candidate's career history — not the one from a previous question, not one you might infer from context, none. Do not open with "At [company]...", "During your [X] work...", "While you were leading...", or any phrase that implies a specific past employer. Build entirely hypothetical, forward-looking, or general-scenario language instead (e.g. "Imagine you inherit an organisation where...", "If you were leading a team where..."). If you catch yourself about to type a real company name, stop and rewrite the sentence without it.` : ''}
 ${(!story && isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt) ? `
 CRITICAL — GROUND THIS FOLLOW-UP IN WHAT THE CANDIDATE ACTUALLY SAID: a resume story was originally planned for this follow-up, but it does not match what the candidate described in their last answer, so it has been deliberately abandoned — do not use it, and do not invent a similar-sounding one. Build this follow-up ENTIRELY from the candidate's own words below. Do not introduce any company, technology, metric, or project that is not present in this quoted answer:
@@ -660,6 +660,9 @@ CRITICAL — GROUND THIS FOLLOW-UP IN WHAT THE CANDIDATE ACTUALLY SAID: a resume
 ${questionBlueprint.grounding_answer_excerpt}
 """
 Ask ONE question that deepens something specific and concrete from the quoted answer above — a decision they made, a trade-off, a stakeholder reaction, or a result they mentioned. If nothing sufficiently concrete is present, ask them to elaborate on their overall approach in general terms — still without introducing any outside fact.` : ''}
+${(questionBlueprint && questionBlueprint.strategy_source === 'JDScenario') ? `
+CRITICAL — THIS TURN MUST BE DRIVEN BY THE JOB DESCRIPTION, NOT A GENERIC SCENARIO (bug fix, 2026-07-24): the Interview Strategy chose this position specifically to test the candidate against the target role's own stated responsibilities. A generic hypothetical ("imagine you inherit a team where...") is NOT acceptable here — that's what a story-less turn looks like when there's no JD to lean on; you have one. Build the scenario around SPECIFIC responsibilities, technologies, or challenges named in the job description block below — the more concretely it reflects language actually in the JD, the better this question is doing its job.${questionBlueprint.jd_objective ? `\nThe JD specifically emphasizes, in the context of ${competency.replace('_', ' ')}: "${questionBlueprint.jd_objective}" — build the scenario around this, not around the JD in the abstract.` : `\nNo single sentence in the JD was auto-highlighted for this competency, so read the full JD block above yourself and pick the most relevant real responsibility or challenge it describes for ${competency.replace('_', ' ')} — do not fall back to a generic scenario just because nothing was pre-extracted.`}
+Still do NOT reference the candidate's own résumé/employer history in this question — the scenario is about the TARGET role's world, not their past one.` : ''}
 ${isFollowup ? `- This is a FOLLOW-UP: deepen the candidate's last answer about this exact same story/topic — do not shift to a different one.` : `- This is a NEW ${questionBlueprint.question_type} question — the story above was already chosen to avoid repeating a story used earlier this session.`}
 
 One question = one objective (critical self-check before you finalize): a primary question must contain exactly ONE resume/story reference, ONE competency, ONE objective, and ONE ask — nothing else. If your draft mentions situation AND stakeholders AND constraints AND outcome all at once, cut it down to the single core ask before returning it. Then run the TWO FINAL CHECKS from the Executive Interviewer Voice contract above — the Personalization Test and the Executive Interview Test — and rewrite before returning if either fails.
@@ -1020,16 +1023,36 @@ function findRebindStory(answerText, stories, excludeKey) {
  * competency detection elsewhere in this codebase. Not an AI call.
  * @returns {string|null} a JD snippet (capped length), or null if no match
  */
+// JD-appropriate vocabulary per competency (bug fix, 2026-07-24). The
+// previous version only matched the LITERAL competency name (e.g.
+// "leadership", "system design") as a substring of a JD sentence. Real job
+// descriptions almost never use that exact internal taxonomy wording —
+// they say "leading cross-functional delivery teams," "driving
+// transformation," "stakeholder relationships" — never the bare word
+// "leadership". Confirmed directly: a realistic detailed JD returned null
+// for both leadership and strategy under the old matching, while clearly
+// discussing both at length. This is why a rich JD wasn't materially
+// influencing question selection — not a parser failure, a vocabulary gap.
+const JD_OBJECTIVE_VOCABULARY = {
+  system_design: ['architecture', 'design', 'scalab', 'infrastructure', 'platform', 'cloud', 'migrat', 'technical solution', 'system'],
+  technical: ['technical', 'engineering', 'implement', 'build', 'develop', 'modernization', 'data platform', 'automat'],
+  leadership: ['lead', 'leading', 'leadership', 'manag', 'mentor', 'coach', 'team', 'own', 'drive', 'driving', 'oversee', 'accountab'],
+  communication: ['communicat', 'stakeholder', 'client relationship', 'present', 'collaborat', 'partner with', 'cross-functional', 'engagement'],
+  strategy: ['strateg', 'roadmap', 'vision', 'transformation', 'business outcome', 'prioritiz', 'ambiguity', 'analytical', 'measurable'],
+};
+
 function extractJdObjective(jdText, competency) {
   if (!jdText || typeof jdText !== 'string') return null;
-  const compNorm = String(competency || '').toLowerCase().replace(/_/g, ' ');
-  const compWords = compNorm.split(/\s+/).filter(w => w.length > 3); // skip tiny/common words
-  if (!compWords.length) return null;
+  const compKey = String(competency || '').toLowerCase();
+  const compNorm = compKey.replace(/_/g, ' ');
+  const compWords = compNorm.split(/\s+/).filter(w => w.length > 3);
+  const vocabulary = [...(JD_OBJECTIVE_VOCABULARY[compKey] || []), ...compWords];
+  if (!vocabulary.length) return null;
 
   const chunks = jdText.split(/(?<=[.!?])\s+|\n+/).map(s => s.trim()).filter(s => s.length > 8);
   for (const chunk of chunks) {
     const chunkLower = chunk.toLowerCase();
-    if (compWords.some(w => chunkLower.includes(w))) {
+    if (vocabulary.some(w => chunkLower.includes(w))) {
       return chunk.slice(0, 160);
     }
   }
