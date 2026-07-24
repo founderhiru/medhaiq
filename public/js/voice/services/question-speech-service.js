@@ -92,6 +92,25 @@
     this._finishedCallbacks = [];
     this._playbackErrorCallbacks = [];
 
+    // ── Speech queue (Phase A, 2026-07-24) ──────────────────────────────
+    // Root cause of overlapping ack/question audio: speak() previously
+    // only aborted the PREVIOUS in-flight synthesize() network call — it
+    // never waited for, or stopped, audio that was already PLAYING. If
+    // the backend responded unusually fast (confirmed in a real staging
+    // log: a ~1.8s backend round-trip against a ~2-2.5s acknowledgement
+    // synthesis+playback), the next question's speak() call would fire
+    // while the acknowledgement was still audibly playing, and both
+    // ended up playing back-to-back-but-overlapping on the same
+    // BrowserAudioPlayer. This queue guarantees exactly one ACTIVE
+    // (synthesizing-or-playing) request at a time; every other speak()
+    // call waits until the active one reaches a terminal state.
+    //
+    // _queue: pending {question, token} items not yet started.
+    // _activeItem: the currently synthesizing-or-playing item, or null
+    // if nothing is active (queue is empty and idle).
+    this._queue = [];
+    this._activeItem = null;
+
     var self = this;
     this._audioPlayer.onEnded(function () {
       self._handleNaturalEnd();
@@ -111,28 +130,74 @@
     });
   };
 
+  // TEMPORARY DEBUG LOGGING (Phase A speech-queue instrumentation,
+  // 2026-07-24) -- mirrors the existing [DEBUG-SPEAK-ENTRY] convention
+  // in this file. Remove once overlapping-playback is confirmed fixed
+  // via a live regression pass.
+  QuestionSpeechService.prototype._logQueue = function (event, item, extra) {
+    console.log('[SPEECH-QUEUE] ' + event, {
+      questionId: item && item.question && item.question.questionId,
+      token: item && item.token,
+      queueDepth: this._queue.length,
+      hasActive: !!this._activeItem,
+      timestamp: Date.now(),
+      extra: extra
+    });
+    if (global.timelineLog) {
+      global.timelineLog('speech_queue_' + event, item && item.question && item.question.questionId, true, 'queueDepth=' + this._queue.length + (extra ? ' ' + extra : ''));
+    }
+  };
+
+  /**
+   * Public entry point — unchanged signature/behavior from the caller's
+   * point of view (InterviewVoiceController still just calls speak()),
+   * but internally this now enqueues rather than firing immediately.
+   */
   QuestionSpeechService.prototype.speak = function (question) {
-    // Root-cause fix (traced from the "Q4 mic dead / Q5 silent after
-    // rapid skips" investigation): a superseded request's underlying
-    // network fetch previously kept running in the background for up
-    // to the adapter's full timeout, even though this service had
-    // already logically moved on. Under rapid skipping (2 speak() calls
-    // per skip -- acknowledgement + next question), several of these
-    // could be simultaneously in flight, competing for the browser's
-    // limited per-origin concurrent connection pool and starving the
-    // CURRENT request behind now-irrelevant ones. Aborting the previous
-    // controller here actually cancels that fetch immediately.
+    this._requestToken += 1;
+    var item = { question: question, token: this._requestToken };
+    this._queue.push(item);
+    this._logQueue('enqueue', item);
+
+    if (!this._activeItem) {
+      this._advanceQueue();
+    }
+    return item.token;
+  };
+
+  /**
+   * If nothing is currently active and the queue has work, starts the
+   * next item. This is the ONLY place _activeItem gets set to a new
+   * value from null -- the single serialization point that guarantees
+   * at most one active synthesize-or-playback at a time.
+   */
+  QuestionSpeechService.prototype._advanceQueue = function () {
+    if (this._activeItem) return; // something is already active -- do nothing, it'll call this again on its own terminal state
+    var next = this._queue.shift();
+    if (!next) return; // queue empty, stay idle
+    this._activeItem = next;
+    this._logQueue('start', next);
+    this._runActive(next);
+  };
+
+  /**
+   * The actual synthesize-then-play logic, run for exactly the current
+   * _activeItem. Every exit path (natural completion, cancel, interrupt,
+   * error) must end by clearing _activeItem and calling _advanceQueue()
+   * so the next queued request (if any) gets its turn.
+   */
+  QuestionSpeechService.prototype._runActive = function (item) {
+    var question = item.question;
+    var token = item.token;
+    var self = this;
+    var text = question && question.text;
+    var questionId = question && question.questionId;
+
     if (this._activeAbortController) {
       try { this._activeAbortController.abort(); } catch (e) { /* already aborted/settled */ }
     }
     var abortController = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     this._activeAbortController = abortController;
-
-    this._requestToken += 1;
-    var token = this._requestToken;
-    var self = this;
-    var text = question && question.text;
-    var questionId = question && question.questionId;
 
     // TEMPORARY DEBUG LOGGING (ElevenLabs usage investigation) -- entry
     // point of speak(), logged before any other work. Remove once the
@@ -161,30 +226,35 @@
     // error and release this token so a late resolution is discarded,
     // exactly like an explicit stop() would.
     this._pendingTimeoutHandle = setTimeout(function () {
-      if (token !== self._requestToken) return; // already superseded/handled
-      self._requestToken += 1; // invalidate -- a late synthesize() resolution must not play
+      if (!self._activeItem || token !== self._activeItem.token) return; // already superseded/handled
       self._pendingTimeoutHandle = null;
-      console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' timeout (currentToken=' + self._requestToken + ')');
+      console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' timeout');
       var timeoutErr = new Error('QuestionSpeechService: onStarted was not received within ' + self._speakTimeoutMs + 'ms of speak()');
       timeoutErr.code = 'SPEAK_TIMEOUT';
+      self._logQueue('cancel', self._activeItem, 'reason=speak_timeout');
+      self._activeItem = null;
       self._emitPlaybackError(timeoutErr);
+      self._advanceQueue();
     }, this._speakTimeoutMs);
-console.log(
-  "[TTS] synthesize",
-  {
-    questionId: questionId,
-    token: token,
-    textLength: text.length,
-    preview: text.substring(0, 50),
-    reason: question && question.reason
-  }
-);
+
+    console.log(
+      "[TTS] synthesize",
+      {
+        questionId: questionId,
+        token: token,
+        textLength: text.length,
+        preview: text.substring(0, 50),
+        reason: question && question.reason
+      }
+    );
+
     this._ttsAdapter.synthesize(text, abortController ? { signal: abortController.signal } : undefined).then(function (audioSource) {
-      if (token !== self._requestToken) {
+      if (!self._activeItem || token !== self._activeItem.token) {
         // A stop(), a newer speak(), or the timeout above already
         // superseded this request. Discard silently -- this is exactly
-        // the race this service exists to guard against.
-        console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' discarded (stale, currentToken=' + self._requestToken + ')');
+        // the race this service exists to guard against. Never started
+        // playing, so this is a 'cancel', not an 'interrupt'.
+        console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' discarded (stale)');
         return;
       }
       console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' complete -- playing');
@@ -197,36 +267,69 @@ console.log(
         try { cb(); } catch (e) { /* one listener's error must not break others */ }
       });
     }).catch(function (err) {
-      if (token !== self._requestToken) {
-        console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' error discarded (stale, currentToken=' + self._requestToken + '): ' + err.message);
+      if (!self._activeItem || token !== self._activeItem.token) {
+        console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' error discarded (stale): ' + err.message);
         return; // superseded before the failure even arrived
       }
       console.log('[TTS] questionId=' + questionId + ' speechToken=' + token + ' error: ' + err.message);
       self._clearPendingTimeout();
+      self._logQueue('cancel', self._activeItem, 'reason=synthesis_error');
+      self._activeItem = null;
       // PR3 change 1: synthesis failure is a playback error, not a
       // "finished" -- onFinished now means ONLY genuine natural
       // completion. This is the callback InterviewVoiceController wires
       // to speechState = FREE + continue the interview (see PR3 plan).
       self._emitPlaybackError(err);
+      self._advanceQueue();
     });
   };
 
+  /**
+   * Explicit external stop (barge-in, or "moving to a new turn, cut off
+   * whatever's still playing"). Interrupts the current active item (if
+   * any) AND clears the pending queue -- a stop() means "silence
+   * everything now", not "silence this one, then play whatever was
+   * queued next", since queued items belong to the turn being cut off.
+   */
   QuestionSpeechService.prototype.stop = function () {
-    console.log('[TTS] speechToken=' + this._requestToken + ' stop() -- invalidating (new currentToken=' + (this._requestToken + 1) + ')');
+    var hadActive = !!this._activeItem;
+    var wasPlaying = hadActive; // if it reached _runActive's synthesize().then(), audio may already be playing; we don't currently track a finer-grained "started" flag here, so treat any active item as a potential interrupt -- see note below
+    console.log('[TTS] speechToken=' + (this._activeItem ? this._activeItem.token : '(none)') + ' stop()');
+
     if (this._activeAbortController) {
       try { this._activeAbortController.abort(); } catch (e) { /* already aborted/settled */ }
       this._activeAbortController = null;
     }
-    this._requestToken += 1; // invalidate any in-flight synthesize() for the previous token
     this._clearPendingTimeout();
+
+    if (hadActive) {
+      this._logQueue(wasPlaying ? 'interrupt' : 'cancel', this._activeItem, 'reason=explicit_stop');
+      this._activeItem = null;
+    }
+    // A stop() means "cut everything for this turn" -- any items still
+    // waiting in the queue belong to the turn being interrupted and must
+    // not play later. Each gets logged as its own clean 'cancel'.
+    if (this._queue.length) {
+      var self = this;
+      this._queue.forEach(function (queuedItem) {
+        self._logQueue('cancel', queuedItem, 'reason=queue_cleared_by_stop');
+      });
+      this._queue = [];
+    }
+
     this._audioPlayer.stop();
   };
 
   QuestionSpeechService.prototype._handleNaturalEnd = function () {
     if (global.timelineLog) global.timelineLog('playback_finished', null, true, '(natural completion via BrowserAudioPlayer onEnded)');
+    if (this._activeItem) {
+      this._logQueue('complete', this._activeItem);
+      this._activeItem = null;
+    }
     this._finishedCallbacks.forEach(function (cb) {
       try { cb(); } catch (e) { /* isolate listener errors */ }
     });
+    this._advanceQueue();
   };
 
   QuestionSpeechService.prototype.onStarted = function (callback) {

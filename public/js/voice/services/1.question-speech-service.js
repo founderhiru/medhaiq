@@ -134,6 +134,19 @@
     var text = question && question.text;
     var questionId = question && question.questionId;
 
+    // TEMPORARY DEBUG LOGGING (ElevenLabs usage investigation) -- entry
+    // point of speak(), logged before any other work. Remove once the
+    // duplicate-synthesis question is resolved.
+    console.log('[DEBUG-SPEAK-ENTRY]', {
+      questionId: questionId,
+      questionVersion: question && question.version, // now populated for real questions (see interview-session.ejs _speak() call site); still undefined for the skip-ack call site, which has no Question Version concept
+      requestToken: token,
+      textLength: (text || '').length,
+      textPreview: (text || '').substring(0, 50),
+      reason: question && question.reason, // pure diagnostic metadata -- e.g. initial-question / skip / closing / post-skip-question / question
+      timestamp: Date.now()
+    });
+
     // Requested diagnostic format: which question this request belongs to,
     // and which token, at every decision point -- not just "synthesize
     // started" in isolation. Logged here (not inside TTSAdapter/the proxy)
@@ -162,7 +175,8 @@ console.log(
     questionId: questionId,
     token: token,
     textLength: text.length,
-    preview: text.substring(0, 50)
+    preview: text.substring(0, 50),
+    reason: question && question.reason
   }
 );
     this._ttsAdapter.synthesize(text, abortController ? { signal: abortController.signal } : undefined).then(function (audioSource) {
