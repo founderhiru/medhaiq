@@ -76,33 +76,51 @@ async function touchSessionActivity(sessionId) {
 }
 
 /**
- * If this user has an ACTIVE session that's gone silent for longer than
- * timeoutMinutes, auto-abandons it (reason defaults to 'heartbeat_timeout'
- * — the honest, generically-determinable reason when there's no explicit
- * closure signal) and returns the abandoned session's id. Returns null if
- * the active session (if any) is still within the timeout — a genuinely
- * recent session is a real conflict, not something to silently clear.
- * Loops until no more stale sessions remain for this user, so a backlog
- * of several (the exact bug this fixes) is fully cleared in one call.
+ * If this user has an ACTIVE session that's gone silent, auto-abandons it
+ * and returns the abandoned session's id(s). Two timeouts apply:
+ *   - unconfirmedTimeoutMinutes: for a session that NEVER received a real
+ *     heartbeat (last_activity_at is still exactly its creation-time
+ *     default, since the candidate never actually reached the live
+ *     interview page — a failed launch attempt, not a genuine interview).
+ *     Deliberately short (bug fix, 2026-07-24, same-day follow-up):
+ *     several repeated test launches during debugging created sessions
+ *     that were never confirmed active at all, and the original single,
+ *     longer timeout correctly-but-unhelpfully treated every one of them
+ *     as "still recent" for a full 10 minutes.
+ *   - confirmedTimeoutMinutes: for a session that WAS confirmed active
+ *     (at least one real heartbeat/activity landed) and has since gone
+ *     silent — the original, longer timeout, since a real interview in
+ *     progress can legitimately go quiet for a few minutes (the
+ *     candidate thinking, a brief connection blip) without being stale.
+ * Returns null (not abandoned — genuinely recent, either case) if neither
+ * condition is met; a real conflict, not something to silently clear.
+ * Loops until no more stale sessions remain for this user.
  */
-async function abandonStaleActiveSession(userId, timeoutMinutes, reason) {
+async function abandonStaleActiveSession(userId, confirmedTimeoutMinutes, reason, unconfirmedTimeoutMinutes) {
   const abandonedIds = [];
+  const effectiveUnconfirmedTimeout = unconfirmedTimeoutMinutes || confirmedTimeoutMinutes;
   // Bounded loop — a real backlog is small (accumulated test/crash
   // sessions), and this guards against ever looping indefinitely if
   // something unexpected keeps producing "stale" rows.
   for (let i = 0; i < 20; i++) {
     const result = await pool.query(
       `UPDATE interview_sessions
-       SET ended_at = NOW(), status = 'abandoned', abandoned_reason = $3
+       SET ended_at = NOW(), status = 'abandoned', abandoned_reason = $4
        WHERE id = (
          SELECT id FROM interview_sessions
          WHERE user_id = $1 AND status = 'active'
-           AND last_activity_at < NOW() - ($2 || ' minutes')::interval
+           AND (
+             -- Never confirmed active (no heartbeat ever landed) -> short timeout
+             (last_activity_at = started_at AND last_activity_at < NOW() - ($3 || ' minutes')::interval)
+             OR
+             -- Confirmed active at least once, then went silent -> full timeout
+             (last_activity_at > started_at AND last_activity_at < NOW() - ($2 || ' minutes')::interval)
+           )
          ORDER BY last_activity_at ASC
          LIMIT 1
        )
        RETURNING id`,
-      [userId, timeoutMinutes, reason || 'heartbeat_timeout']
+      [userId, confirmedTimeoutMinutes, effectiveUnconfirmedTimeout, reason || 'heartbeat_timeout']
     );
     if (!result.rows.length) break;
     abandonedIds.push(result.rows[0].id);

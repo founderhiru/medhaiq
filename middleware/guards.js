@@ -26,7 +26,7 @@ const { getCapabilities } = require('../lib/capabilities');
 // Server-owned session lifecycle management (bug fix, 2026-07-24) — see
 // requireInterviewEntitlement below.
 const { abandonStaleActiveSession } = require('../db/interview');
-const { SESSION_INACTIVITY_TIMEOUT_MINUTES } = require('../config/plans');
+const { SESSION_INACTIVITY_TIMEOUT_MINUTES, SESSION_UNCONFIRMED_TIMEOUT_MINUTES } = require('../config/plans');
 
 // ── API guards (JSON responses) ─────────────────────────────────────────
 
@@ -81,7 +81,7 @@ async function requireInterviewEntitlement(req, res, next) {
     // this case at all. A genuinely recent active session (a real second
     // tab, most likely) is untouched by this and still returns the
     // conflict below, exactly as before this fix.
-    const abandonedIds = await abandonStaleActiveSession(capabilities.user.id, SESSION_INACTIVITY_TIMEOUT_MINUTES);
+    const abandonedIds = await abandonStaleActiveSession(capabilities.user.id, SESSION_INACTIVITY_TIMEOUT_MINUTES, 'heartbeat_timeout', SESSION_UNCONFIRMED_TIMEOUT_MINUTES);
     if (abandonedIds.length) {
       console.log(`[session-lifecycle] auto-abandoned ${abandonedIds.length} stale session(s) for user ${capabilities.user.id}: ${abandonedIds.join(', ')}`);
       // Re-derive capabilities now the stale session(s) are cleared,

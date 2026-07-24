@@ -440,10 +440,19 @@
      (config/plans.js SESSION_INACTIVITY_TIMEOUT_MINUTES, currently 10
      minutes) tolerates far more than one missed 60s ping. */
   var HEARTBEAT_INTERVAL_MS = 60000;
-  var heartbeatInt = setInterval(function () {
+  function sendHeartbeat() {
     fetch('/api/interview/sessions/' + SID + '/heartbeat', { method: 'POST' })
       .catch(function (e) { console.warn('[heartbeat] failed (non-fatal, next tick will retry):', e); });
-  }, HEARTBEAT_INTERVAL_MS);
+  }
+  // URGENT FOLLOW-UP FIX (2026-07-24, same day): fire one immediately on
+  // load, not just on the 60s interval. Without this, a genuinely-reached
+  // session's last_activity_at stays at its creation-time default for up
+  // to a full minute — indistinguishable from a failed launch attempt
+  // that never reached this page at all (see SESSION_UNCONFIRMED_TIMEOUT_
+  // MINUTES in config/plans.js). This confirms "really here" within
+  // seconds instead.
+  sendHeartbeat();
+  var heartbeatInt = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS);
 
   /* Browser-closing signal: sent via sendBeacon (works reliably during
      page unload, unlike a normal fetch which browsers may cancel) so a
