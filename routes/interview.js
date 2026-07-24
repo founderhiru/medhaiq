@@ -632,7 +632,17 @@ router.delete('/sessions/:id', requireAuth, async (req, res) => {
     if (!session) return res.status(404).json({ error: 'Session not found' });
     if (String(session.user_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' });
 
-    await abandonSession(sessionId);
+    // Feature, 2026-07-24 follow-up: an optional client-supplied reason —
+    // currently only used by the Resume/Start New recovery modal, which
+    // passes 'superseded_by_new_session' so the Founder Dashboard can
+    // distinguish "candidate deliberately restarted after a recoverable
+    // interruption" from a normal voluntary End Session click (which
+    // sends no reason at all, and must keep reading as NULL). Anything
+    // not on abandonSession's own allowlist is silently treated as NULL
+    // there — this route trusts that function as the real boundary
+    // rather than re-validating here.
+    const reason = (req.body && typeof req.body.reason === 'string') ? req.body.reason : undefined;
+    await abandonSession(sessionId, reason);
     return res.json({ success: true });
   } catch (err) {
     console.error('[interview/sessions DELETE]', err);

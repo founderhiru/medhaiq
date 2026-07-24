@@ -23,10 +23,11 @@
 // again themselves.
 
 const { getCapabilities } = require('../lib/capabilities');
-// Server-owned session lifecycle management (bug fix, 2026-07-24) — see
+// Server-owned session lifecycle management (bug fix, 2026-07-24;
+// three-tier recovery design, 2026-07-24 follow-up) — see
 // requireInterviewEntitlement below.
-const { abandonStaleActiveSession } = require('../db/interview');
-const { SESSION_INACTIVITY_TIMEOUT_MINUTES, SESSION_UNCONFIRMED_TIMEOUT_MINUTES } = require('../config/plans');
+const { abandonStaleActiveSession, findRecoverableSession } = require('../db/interview');
+const { LIVE_HEARTBEAT_GRACE_PERIOD_MINUTES, SESSION_RECOVERY_WINDOW_MINUTES, SESSION_UNCONFIRMED_TIMEOUT_MINUTES } = require('../config/plans');
 
 // ── API guards (JSON responses) ─────────────────────────────────────────
 
@@ -69,19 +70,16 @@ async function requireInterviewEntitlement(req, res, next) {
   req.capabilities = capabilities;
 
   if (capabilities.interviewEntitlement.hasActiveInterview) {
-    // Server-owned session lifecycle management (bug fix, 2026-07-24):
-    // don't immediately treat this as a conflict. Check whether the
-    // active session has actually gone stale first — no heartbeat/
-    // activity within SESSION_INACTIVITY_TIMEOUT_MINUTES (config/plans.js)
-    // — and if so, auto-abandon it (and any other stale backlog for this
-    // user in one pass; this is exactly what fixes the bug where cleanup
-    // only ever cleared ONE stale session before giving up) before
-    // deciding what to do next. This is now entirely server-owned: no
-    // frontend cleanup logic, no dialog, no candidate-visible conflict for
-    // this case at all. A genuinely recent active session (a real second
-    // tab, most likely) is untouched by this and still returns the
-    // conflict below, exactly as before this fix.
-    const abandonedIds = await abandonStaleActiveSession(capabilities.user.id, SESSION_INACTIVITY_TIMEOUT_MINUTES, 'heartbeat_timeout', SESSION_UNCONFIRMED_TIMEOUT_MINUTES);
+    // Server-owned session lifecycle management (bug fix, 2026-07-24;
+    // three-tier recovery design, 2026-07-24 follow-up).
+    //
+    // Tier 3 (unchanged): anything beyond SESSION_RECOVERY_WINDOW_MINUTES
+    // (confirmed sessions) or SESSION_UNCONFIRMED_TIMEOUT_MINUTES (never-
+    // confirmed sessions) gets auto-abandoned right here, fully
+    // automatically, exactly as before this follow-up — no candidate
+    // interaction, no recovery offer, since there's nothing left worth
+    // recovering to (either too long gone, or never really started).
+    const abandonedIds = await abandonStaleActiveSession(capabilities.user.id, SESSION_RECOVERY_WINDOW_MINUTES, 'heartbeat_timeout', SESSION_UNCONFIRMED_TIMEOUT_MINUTES);
     if (abandonedIds.length) {
       console.log(`[session-lifecycle] auto-abandoned ${abandonedIds.length} stale session(s) for user ${capabilities.user.id}: ${abandonedIds.join(', ')}`);
       // Re-derive capabilities now the stale session(s) are cleared,
@@ -100,14 +98,44 @@ async function requireInterviewEntitlement(req, res, next) {
         req.user = refreshed.user;
         return next();
       }
-      // Fall through to the conflict response below — extremely unlikely
-      // (a session would have had to go active in the few ms between the
-      // abandon and this re-check), handled defensively rather than
-      // silently creating a duplicate active session.
+      // Fall through — extremely unlikely (a session would have had to
+      // go active in the few ms between the abandon and this re-check),
+      // handled defensively rather than silently creating a duplicate.
     }
+
+    // Tier 2 (NEW): still active after the tier-3 sweep. Before treating
+    // this as a dead-end conflict, check whether it's gone quiet longer
+    // than LIVE_HEARTBEAT_GRACE_PERIOD_MINUTES (a missed heartbeat plus
+    // jitter room) but is still within the recovery window — this is
+    // exactly the reported gap: a candidate's connection drops mid-
+    // interview, they come back a few minutes later, and previously hit
+    // a permanent 409 with no path forward. If found, surface it as a
+    // RECOVERABLE conflict with enough info for the client to offer
+    // Resume / Start New, instead of either silently resuming (a live
+    // voice call should never restart speaking without the candidate
+    // choosing to) or leaving them stuck.
+    const recoverable = await findRecoverableSession(capabilities.user.id, LIVE_HEARTBEAT_GRACE_PERIOD_MINUTES, SESSION_RECOVERY_WINDOW_MINUTES);
+    if (recoverable) {
+      return res.status(409).json({
+        error: 'An interview session is already active',
+        reason: 'ACTIVE_SESSION_EXISTS',
+        recoverable: true,
+        session: {
+          id: recoverable.id,
+          roleTitle: recoverable.roleTitle,
+          answeredCount: recoverable.answeredCount,
+          lastActiveAt: recoverable.lastActiveAt,
+        },
+      });
+    }
+
+    // Tier 1 (unchanged): still within the grace period — genuinely live
+    // elsewhere, most likely a real second tab actively pinging. A real
+    // conflict, not something to offer recovery for.
     return res.status(409).json({
       error: 'An interview session is already active',
       reason: 'ACTIVE_SESSION_EXISTS',
+      recoverable: false,
       activeSessionId: capabilities.interviewEntitlement.activeSessionId,
     });
   }

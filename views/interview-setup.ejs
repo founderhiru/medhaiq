@@ -796,6 +796,72 @@ function switchTab(tab) {
     return { status: res.status, data: data };
   }
 
+  // ── Session Recovery Modal logic (feature, 2026-07-24 follow-up) ──────
+  function formatMinutesAgo(lastActiveAt) {
+    var mins = Math.max(0, Math.round((Date.now() - new Date(lastActiveAt).getTime()) / 60000));
+    if (mins < 1) return 'less than a minute ago';
+    if (mins === 1) return '1 minute ago';
+    return mins + ' minutes ago';
+  }
+
+  function showRecoveryModal(session) {
+    var overlay = document.getElementById('recoveryModalOverlay');
+    var body = document.getElementById('recoveryModalBody');
+    var answered = session.answeredCount || 0;
+    body.textContent = 'You have an interview in progress'
+      + (session.roleTitle ? ' for ' + session.roleTitle : '')
+      + ' — question ' + (answered + 1) + ' of 5, last active ' + formatMinutesAgo(session.lastActiveAt) + '. '
+      + 'Would you like to continue where you left off, or start a new interview?';
+    overlay.style.display = 'flex';
+
+    var resumeBtn = document.getElementById('recoveryResumeBtn');
+    var startNewBtn = document.getElementById('recoveryStartNewBtn');
+    var btn = document.getElementById('beginBtn');
+
+    function cleanup() {
+      overlay.style.display = 'none';
+      resumeBtn.onclick = null;
+      startNewBtn.onclick = null;
+    }
+
+    resumeBtn.onclick = function () {
+      // Resume never auto-connects voice or plays audio on its own — the
+      // "Continue Interview" gate in interview-session.ejs requires an
+      // explicit click before Vapi reconnects, exactly per the founder's
+      // requirement. This navigation just gets the candidate back to
+      // their existing session; nothing speaks until they choose to.
+      cleanup();
+      window.location.href = '/interview/session/' + session.id;
+    };
+
+    startNewBtn.onclick = async function () {
+      cleanup();
+      btn.textContent = 'Starting new session...';
+      try {
+        await fetch('/api/interview/sessions/' + session.id, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          // 'superseded_by_new_session' — its own distinct outcome, per
+          // the founder's explicit ask, not a generic cancellation or a
+          // timeout. Validated against an allowlist server-side
+          // (db/interview.js's abandonSession) regardless of what's sent
+          // here — this is just the one real caller of that value today.
+          body: JSON.stringify({ reason: 'superseded_by_new_session' }),
+        });
+      } catch (e) {
+        console.warn('[Recovery] could not end previous session before starting new (non-fatal, will still retry creation):', e);
+      }
+      var retryResult = await createSessionOnce().catch(function (e) { return { status: 0, data: { error: String(e) } }; });
+      if (retryResult.data && retryResult.data.sessionId) {
+        window.location.href = '/interview/session/' + retryResult.data.sessionId;
+        return;
+      }
+      console.error('[Recovery] Start New failed to create a session:', retryResult);
+      alert('Failed to start a new session. Please check console.');
+      btn.textContent = 'Initialize Session →';
+    };
+  }
+
   document.getElementById('beginBtn').addEventListener('click', async () => {
     const btn = document.getElementById('beginBtn');
     if (IS_PREVIEW) {
@@ -823,6 +889,16 @@ function switchTab(tab) {
       return;
     }
     if (result.status === 409 && result.data && result.data.reason === 'ACTIVE_SESSION_EXISTS') {
+      if (result.data.recoverable && result.data.session) {
+        // Tier 2: genuinely recoverable — show the real choice instead of
+        // a dead-end block. Deliberately does NOT auto-resume; see the
+        // Resume button handler below, and the "Continue Interview" gate
+        // in interview-session.ejs for why voice never restarts on its own.
+        showRecoveryModal(result.data.session);
+        return;
+      }
+      // Tier 1: still within the live-heartbeat grace period — genuinely
+      // active elsewhere, most likely a real second tab. A real conflict.
       console.log('[Launch] genuinely active session exists elsewhere (id=' + result.data.activeSessionId + ') — not stale, real conflict');
       alert('You already have an interview in progress in another tab or window. Please finish or end that session before starting a new one.');
       btn.textContent = 'Initialize Session →';
@@ -1147,6 +1223,24 @@ function switchTab(tab) {
     closeModal();
   });
 })();
-</script>
+</script><!-- ── Session Recovery Modal (feature, 2026-07-24 follow-up) ──────────────
+     Shown only when the server reports a RECOVERABLE conflict (tier 2 of
+     the three-tier design in middleware/guards.js): a confirmed session
+     that's gone quiet longer than the live-heartbeat grace period but is
+     still within the recovery window. Deliberately NOT a native alert/
+     confirm() — a real choice (Resume / Start New) for what the founder
+     specifically wants to be treated as a premium-product moment, not a
+     dead-end block. -->
+<div id="recoveryModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(2,6,16,0.75); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; max-width:440px; width:90%; padding:28px; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="font-size:18px; font-weight:700; color:var(--white); margin-bottom:10px;">Continue your interview?</div>
+    <div id="recoveryModalBody" style="font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:22px;"></div>
+    <div style="display:flex; gap:10px;">
+      <button id="recoveryResumeBtn" style="flex:1; padding:12px; border-radius:10px; border:none; background:var(--blue-hi); color:#fff; font-weight:600; font-size:14px; cursor:pointer;">Resume Interview</button>
+      <button id="recoveryStartNewBtn" style="flex:1; padding:12px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--muted); font-weight:600; font-size:14px; cursor:pointer;">Start New</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

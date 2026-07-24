@@ -84,6 +84,30 @@
 </head>
 <body>
 
+<% if (answeredCount > 0) { %>
+<!-- ── Continue Interview gate (feature, 2026-07-24 follow-up) ──────────
+     Shown only when landing on a session that already has answered
+     questions — i.e. a resume, not a brand-new session's first-ever
+     load. The underlying voice mechanism already never auto-connects at
+     page load for ANY session (connectVoice() only ever runs from the
+     mic button's click handler — see the bottom of this file's main
+     script) — this gate exists so that fact is an explicit, obvious
+     moment for a candidate coming back after a gap, not just an easy-to-
+     miss small mic icon. Clicking "Continue Interview" both dismisses
+     this overlay AND calls the exact same connectVoice() the mic button
+     always called — no new speak-triggering path, just a clearer one. -->
+<div id="continueGateOverlay" style="position:fixed; inset:0; background:var(--bg); z-index:9998; display:flex; align-items:center; justify-content:center;">
+  <div style="max-width:460px; width:90%; padding:32px; text-align:center;">
+    <div style="font-size:20px; font-weight:700; color:#fff; margin-bottom:12px;">Welcome back</div>
+    <div style="font-size:14px; color:var(--text2); line-height:1.6; margin-bottom:26px;">
+      Your interview state has been restored — you're on question <%= answeredCount + 1 %> of 5.
+      Click below when you're ready to continue; nothing will speak until you do.
+    </div>
+    <button id="continueGateBtn" style="padding:14px 28px; border-radius:10px; border:none; background:var(--blue); color:#fff; font-weight:600; font-size:15px; cursor:pointer;">Continue Interview</button>
+  </div>
+</div>
+<% } %>
+
 <!-- ═══ SINGLE TOP BAR — matches Target2.jpg exactly:
      "MedhaIQ.live | Interview Session" (left) · LIVE · timer · Qx/5 (center-right) · End Session (right) ═══ -->
 
@@ -2515,6 +2539,20 @@
   }
 
   btn.addEventListener('click', connectVoice);
+
+  // Continue Interview gate (feature, 2026-07-24 follow-up) — only present
+  // in the DOM when answeredCount > 0 (see the EJS conditional near the
+  // top of <body>). Same connectVoice() as the mic button; this is just a
+  // clearer, harder-to-miss entry point for a candidate resuming after a
+  // gap. No-op safely if the element isn't present (fresh sessions).
+  var continueGateBtn = document.getElementById('continueGateBtn');
+  if (continueGateBtn) {
+    continueGateBtn.addEventListener('click', function () {
+      var overlay = document.getElementById('continueGateOverlay');
+      if (overlay) overlay.style.display = 'none';
+      connectVoice();
+    });
+  }
 
   setInterval(function(){ if(state===STATES.IDLE&&btn.disabled) btn.disabled=false; },3000);
   // REDESIGN: voice connects ONLY on click, not automatically at page

@@ -206,8 +206,8 @@ async function runGuardTests() {
           },
         };
       }
-      if (id === '../db/interview') return { abandonStaleActiveSession: async () => abandonedIds };
-      if (id === '../config/plans') return { SESSION_INACTIVITY_TIMEOUT_MINUTES: 10, SESSION_UNCONFIRMED_TIMEOUT_MINUTES: 2 };
+      if (id === '../db/interview') return { abandonStaleActiveSession: async () => abandonedIds, findRecoverableSession: async () => null };
+      if (id === '../config/plans') return { LIVE_HEARTBEAT_GRACE_PERIOD_MINUTES: 1.5, SESSION_RECOVERY_WINDOW_MINUTES: 10, SESSION_UNCONFIRMED_TIMEOUT_MINUTES: 2 };
       return originalRequire.apply(this, arguments);
     };
     const fullPath = path.join(__dirname, '..', 'middleware', 'guards.js');
