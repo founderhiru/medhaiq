@@ -804,53 +804,46 @@ function switchTab(tab) {
     }
     btn.textContent = 'Initializing...';
 
-    // PRIORITY 1 FIX (invisible session recovery -- explicit product
-    // decision): session management must never surface to the
-    // candidate. A stale active session (e.g. from closing a previous
-    // tab without clicking "End Session") is now cleaned up completely
-    // silently -- no dialog, no choice, no visible indication anything
-    // needed recovering at all. The UI stays on "Initializing..." the
-    // entire time, exactly as if this were a normal first launch.
-    var first = await createSessionOnce().catch(function (e) { return { status: 0, data: { error: String(e) } }; });
-    if (first.status === 409 && first.data && first.data.reason === 'ACTIVE_SESSION_EXISTS') {
-      var activeId = first.data.activeSessionId;
-      console.log('[Launch] stale active session detected (id=' + activeId + ') -- cleaning up silently, no dialog');
-      if (activeId) {
-        try { await fetch('/api/interview/sessions/' + activeId, { method: 'DELETE' }); }
-        catch (e) { console.warn('[Launch] could not end previous session (non-fatal, will still retry creation):', e); }
-      }
-      var afterCleanup = await createSessionOnce().catch(function (e) { return { status: 0, data: { error: String(e) } }; });
-      if (afterCleanup.data && afterCleanup.data.sessionId) {
-        window.location.href = '/interview/session/' + afterCleanup.data.sessionId;
-        return;
-      }
-      console.error('[Launch] failed even after silent cleanup:', afterCleanup);
-      alert('Failed to launch. Please check console.');
-      btn.textContent = 'Initialize Session →';
+    // SIMPLIFIED (2026-07-24): stale-session recovery is now entirely
+    // server-owned (middleware/guards.js's requireInterviewEntitlement
+    // auto-abandons any ACTIVE session that's gone silent for longer than
+    // SESSION_INACTIVITY_TIMEOUT_MINUTES before ever returning a
+    // conflict) — see db/interview.js's abandonStaleActiveSession. The
+    // frontend cleanup loop that used to live here (delete the reported
+    // activeSessionId, retry, repeat) is gone: it's no longer this
+    // layer's job, and it could only ever clear one stale session per
+    // pass anyway, which is exactly what broke when several had
+    // accumulated. A 409 ACTIVE_SESSION_EXISTS reaching this code now
+    // means a GENUINELY recent session — most likely a second tab still
+    // open — which is a real conflict, not something to silently clear.
+    let result = await createSessionOnce().catch(function (e) { return { status: 0, data: { error: String(e) } }; });
+
+    if (result.data && result.data.sessionId) {
+      window.location.href = '/interview/session/' + result.data.sessionId;
       return;
     }
-    if (first.data && first.data.sessionId) {
-      window.location.href = '/interview/session/' + first.data.sessionId;
+    if (result.status === 409 && result.data && result.data.reason === 'ACTIVE_SESSION_EXISTS') {
+      console.log('[Launch] genuinely active session exists elsewhere (id=' + result.data.activeSessionId + ') — not stale, real conflict');
+      alert('You already have an interview in progress in another tab or window. Please finish or end that session before starting a new one.');
+      btn.textContent = 'Initialize Session →';
       return;
     }
 
     // Any OTHER failure (transient network/backend hiccup) still gets
-    // the silent-retry treatment from before -- that part was already
-    // correct, just never reached previously because this specific,
-    // persistent condition was exhausting all 3 attempts pointlessly.
+    // the silent-retry treatment from before.
     const MAX_ATTEMPTS = 3;
     const RETRY_DELAY_MS = 800;
-    let lastError = first.data && first.data.error;
+    let lastError = result.data && result.data.error;
     for (let attempt = 2; attempt <= MAX_ATTEMPTS; attempt++) {
       await new Promise(function (r) { setTimeout(r, RETRY_DELAY_MS); });
       try {
-        const result = await createSessionOnce();
-        if (result.data && result.data.sessionId) {
-          window.location.href = '/interview/session/' + result.data.sessionId;
+        const retryResult = await createSessionOnce();
+        if (retryResult.data && retryResult.data.sessionId) {
+          window.location.href = '/interview/session/' + retryResult.data.sessionId;
           return;
         }
-        console.warn('[Launch] attempt ' + attempt + ' returned no sessionId:', result.data);
-        lastError = result.data && result.data.error;
+        console.warn('[Launch] attempt ' + attempt + ' returned no sessionId:', retryResult.data);
+        lastError = retryResult.data && retryResult.data.error;
       } catch (e) {
         console.warn('[Launch] attempt ' + attempt + ' threw:', e);
         lastError = e;

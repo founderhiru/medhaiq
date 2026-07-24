@@ -27,7 +27,6 @@ const {
   saveReport,
   completeSession,
   abandonSession,
-  touchSessionActivity,
 } = require('../db/interview');
 const { sendInterviewReportEmail } = require('../services/email');
 const {
@@ -604,13 +603,6 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
     const sessionId = parseInt(req.params.id, 10);
     const { questionId, answerText, skip, voiceMode } = req.body;
 
-    // Server-owned session lifecycle management (bug fix, 2026-07-24):
-    // any real answer submission IS activity, independent of the
-    // dedicated heartbeat ping — refreshes last_activity_at so this
-    // session is never mistaken for stale mid-interview. Non-blocking and
-    // non-fatal: a failure here must never break real answer processing.
-    touchSessionActivity(sessionId).catch((e) => console.warn('[interview] touchSessionActivity failed (non-fatal):', e.message));
-
     const result = await processInterviewAnswer({
       sessionId, questionId, answerText, skip, voiceMode,
       userId: req.user.id,
@@ -637,57 +629,6 @@ router.delete('/sessions/:id', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('[interview/sessions DELETE]', err);
     return res.status(500).json({ error: 'Failed to end session' });
-  }
-});
-
-// ── POST /api/interview/sessions/:id/heartbeat — server-owned session
-// lifecycle management (bug fix, 2026-07-24). Called periodically by the
-// client (interview-session.ejs) while a session is genuinely in
-// progress, so last_activity_at stays fresh and this session is never
-// mistaken for stale by requireInterviewEntitlement's auto-recovery
-// check (middleware/guards.js) if the candidate opens a second tab or
-// their previous attempt tries to start a new one.
-router.post('/sessions/:id/heartbeat', requireAuth, async (req, res) => {
-  try {
-    const sessionId = parseInt(req.params.id, 10);
-    const session = await getSession(sessionId);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (String(session.user_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' });
-    if (session.status !== 'active') return res.json({ success: true, ignored: true }); // already ended — nothing to refresh
-
-    await touchSessionActivity(sessionId);
-    return res.json({ success: true });
-  } catch (err) {
-    console.error('[interview/sessions heartbeat]', err);
-    return res.status(500).json({ error: 'Heartbeat failed' });
-  }
-});
-
-// ── POST /api/interview/sessions/:id/browser-closing — server-owned
-// session lifecycle management (bug fix, 2026-07-24). Sent via
-// navigator.sendBeacon on beforeunload/pagehide, so a candidate closing
-// the tab mid-interview is recorded with a real, specific reason
-// (abandoned_reason='browser_closed') rather than only being caught later
-// by the generic heartbeat-timeout path once the inactivity window
-// elapses. sendBeacon requests can't carry auth headers reliably across
-// browsers, so this reads sessionId from the body and re-validates
-// ownership via the session's own user_id — same trust boundary as every
-// other session mutation here, just via a different auth signal
-// (cookie, which sendBeacon does send) than the Bearer-style check some
-// other routes use. Best-effort by nature (the tab is closing) — never
-// throws in a way that would matter to a client that's already gone.
-router.post('/sessions/:id/browser-closing', requireAuth, async (req, res) => {
-  try {
-    const sessionId = parseInt(req.params.id, 10);
-    const session = await getSession(sessionId);
-    if (!session || String(session.user_id) !== String(req.user.id) || session.status !== 'active') {
-      return res.json({ success: true }); // nothing to do — respond 200 regardless, the tab is closing either way
-    }
-    await abandonSession(sessionId, 'browser_closed');
-    return res.json({ success: true });
-  } catch (err) {
-    console.error('[interview/sessions browser-closing]', err);
-    return res.status(500).json({ error: 'Failed to record browser-closing signal' });
   }
 });
 

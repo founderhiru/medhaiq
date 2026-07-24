@@ -431,37 +431,6 @@
   timerInt = setInterval(tick, 1000);
   tick();
 
-  /* ── Server-owned session lifecycle management (bug fix, 2026-07-24) ──
-     Heartbeat: refreshes last_activity_at server-side every 60s while
-     this session is genuinely open, so requireInterviewEntitlement's
-     auto-recovery (middleware/guards.js) never mistakes an in-progress
-     interview for stale. Deliberately fire-and-forget — a missed
-     heartbeat due to a transient network blip is fine; the timeout
-     (config/plans.js SESSION_INACTIVITY_TIMEOUT_MINUTES, currently 10
-     minutes) tolerates far more than one missed 60s ping. */
-  var HEARTBEAT_INTERVAL_MS = 60000;
-  var heartbeatInt = setInterval(function () {
-    fetch('/api/interview/sessions/' + SID + '/heartbeat', { method: 'POST' })
-      .catch(function (e) { console.warn('[heartbeat] failed (non-fatal, next tick will retry):', e); });
-  }, HEARTBEAT_INTERVAL_MS);
-
-  /* Browser-closing signal: sent via sendBeacon (works reliably during
-     page unload, unlike a normal fetch which browsers may cancel) so a
-     candidate closing the tab mid-interview is recorded with a specific,
-     real reason (abandoned_reason='browser_closed') rather than only
-     being caught later by the generic heartbeat-timeout path. Best-effort
-     by design — if it doesn't arrive, the heartbeat timeout still
-     recovers the session correctly, just with a less specific reason. */
-  function sendBrowserClosingBeacon() {
-    try {
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon('/api/interview/sessions/' + SID + '/browser-closing');
-      }
-    } catch (e) { /* best-effort — nothing to do if this throws */ }
-  }
-  window.addEventListener('pagehide', sendBrowserClosingBeacon);
-  window.addEventListener('beforeunload', sendBrowserClosingBeacon);
-
   /* Follow-up state (feature, 2026-07-23) — whether the CURRENT turn on
      screen is a follow-up. Initialized from the server-rendered QTYPE (a
      reload/reconnect can land directly on a pending follow-up — server.js
@@ -1150,7 +1119,6 @@
   document.getElementById('endBtn').addEventListener('click', async function(){
     if (!confirm('End this session? Your progress cannot be resumed.')) return;
     clearInterval(timerInt);
-    clearInterval(heartbeatInt);
     try { await fetch('/api/interview/sessions/'+SID, { method:'DELETE' }); } catch(e){}
     window.location.href = '/dashboard/history';
   });

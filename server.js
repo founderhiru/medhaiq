@@ -547,6 +547,14 @@ app.get('/dashboard/history', requireAuthPage, async (req, res) => {
       endedAt: s.ended_at,
       overallScore: toScoreOrNull(s.overall_score),
       status: s.status,
+      // Founder Dashboard diagnostics (bug fix, 2026-07-24): distinguishes
+      // WHY a session in 'abandoned' status ended — NULL for a voluntary
+      // "End Session" click, 'browser_closed' for an explicit tab-close
+      // signal, 'heartbeat_timeout' for the generic silent-timeout
+      // recovery path (see middleware/guards.js, db/interview.js). Not
+      // yet surfaced in the history template itself — this makes the data
+      // available; the visual treatment is a follow-up decision.
+      abandonedReason: s.abandoned_reason || null,
     }));
 
     const trend = history

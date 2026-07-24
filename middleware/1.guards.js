@@ -23,10 +23,6 @@
 // again themselves.
 
 const { getCapabilities } = require('../lib/capabilities');
-// Server-owned session lifecycle management (bug fix, 2026-07-24) — see
-// requireInterviewEntitlement below.
-const { abandonStaleActiveSession } = require('../db/interview');
-const { SESSION_INACTIVITY_TIMEOUT_MINUTES } = require('../config/plans');
 
 // ── API guards (JSON responses) ─────────────────────────────────────────
 
@@ -69,42 +65,6 @@ async function requireInterviewEntitlement(req, res, next) {
   req.capabilities = capabilities;
 
   if (capabilities.interviewEntitlement.hasActiveInterview) {
-    // Server-owned session lifecycle management (bug fix, 2026-07-24):
-    // don't immediately treat this as a conflict. Check whether the
-    // active session has actually gone stale first — no heartbeat/
-    // activity within SESSION_INACTIVITY_TIMEOUT_MINUTES (config/plans.js)
-    // — and if so, auto-abandon it (and any other stale backlog for this
-    // user in one pass; this is exactly what fixes the bug where cleanup
-    // only ever cleared ONE stale session before giving up) before
-    // deciding what to do next. This is now entirely server-owned: no
-    // frontend cleanup logic, no dialog, no candidate-visible conflict for
-    // this case at all. A genuinely recent active session (a real second
-    // tab, most likely) is untouched by this and still returns the
-    // conflict below, exactly as before this fix.
-    const abandonedIds = await abandonStaleActiveSession(capabilities.user.id, SESSION_INACTIVITY_TIMEOUT_MINUTES);
-    if (abandonedIds.length) {
-      console.log(`[session-lifecycle] auto-abandoned ${abandonedIds.length} stale session(s) for user ${capabilities.user.id}: ${abandonedIds.join(', ')}`);
-      // Re-derive capabilities now the stale session(s) are cleared,
-      // rather than assuming none remain — cheap, and correct even in the
-      // unlikely case another session went active in between.
-      const refreshed = await getCapabilities(req);
-      req.capabilities = refreshed;
-      if (!refreshed.interviewEntitlement.hasActiveInterview) {
-        if (!refreshed.actions.canStartInterview) {
-          return res.status(403).json({
-            error: 'Interview entitlement exhausted',
-            reason: 'ENTITLEMENT_EXHAUSTED',
-            entitlement: refreshed.interviewEntitlement,
-          });
-        }
-        req.user = refreshed.user;
-        return next();
-      }
-      // Fall through to the conflict response below — extremely unlikely
-      // (a session would have had to go active in the few ms between the
-      // abandon and this re-check), handled defensively rather than
-      // silently creating a duplicate active session.
-    }
     return res.status(409).json({
       error: 'An interview session is already active',
       reason: 'ACTIVE_SESSION_EXISTS',

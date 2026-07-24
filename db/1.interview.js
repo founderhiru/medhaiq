@@ -51,63 +51,13 @@ async function completeSession(sessionId, overallScore) {
   return result.rows[0];
 }
 
-async function abandonSession(sessionId, reason) {
-  // reason (bug fix, 2026-07-24): optional, for Founder Dashboard
-  // diagnostics. Existing callers (candidate's own "End Session" button)
-  // pass no reason — NULL there correctly reads as "voluntarily ended,"
-  // distinct from an involuntary abandonment.
+async function abandonSession(sessionId) {
   await pool.query(
     `UPDATE interview_sessions
-     SET ended_at = NOW(), status = 'abandoned', abandoned_reason = $2
+     SET ended_at = NOW(), status = 'abandoned'
      WHERE id = $1`,
-    [sessionId, reason || null]
-  );
-}
-
-// Server-owned session lifecycle management (bug fix, 2026-07-24).
-// Refreshes last_activity_at so a genuinely-in-progress session is never
-// mistaken for stale — called by the heartbeat endpoint and by ordinary
-// in-interview activity (answer submission).
-async function touchSessionActivity(sessionId) {
-  await pool.query(
-    `UPDATE interview_sessions SET last_activity_at = NOW() WHERE id = $1 AND status = 'active'`,
     [sessionId]
   );
-}
-
-/**
- * If this user has an ACTIVE session that's gone silent for longer than
- * timeoutMinutes, auto-abandons it (reason defaults to 'heartbeat_timeout'
- * — the honest, generically-determinable reason when there's no explicit
- * closure signal) and returns the abandoned session's id. Returns null if
- * the active session (if any) is still within the timeout — a genuinely
- * recent session is a real conflict, not something to silently clear.
- * Loops until no more stale sessions remain for this user, so a backlog
- * of several (the exact bug this fixes) is fully cleared in one call.
- */
-async function abandonStaleActiveSession(userId, timeoutMinutes, reason) {
-  const abandonedIds = [];
-  // Bounded loop — a real backlog is small (accumulated test/crash
-  // sessions), and this guards against ever looping indefinitely if
-  // something unexpected keeps producing "stale" rows.
-  for (let i = 0; i < 20; i++) {
-    const result = await pool.query(
-      `UPDATE interview_sessions
-       SET ended_at = NOW(), status = 'abandoned', abandoned_reason = $3
-       WHERE id = (
-         SELECT id FROM interview_sessions
-         WHERE user_id = $1 AND status = 'active'
-           AND last_activity_at < NOW() - ($2 || ' minutes')::interval
-         ORDER BY last_activity_at ASC
-         LIMIT 1
-       )
-       RETURNING id`,
-      [userId, timeoutMinutes, reason || 'heartbeat_timeout']
-    );
-    if (!result.rows.length) break;
-    abandonedIds.push(result.rows[0].id);
-  }
-  return abandonedIds;
 }
 
 async function getSessionQuestions(sessionId) {
@@ -255,7 +205,6 @@ async function getUserCompletedReportCount(userId) {
 
 module.exports = {
   createSession, getSession, getUserSessions, completeSession, abandonSession,
-  touchSessionActivity, abandonStaleActiveSession,
   getSessionQuestions, getSessionScores, getUserAggregateScores,
   addQuestion, addAnswer, addScore,
   saveReport, getReport, getUserCompletedReportCount,

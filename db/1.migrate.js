@@ -445,43 +445,6 @@ async function runMigrations() {
           await c.query(`ALTER TABLE preferences ADD COLUMN IF NOT EXISTS product_updates BOOLEAN DEFAULT true`);
         }
       },
-      {
-        name: '015_session_lifecycle_management',
-        up: async (c) => {
-          // Server-owned session lifecycle management (bug fix, 2026-07-24).
-          // Previously a stale ACTIVE session (candidate closed the tab,
-          // crashed, lost connectivity — never called DELETE
-          // /sessions/:id) could only be cleared by the frontend detecting
-          // a 409 and deleting it itself, one at a time. Confirmed via
-          // live logs that this breaks down entirely once more than one
-          // stale session has accumulated for a user (cleanup cleared
-          // id=87, retried, hit a DIFFERENT stale id=86, gave up).
-          //
-          // last_activity_at: refreshed by the new heartbeat endpoint
-          // (routes/interview.js) and by ordinary in-interview activity
-          // (submitting an answer). Lets the server distinguish a
-          // genuinely-recent active session (real conflict — a second tab,
-          // most likely) from one that's gone silent (stale — safe to
-          // auto-abandon and let the new session through), entirely
-          // server-side, with zero frontend cleanup logic required.
-          // Defaults to started_at for any session that predates this
-          // migration, so existing rows get a sane initial value rather
-          // than NULL.
-          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS last_activity_at TIMESTAMPTZ DEFAULT NOW()`);
-          await c.query(`UPDATE interview_sessions SET last_activity_at = started_at WHERE last_activity_at IS NULL`);
-
-          // abandoned_reason: diagnostics for the Founder Dashboard —
-          // distinguishes "candidate closed the tab" (an explicit signal,
-          // sent via navigator.sendBeacon on beforeunload) from "we never
-          // heard from them again" (heartbeat_timeout, the honest default
-          // when auto-abandoning a stale session with no explicit signal).
-          // NULL for sessions that completed normally or were ended via
-          // the candidate's own "End Session" button (status distinguishes
-          // that case already; this column is specifically about the
-          // *involuntary* abandonment path).
-          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS abandoned_reason VARCHAR(30)`);
-        }
-      },
     ];
 
     for (const m of migrations) {
