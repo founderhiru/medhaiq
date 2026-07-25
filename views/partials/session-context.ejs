@@ -1,5 +1,5 @@
 <%# ══════════════════════════════════════════════════════════════════
-    LEFT SIDEBAR — Session Context / Session Breakdown / Terminal Preview
+    LEFT SIDEBAR — Session Context / Session Breakdown
     TS1 target design. DO NOT remove these IDs — the engine script in
     interview-session.ejs writes into them:
       sbRole, sbLevel, sbTimeRemaining, sbProgNum, sbProgFill, sbProgRemaining
@@ -54,16 +54,8 @@
     </div>
   </section>
 
-  <section class="card">
-    <div class="card-head">
-      <p class="eyebrow">Live Terminal Preview</p>
-      <span class="live-pill"><span class="live-dot"></span>LIVE</span>
-    </div>
-    <div class="engine-row"><span class="engine-name"><span class="engine-ic"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></span>STAR Engine</span><span class="badge-ready">Ready</span></div>
-    <div class="engine-row"><span class="engine-name"><span class="engine-ic"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></span>Behavior Analyzer</span><span class="badge-ready">Ready</span></div>
-    <div class="engine-row"><span class="engine-name"><span class="engine-ic"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></span>Sentiment Engine</span><span class="badge-ready">Ready</span></div>
-    <div class="engine-row"><span class="engine-name"><span class="engine-ic"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></span>Response Predictor</span><span class="badge-ready">Ready</span></div>
-    <p class="all-ready">All systems ready. Let's begin!</p>
-  </section>
-
 </aside>
+<%# Live Terminal Preview card intentionally removed (UX polish, 2026-07-24):
+    it duplicated the real Live Terminal panel in the right sidebar. The
+    freed vertical space now goes to Session Breakdown, which renders
+    larger (see .doughnut/.breakdown rules in interview-session.css). %>

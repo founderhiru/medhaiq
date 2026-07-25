@@ -51,13 +51,150 @@ async function completeSession(sessionId, overallScore) {
   return result.rows[0];
 }
 
-async function abandonSession(sessionId) {
+// Founder Dashboard diagnostics (bug fix, 2026-07-24; extended 2026-07-24
+// follow-up with 'superseded_by_new_session'). Every value here is a
+// distinct, analyzable outcome — NULL means "voluntarily ended via the
+// candidate's own End Session button", which must stay separate from
+// every involuntary/explicit reason below.
+const ABANDONED_REASON_ALLOWLIST = new Set([
+  'browser_closed',
+  'heartbeat_timeout',
+  // Feature, 2026-07-24 follow-up: the candidate was shown a recoverable
+  // session (Resume / Start New modal, see findRecoverableSession above)
+  // and explicitly chose Start New. This is neither a generic
+  // cancellation nor an involuntary timeout — the founder specifically
+  // asked that this be its own distinguishable outcome, since "candidate
+  // deliberately restarted after a recoverable interruption" is a
+  // meaningfully different signal for dashboard analytics than either of
+  // those.
+  'superseded_by_new_session',
+]);
+
+async function abandonSession(sessionId, reason) {
+  // reason (bug fix, 2026-07-24): optional, for Founder Dashboard
+  // diagnostics. Existing callers (candidate's own "End Session" button)
+  // pass no reason — NULL there correctly reads as "voluntarily ended,"
+  // distinct from an involuntary abandonment. Any reason NOT on the
+  // allowlist above is silently treated as null rather than stored
+  // verbatim — this function is reachable from a route that now accepts
+  // a client-supplied reason (Start New), so an allowlist here is the
+  // real trust boundary, not just documentation.
+  const safeReason = ABANDONED_REASON_ALLOWLIST.has(reason) ? reason : null;
   await pool.query(
     `UPDATE interview_sessions
-     SET ended_at = NOW(), status = 'abandoned'
+     SET ended_at = NOW(), status = 'abandoned', abandoned_reason = $2
      WHERE id = $1`,
+    [sessionId, safeReason]
+  );
+}
+
+// Server-owned session lifecycle management (bug fix, 2026-07-24).
+// Refreshes last_activity_at so a genuinely-in-progress session is never
+// mistaken for stale — called by the heartbeat endpoint and by ordinary
+// in-interview activity (answer submission).
+async function touchSessionActivity(sessionId) {
+  await pool.query(
+    `UPDATE interview_sessions SET last_activity_at = NOW() WHERE id = $1 AND status = 'active'`,
     [sessionId]
   );
+}
+
+/**
+ * If this user has an ACTIVE session that's gone silent, auto-abandons it
+ * and returns the abandoned session's id(s). Two timeouts apply:
+ *   - unconfirmedTimeoutMinutes: for a session that NEVER received a real
+ *     heartbeat (last_activity_at is still exactly its creation-time
+ *     default, since the candidate never actually reached the live
+ *     interview page — a failed launch attempt, not a genuine interview).
+ *     Deliberately short (bug fix, 2026-07-24, same-day follow-up):
+ *     several repeated test launches during debugging created sessions
+ *     that were never confirmed active at all, and the original single,
+ *     longer timeout correctly-but-unhelpfully treated every one of them
+ *     as "still recent" for a full 10 minutes.
+ *   - confirmedTimeoutMinutes: for a session that WAS confirmed active
+ *     (at least one real heartbeat/activity landed) and has since gone
+ *     silent — SESSION_RECOVERY_WINDOW_MINUTES (config/plans.js). Beyond
+ *     this, a session is auto-abandoned unconditionally, fully
+ *     automatic, no candidate interaction (this function's job).
+ *     WITHIN this window but past the grace period is handled instead by
+ *     findRecoverableSession() below — that's the "Resume / Start New"
+ *     case, not an auto-abandon.
+ * Returns null (not abandoned — genuinely recent, either case) if neither
+ * condition is met; a real conflict, not something to silently clear.
+ * Loops until no more stale sessions remain for this user.
+ */
+async function abandonStaleActiveSession(userId, confirmedTimeoutMinutes, reason, unconfirmedTimeoutMinutes) {
+  const abandonedIds = [];
+  const effectiveUnconfirmedTimeout = unconfirmedTimeoutMinutes || confirmedTimeoutMinutes;
+  // Bounded loop — a real backlog is small (accumulated test/crash
+  // sessions), and this guards against ever looping indefinitely if
+  // something unexpected keeps producing "stale" rows.
+  for (let i = 0; i < 20; i++) {
+    const result = await pool.query(
+      `UPDATE interview_sessions
+       SET ended_at = NOW(), status = 'abandoned', abandoned_reason = $4
+       WHERE id = (
+         SELECT id FROM interview_sessions
+         WHERE user_id = $1 AND status = 'active'
+           AND (
+             -- Never confirmed active (no heartbeat ever landed) -> short timeout
+             (last_activity_at = started_at AND last_activity_at < NOW() - ($3 || ' minutes')::interval)
+             OR
+             -- Confirmed active at least once, then went silent -> full timeout
+             (last_activity_at > started_at AND last_activity_at < NOW() - ($2 || ' minutes')::interval)
+           )
+         ORDER BY last_activity_at ASC
+         LIMIT 1
+       )
+       RETURNING id`,
+      [userId, confirmedTimeoutMinutes, effectiveUnconfirmedTimeout, reason || 'heartbeat_timeout']
+    );
+    if (!result.rows.length) break;
+    abandonedIds.push(result.rows[0].id);
+  }
+  return abandonedIds;
+}
+
+/**
+ * Three-tier session recovery (feature, 2026-07-24 follow-up). Call this
+ * ONLY after abandonStaleActiveSession has already cleared anything past
+ * SESSION_RECOVERY_WINDOW_MINUTES — this function's job is the middle
+ * tier specifically: a CONFIRMED session (real progress exists) that has
+ * gone quiet longer than graceMinutes (so it's not just "another tab,
+ * still pinging") but is still within recoveryWindowMinutes (so it
+ * hasn't been auto-abandoned). Returns the session's basic progress info
+ * for the Resume/Start New modal, or null if no such session exists
+ * (either genuinely live — within grace — or none active at all).
+ *
+ * Progress is a simple answered-question count (not distinguishing
+ * primary vs. follow-up — that distinction lives in routes/interview.js
+ * and isn't worth importing here just for a rough "Question 3 of 5"
+ * display string).
+ */
+async function findRecoverableSession(userId, graceMinutes, recoveryWindowMinutes) {
+  const result = await pool.query(
+    `SELECT s.id, s.role_title, s.persona_id, s.started_at, s.last_activity_at,
+            (SELECT COUNT(*) FROM interview_questions q
+             JOIN interview_answers a ON a.question_id = q.id
+             WHERE q.session_id = s.id) AS answered_count
+     FROM interview_sessions s
+     WHERE s.user_id = $1 AND s.status = 'active'
+       AND s.last_activity_at > s.started_at
+       AND s.last_activity_at < NOW() - ($2 || ' minutes')::interval
+       AND s.last_activity_at > NOW() - ($3 || ' minutes')::interval
+     ORDER BY s.last_activity_at DESC
+     LIMIT 1`,
+    [userId, graceMinutes, recoveryWindowMinutes]
+  );
+  if (!result.rows.length) return null;
+  const row = result.rows[0];
+  return {
+    id: row.id,
+    roleTitle: row.role_title,
+    personaId: row.persona_id,
+    answeredCount: parseInt(row.answered_count, 10) || 0,
+    lastActiveAt: row.last_activity_at,
+  };
 }
 
 async function getSessionQuestions(sessionId) {
@@ -176,7 +313,7 @@ async function saveReport({ sessionId, overallScore, strengthsJson, improvements
 
 async function getReport(sessionId) {
   const result = await pool.query(
-    `SELECT r.*, s.persona_id, s.role_title, s.experience_level, s.org_preset, s.started_at, s.ended_at
+    `SELECT r.*, s.user_id, s.persona_id, s.role_title, s.experience_level, s.org_preset, s.started_at, s.ended_at
      FROM interview_reports r
      JOIN interview_sessions s ON s.id = r.session_id
      WHERE r.session_id = $1`,
@@ -205,6 +342,7 @@ async function getUserCompletedReportCount(userId) {
 
 module.exports = {
   createSession, getSession, getUserSessions, completeSession, abandonSession,
+  touchSessionActivity, abandonStaleActiveSession, findRecoverableSession,
   getSessionQuestions, getSessionScores, getUserAggregateScores,
   addQuestion, addAnswer, addScore,
   saveReport, getReport, getUserCompletedReportCount,

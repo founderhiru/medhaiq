@@ -1,18 +1,11 @@
 // Dashboard routes — history, report views.
 const express = require('express');
 const router = express.Router();
-const { getUserById } = require('../db/auth');
 const { getUserSessions, getReport, getSession } = require('../db/interview');
-
-// Middleware
-async function requireAuth(req, res, next) {
-  const userId = req.cookies?.user_id;
-  if (!userId) return res.status(401).json({ error: 'Authentication required' });
-  const user = await getUserById(userId);
-  if (!user) return res.status(401).json({ error: 'Session expired' });
-  req.user = user;
-  next();
-}
+// requireAuth now lives in middleware/guards.js — single shared
+// implementation, built on the Capability Engine. Previously this file had
+// its own copy-pasted version identical to feedback.js/interview.js/resume.js.
+const { requireAuth } = require('../middleware/guards');
 
 // GET /api/dashboard/history — user's session history with scores
 router.get('/history', requireAuth, async (req, res) => {

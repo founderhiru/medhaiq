@@ -48,7 +48,7 @@
   --btn-pad-x: 22px;
   --hero-h1-size: clamp(36px, 6vw, 48px);
   --hero-h1-tracking: -0.04em;
-  --h2-size: clamp(24px, 5vw, 32px);
+  --h2-size: clamp(22px, 4.5vw, 29px);
   --h2-tracking: -0.03em;
   --eyebrow-size: 13px;
   --eyebrow-tracking: 0.1em;
@@ -466,7 +466,7 @@ button { cursor: pointer; }
   line-height: 1.0;
   letter-spacing: var(--hero-h1-tracking);
   color: var(--white);
-  margin-bottom: 14px;
+  margin-bottom: 20px;
 }
 
 .mh-hero-h2 {
@@ -476,7 +476,7 @@ button { cursor: pointer; }
                        450 would silently fall back to 400 and render no different */
   font-size: 20px;
   color: var(--hero-sub-color);
-  margin-bottom: 8px;
+  margin-bottom: 24px;
   line-height: 1.5;
 }
 .mh-hero-sub {
@@ -540,6 +540,17 @@ button { cursor: pointer; }
   transition: all 0.2s ease;
   box-shadow: 0 0 30px rgba(30, 64, 175, 0.4);
   white-space: nowrap;
+}
+/* Explore-page closing CTA ("Ready to measure your interview readiness?")
+   keeps the larger, lighter-weight treatment on purpose — scoped here so it
+   never affects the Hero CTA or any other .mh-btn-primary usage. */
+.mh-explore-cta .mh-btn-primary {
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  gap: 16px;
+  padding: var(--btn-pad-y) 38px;
 }
 .mh-btn-primary:hover {
   background: #2563eb;
@@ -2092,7 +2103,7 @@ button { cursor: pointer; }
    FOOTER
    ============================================ */
 .mh-footer {
-  padding: 48px 40px;
+  padding: 68px 40px 48px;
   background: var(--navy-deep);
   border-top: 1px solid var(--white-border);
 }
@@ -2131,9 +2142,9 @@ button { cursor: pointer; }
 .mh-footer-logo { display: flex; align-items: center; gap: 8px; }
 .mh-footer-tagline { font-size: 13px; font-weight: 700; color: var(--white); }
 .mh-footer-desc { font-size: 12px; color: var(--text-faint); }
-.mh-footer-links-col { display: flex; gap: 40px; }
+.mh-footer-links-col { display: flex; flex-wrap: wrap; gap: 32px 40px; }
 .mh-footer-link-group { display: flex; flex-direction: column; gap: 8px; }
-.mh-footer-link-heading { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+.mh-footer-link-heading { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
 .mh-footer-link { font-size: 13px; color: var(--text-faint); transition: color 0.15s ease; }
 .mh-footer-link:hover { color: var(--white); }
 .mh-footer-contact-btn { font-size: 13px; color: var(--text-faint); background: none; border: none; cursor: pointer; text-align: left; font-family: var(--font-body); transition: color 0.15s ease; padding: 0; }
@@ -3089,7 +3100,7 @@ button { cursor: pointer; }
 .mh-res-tag-gold { background: rgba(217, 119, 6, 0.1); color: var(--gold); }
 .mh-res-card-title {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--navy-rich);
   margin-bottom: 10px;
@@ -3346,7 +3357,7 @@ button { cursor: pointer; }
 }
 .mh-pricing-tier {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--white);
   margin-bottom: 12px;
@@ -3851,17 +3862,17 @@ button { cursor: pointer; }
 .mh-cta-banner-inner { max-width: 720px; margin: 0 auto; }
 .mh-cta-headline {
   font-family: var(--font-display);
-  font-size: clamp(36px, 5vw, 60px);
+  font-size: clamp(30px, 4vw, 46px);
   font-weight: 800;
   color: var(--white);
-  letter-spacing: -2px;
+  letter-spacing: -1.5px;
   line-height: 1.0;
   margin-bottom: 16px;
 }
 .mh-cta-subheadline {
   font-family: var(--font-body);
   font-size: 18px;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255,255,255,0.88);
   margin-bottom: 40px;
   line-height: 1.5;
 }

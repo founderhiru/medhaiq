@@ -3,6 +3,11 @@
 // Interview API routes — Full Session Lifecycle with Quality Guardrails
 // ═══════════════════════════════════════════════════════════════════════════
 const express = require('express');
+const crypto = require('crypto'); // built-in Node module — used ONLY for the diagnostic hash trace below, no new dependency
+// FEATURE FLAG — set DEBUG_HASH_TRACE=true in the environment to enable
+// the diagnostic hash-trace logging below. Leave unset/false to disable
+// cleanly after diagnosis — no code changes needed, just the env var.
+const DEBUG_HASH_TRACE = process.env.DEBUG_HASH_TRACE === 'true';
 const router = express.Router();
 const {
   generateNextQuestion,
@@ -22,8 +27,8 @@ const {
   saveReport,
   completeSession,
   abandonSession,
+  touchSessionActivity,
 } = require('../db/interview');
-const { getUserById } = require('../db/auth');
 const { sendInterviewReportEmail } = require('../services/email');
 const {
   buildCompetencyMatrix,
@@ -33,6 +38,14 @@ const {
   MAX_JD_TEXT_CHARS,
 } = require('../services/competency-matrix');
 const sessionController = require('../controllers/sessionController');
+// requireAuth + requireInterviewEntitlement now live in middleware/guards.js
+// — single shared implementation built on the Capability Engine.
+const { requireAuth, requireInterviewEntitlement } = require('../middleware/guards');
+// Per the config-driven-business-rules directive: this was previously its
+// own local `const MAX_SESSION_MINUTES = 25`, defined independently of the
+// identical value in config/plans.js. Sourcing it from there means there is
+// now exactly one place this number can be changed.
+const { INTERVIEW_MAX_SESSION_MINUTES } = require('../config/plans');
 
 // NOTE: harmonicAlignmentEngine (services/harmonicAlignmentEngine.js) only
 // builds the JD/company/role competency matrix — it exports
@@ -42,19 +55,13 @@ const sessionController = require('../controllers/sessionController');
 // both the text-answer route and the Vapi webhook below call the same
 // pickAndPersistNextQuestion(), which now calls generateNextQuestion().
 
-// ── Auth middleware ────────────────────────────────────────────────────────
-async function requireAuth(req, res, next) {
-  const userId = req.cookies?.user_id;
-  if (!userId) return res.status(401).json({ error: 'Authentication required' });
-  const user = await getUserById(userId);
-  if (!user) return res.status(401).json({ error: 'Session expired' });
-  req.user = user;
-  next();
-}
-
 // ── POST /api/interview/sessions — create session + generate opening question
-router.post('/sessions', requireAuth, sessionController.initializeSession);
-router.post('/session/initialize', requireAuth, sessionController.initializeSession);
+// requireInterviewEntitlement runs AFTER requireAuth: blocks session
+// creation if the user already has an active session (409) or has
+// exhausted their plan's interview minutes (403) — the action-level gate
+// per spec Section 5, not a page-level one.
+router.post('/sessions', requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
+router.post('/session/initialize', requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
 
 // ── Primary vs follow-up question type helper ───────────────────────────────
 // 'opening' and 'primary' are the current values; 'drill_down' is the legacy
@@ -70,7 +77,6 @@ function isPrimaryQuestionType(questionType) {
 // Hard session time cap — independent of the 5-primary / 5-follow-up
 // structural bound. A candidate spending 8 minutes on one answer would
 // otherwise be able to stretch a "10 turns max" session indefinitely.
-const MAX_SESSION_MINUTES = 25;
 
 async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   const allQuestions = await getSessionQuestions(session.id);
@@ -83,7 +89,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   // simply run too long ends immediately regardless of question counts.
   if (session.started_at) {
     const elapsedMinutes = (Date.now() - new Date(session.started_at).getTime()) / 60000;
-    if (elapsedMinutes >= MAX_SESSION_MINUTES) {
+    if (elapsedMinutes >= INTERVIEW_MAX_SESSION_MINUTES) {
       return {
         done: true,
         text: "We're at the time limit for this session — thank you. I'll put together your intelligence report now.",
@@ -203,6 +209,19 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     score: Number.isFinite(scoreByQuestionId.get(q.id)) ? scoreByQuestionId.get(q.id) : null,
     wasSkipped: q.answer_text === '',
     storyKey: q.story_key || null,
+    // ROOT CAUSE FIX (P0 "skip generates paraphrase of same competency"):
+    // `competency` was never included here even though it's already
+    // present on every `q` row (getSessionQuestions selects q.*, and
+    // addQuestion() already persists it correctly on write). Without
+    // it, qaBelongsToCompetency() in the Coverage/Memory Engine could
+    // never attribute any past question to its actual competency, so
+    // lastAskedTurn stayed -1 forever for every competency and the
+    // recency penalty in selectNextCompetency() never engaged --
+    // leaving the array's first-priority competency (e.g. 'technical'
+    // for Data Engineer/AI Engineer roles) selected on every turn,
+    // regardless of questionCount. This one field is the fix; no
+    // change to the Coverage Engine's scoring logic itself.
+    competency: q.competency || null,
   }));
 
   let competencyMatrix = session.competency_matrix;
@@ -301,6 +320,17 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   const turnId = Math.random().toString(16).slice(2, 8);
   console.log(`[turn-trace] TURN_ID=${turnId} processInterviewAnswer start: sessionId=${sessionId} questionId=${questionId} skip=${!!skip} voiceMode=${!!voiceMode}`);
 
+  // ── Per-stage timing instrumentation (diagnostics only, 2026-07-24) ──
+  // Purely additive: measures the existing call sequence, changes nothing
+  // about it. Correlates with turnId, same value already threaded through
+  // every other log line here, so a full turn's timing (this server-side
+  // breakdown plus the client's own STT/TTS/playback timing, already
+  // logged separately) can be reconstructed by grepping one turnId across
+  // both server and browser console logs.
+  const _timing = { turnStart: process.hrtime.bigint() };
+  function _msSince(mark) { return Number(process.hrtime.bigint() - mark) / 1e6; }
+  function _msBetween(a, b) { return Number(b - a) / 1e6; }
+
   if (!questionId) return { httpStatus: 400, body: { error: 'questionId required' } };
 
   // Verify session ownership
@@ -362,6 +392,9 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
 
     const repromptText = "I see. Could you please expand on that answer with a bit more detail or a specific example from your professional experience?";
     console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (REPROMPT, same question — must NOT advance): QuestionId=${questionId}`);
+    if (DEBUG_HASH_TRACE) {
+      console.log(`[HASH-TRACE] stage=1_backend_answer_response turnId=${turnId} questionId=${questionId} type=reprompt validationFailed=true len=${repromptText.length} first80=${JSON.stringify(repromptText.slice(0, 80))} sha256=${crypto.createHash('sha256').update(repromptText).digest('hex')}`);
+    }
 
     return {
       httpStatus: 200,
@@ -387,11 +420,13 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   }
 
   // 1. Save valid answer to database
+  _timing.beforeAnswerSave = process.hrtime.bigint();
   const savedAnswer = await addAnswer({
     sessionId,
     questionId,
     answerText: effectiveSkip ? '' : (answerText || ''),
   });
+  _timing.afterAnswerSave = process.hrtime.bigint();
   if (!savedAnswer) {
     return {
       httpStatus: 409,
@@ -401,6 +436,7 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
 
   // 2. Score the validated answer
   let scores;
+  _timing.beforeScoring = process.hrtime.bigint();
   if (!effectiveSkip && answerText && answerText.trim()) {
     scores = await scoreAnswer(answerText, session.persona_id, {
       roleTitle: session.role_title,
@@ -410,7 +446,10 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   } else {
     scores = { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 };
   }
+  _timing.afterScoring = process.hrtime.bigint();
+  _timing.scoringWasSkipped = effectiveSkip || !answerText || !answerText.trim(); // for the diagnostic log below — a skip legitimately has ~0ms here, not a fast scoreAnswer() call
 
+  _timing.beforeDbScore = process.hrtime.bigint();
   await addScore({
     sessionId,
     questionId,
@@ -421,6 +460,7 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     friction: scores.friction,
     weighted: scores.weighted,
   });
+  _timing.afterDbScore = process.hrtime.bigint();
 
   const starProgress = effectiveSkip
     ? { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 }
@@ -536,11 +576,54 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   // integration would never actually receive a real next question. There
   // is no longer any behavioral reason for voice and text to diverge here
   // — both need the real next question text to speak/display.
-  const picked = await pickAndPersistNextQuestion(session, MAX_QUESTIONS);
+  const picked = await (async () => {
+    _timing.beforeQuestionGen = process.hrtime.bigint();
+    const result = await pickAndPersistNextQuestion(session, MAX_QUESTIONS);
+    _timing.afterQuestionGen = process.hrtime.bigint();
+    return result;
+  })();
   if (picked.done) {
     return await finalizeSessionAndRespond();
   }
   console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (${picked.type === 'follow_up' ? 'FOLLOW_UP — must NOT advance progress' : 'PRIMARY — advances progress'}): QuestionId=${picked.id}`);
+
+  // ── [TURN-TIMING] final breakdown (diagnostics only, 2026-07-24) ──────
+  // Matches the requested format exactly. "Answered Count" doubles as a
+  // human-readable turn number (Interview Turn N) without needing a
+  // separate counter — this IS the count after this exact answer was
+  // saved. Total is measured end-to-end across this function, not summed
+  // from the stages, so it also reflects anything NOT individually
+  // instrumented (getSessionQuestions re-fetch, star progress compute,
+  // etc.) rather than silently under-reporting.
+  {
+    const scoringMs = _timing.scoringWasSkipped ? 0 : _msBetween(_timing.beforeScoring, _timing.afterScoring);
+    const dbSaveMs = _msBetween(_timing.beforeAnswerSave, _timing.afterAnswerSave) + _msBetween(_timing.beforeDbScore, _timing.afterDbScore);
+    const questionGenMs = _msBetween(_timing.beforeQuestionGen, _timing.afterQuestionGen);
+    const totalMs = _msSince(_timing.turnStart);
+    console.log(
+      `[TURN-TIMING] Interview Turn ${answeredCount} (turnId=${turnId})\n` +
+      `  Answer Save (DB):     ${_msBetween(_timing.beforeAnswerSave, _timing.afterAnswerSave).toFixed(0)} ms\n` +
+      `  Scoring (scoreAnswer): ${scoringMs.toFixed(0)} ms${_timing.scoringWasSkipped ? ' (skipped — skip/empty answer, no AI call made)' : ''}\n` +
+      `  Score Save (DB):      ${_msBetween(_timing.beforeDbScore, _timing.afterDbScore).toFixed(0)} ms\n` +
+      `  Database (total):     ${dbSaveMs.toFixed(0)} ms\n` +
+      `  Question Generation:  ${questionGenMs.toFixed(0)} ms\n` +
+      `  Total (backend):      ${totalMs.toFixed(0)} ms\n` +
+      `  (STT finalization, TTS synthesis, and browser playback start are logged client-side — see [TIMELINE] step=final_transcript_received, [TTS] synthesize:start/complete, and step=browser_started_playback for the same turnId/questionId, to complete the full picture.)`
+    );
+  }
+
+  // ── HASH-TRACE STAGE 1 — backend, immediately before returning /answer.
+  // Diagnostic only: does not alter picked.text, the response body, or any
+  // control flow. Logs the exact question text's SHA-256 so it can be
+  // compared byte-for-byte against every later stage (frontend receipt,
+  // showQuestion(), instructNext(), the literal Vapi payload, and the
+  // first assistant transcript back). Whichever stage's hash first
+  // differs from this one is where the divergence begins.
+  if (DEBUG_HASH_TRACE) {
+    const _t1 = String(picked.text || '');
+    console.log(`[HASH-TRACE] stage=1_backend_answer_response turnId=${turnId} questionId=${picked.id} type=${picked.type} len=${_t1.length} first80=${JSON.stringify(_t1.slice(0, 80))} sha256=${crypto.createHash('sha256').update(_t1).digest('hex')}`);
+  }
+
   return {
     httpStatus: 200,
     body: {
@@ -569,6 +652,13 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
     const sessionId = parseInt(req.params.id, 10);
     const { questionId, answerText, skip, voiceMode } = req.body;
 
+    // Server-owned session lifecycle management (bug fix, 2026-07-24):
+    // any real answer submission IS activity, independent of the
+    // dedicated heartbeat ping — refreshes last_activity_at so this
+    // session is never mistaken for stale mid-interview. Non-blocking and
+    // non-fatal: a failure here must never break real answer processing.
+    touchSessionActivity(sessionId).catch((e) => console.warn('[interview] touchSessionActivity failed (non-fatal):', e.message));
+
     const result = await processInterviewAnswer({
       sessionId, questionId, answerText, skip, voiceMode,
       userId: req.user.id,
@@ -590,11 +680,72 @@ router.delete('/sessions/:id', requireAuth, async (req, res) => {
     if (!session) return res.status(404).json({ error: 'Session not found' });
     if (String(session.user_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' });
 
-    await abandonSession(sessionId);
+    // Feature, 2026-07-24 follow-up: an optional client-supplied reason —
+    // currently only used by the Resume/Start New recovery modal, which
+    // passes 'superseded_by_new_session' so the Founder Dashboard can
+    // distinguish "candidate deliberately restarted after a recoverable
+    // interruption" from a normal voluntary End Session click (which
+    // sends no reason at all, and must keep reading as NULL). Anything
+    // not on abandonSession's own allowlist is silently treated as NULL
+    // there — this route trusts that function as the real boundary
+    // rather than re-validating here.
+    const reason = (req.body && typeof req.body.reason === 'string') ? req.body.reason : undefined;
+    await abandonSession(sessionId, reason);
     return res.json({ success: true });
   } catch (err) {
     console.error('[interview/sessions DELETE]', err);
     return res.status(500).json({ error: 'Failed to end session' });
+  }
+});
+
+// ── POST /api/interview/sessions/:id/heartbeat — server-owned session
+// lifecycle management (bug fix, 2026-07-24). Called periodically by the
+// client (interview-session.ejs) while a session is genuinely in
+// progress, so last_activity_at stays fresh and this session is never
+// mistaken for stale by requireInterviewEntitlement's auto-recovery
+// check (middleware/guards.js) if the candidate opens a second tab or
+// their previous attempt tries to start a new one.
+router.post('/sessions/:id/heartbeat', requireAuth, async (req, res) => {
+  try {
+    const sessionId = parseInt(req.params.id, 10);
+    const session = await getSession(sessionId);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (String(session.user_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' });
+    if (session.status !== 'active') return res.json({ success: true, ignored: true }); // already ended — nothing to refresh
+
+    await touchSessionActivity(sessionId);
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('[interview/sessions heartbeat]', err);
+    return res.status(500).json({ error: 'Heartbeat failed' });
+  }
+});
+
+// ── POST /api/interview/sessions/:id/browser-closing — server-owned
+// session lifecycle management (bug fix, 2026-07-24). Sent via
+// navigator.sendBeacon on beforeunload/pagehide, so a candidate closing
+// the tab mid-interview is recorded with a real, specific reason
+// (abandoned_reason='browser_closed') rather than only being caught later
+// by the generic heartbeat-timeout path once the inactivity window
+// elapses. sendBeacon requests can't carry auth headers reliably across
+// browsers, so this reads sessionId from the body and re-validates
+// ownership via the session's own user_id — same trust boundary as every
+// other session mutation here, just via a different auth signal
+// (cookie, which sendBeacon does send) than the Bearer-style check some
+// other routes use. Best-effort by nature (the tab is closing) — never
+// throws in a way that would matter to a client that's already gone.
+router.post('/sessions/:id/browser-closing', requireAuth, async (req, res) => {
+  try {
+    const sessionId = parseInt(req.params.id, 10);
+    const session = await getSession(sessionId);
+    if (!session || String(session.user_id) !== String(req.user.id) || session.status !== 'active') {
+      return res.json({ success: true }); // nothing to do — respond 200 regardless, the tab is closing either way
+    }
+    await abandonSession(sessionId, 'browser_closed');
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('[interview/sessions browser-closing]', err);
+    return res.status(500).json({ error: 'Failed to record browser-closing signal' });
   }
 });
 

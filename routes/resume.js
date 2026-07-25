@@ -9,9 +9,11 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { getUserById } = require('../db/auth');
 const { getCareerProfile, saveResumeIntelligence } = require('../db/career-profile');
 const { parseResume } = require('../services/resume-parser');
+// requireAuth now lives in middleware/guards.js — see routes/dashboard.js
+// for the same swap; identical duplicated implementation removed here.
+const { requireAuth } = require('../middleware/guards');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -24,15 +26,6 @@ const upload = multer({
     cb(ok ? null : new Error('Only PDF or DOCX files are supported'), ok);
   },
 });
-
-async function requireAuth(req, res, next) {
-  const userId = req.cookies?.user_id;
-  if (!userId) return res.status(401).json({ error: 'Authentication required' });
-  const user = await getUserById(userId);
-  if (!user) return res.status(401).json({ error: 'Session expired' });
-  req.user = user;
-  next();
-}
 
 /** Resolve any supported input (uploaded file buffer OR pasted text) down to plain text. */
 async function extractTextFromInput({ file, pastedText }) {

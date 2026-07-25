@@ -2,6 +2,7 @@
 const express = require('express');
 const path = require('path');
 const { buildLandingContext } = require('./lib/landing-context');
+const { requireAuthPage, requireFounderPage } = require('./middleware/guards');
 require('./config/passport');
 
 // Fail fast if DATABASE_URL is missing
@@ -34,6 +35,14 @@ app.use((req, _res, next) => {
   next();
 });
 
+// Capability Engine — resolves visitor/free/pro tier for every request and
+// attaches req.capabilities + res.locals.capabilities/megaMenuItems/headerCTA.
+// Must run after the cookie parser (needs req.cookies.user_id) and before
+// any route that renders a view. Nothing in views/partials/header.ejs reads
+// megaMenuItems/headerCTA yet — that wiring is a separate, later change —
+// so this is purely additive infrastructure right now.
+app.use(require('./middleware/capabilities'));
+
 // EJS view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -51,11 +60,27 @@ app.use('/api/interview',  require('./routes/interview'));
 app.use('/api/dashboard',  require('./routes/dashboard'));
 app.use('/api/resume',     require('./routes/resume'));
 app.use('/api/admin',      require('./routes/admin'));
+app.use('/api/founder',    require('./routes/founder'));
+app.use('/api/settings',   require('./routes/account'));
 app.use('/api/public-preview', require('./routes/public-preview'));
+app.use('/preview',        require('./routes/preview'));
 app.use('/api',            require('./routes/vapi'));
+app.use('/api',            require('./routes/vapi-silent-model')); // tts_pipeline custom-llm stub (2026-07-25) — see file header for activation steps
+app.use('/api/voice',      require('./routes/voice-tts'));   // PR3: ElevenLabs proxy, requireAuth-gated
+app.use('/debug/voice',    require('./routes/debug-voice')); // PR3: internal diagnostic page, requireFounder-gated
+app.use('/api/debug/elevenlabs/voices', require('./routes/debug-elevenlabs-voices')); // TEMPORARY -- delete once a working voice is identified
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
-app.get('/', (_req, res) => res.render('layout', buildLandingContext()));
+app.get('/', async (req, res) => {
+  try {
+    const { getCapabilities } = require('./lib/capabilities');
+    const homeCapabilities = await getCapabilities(req);
+    res.render('layout', { ...buildLandingContext(), homeCapabilities });
+  } catch (err) {
+    console.error('[homepage] capabilities resolution failed, rendering as visitor:', err.message);
+    res.render('layout', buildLandingContext());
+  }
+});
 app.get('/privacy', (_req, res) => res.redirect('/'));
 app.get('/terms',   (_req, res) => res.redirect('/'));
 app.get('/architecture', (_req, res) => res.render('architecture'));
@@ -99,17 +124,14 @@ app.get('/login',       (_req, res) => res.redirect('/auth/login'));
 
 
 // Interview setup
-app.get('/interview', (req, res) => {
-  const userId = req.cookies?.user_id;
-  if (!userId) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
+app.get('/interview', requireAuthPage, (req, res) => {
   res.render('interview-setup');
 });
 
 // Interview session
-app.get('/interview/session/:id', async (req, res) => {
+app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
   try {
-    const userId = req.cookies?.user_id;
-    if (!userId) return res.redirect('/auth/login');
+    const userId = req.cookies.user_id;
 
     const { getSession, getSessionQuestions } = require('./db/interview');
     const session = await getSession(req.params.id);
@@ -117,9 +139,19 @@ app.get('/interview/session/:id', async (req, res) => {
     if (String(session.user_id) !== String(userId)) return res.status(403).send('Forbidden');
 
     const questions = await getSessionQuestions(req.params.id);
-    const currentQ = questions.find(q => q.answer_text === null || q.answer_text === undefined)
-      || questions[questions.length - 1];
-    if (!currentQ) return res.redirect('/interview/report/' + req.params.id);
+    const currentQ = questions.find(q => q.answer_text === null || q.answer_text === undefined);
+    // ROOT CAUSE FIX (P0 "Question 6 of 5"): the old fallback --
+    // `|| questions[questions.length - 1]` -- made currentQ truthy even
+    // when every question was already answered (it just grabbed Q5
+    // again), which made the `if (!currentQ)` redirect-to-report guard
+    // below it unreachable for any completed session. Checking for a
+    // genuine unanswered question, and independently checking the
+    // session's actual persisted status (already correctly set to
+    // 'completed' by completeSession() -- confirmed in routes/interview.js),
+    // is what actually distinguishes "still in progress" from "done."
+    if (!currentQ || session.status !== 'active') {
+      return res.redirect('/interview/report/' + req.params.id);
+    }
 
     const { PERSONAS } = require('./services/interview');
     const persona = PERSONAS[session.persona_id] || PERSONAS.alex_chen;
@@ -140,6 +172,26 @@ app.get('/interview/session/:id', async (req, res) => {
     };
     const personaStyleLabel = STYLE_LABELS[session.persona_id] || 'Helpful';
 
+    // Dynamic Interviewer Greeting — only ever selected for the render
+    // that starts a fresh session (Q1, nothing answered yet). Any
+    // reload of a later question renders greetingText = null, so the
+    // greeting can never resurface mid-interview (see the
+    // window.MedhaIQ_GREETING bridge in interview-session.ejs, which
+    // gates on this being truthy).
+    const { pickGreetingIndex, resolveGreeting } = require('./services/interview-greetings');
+    let greetingText = null;
+    if (answeredCount === 0) {
+      const rawLastIdx = parseInt(req.cookies.mh_last_greeting_idx, 10);
+      const lastIdx = Number.isInteger(rawLastIdx) ? rawLastIdx : null;
+      const greetingIdx = pickGreetingIndex(lastIdx);
+      greetingText = resolveGreeting(greetingIdx, persona.name);
+      res.cookie('mh_last_greeting_idx', String(greetingIdx), {
+        httpOnly: true,
+        maxAge: 365 * 24 * 60 * 60 * 1000,
+        sameSite: 'lax',
+      });
+    }
+
    res.render('interview-session', {
   sessionId:        req.params.id,
   questionId:       currentQ.id,
@@ -152,11 +204,14 @@ app.get('/interview/session/:id', async (req, res) => {
   personaInitials:  initials,
   personaStyleColor:persona.styleColor,
   personaStyleLabel,
+  greetingText,
   roleTitle:        session.role_title || '',
   experienceLevel:  session.experience_level || '',
   orgPreset:        session.org_preset || '',
   vapiPublicKey:    process.env.VAPI_PUBLIC_KEY   || '',
   vapiAssistantId:  process.env.VAPI_ASSISTANT_ID || '',
+  voicePlaybackProvider: process.env.VOICE_PLAYBACK_PROVIDER || 'legacy_vapi', // PR3 feature flag, see PR3 Integration Plan §4
+  isProdEnv:        process.env.NODE_ENV === 'production', // gates staging-only console.debug voice-override logging (2026-07-25 reconnect fix)
 });
   } catch (err) {
     console.error('[interview/session]', err);
@@ -164,12 +219,41 @@ app.get('/interview/session/:id', async (req, res) => {
   }
 });
 
+// ── Report access control ────────────────────────────────────────────────
+// Three layers, matched to the two routes below:
+//   1. Authentication  — requireAuthPage middleware (redirects if not logged in)
+//   2. Ownership        — report.user_id must match the logged-in user...
+//   3. Founder override — ...unless the requester is a Founder (founder_access
+//      table, same isFounder() check routes/founder.js already uses — never
+//      a client-supplied flag, always re-verified against the DB)
+//
+// Centralized here so the HTML route and the PDF route can never drift —
+// one function decides "can this user see this report," both routes just
+// call it and either get a report object or null.
+//
+// Returns 404, not 403, on a failed ownership check — deliberately, so
+// someone probing sequential report IDs can't distinguish "doesn't exist"
+// from "exists, but isn't yours."
+async function loadAuthorizedReport(reportId, user) {
+  const { getReport } = require('./db/interview');
+  const { isFounder } = require('./db/founder-access');
+
+  const report = await getReport(reportId);
+  if (!report) return null;
+
+  if (await isFounder(user.id)) return report;
+  if (String(report.user_id) !== String(user.id)) return null;
+
+  return report;
+}
+
 // Interview report
-app.get('/interview/report/:id', async (req, res) => {
+app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
   try {
-    const { getReport, getSession, getSessionScores } = require('./db/interview');
-    const report = await getReport(req.params.id);
+    const report = await loadAuthorizedReport(req.params.id, req.user);
     if (!report) return res.status(404).send('Report not found');
+
+    const { getSessionScores } = require('./db/interview');
 
     const { PERSONAS } = require('./services/interview');
     const persona = PERSONAS[report.persona_id] || PERSONAS.alex_chen;
@@ -233,13 +317,13 @@ function renderView(view, data) {
   });
 }
 
-app.get('/interview/report/:id/pdf', async (req, res) => {
+app.get('/interview/report/:id/pdf', requireAuthPage, async (req, res) => {
   try {
-    const { getReport, getSessionScores, getSessionQuestions } = require('./db/interview');
+    const { getSessionScores, getSessionQuestions } = require('./db/interview');
     const { PERSONAS, computeStarProgress } = require('./services/interview');
     const { renderReportPdf } = require('./services/pdf-report');
 
-    const report = await getReport(req.params.id);
+    const report = await loadAuthorizedReport(req.params.id, req.user);
     if (!report) return res.status(404).send('Report not found');
 
     const persona = PERSONAS[report.persona_id] || PERSONAS.alex_chen;
@@ -366,25 +450,84 @@ app.get('/interview/report/:id/pdf', async (req, res) => {
 // Dashboard history (rendered as the Career Workspace / persistent shell's
 // Dashboard page — same route, same URL, per founder decision not to
 // introduce a new route for this)
-app.get('/dashboard/history', async (req, res) => {
+// Founder Dashboard (Super Admin) — page route. Gated by requireFounderPage,
+// NOT requireAuthPage: any logged-in user can pass requireAuthPage, but only
+// founder_access rows should ever see this page. Deliberately NOT linked
+// from any public navigation (see views/partials/header.ejs) — reachable
+// only by knowing the URL, same as routes/founder.js's API endpoints this
+// page's own client-side JS calls.
+// TODO(founder-dashboard-aggregation): once MedhaIQ has real user traffic,
+// consider moving this to a single backend aggregation function/service
+// instead of 7 independent calls. The Promise.all already gets most of the
+// latency win (wall-clock time ~ the slowest single query, not the sum of
+// all 7), so this isn't about speed — it's about (1) fewer connections
+// grabbed from the pool per dashboard view once founders and real users
+// are both competing for it, (2) a natural place to cache the KPI/beta
+// numbers for 30-60s instead of re-querying on every view (the template
+// already has a `lastRefreshed` timestamp, implying periodic-refresh was
+// the original intent, not live-per-request data), and (3) per-section
+// graceful degradation instead of one failed query 500ing the whole page
+// via error-boundary.ejs. Not blocking launch on this — noted per founder
+// decision, not urgent.
+app.get('/founder', requireFounderPage, async (req, res) => {
   try {
-    const userId = req.cookies?.user_id;
-    if (!userId) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
+    const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, getFounderAlerts } = require('./db/founder-stats');
+    const { getFeedbackSummary, getRecentFeedback } = require('./db/founder-feedback');
+    const { listUsers } = require('./db/founder-users');
 
-    const { getUserById } = require('./db/auth');
-    const { getUserSessions, getUserAggregateScores } = require('./db/interview');
-    const { getCareerProfile } = require('./db/career-profile');
-    // These four queries only depend on `userId`, not on each other's
-    // results — running them in parallel instead of one-after-another
-    // cuts the wait from the sum of the round-trips down to roughly
-    // whichever one is slowest. Same data, same behavior, just faster.
-    const [user, sessions, aggregateScores, careerProfile] = await Promise.all([
-      getUserById(userId),
+    // All six sections' data depend only on shared, already-committed
+    // database state, not on each other's results — fetched in parallel.
+    const [stats, activity, betaOverview, alerts, feedbackSummary, recentFeedback, users] = await Promise.all([
+      getOverviewStats(),
+      getRecentActivity(),
+      getBetaAndSubscriptionOverview(),
+      getFounderAlerts(),
+      getFeedbackSummary(),
+      getRecentFeedback(),
+      listUsers(),
+    ]);
+
+    res.render('founder-dashboard', {
+      stats,
+      activity,
+      betaOverview,
+      alerts,
+      feedbackSummary,
+      recentFeedback,
+      users,
+      footerInfo: {
+        lastRefreshed: new Date().toISOString(),
+        environment: process.env.NODE_ENV === 'production' ? 'Production' : 'Staging',
+      },
+      shellUser: req.user,
+    });
+  } catch (err) {
+    console.error('[founder] dashboard render error:', err);
+    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
+  }
+});
+
+// Thin alias so "Go to Workspace" can link to /dashboard (a clean, memorable
+// path) without duplicating any of the real page's logic — the actual
+// Career Workspace page lives at /dashboard/history and is unchanged.
+app.get('/dashboard', requireAuthPage, (_req, res) => res.redirect('/dashboard/history'));
+
+app.get('/dashboard/history', requireAuthPage, async (req, res) => {
+  try {
+    const userId = req.cookies.user_id;
+
+  const { getUserSessions, getUserAggregateScores } = require('./db/interview');
+    // req.user AND req.capabilities.careerProfile were already fetched by
+    // requireAuthPage (via getCapabilities()) — no need to query either
+    // again here. Only sessions/aggregateScores are still fetched fresh,
+    // since neither is part of the Capability Engine's shape.
+    const [sessions, aggregateScores] = await Promise.all([
       getUserSessions(userId, { limit: 20 }),
       getUserAggregateScores(userId),
-      getCareerProfile(userId),
+      
     ]);
-    if (!user) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
+    const careerProfile = req.capabilities.careerProfile;
+    const user = req.user;
     // Two bugs were compounding here:
     // 1) `s.overall_score || s.report_score || null` treats a real score of
     //    0 as falsy, silently discarding it (and `report_score` isn't even
@@ -406,6 +549,14 @@ app.get('/dashboard/history', async (req, res) => {
       endedAt: s.ended_at,
       overallScore: toScoreOrNull(s.overall_score),
       status: s.status,
+      // Founder Dashboard diagnostics (bug fix, 2026-07-24): distinguishes
+      // WHY a session in 'abandoned' status ended — NULL for a voluntary
+      // "End Session" click, 'browser_closed' for an explicit tab-close
+      // signal, 'heartbeat_timeout' for the generic silent-timeout
+      // recovery path (see middleware/guards.js, db/interview.js). Not
+      // yet surfaced in the history template itself — this makes the data
+      // available; the visual treatment is a follow-up decision.
+      abandonedReason: s.abandoned_reason || null,
     }));
 
     const trend = history
@@ -518,16 +669,9 @@ app.get('/dashboard/history', async (req, res) => {
 // itself fetches its own status/upload data client-side from
 // /api/resume/status and /api/resume/upload (see views/resume.ejs), so
 // this route only needs to supply shellUser for the workspace shell.
-app.get('/resume', async (req, res) => {
+app.get('/resume', requireAuthPage, (req, res) => {
   try {
-    const userId = req.cookies?.user_id;
-    if (!userId) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
-
-    const { getUserById } = require('./db/auth');
-    const user = await getUserById(userId);
-    if (!user) return res.redirect('/auth/login?next=' + encodeURIComponent(req.originalUrl));
-
-    res.render('resume', { shellUser: user });
+    res.render('resume', { shellUser: req.user });
   } catch (err) {
     console.error('[resume]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
@@ -536,21 +680,31 @@ app.get('/resume', async (req, res) => {
 
 // Settings — new, minimal (Profile / Account / Preferences). No page
 // existed at this route before; same auth pattern as dashboard/history.
-app.get('/settings', async (req, res) => {
+app.get('/settings', requireAuthPage, async (req, res) => {
   try {
-    const userId = req.cookies?.user_id;
-    if (!userId) return res.redirect('/auth/login');
-
-    const { getUserById } = require('./db/auth');
-    const user = await getUserById(userId);
-    if (!user) return res.redirect('/auth/login');
-
-    res.render('settings', { shellUser: user });
+    const { hasPasswordSet } = require('./db/auth');
+    const { getPreferences } = require('./db/preferences');
+    const [hasPassword, preferences] = await Promise.all([
+      hasPasswordSet(req.user.id),
+      getPreferences(req.user.id),
+    ]);
+    res.render('settings', {
+      shellUser: req.user,
+      hasPassword,
+      preferences,
+      interviewEntitlement: req.capabilities.interviewEntitlement,
+      activeTab: req.query.tab,
+    });
   } catch (err) {
     console.error('[settings]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });
+
+// /account is kept only as a redirect alias to /settings (preserving
+// ?tab=, so /account?tab=subscription still lands on the right tab) —
+// /settings is the real, primary route per product decision.
+app.get('/account', (req, res) => res.redirect('/settings' + (req.query.tab ? '?tab=' + encodeURIComponent(req.query.tab) : '')));
 
 // Global error handler
 app.use((err, req, res, _next) => {

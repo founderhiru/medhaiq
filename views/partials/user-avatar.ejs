@@ -1,0 +1,33 @@
+<%
+/* ═══════════════════════════════════════════════════════════════════════
+   partials/user-avatar.ejs — the ONE place user-identity glyph logic
+   lives, for every authenticated surface (homepage header, Workspace
+   sidebar, any future authenticated page). If this needs to change,
+   change it here — never fork a second copy.
+
+   Renders ONLY the glyph (initials text, or a fallback person icon) —
+   NOT a wrapping circle. The caller provides its own circular container,
+   so this can drop into contexts with different existing CSS (like
+   Workspace's .shell-profile-avatar, 56px) without producing a nested
+   double-circle, while still looking identical everywhere.
+
+   Colors are fixed to #3B82F6 (matches --bright in public/css/interview.css)
+   so the glyph reads the same regardless of which stylesheet the calling
+   page has loaded — the homepage doesn't load interview.css at all, so
+   the CSS variable itself isn't available there; using the literal value
+   is what makes "visually match the sidebar" actually true rather than
+   coincidentally similar.
+
+   Params:
+   - user:      { name } — pass the authenticated user object through.
+                Never display "?" — if no name is available at all, this
+                renders a generic person icon instead.
+   - glyphSize: icon size in px, used only for the fallback icon
+                (default 20; caller should roughly match its container size)
+*/
+const _avatarUser = typeof user !== 'undefined' && user ? user : null;
+const _glyphSize = typeof glyphSize !== 'undefined' ? glyphSize : 20;
+const _avatarInitials = (_avatarUser && _avatarUser.name)
+  ? _avatarUser.name.trim().split(/\s+/).filter(Boolean).map(function(w) { return w.charAt(0).toUpperCase(); }).slice(0, 2).join('')
+  : '';
+%><span style="color:#3B82F6;display:inline-flex;align-items:center;justify-content:center;line-height:1;"><% if (_avatarInitials) { %><%= _avatarInitials %><% } else { %><%- include('icon', { name: 'person', svgSize: _glyphSize }) %><% } %></span>

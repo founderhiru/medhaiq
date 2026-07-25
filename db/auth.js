@@ -26,7 +26,7 @@ async function getUserByEmailAndPassword(email, password) {
 
 async function getUserById(id) {
   try {
-    const res = await pool.query('SELECT id, email, name, subscription_plan, subscription_status FROM users WHERE id = $1 LIMIT 1', [id]);
+    const res = await pool.query('SELECT id, email, name, subscription_plan, subscription_status, created_at FROM users WHERE id = $1 LIMIT 1', [id]);
     return res.rows[0] || null;
   } catch (error) {
     console.error('[auth] getUserById error:', error.message);
@@ -109,6 +109,29 @@ async function validateToken(token) {
   return row.user_id;
 }
 
+// Account Settings' Profile tab needs to show a sign-in method, but
+// getUserById() deliberately never selects password_hash (used broadly
+// elsewhere; no reason to expose that column more widely than necessary).
+// This is a separate, narrowly-scoped query that returns only a boolean —
+// never the hash itself.
+async function hasPasswordSet(userId) {
+  const result = await pool.query(
+    'SELECT password_hash IS NOT NULL AS has_password FROM users WHERE id = $1',
+    [userId]
+  );
+  return !!(result.rows[0] && result.rows[0].has_password);
+}
+
+async function updateUserName(userId, name) {
+  const cleanName = (name || '').trim();
+  if (!cleanName) throw new Error('Name cannot be empty');
+  const result = await pool.query(
+    `UPDATE users SET name = $2, updated_at = NOW() WHERE id = $1 RETURNING id, name, email`,
+    [userId, cleanName]
+  );
+  return result.rows[0] || null;
+}
+
 module.exports = {
   getUserByEmail,
   getUserByEmailAndPassword,
@@ -119,4 +142,6 @@ module.exports = {
   hashPassword,
   createToken,
   validateToken,
+  updateUserName,
+  hasPasswordSet,
 };
