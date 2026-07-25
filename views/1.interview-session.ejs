@@ -14,47 +14,6 @@
     g.defer=true; g.async=true; s.parentNode.insertBefore(g,s);
   })(document,'script');
   </script>
-  <script>
-  /* ── setSinkId AbortError noise suppression (bug fix, 2026-07-24) ──
-     Vapi's own bundled SDK polls to keep each <audio>/<video> element's
-     output device in sync with the browser's preferred sink
-     (startPollingToSyncPreferredAudioOutputToDOM, confirmed in the deployed
-     bundle) -- calling element.setSinkId(...) repeatedly for the life of
-     the call. On many browsers/devices this legitimately rejects with
-     AbortError (unsupported output-selection change mid-stream, or a
-     transient device-switch race) with ZERO effect on whether the user
-     actually hears audio -- playback itself goes through a completely
-     separate path (BrowserAudioPlayer). Confirmed via a real staging log:
-     55 of these in a single session, once every couple of seconds,
-     drowning out everything else in the console.
-     This wraps the native setSinkId once, globally, before Vapi's SDK (or
-     anything else) ever calls it: the FIRST AbortError still logs once, so
-     the condition remains visible; every repeat after that is silently
-     swallowed. Any error that ISN'T an AbortError still throws/rejects
-     normally -- this only quiets the one specific, confirmed-harmless,
-     confirmed-noisy case. */
-  (function suppressRepeatedSetSinkIdAbortNoise() {
-    if (typeof HTMLMediaElement === 'undefined' || typeof HTMLMediaElement.prototype.setSinkId !== 'function') return;
-    var nativeSetSinkId = HTMLMediaElement.prototype.setSinkId;
-    var hasLoggedOnce = false;
-    HTMLMediaElement.prototype.setSinkId = function () {
-      var result = nativeSetSinkId.apply(this, arguments);
-      if (result && typeof result.catch === 'function') {
-        return result.catch(function (err) {
-          if (err && err.name === 'AbortError') {
-            if (!hasLoggedOnce) {
-              hasLoggedOnce = true;
-              console.warn('[MedhaIQ] setSinkId AbortError (audio-output-device sync) -- confirmed harmless to playback, further repeats this session are suppressed to reduce log noise.');
-            }
-            return; // swallow -- do not propagate a rejection for this specific, expected case
-          }
-          throw err; // any other error is real and must still surface
-        });
-      }
-      return result;
-    };
-  })();
-  </script>
   <link rel="stylesheet" href="/css/brand-logo.css">
   <link rel="stylesheet" href="/css/interview-session.css">
   <style>
@@ -84,30 +43,6 @@
 </head>
 <body>
 
-<% if (answeredCount > 0) { %>
-<!-- ── Continue Interview gate (feature, 2026-07-24 follow-up) ──────────
-     Shown only when landing on a session that already has answered
-     questions — i.e. a resume, not a brand-new session's first-ever
-     load. The underlying voice mechanism already never auto-connects at
-     page load for ANY session (connectVoice() only ever runs from the
-     mic button's click handler — see the bottom of this file's main
-     script) — this gate exists so that fact is an explicit, obvious
-     moment for a candidate coming back after a gap, not just an easy-to-
-     miss small mic icon. Clicking "Continue Interview" both dismisses
-     this overlay AND calls the exact same connectVoice() the mic button
-     always called — no new speak-triggering path, just a clearer one. -->
-<div id="continueGateOverlay" style="position:fixed; inset:0; background:var(--bg); z-index:9998; display:flex; align-items:center; justify-content:center;">
-  <div style="max-width:460px; width:90%; padding:32px; text-align:center;">
-    <div style="font-size:20px; font-weight:700; color:#fff; margin-bottom:12px;">Welcome back</div>
-    <div style="font-size:14px; color:var(--text2); line-height:1.6; margin-bottom:26px;">
-      Your interview state has been restored — you're on question <%= answeredCount + 1 %> of 5.
-      Click below when you're ready to continue; nothing will speak until you do.
-    </div>
-    <button id="continueGateBtn" style="padding:14px 28px; border-radius:10px; border:none; background:var(--blue); color:#fff; font-weight:600; font-size:15px; cursor:pointer;">Continue Interview</button>
-  </div>
-</div>
-<% } %>
-
 <!-- ═══ SINGLE TOP BAR — matches Target2.jpg exactly:
      "MedhaIQ.live | Interview Session" (left) · LIVE · timer · Qx/5 (center-right) · End Session (right) ═══ -->
 
@@ -120,10 +55,7 @@
   <div class="tb-right">
     <div class="tb-live"><div class="tb-live-dot"></div>LIVE</div>
     <div class="tb-timer" id="timer">00:00</div>
-    <div class="tb-qcounter-group">
-      <div class="tb-qcounter" id="qCounter">Question 1 / 5</div>
-      <div class="tb-followup-badge" id="qFollowupBadge" style="display:none;">Follow-up</div>
-    </div>
+    <div class="tb-meta" id="qCounter">Q1 / 5</div>
     <button class="tb-end" id="endBtn">End Session</button>
   </div>
 </div>
@@ -138,13 +70,16 @@
 
 </div><!-- /os-grid -->
 
-<!-- Trust bar removed from the Live Interview page (UX polish, 2026-07-24):
-     redundant once inside the authenticated workspace and mid-interview —
-     kept on landing/marketing pages and (if desired) the Setup page,
-     neither of which share this markup with this file. .os-grid above is
-     flex:1 inside a flex-column body (see public/css/interview-session.css),
-     so removing this sibling lets the grid naturally fill the freed
-     vertical space — no layout/spacing change needed elsewhere. -->
+<!-- ═══ TRUST BAR — pinned inside the viewport (TS1), never causes page scroll ═══ -->
+<footer class="it-trustbar">
+  <ul>
+    <li><svg class="ic tb-c1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 3 3c1.5 0 3-1 3-3V7c0-2-1.5-3-3-3Z"/><path d="M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-3 3c-1.5 0-3-1-3-3V7c0-2 1.5-3 3-3Z"/></svg><div class="trust-txt"><b>AI Personalization</b><span>Built for you</span></div></li>
+    <li><svg class="ic tb-c2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1.2-3.2 4-4 6.5-4s5.3.8 6.5 4"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 15.5c2 .3 3.8 1.3 4.5 3.5"/></svg><div class="trust-txt"><b>Role-Specific</b><span>Interviews</span></div></li>
+    <li><svg class="ic tb-c3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2L12 3Z"/></svg><div class="trust-txt"><b>Real-time Feedback</b><span>&amp; Scoring</span></div></li>
+    <li><svg class="ic tb-c4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 9h8M8 12.5h8M8 16h5"/></svg><div class="trust-txt"><b>Industry-Aligned</b><span>Questions</span></div></li>
+    <li><svg class="ic tb-c5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4.5"/></svg><div class="trust-txt"><b>Secure &amp; Private</b><span>Enterprise Grade</span></div></li>
+  </ul>
+</footer>
 
 <!-- Score toast -->
 <div class="score-toast" id="scoreToast">
@@ -244,22 +179,9 @@
   // instrumentation) never fire it at all. A design built on it alone
   // has no fallback when it's absent.
   //
-  // REMOVED: an attempted "Option C" (gating the silence-debounce with
-  // Daily's local-audio-level API) was tried and reverted. Confirmed via
-  // real staging logs: the observer callback fired consistently (~100ms
-  // cadence, proving the mechanism itself was alive), but audioLevel was
-  // permanently exactly 0.000 across hundreds of readings while the
-  // candidate was clearly speaking. Daily's own TypeScript definitions
-  // confirm `audioLevel` was the correct field name, ruling out a simple
-  // naming bug. Most likely explanation: Vapi constructs the underlying
-  // Daily call object internally, not this code, and may not enable
-  // whatever internal configuration this feature depends on -- meaning
-  // this API path is not usable through Vapi's wrapper. Per explicit
-  // instruction: if the API cannot provide usable data, remove the
-  // approach rather than keep tuning around a signal that isn't there.
-  //
   // This module is the single source of truth for "has the candidate
-  // finished their turn," combining what's ACTUALLY available:
+  // finished their turn." It combines whatever signals are ACTUALLY
+  // available today, using neither exclusively:
   //   1. FAST PATH (optional): if speech-start ever fires, that's Vapi's
   //      own endpointing telling us the turn just ended -- take it
   //      immediately, don't wait.
@@ -267,54 +189,120 @@
   //      final) resets a short debounce. If no further transcript
   //      activity arrives within TURN_SILENCE_MS, the turn is declared
   //      complete on that basis alone -- this works even in a session
-  //      where speech-start never fires at all.
-  //
-  // KNOWN OPEN ISSUE (not fixed by this revert): logs still show
-  // transcript continuing to arrive for the same answer after
-  // AUTO-SUBMIT already fired -- the original cutoff bug remains
-  // present. Per explicit instruction, TURN_SILENCE_MS and debounce
-  // logic are left untouched pending further investigation, rather than
-  // tuned again without proven cause.
+  //      where speech-start never fires at all, which is exactly the
+  //      gap the old design had no answer for. This is the same
+  //      underlying concept as Deepgram's own UtteranceEnd (a
+  //      silence-duration heuristic) -- correctly implemented here, at
+  //      the turn-detection layer, rather than banned outright; the
+  //      difference from a "polling timer" is that this is a real
+  //      debounce keyed off genuine transcript activity, not an
+  //      artificial interval unrelated to anything the candidate did.
   //
   // The Interview Engine (auto-submit logic, below) listens ONLY to
   // onTurnComplete() -- it has no knowledge of speech-start, Vapi, or
-  // any other provider-specific event.
+  // any other provider-specific event. Swapping STT providers in the
+  // future only means feeding this module's notifyTranscriptActivity()
+  // from wherever the new provider's transcripts arrive.
   var CandidateTurnComplete = (function () {
-    var TURN_SILENCE_MS = 3500; // Explicit spec: "wait approximately 3-4 seconds of continuous silence before treating the answer as complete." 3500ms is the midpoint of that range. Also matches real staging evidence (P1.log) showing candidates cut off mid-sentence, including one case where the candidate literally said "I'm not done yet," at the previous 1200ms threshold.
+    var TURN_SILENCE_MS = 1200; // UNCHANGED -- explicit instruction: prove root cause before touching this
     var debounceHandle = null;
+    var debounceHandleId = 0;      // unique id per timer instance -- lets logs say exactly WHICH timer fired/was cleared
+    var debounceCreatedAt = null;
+    var resetHistory = [];         // full reset history for the CURRENT turn only, cleared on fire()/reset()
     var callbacks = [];
-    var turnActive = false; // true once real transcript activity has been seen for the current turn
+    var turnActive = false;
+    var turnStartedAt = null;
 
-    function fire(source) {
-      if (!turnActive) return; // nothing to complete -- avoids a stray fast-path signal firing on an empty/not-yet-started turn
+    function fire(source, extra) {
+      var now = Date.now();
+      if (!turnActive) {
+        console.log('[CTC-TRACE] fire("' + source + '") called but turnActive=false -- no-op, nothing to complete, at ' + now);
+        return;
+      }
+      // Full forensic snapshot at the moment of firing -- point 1/2/3/5.
+      console.log('[CTC-TRACE] ===== FIRING =====\n'
+        + 'source=' + source + '\n'
+        + 'firingTimerId=' + debounceHandleId + '\n'
+        + 'turnStartedAt=' + turnStartedAt + '\n'
+        + 'currentTimerCreatedAt=' + debounceCreatedAt + '\n'
+        + 'currentTimerAgeMs=' + (debounceCreatedAt ? now - debounceCreatedAt : null) + '\n'
+        + 'totalResetsThisTurn=' + resetHistory.length + '\n'
+        + 'fullResetHistory=' + JSON.stringify(resetHistory) + '\n'
+        + (extra ? 'extra=' + JSON.stringify(extra) + '\n' : '')
+        + 'firedAt=' + now);
       turnActive = false;
       if (debounceHandle) { clearTimeout(debounceHandle); debounceHandle = null; }
-      console.log('[CandidateTurnComplete] fired via ' + source + ' at ' + Date.now());
+      console.log('[CandidateTurnComplete] fired via ' + source + ' at ' + now);
       callbacks.forEach(function (cb) {
         try { cb({ source: source }); } catch (e) { /* isolate listener errors */ }
       });
+      resetHistory = []; // this turn is over -- next turn starts a fresh history
     }
 
     return {
-      // Call on EVERY real transcript event (partial or final) for the
-      // candidate. Marks the turn as genuinely in-progress and
-      // (re)schedules the guaranteed fallback.
-      notifyTranscriptActivity: function () {
-        turnActive = true;
-        if (debounceHandle) clearTimeout(debounceHandle);
-        debounceHandle = setTimeout(function () { fire('silence-debounce'); }, TURN_SILENCE_MS);
+      // Point 4: descriptor is diagnostic-only (transcript type + a short
+      // preview of what triggered this reset) -- purely additive, does
+      // not change what counts as "activity" or how the debounce behaves.
+      notifyTranscriptActivity: function (descriptor) {
+        var now = Date.now();
+        if (!turnActive) {
+          turnActive = true;
+          turnStartedAt = now;
+          console.log('[CTC-TRACE] turn STARTED at ' + now + ' via: ' + JSON.stringify(descriptor || {}));
+        }
+        // Point 5: this is the one thing that would prove "another timer
+        // remained active simultaneously" -- with a single debounceHandle
+        // variable that should be structurally impossible, but log the
+        // prior handle's existence/age explicitly so that assumption is
+        // verified from real data rather than just trusted.
+        var hadPriorTimer = !!debounceHandle;
+        var priorTimerId = debounceHandleId;
+        var priorTimerAge = debounceCreatedAt ? now - debounceCreatedAt : null;
+        if (debounceHandle) {
+          clearTimeout(debounceHandle);
+          console.log('[CTC-TRACE] CLEARED timerId=' + priorTimerId + ' (was ' + priorTimerAge + 'ms old) -- reset by: ' + JSON.stringify(descriptor || {}));
+        }
+        debounceHandleId += 1;
+        var thisTimerId = debounceHandleId;
+        debounceCreatedAt = now;
+        resetHistory.push({
+          timerId: thisTimerId,
+          createdAt: now,
+          triggeredBy: descriptor || null,
+          hadPriorTimer: hadPriorTimer,
+          priorTimerId: hadPriorTimer ? priorTimerId : null,
+          priorTimerAgeAtClear: priorTimerAge
+        });
+        console.log('[CTC-TRACE] CREATED timerId=' + thisTimerId + ' at ' + now + ' willFireAt=' + (now + TURN_SILENCE_MS) + ' triggeredBy=' + JSON.stringify(descriptor || {}));
+        debounceHandle = setTimeout(function () {
+          // Point 6: if a transcript arrived essentially simultaneously
+          // with this expiry, it will show as a CLEARED log immediately
+          // before or after this EXPIRED log with a near-zero timestamp
+          // gap -- that's the direct evidence of a race, rather than
+          // inferring one happened.
+          console.log('[CTC-TRACE] timerId=' + thisTimerId + ' EXPIRED (no reset arrived within ' + TURN_SILENCE_MS + 'ms of its creation)');
+          fire('silence-debounce', { timerId: thisTimerId });
+        }, TURN_SILENCE_MS);
       },
-      // Call when any optional, provider-specific fast-path signal
-      // fires (today: Vapi's speech-start). Fires immediately if a
-      // turn is genuinely in progress; otherwise a harmless no-op.
+      // Point 7: every fast-path call now logs turnActive + the current
+      // timer's identity/age BEFORE firing, so it's possible to say with
+      // certainty whether THIS event (not the debounce) caused a given
+      // submission.
       notifyFastPathSignal: function (label) {
+        var now = Date.now();
+        console.log('[CTC-TRACE] fast-path signal received: "' + label + '" at ' + now + ' turnActive=' + turnActive + ' currentTimerId=' + debounceHandleId + ' currentTimerAgeMs=' + (debounceCreatedAt ? now - debounceCreatedAt : null));
         fire(label || 'fast-path');
       },
-      // Reset when a new question begins being asked -- clears any
-      // stale debounce/turn-state left over from the previous turn.
       reset: function () {
+        var now = Date.now();
+        if (debounceHandle) {
+          console.log('[CTC-TRACE] reset() called (new question starting) -- discarding timerId=' + debounceHandleId + ' at ' + now + ' without firing');
+          clearTimeout(debounceHandle);
+          debounceHandle = null;
+        }
         turnActive = false;
-        if (debounceHandle) { clearTimeout(debounceHandle); debounceHandle = null; }
+        turnStartedAt = null;
+        resetHistory = [];
       },
       onTurnComplete: function (cb) {
         if (typeof cb === 'function') callbacks.push(cb);
@@ -452,62 +440,13 @@
   timerInt = setInterval(tick, 1000);
   tick();
 
-  /* ── Server-owned session lifecycle management (bug fix, 2026-07-24) ──
-     Heartbeat: refreshes last_activity_at server-side every 60s while
-     this session is genuinely open, so requireInterviewEntitlement's
-     auto-recovery (middleware/guards.js) never mistakes an in-progress
-     interview for stale. Deliberately fire-and-forget — a missed
-     heartbeat due to a transient network blip is fine; the timeout
-     (config/plans.js SESSION_INACTIVITY_TIMEOUT_MINUTES, currently 10
-     minutes) tolerates far more than one missed 60s ping. */
-  var HEARTBEAT_INTERVAL_MS = 60000;
-  function sendHeartbeat() {
-    fetch('/api/interview/sessions/' + SID + '/heartbeat', { method: 'POST' })
-      .catch(function (e) { console.warn('[heartbeat] failed (non-fatal, next tick will retry):', e); });
-  }
-  // URGENT FOLLOW-UP FIX (2026-07-24, same day): fire one immediately on
-  // load, not just on the 60s interval. Without this, a genuinely-reached
-  // session's last_activity_at stays at its creation-time default for up
-  // to a full minute — indistinguishable from a failed launch attempt
-  // that never reached this page at all (see SESSION_UNCONFIRMED_TIMEOUT_
-  // MINUTES in config/plans.js). This confirms "really here" within
-  // seconds instead.
-  sendHeartbeat();
-  var heartbeatInt = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS);
-
-  /* Browser-closing signal: sent via sendBeacon (works reliably during
-     page unload, unlike a normal fetch which browsers may cancel) so a
-     candidate closing the tab mid-interview is recorded with a specific,
-     real reason (abandoned_reason='browser_closed') rather than only
-     being caught later by the generic heartbeat-timeout path. Best-effort
-     by design — if it doesn't arrive, the heartbeat timeout still
-     recovers the session correctly, just with a less specific reason. */
-  function sendBrowserClosingBeacon() {
-    try {
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon('/api/interview/sessions/' + SID + '/browser-closing');
-      }
-    } catch (e) { /* best-effort — nothing to do if this throws */ }
-  }
-  window.addEventListener('pagehide', sendBrowserClosingBeacon);
-  window.addEventListener('beforeunload', sendBrowserClosingBeacon);
-
-  /* Follow-up state (feature, 2026-07-23) — whether the CURRENT turn on
-     screen is a follow-up. Initialized from the server-rendered QTYPE (a
-     reload/reconnect can land directly on a pending follow-up — server.js
-     passes questionType: currentQ.question_type, which is exactly QTYPE
-     here), then kept live by the response handler below on every
-     subsequent turn. */
-  window.MedhaIQ_IsFollowupTurn = (QTYPE === 'follow_up');
-
   function updateCounter() {
-    document.getElementById('qCounter').textContent = 'Question '+QN+' / '+MAXQ;
-    document.getElementById('qFollowupBadge').style.display = window.MedhaIQ_IsFollowupTurn ? '' : 'none';
+    document.getElementById('qCounter').textContent = 'Q'+QN+' / '+MAXQ;
     document.getElementById('sbProgNum').textContent = QN;
     var pct = Math.round(((QN-1)/MAXQ)*100);
     document.getElementById('sbProgFill').style.width = pct+'%';
     var remaining = Math.max(0, MAXQ - QN); // questions left AFTER current one
-    document.getElementById('sbProgRemaining').textContent = remaining + ' remaining';
+    document.getElementById('sbProgRemaining').textContent = remaining + (remaining===1?' question remaining':' questions remaining');
   }
 
   /* ── Debug console (staff-only, Ctrl+Shift+D) ── */
@@ -613,32 +552,18 @@
      1) A real-time client-side regex pass, run on every keystroke, paints
         nodes as "active" (pulsing) the instant a STAR signal appears in
         the answer as it's being typed/spoken.
-     2) The server's own computeStarProgress() (moved to
-        services/star/star-engine.js in Phase 2A, 2026-07-24 — same
-        function, same behavior, new file location), returned as
-        `star_progress` on submit, is the source of truth and
+     2) The server's own computeStarProgress() (services/interview.js),
+        returned as `star_progress` on submit, is the source of truth and
         repaints the same nodes as solid "done" once the answer lands. */
   var STAR_ORDER = ['situation','task','action','result'];
   /* NOTE: these patterns are intentionally kept IDENTICAL to STAR_PATTERNS in
-     services/star/star-engine.js (relocated there in Phase 2A, 2026-07-24 —
-     previously services/interview.js) so the live view and the server
-     verdict agree. If you edit one, edit both.
-     Executive vocabulary expansion, 2026-07-25 — see the server file's
-     header comment for the full before/after evidence (Result matched 0
-     of 7 real executive examples under the old patterns, now 7/7).
-     TODO (future phase, NOT Phase 2A/2B): this hand-synced duplication is a
-     known, documented architectural finding — a single shared STAR
-     detection library consumable by both server and client (e.g. an
-     isomorphic module bundled for the browser, or the client calling a
-     lightweight endpoint instead of re-implementing the regex set) would
-     close this risk structurally instead of by convention. Deliberately
-     left as-is for this checkpoint, which is a pure, behavior-preserving
-     relocation. */
+     services/interview.js so the live view and the server verdict agree.
+     If you edit one, edit both. */
   var STAR_PATTERNS = {
-    situation: /\b(when i|at my (previous|last|current)|in my role|while (working|leading)|the (context|situation|background) was|we (were|had) facing|a few (months|years|weeks) ago|during|last (year|quarter|month|week)|in (19|20)\s?\d{2}|i was working (on|at|with)|we were (building|working|running|struggling)|at (a|an|the|our) (company|startup|client|firm)|(our|the|a) (customer|client)s? (wanted|needed|was (asking|looking)|had a)|we had a (customer|client)|organi[sz]ational (transformation|change|restructur\w*)|(business|digital) transformation|merger|acquisition|restructur(e|ed|ing)|regulatory change|market shift|customer escalation|executive directive|the organi[sz]ation was (going through|facing|undergoing)|operating model|before we started|inherited a (team|situation|org)|walked into|(business|customer|market) environment|landscape)\b/i,
-    task: /\b(my (task|responsibility|goal|objective|job|mandate|charter)([^.]{0,25})? was|i was (responsible|asked|tasked|expected|accountable)|(we|i) need(ed)? to|had to (deliver|fix|solve|build|reduce|improve|decide|align|navigate)|the (goal|objective|target|challenge|problem|ask|mandate|charter) was|asked me to|i had to|(we|i) (had to|needed to) assess|leadership expected|(the )?business objective|board expectation|accountable for|trade-?off|decision required|governance|i owned|had ownership of)\b/i,
-    action: /\b(i (led|built|designed|redesigned|rebuilt|reimplemented|rearchitected|re-?architected|recreated|implemented|created|drove|decided|initiated|coordinated|proposed|negotiated|restructured|launched|rolled out|owned|developed|managed|organi[sz]ed|automated|migrated|deployed|fixed|resolved|refactored|presented|convinced|persuaded|established|introduced|analy[sz]ed|started|began|took|worked|aligned|influenced|prioriti[sz]ed|challenged|orchestrated|simplified|escalated|coached|collaborated|ended up (redesigning|rebuilding|building|designing|creating))|i (was|am|'m)[\s,]*(uh|um|like)?[\s,]*(leading|building|designing|managing|driving|running|developing|creating|working on|coordinating|organi[sz]ing|aligning|influencing|negotiating|orchestrating)|we (implemented|built|created|designed|redesigned|rebuilt|launched|migrated|deployed|developed|automated|redesigned|rolled out|restructured|aligned|negotiated|collaborated|simplified|orchestrated|prioriti[sz]ed)|my approach was|so i\b|then i\b|secured? (buy-?in|alignment|support)|drove adoption)/i,
-    result: /\b(as a result|resulted in|which (led to|resulted)|(reduced|increased|improved|grew|cut|saved|boosted)[^.]{0,40}(\d+%|\$|percent)|the (outcome|impact) was|(we|i) (achieved|delivered|secured)|ended up|in the end|leading to|\d+\s?%|that'?s how (we|i) decided|\$\s?\d|\d+(\.\d+)?\s?(million|billion|thousand|[mbk]\b)|(customer|user) (adoption|retention|satisfaction)|follow-?on (business|contract|work|engagement)|(the )?(engagement|contract|deal|scope) expanded|standardi[sz]ed (on|the|across)|(revenue|arr|pipeline|bookings|roi)\b|cost avoidance|time-to-market|productivity (gain|improvement|increase)|executive approval|business value|transformation (succeeded|success)|stakeholder alignment|renewal|expansion|promotion|recognition|measurable (impact|outcome|result)|reduced (delivery|cycle|turnaround) time|faster delivery|increased (quality|efficiency)|became a[^.]{0,20}(pipeline|opportunity|deal))\b/i,
+    situation: /\b(when i|at my (previous|last|current)|in my role|while (working|leading)|the (context|situation|background) was|we (were|had) facing|a few (months|years|weeks) ago|during|last (year|quarter|month|week)|in (19|20)\d{2}|i was working (on|at|with)|we were (building|working|running|struggling)|at (a|an|the|our) (company|startup|client|firm))\b/i,
+    task: /\b(my (task|responsibility|goal|objective|job) was|i was (responsible|asked|tasked|expected)|needed to|had to (deliver|fix|solve|build|reduce|improve)|the (goal|objective|target|challenge|problem|ask) was|asked me to|i had to)\b/i,
+    action: /\b(i (led|built|designed|implemented|created|drove|decided|initiated|coordinated|proposed|negotiated|restructured|launched|rolled out|owned|developed|managed|organi[sz]ed|automated|migrated|deployed|fixed|resolved|refactored|presented|convinced|persuaded|established|introduced|analy[sz]ed|started|began|took|worked)|we (implemented|built|created|designed|launched|migrated|deployed|developed|automated|redesigned|rolled out|restructured)|my approach was|so i\b|then i\b)/i,
+    result: /\b(as a result|resulted in|which (led to|resulted)|(reduced|increased|improved|grew|cut|saved|boosted)[^.]{0,40}(\d+%|\$|percent)|the (outcome|impact) was|(we|i) (achieved|delivered)|ended up|in the end|leading to|\d+%)\b/i,
   };
   function liveDetectStar(text) {
     var t = (text || '').toLowerCase();
@@ -806,9 +731,7 @@
     document.querySelector('.answer-bar-wrap').style.display='block';
 
     var label = competency ? competency.replace(/_/g,' ').toUpperCase() : (type==='drill_down' ? 'DEEP DIVE' : 'BEHAVIORAL');
-    document.getElementById('qEyebrow').textContent = window.MedhaIQ_IsFollowupTurn
-      ? 'FOLLOW-UP · '+label
-      : 'QUESTION '+QN+' OF '+MAXQ+' · '+label;
+    document.getElementById('qEyebrow').textContent = 'QUESTION '+QN+' OF '+MAXQ+' · '+label;
     var why = document.getElementById('qWhyText');
     why.textContent = QUESTION_WHY[type] || QUESTION_WHY.behavioral;
     why.classList.remove('shown');
@@ -846,25 +769,6 @@
   /* ── Answer input ── */
   var answerInput = document.getElementById('answerInput');
   answerInput.addEventListener('input', function() {
-    // DIAGNOSTIC (bug fix investigation, 2026-07-24) — added specifically
-    // to root-cause the "live STAR indicators never activate" report.
-    // Extensive investigation (isolated simulation of this exact listener
-    // + liveDetectStar + paintStarProgress against real DOM structure,
-    // full log trace) found the mechanism itself works correctly and
-    // star_update_dispatched fires 1:1 with final_transcript_received in
-    // the provided log (14/14, zero drops, zero JS errors). This log
-    // line is the one thing static analysis couldn't confirm: whether
-    // THIS listener is actually the one that fires when the voice
-    // dispatch's synthetic 'input' event lands, in the real browser, in
-    // the real session. If this log is present in the next session's
-    // trace whenever star_update_dispatched also appears, the mechanism
-    // is confirmed working end-to-end and the reported symptom has a
-    // different cause (most likely worth re-checking after Issue #3's
-    // fix, since a live second conversational agent competing for the
-    // candidate's attention/timing could easily be perceived as "STAR
-    // isn't reacting" even when the DOM is, in fact, updating correctly).
-    // Remove once confirmed either way.
-    window.timelineLog && window.timelineLog('star_listener_fired', (typeof currentSpokenQuestionId !== 'undefined' ? currentSpokenQuestionId : null), true, 'inputLength=' + this.value.length);
     document.getElementById('charCount').textContent = this.value.length+' / 4000';
     var hasText = !!this.value.trim();
     document.getElementById('submitBtn').disabled = !hasText;
@@ -872,62 +776,7 @@
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 140)+'px';
     paintStarProgress(liveDetectStar(this.value), false);
-    logStarDetection(this.value, 'typed');
   });
-
-  // TEMPORARY INSTRUMENTATION (Priority 0.5 validation request) --
-  // remove after validation is complete. Logs exactly the requested
-  // fields for every significant transcript update. "Confidence" is
-  // reported honestly as detected-elements/4 (a simple proxy; no other
-  // confidence metric currently exists in this pipeline). "Live Score"
-  // is reported as N/A with an explicit note -- confirmed via direct
-  // code trace that the Overall Intelligence Score does NOT update
-  // during an answer, only after that question is submitted and scored
-  // by the server (see updateMetrics()/updateScoreRing(), called only
-  // from the answer-submission response handler). This instrumentation
-  // does not fabricate a live score that doesn't exist.
-  // ═══ TEMPORARY DEBUG INSTRUMENTATION (runtime audit, 2026-07-25) ═══════
-  // Logs WHICH exact phrase triggered each STAR component, not just
-  // true/false — this is the one thing the existing [STAR-DETECTION] log
-  // couldn't answer: "is Result actually slower to detect, or did the
-  // candidate just not say result-indicating words yet?" Uses .exec()
-  // instead of .test() to capture the matched substring; same STAR_PATTERNS,
-  // zero change to detection logic itself. ENABLE ONLY FOR DEBUGGING —
-  // remove this function and its one call site below once the runtime
-  // audit is validated against live sessions.
-  function liveDetectStarTriggers(text) {
-    var t = (text || '').toLowerCase();
-    var triggers = {};
-    STAR_ORDER.forEach(function (key) {
-      var m = STAR_PATTERNS[key].exec(t);
-      triggers[key] = m ? m[0] : null;
-    });
-    return triggers;
-  }
-
-  function logStarDetection(text, source) {
-    var progress = liveDetectStar(text);
-    var detectedCount = ['situation', 'task', 'action', 'result'].filter(function (k) { return progress[k]; }).length;
-    console.log('[STAR-DETECTION]\n'
-      + 'source=' + source + '\n'
-      + 'Transcript Length: ' + (text || '').length + '\n'
-      + 'Situation: ' + progress.situation + '\n'
-      + 'Task: ' + progress.task + '\n'
-      + 'Action: ' + progress.action + '\n'
-      + 'Result: ' + progress.result + '\n'
-      + 'Confidence: ' + detectedCount + '/4\n'
-      + 'Live Score: N/A (does not update until this question is submitted -- confirmed, not a bug being masked here)');
-
-    // TEMPORARY (runtime audit, 2026-07-25) — remove after validation.
-    var triggers = liveDetectStarTriggers(text);
-    STAR_ORDER.forEach(function (key) {
-      if (triggers[key]) {
-        console.log('[STAR-TRIGGER] ' + STAR_LABELS[key] + ' triggered by: "' + triggers[key] + '"');
-      } else {
-        console.log('[STAR-TRIGGER] No ' + STAR_LABELS[key] + ' match found.');
-      }
-    });
-  }
 
   document.getElementById('submitBtn').addEventListener('click', function(){ submitAnswer(false); });
   document.getElementById('skipBtn').addEventListener('click', function(){ submitAnswer(true); });
@@ -962,34 +811,7 @@
     return SKIP_ACK_PHRASES[idx];
   }
 
-  // ROOT CAUSE FIX (Bug 1, "silent transition"): confirmed via direct log
-  // trace that acknowledgement was ONLY ever spoken on the skip path --
-  // a genuine answer submission went straight from CandidateTurnComplete
-  // -> AUTO-SUBMIT -> backend -> next question with nothing in between.
-  // Same rotating-phrase mechanism, same one-line-in-the-list rule,
-  // exactly the phrases requested: short, never repeated consecutively,
-  // no verbal evaluation of the answer.
-  var ANSWER_ACK_PHRASES = ['Got it.', 'Thanks.', 'Understood.', 'Makes sense.', 'Thank you.'];
-  var _lastAnswerAckIndex = -1;
-  function pickAnswerAcknowledgement() {
-    if (ANSWER_ACK_PHRASES.length <= 1) return ANSWER_ACK_PHRASES[0];
-    var idx;
-    do { idx = Math.floor(Math.random() * ANSWER_ACK_PHRASES.length); } while (idx === _lastAnswerAckIndex);
-    _lastAnswerAckIndex = idx;
-    return ANSWER_ACK_PHRASES[idx];
-  }
-
   async function submitAnswer(skip) {
-    // TEMPORARY DEBUG LOGGING ONLY -- no behavior change. Placed before
-    // the existing isSubmitting guard so both a call that proceeds AND
-    // one that gets blocked by it are equally visible; wasAlreadyInFlight
-    // is read BEFORE isSubmitting is set below, so it reflects the true
-    // state at the moment THIS call started, not after.
-    window._submitAnswerRequestId = (window._submitAnswerRequestId || 0) + 1;
-    var _thisRequestId = window._submitAnswerRequestId;
-    var _wasAlreadyInFlight = isSubmitting;
-    console.log('[SUBMIT-TRACE] requestId=' + _thisRequestId + ' questionId=' + QID + ' timestamp=' + Date.now() + ' wasAlreadyInFlight=' + _wasAlreadyInFlight + (_wasAlreadyInFlight ? ' -- WILL BE BLOCKED by isSubmitting guard below' : ' -- will proceed'));
-
     if (isSubmitting) return;
     isSubmitting = true;
     // Immediately silence any in-progress assistant speech — applies to
@@ -1040,19 +862,6 @@
             // does not change any business logic.
             window.questionSpeechService.speak({ text: ackText, questionId: 'skip-ack', turnId: null, reason: isFinalQuestion ? 'closing' : 'skip' });
           } catch (e) { console.warn('[VoicePipeline] skip acknowledgement failed (non-fatal):', e); }
-        } else {
-          // ROOT CAUSE FIX (Bug 1): a genuine answer also gets a short
-          // acknowledgement before the next question -- previously this
-          // branch did nothing at all, confirmed via log trace. Same
-          // "final question" override as skip, since a genuine last
-          // answer also deserves the wrap-up rather than "Got it."
-          try {
-            var _isFinalAnswer = (QN >= MAXQ);
-            var _answerAckText = _isFinalAnswer
-              ? "That's the final question. I'll prepare your report now."
-              : pickAnswerAcknowledgement();
-            window.questionSpeechService.speak({ text: _answerAckText, questionId: 'answer-ack', turnId: null, reason: _isFinalAnswer ? 'closing' : 'acknowledgement' });
-          } catch (e) { console.warn('[VoicePipeline] answer acknowledgement failed (non-fatal):', e); }
         }
       } catch (e) { console.warn('[VoicePipeline] stop() on submit failed (non-fatal):', e); }
     } else if (typeof window.MedhaIQ_silenceCurrentSpeech === 'function') {
@@ -1066,13 +875,11 @@
     showLoading('Analyzing your response...');
     slog('Q'+QN+' submitted — AI scoring...','info');
     try {
-      console.log('[SUBMIT-TRACE] requestId=' + _thisRequestId + ' questionId=' + QID + ' NETWORK CALL STARTING at ' + Date.now());
       var resp = await fetch('/api/interview/sessions/'+SID+'/answer', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ questionId: QID, answerText: ans, skip: skip }),
       });
       var data = await resp.json();
-      console.log('[SUBMIT-TRACE] requestId=' + _thisRequestId + ' questionId=' + QID + ' NETWORK CALL RESOLVED at ' + Date.now() + ' status=' + resp.status + ' error=' + (data && data.error) + ' sessionEnded=' + (data && data.sessionEnded));
       if (resp.status === 409 && data.duplicate) {
         // A duplicate/raced submission for a question that's already been
         // answered — expected now and then if a click slipped through
@@ -1182,7 +989,6 @@
       // but QN must not — previously this incremented unconditionally for
       // every response type, including follow_up.
       QID = data.question.id;
-      window.MedhaIQ_IsFollowupTurn = (data.question.type === 'follow_up'); // feature, 2026-07-23 — drives the topbar Follow-up badge
       if (data.question.type !== 'follow_up') {
         QN = Math.min(QN + 1, MAXQ); // clamp — never display past MAXQ even if something upstream misbehaves
       }
@@ -1212,7 +1018,6 @@
   document.getElementById('endBtn').addEventListener('click', async function(){
     if (!confirm('End this session? Your progress cannot be resumed.')) return;
     clearInterval(timerInt);
-    clearInterval(heartbeatInt);
     try { await fetch('/api/interview/sessions/'+SID, { method:'DELETE' }); } catch(e){}
     window.location.href = '/dashboard/history';
   });
@@ -1299,10 +1104,7 @@
   /* Exposed so the Vapi block can pulse STAR nodes live WHILE the candidate
      is mid-sentence (using partial speech transcripts that we deliberately do
      NOT write into the answer box — only finalized phrases get written). */
-  window.MedhaIQ_liveStar = function(text){
-    paintStarProgress(liveDetectStar(text), false);
-    logStarDetection(text, 'voice');
-  };
+  window.MedhaIQ_liveStar = function(text){ paintStarProgress(liveDetectStar(text), false); };
   /* Voice intents (Bug fix: frozen counter on spoken "skip"). These call the
      EXACT same submitAnswer used by the on-screen buttons, so the question
      counter, server-side answeredCount, scoring, and session-end logic all
@@ -1776,7 +1578,6 @@
       window.aiIsSpeaking = true;
       sub.textContent = '● AI is speaking…';
       window.CandidateTurnComplete.reset(); // a new question just started -- clear any stale turn-state from the previous one
-      window._turnClosedForQuestionId = null; // PRIORITY 5: a new question is a fresh conversation boundary
     });
     window.questionSpeechService.onFinished(function () {
       slog('[LIFECYCLE-TRACE] QuestionSpeechService onFinished fired at ' + Date.now(), 'info');
@@ -1805,7 +1606,6 @@
         var _submitBtn = document.getElementById('submitBtn');
         if (_submitBtn && !_submitBtn.disabled && typeof window.MedhaIQ_requestSubmit === 'function') {
           console.log('[AUTO-SUBMIT] triggered via CandidateTurnComplete (source=' + info.source + ') at ' + Date.now());
-          window._turnClosedForQuestionId = currentSpokenQuestionId; // PRIORITY 5: same hard boundary as the voice-command path
           window.MedhaIQ_requestSubmit();
         } else {
           console.log('[AUTO-SUBMIT] CandidateTurnComplete fired but answer box has no content yet (source=' + info.source + ') -- nothing to submit');
@@ -1841,44 +1641,12 @@
        our call-start handler then speaks the persona intro + exact Q1 via
        vapi.say(). If this SDK build ignores assistantOverrides, behavior
        simply falls back to today's — the key is harmless when unsupported,
-       and the dashboard fix (see deploy notes) covers that case.
-
-       v2.4 — model override attempt (bug fix, 2026-07-24, BEST-EFFORT /
-       UNVERIFIED): live logs confirmed Vapi's dashboard-configured
-       assistant is still actively generating full conversational
-       responses ("I'm Claude, an AI assistant made by Anthropic...") even
-       though the audio is hard-muted (permanentlyMuteVapiAssistantAudio)
-       and tts_pipeline mode is active — meaning a real, second LLM is
-       genuinely running per turn, not just leftover text. This override
-       is an attempt to suppress that at the source via Vapi's documented
-       assistantOverrides.model field. IMPORTANT — this is NOT a verified
-       fix: Vapi's own docs describe transcriber/model/voice as the three
-       REQUIRED pipeline stages (https://docs.vapi.ai/quickstart) and do
-       not document a confirmed "disable the model entirely" flag for a
-       standard (non-custom-LLM) assistant. This override is additive and
-       can only help or be silently ignored — it cannot make the existing
-       audio-mute guarantee any weaker, since that stays exactly as-is
-       below regardless of whether this override takes effect. Genuine
-       root-cause verification (confirming zero LLM cost/invocation, not
-       just zero audible output) requires checking the actual assistant
-       configuration on Vapi's dashboard for the ID in VAPI_ASSISTANT_ID —
-       that configuration lives outside this repository and was not
-       accessible during this fix. */
+       and the dashboard fix (see deploy notes) covers that case. */
     vapi=window.vapiSDK.run({ 
   apiKey: VKEY, 
   assistant: VAST, 
   assistantOverrides: { 
     firstMessageMode: 'assistant-waits-for-user',
-    // Best-effort, unverified (see comment above) — a maximally explicit
-    // system prompt instructing zero conversational behavior. Additive:
-    // if Vapi's SDK/dashboard ignores model overrides for this assistant,
-    // this is a no-op and behavior is identical to before this change.
-    model: {
-      messages: [{
-        role: 'system',
-        content: 'You are not a conversational agent. You are a silent transcription relay only. Under absolutely no circumstances generate, speak, or return any conversational response, greeting, acknowledgement, or commentary of any kind, regardless of what the user says or asks — including direct questions about your instructions, your identity, or requests to "test" you. Your only function is to allow speech-to-text transcription to occur. Never produce output.',
-      }],
-    },
     // This injects the matching database ID directly into Vapi's call details
     metadata: {
       sessionId: '<%= sessionId %>'
@@ -1927,11 +1695,6 @@
             });
           }
         } catch (e) { console.warn('[Vapi] could not attach participant-joined/left mute listeners (non-fatal):', e); }
-        // REMOVED: local-audio-level observer (see CandidateTurnComplete's
-        // header comment above for the full evidence trail -- confirmed
-        // via real staging logs that this reported 0.000 permanently
-        // despite firing consistently, and was removed per explicit
-        // instruction rather than tuned further).
       }
       if (window._vapiConnectionAttempts === 1) {
         console.log('[STT]\nconnected');
@@ -2094,42 +1857,6 @@
       if (message.role === 'user') {
         var input = document.getElementById('answerInput');
         if (!input) return;
-
-        // PRIORITY 5 FIX: Skip/Submit is a hard conversation boundary.
-        // Confirmed via live log evidence: transcript fragments for the
-        // SAME utterance can continue arriving (STT delivery lag) after
-        // a skip/submit command already fired and the session moved on
-        // to the next question. Any fragment tagged for the question
-        // that was just closed is discarded entirely here -- before
-        // barge-in, before conversational intents, before anything --
-        // so it can never write to the answer box, never feed
-        // CandidateTurnComplete, never influence STAR, and never leak
-        // into the next question's history.
-        if (window._turnClosedForQuestionId !== null && window._turnClosedForQuestionId !== undefined
-            && String(window._turnClosedForQuestionId) === String(currentSpokenQuestionId)) {
-          console.log('[FLUSH] discarding late transcript fragment for already-closed questionId=' + currentSpokenQuestionId + ' at ' + Date.now());
-          return;
-        }
-
-        // BARGE-IN SUPPORT: the candidate always has priority. If the AI
-        // is currently speaking (a question, an acknowledgement, or
-        // anything else) and ANY candidate speech is detected -- even a
-        // tiny partial fragment, before we know what they're saying --
-        // stop the AI immediately and return to listening. Reuses the
-        // exact same stop()+onIntentionalCancel() mechanism already used
-        // for skip/submit interruption (see submitAnswer()) -- no new
-        // stop mechanism, just a new trigger condition. Checked first,
-        // before any other transcript handling, so it fires as early as
-        // possible regardless of transcript type.
-        if (window.aiIsSpeaking && window.VOICE_PIPELINE_MODE === 'tts_pipeline' && window.questionSpeechService) {
-          console.log('[BARGE-IN] candidate speech detected while AI speaking -- stopping AI immediately at ' + Date.now());
-          try {
-            window.questionSpeechService.stop();
-            window.InterviewVoiceController.onIntentionalCancel();
-          } catch (e) { console.warn('[BARGE-IN] stop failed (non-fatal):', e); }
-          window.aiIsSpeaking = false;
-          sub.textContent = 'Your turn — speak clearly';
-        }
         if (message.transcriptType === 'final' && message.transcript) {
           var chunk = String(message.transcript).trim();
           window.timelineLog('final_transcript_received', currentSpokenQuestionId, true, 'text="' + chunk.slice(0, 60) + '..."');
@@ -2148,73 +1875,6 @@
             if (chunk.length > 8 && overlapsSubstantially) {
               console.log('[ECHO-SUSPECTED]\nuser transcript closely matches recent assistant speech\nuserTranscript="' + chunk + '"\nrecentAssistantSpeech="' + assistantTranscriptBuf.slice(0, 120) + '"');
             }
-          }
-
-          /* ── Conversational intent classifier (NEW) ──
-             Biggest missing feature per product review: NOT every
-             utterance is an answer. "Can you repeat the question?" was
-             being fed straight into answer scoring, producing a
-             reprompt asking for more detail instead of just replaying
-             the question. Checked FIRST, before the skip/submit
-             classifier below -- same sentence-aware, last-sentence-
-             backward approach, same reasoning: a genuine answer is
-             extremely unlikely to contain an isolated short sentence
-             that exactly matches one of these phrases.
-             Implemented now: "repeat" (100% client-side -- replays the
-             exact question already on screen, no backend call, no
-             scoring, no advancement) and "pause" (stops the visible
-             countdown timer; resumes automatically the moment the
-             candidate speaks again).
-             NOT yet implemented (needs backend LLM support to genuinely
-             rephrase/simplify a question or invent an example -- out of
-             scope for a client-side-only change): "simplify this
-             question" and "give me an example." Flagged clearly rather
-             than silently left unhandled. */
-          var REPEAT_INTENT_RE = /^(can you |could you |please |)(repeat|say (that|it) again|repeat (the|that) question( again| once more| one more time)?|repeat that( again)?|come again|say again|say (that|it) one more time)( please)?$|^(i |)(missed|didn'?t (hear|catch)) (that|the question|it)( please)?$|^what was the question\??$|^sorry,? (can you |could you )?(repeat|say that again)( please)?$/i;
-          var PAUSE_INTENT_RE = /^(give me |i need |can i (get |have )?|)(a |one )?(moment|second|minute)( please)?$|^(please )?(hold on|wait|hang on)( a (moment|second|minute))?( please)?$|^(i'?m |)not ready( yet)?$/i;
-
-          var convSentences = chunk
-            .split(/[.!?]+/)
-            .map(function (s) { return s.replace(/[,;:]+/g, ' ').replace(/\s+/g, ' ').trim(); })
-            .filter(Boolean);
-          var matchedRepeat = false, matchedPause = false;
-          for (var _ci = convSentences.length - 1; _ci >= 0; _ci--) {
-            var _cs = convSentences[_ci];
-            if (_cs.split(/\s+/).length <= 8) {
-              if (REPEAT_INTENT_RE.test(_cs)) { matchedRepeat = true; break; }
-              if (PAUSE_INTENT_RE.test(_cs)) { matchedPause = true; break; }
-            }
-          }
-
-          if (matchedRepeat) {
-            slog('Conversational intent: repeat question ("' + chunk + '")', 'info');
-            window.timelineLog('conversational_intent', currentSpokenQuestionId, true, 'intent=repeat');
-            try {
-              var _repeatText = String(window.MedhaIQ_CurrentQ || '');
-              if (_repeatText && window.VOICE_PIPELINE_MODE === 'tts_pipeline' && window.questionSpeechService) {
-                window.questionSpeechService.speak({ text: _repeatText, questionId: currentSpokenQuestionId, turnId: null, reason: 'repeat' });
-              }
-            } catch (e) { console.warn('[Conversational Intent] repeat failed (non-fatal):', e); }
-            return; // never written to the answer box, never scored, never advances
-          }
-          if (matchedPause) {
-            slog('Conversational intent: pause ("' + chunk + '")', 'info');
-            window.timelineLog('conversational_intent', currentSpokenQuestionId, true, 'intent=pause');
-            try {
-              clearInterval(timerInt);
-              sub.textContent = 'Take your time — timer paused';
-              // Resume automatically the moment the candidate speaks
-              // again (any further transcript activity), rather than
-              // requiring a separate "resume" phrase -- the candidate
-              // resuming to answer IS the resume signal.
-              window._timerPausedForConversationalIntent = true;
-            } catch (e) { console.warn('[Conversational Intent] pause failed (non-fatal):', e); }
-            return; // never written to the answer box, never scored, never advances
-          }
-          if (window._timerPausedForConversationalIntent) {
-            // Any real speech after a pause resumes the timer automatically.
-            window._timerPausedForConversationalIntent = false;
-            try { timerInt = setInterval(tick, 1000); } catch (e) { console.warn('[Conversational Intent] resume failed (non-fatal):', e); }
           }
 
           /* ── Spoken intent classifier (v3 — sentence-aware) ──
@@ -2272,7 +1932,6 @@
               slog('Barge-in: "'+chunk+'" received while interviewer was still speaking — proceeding anyway', 'info');
             }
             var answerWords = input.value.trim().split(/\s+/).filter(Boolean).length;
-            window._turnClosedForQuestionId = currentSpokenQuestionId; // PRIORITY 5: hard boundary -- any further transcript for this question is discarded from here on
             if (answerWords >= 8 && window.MedhaIQ_requestSubmit) {
               slog('Voice intent: submit ("'+chunk+'")', 'info');
               window.timelineLog('answer_auto_submitted', currentSpokenQuestionId, true, 'via voice, answerWords=' + answerWords);
@@ -2301,13 +1960,13 @@
           // detector's own debounce (or a fast-path signal, if one
           // fires) decides when the turn is actually complete; this
           // file no longer makes that decision inline.
-          window.CandidateTurnComplete.notifyTranscriptActivity();
+          window.CandidateTurnComplete.notifyTranscriptActivity({ type: 'final', questionId: currentSpokenQuestionId, preview: chunk.slice(0, 40) });
         } else if (window.MedhaIQ_liveStar) {
           window.MedhaIQ_liveStar((input.value ? input.value + ' ' : '') + (message.transcript || ''));
           // Partial transcripts are real activity too -- feeding them in
           // means the debounce correctly keeps resetting while the
           // candidate is still mid-sentence, not just on final chunks.
-          window.CandidateTurnComplete.notifyTranscriptActivity();
+          window.CandidateTurnComplete.notifyTranscriptActivity({ type: 'partial', questionId: currentSpokenQuestionId, preview: String(message.transcript || '').slice(0, 40) });
         }
       }
     });
@@ -2327,15 +1986,16 @@
       slog('[LIFECYCLE-TRACE] speech-start fired at ' + Date.now() + ' (turnId=' + currentSpokenTurnId + ' questionId=' + currentSpokenQuestionId + ')', 'info');
       if (window.VOICE_PIPELINE_MODE !== 'legacy_vapi') {
         slog('[LIFECYCLE-TRACE] speech-start ignored for UI/controller purposes -- tts_pipeline active, Vapi is supposed to be STT-only (see SPEECH SOURCE log above for confirmed leak evidence)', 'info');
-        // FIX (defense-in-depth): speech-start is NOT used as a
-        // turn-complete signal. Confirmed unreliable two ways: (1)
-        // absent entirely in some sessions, and (2) Vapi's assistant is
-        // confirmed still generating spurious responses (SPEECH SOURCE
-        // evidence), and every one of those also fires speech-start,
-        // which would prematurely end the candidate's turn for reasons
-        // unrelated to their actual speech. The silence-debounce (fed by
-        // real transcript activity only) is the sole signal now.
-        console.log('[CandidateTurnComplete] speech-start received but NOT used as a signal (see fix rationale above) at ' + Date.now());
+        // ARCHITECTURAL FIX (per explicit requirement): this no longer
+        // decides anything itself. speech-start firing here means
+        // Vapi's own endpointing decided the candidate is done talking
+        // -- that's real, useful information -- but it is only ONE of
+        // potentially several signals CandidateTurnComplete considers.
+        // If this event never fires in a given session (confirmed to
+        // happen), the module's own transcript-activity debounce is
+        // still sufficient on its own. This file no longer contains any
+        // logic that only works when speech-start happens to be present.
+        window.CandidateTurnComplete.notifyFastPathSignal('vapi-speech-start');
         return;
       }
       InterviewVoiceController.onSpeechStart(); // observation only -- does not itself advance anything (Invariant 4)
@@ -2568,20 +2228,6 @@
   }
 
   btn.addEventListener('click', connectVoice);
-
-  // Continue Interview gate (feature, 2026-07-24 follow-up) — only present
-  // in the DOM when answeredCount > 0 (see the EJS conditional near the
-  // top of <body>). Same connectVoice() as the mic button; this is just a
-  // clearer, harder-to-miss entry point for a candidate resuming after a
-  // gap. No-op safely if the element isn't present (fresh sessions).
-  var continueGateBtn = document.getElementById('continueGateBtn');
-  if (continueGateBtn) {
-    continueGateBtn.addEventListener('click', function () {
-      var overlay = document.getElementById('continueGateOverlay');
-      if (overlay) overlay.style.display = 'none';
-      connectVoice();
-    });
-  }
 
   setInterval(function(){ if(state===STATES.IDLE&&btn.disabled) btn.disabled=false; },3000);
   // REDESIGN: voice connects ONLY on click, not automatically at page
