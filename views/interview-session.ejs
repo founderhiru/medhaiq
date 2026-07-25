@@ -886,6 +886,25 @@
   // by the server (see updateMetrics()/updateScoreRing(), called only
   // from the answer-submission response handler). This instrumentation
   // does not fabricate a live score that doesn't exist.
+  // ═══ TEMPORARY DEBUG INSTRUMENTATION (runtime audit, 2026-07-25) ═══════
+  // Logs WHICH exact phrase triggered each STAR component, not just
+  // true/false — this is the one thing the existing [STAR-DETECTION] log
+  // couldn't answer: "is Result actually slower to detect, or did the
+  // candidate just not say result-indicating words yet?" Uses .exec()
+  // instead of .test() to capture the matched substring; same STAR_PATTERNS,
+  // zero change to detection logic itself. ENABLE ONLY FOR DEBUGGING —
+  // remove this function and its one call site below once the runtime
+  // audit is validated against live sessions.
+  function liveDetectStarTriggers(text) {
+    var t = (text || '').toLowerCase();
+    var triggers = {};
+    STAR_ORDER.forEach(function (key) {
+      var m = STAR_PATTERNS[key].exec(t);
+      triggers[key] = m ? m[0] : null;
+    });
+    return triggers;
+  }
+
   function logStarDetection(text, source) {
     var progress = liveDetectStar(text);
     var detectedCount = ['situation', 'task', 'action', 'result'].filter(function (k) { return progress[k]; }).length;
@@ -898,6 +917,16 @@
       + 'Result: ' + progress.result + '\n'
       + 'Confidence: ' + detectedCount + '/4\n'
       + 'Live Score: N/A (does not update until this question is submitted -- confirmed, not a bug being masked here)');
+
+    // TEMPORARY (runtime audit, 2026-07-25) — remove after validation.
+    var triggers = liveDetectStarTriggers(text);
+    STAR_ORDER.forEach(function (key) {
+      if (triggers[key]) {
+        console.log('[STAR-TRIGGER] ' + STAR_LABELS[key] + ' triggered by: "' + triggers[key] + '"');
+      } else {
+        console.log('[STAR-TRIGGER] No ' + STAR_LABELS[key] + ' match found.');
+      }
+    });
   }
 
   document.getElementById('submitBtn').addEventListener('click', function(){ submitAnswer(false); });
