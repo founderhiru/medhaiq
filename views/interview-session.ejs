@@ -507,7 +507,7 @@
     var pct = Math.round(((QN-1)/MAXQ)*100);
     document.getElementById('sbProgFill').style.width = pct+'%';
     var remaining = Math.max(0, MAXQ - QN); // questions left AFTER current one
-    document.getElementById('sbProgRemaining').textContent = remaining + (remaining===1?' question remaining':' questions remaining');
+    document.getElementById('sbProgRemaining').textContent = remaining + ' remaining';
   }
 
   /* ── Debug console (staff-only, Ctrl+Shift+D) ── */
