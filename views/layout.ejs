@@ -36,8 +36,13 @@
   <%- include('partials/features') %>
   <%- include('partials/score-demo') %>
   <%- include('partials/recruiter') %>
-  <%- include('partials/certifications') %>
-  <%- include('partials/research') %>
+  <%# Certifications and Research sections hidden from the home page
+      (2026-07-25, explicit request) - NOT deleted. Partial files at
+      views/partials/certifications.ejs and views/partials/research.ejs
+      are untouched. To re-enable on this page, or move them to a
+      different page later, add back an include tag for
+      partials slash certifications and partials slash research,
+      right where this comment is. %>
   <%- include('partials/pricing-section') %>
   <%- include('partials/cta-banner') %>
   <%- include('partials/footer') %>
