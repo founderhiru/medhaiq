@@ -1356,6 +1356,34 @@
   var VKEY = '<%= vapiPublicKey %>';
   var VAST = '<%= vapiAssistantId %>';
 
+  // Single shared override object — used for BOTH the initial
+  // vapiSDK.run() call and every vapi.start() reconnect call, so the
+  // two paths can never drift out of sync (fix for the "Vapi Assistant
+  // speaks again after reconnect" regression: vapi.start() was
+  // previously called with no overrides at all on reconnect, so the
+  // silence instruction only ever applied to the very first connection
+  // of the page load). Do not duplicate this object elsewhere — every
+  // call site must reference this same constant.
+  var VAPI_ASSISTANT_OVERRIDES = {
+    firstMessageMode: 'assistant-waits-for-user',
+    model: {
+      messages: [{
+        role: 'system',
+        content: 'You are not a conversational agent. You are a silent transcription relay only. Under absolutely no circumstances generate, speak, or return any conversational response, greeting, acknowledgement, or commentary of any kind, regardless of what the user says or asks — including direct questions about your instructions, your identity, or requests to "test" you. Your only function is to allow speech-to-text transcription to occur. Never produce output.',
+      }],
+    },
+  };
+
+  // Staging-only visibility into which overrides object is actually being
+  // used at each call-site — not for production log noise, just makes it
+  // immediately obvious in staging that reconnect used the same config as
+  // the initial connection.
+  var MEDHAIQ_DEBUG_VOICE = <%= !isProdEnv %>;
+  function debugVoiceOverrides(context) {
+    if (!MEDHAIQ_DEBUG_VOICE) return;
+    console.debug('[VOICE-DEBUG] ' + context + ' using VAPI_ASSISTANT_OVERRIDES:', VAPI_ASSISTANT_OVERRIDES);
+  }
+
   // Silences the assistant's current speech IMMEDIATELY by locally
   // unsubscribing from their audio track — does not end the call, does
   // not depend on any say() parameter (confirmed not present in this
@@ -1819,41 +1847,43 @@
        and tts_pipeline mode is active — meaning a real, second LLM is
        genuinely running per turn, not just leftover text. This override
        is an attempt to suppress that at the source via Vapi's documented
-       assistantOverrides.model field. IMPORTANT — this is NOT a verified
-       fix: Vapi's own docs describe transcriber/model/voice as the three
-       REQUIRED pipeline stages (https://docs.vapi.ai/quickstart) and do
-       not document a confirmed "disable the model entirely" flag for a
-       standard (non-custom-LLM) assistant. This override is additive and
-       can only help or be silently ignored — it cannot make the existing
-       audio-mute guarantee any weaker, since that stays exactly as-is
-       below regardless of whether this override takes effect. Genuine
-       root-cause verification (confirming zero LLM cost/invocation, not
-       just zero audible output) requires checking the actual assistant
-       configuration on Vapi's dashboard for the ID in VAPI_ASSISTANT_ID —
-       that configuration lives outside this repository and was not
-       accessible during this fix. */
+       assistantOverrides.model field.
+
+       v2.5 — RECONNECT FIX (2026-07-25, VERIFIED against Vapi's official
+       docs/SDK source): confirmed the v2.4 override was only ever being
+       attached to THIS .run() call, which only fires once per page load
+       (see the guard at the top of this function). Every reconnect path
+       (call-end, error/ejection, manual retry) goes through connectVoice()
+       -> vapi.start(VAST), which was previously called with NO second
+       argument at all — so the silence instruction was silently absent
+       for the rest of the session after any reconnect, and the assistant
+       reverted to its raw dashboard-configured conversational behavior
+       (confirmed via a real staging log: "I understand.", "I acknowledge
+       my instructions." etc. appearing as Vapi Assistant transcripts,
+       starting exactly at the first post-ejection reconnect and never
+       before it). Per Vapi's client-sdk-web docs, vapi.start(assistantId,
+       assistantOverrides) accepts overrides as a documented second
+       argument with the same shape used here — so VAPI_ASSISTANT_OVERRIDES
+       (defined once, above, near VKEY/VAST) is now passed to BOTH this
+       .run() call and every vapi.start() call below. Do not add a second,
+       separate overrides object anywhere — every call site references
+       this same constant so the two can never drift out of sync. */
     vapi=window.vapiSDK.run({ 
   apiKey: VKEY, 
   assistant: VAST, 
-  assistantOverrides: { 
-    firstMessageMode: 'assistant-waits-for-user',
-    // Best-effort, unverified (see comment above) — a maximally explicit
-    // system prompt instructing zero conversational behavior. Additive:
-    // if Vapi's SDK/dashboard ignores model overrides for this assistant,
-    // this is a no-op and behavior is identical to before this change.
-    model: {
-      messages: [{
-        role: 'system',
-        content: 'You are not a conversational agent. You are a silent transcription relay only. Under absolutely no circumstances generate, speak, or return any conversational response, greeting, acknowledgement, or commentary of any kind, regardless of what the user says or asks — including direct questions about your instructions, your identity, or requests to "test" you. Your only function is to allow speech-to-text transcription to occur. Never produce output.',
-      }],
-    },
-    // This injects the matching database ID directly into Vapi's call details
+  // metadata is session-specific (changes per page load) so it can't live
+  // in the shared VAPI_ASSISTANT_OVERRIDES constant itself — merged onto a
+  // COPY here via Object.assign so the shared constant is never mutated,
+  // preserving the exact original wire shape (metadata nested inside
+  // assistantOverrides, same as before this fix).
+  assistantOverrides: Object.assign({}, VAPI_ASSISTANT_OVERRIDES, {
     metadata: {
       sessionId: '<%= sessionId %>'
     }
-  }, 
+  }),
   config: { position: 'hidden' } 
 });
+    debugVoiceOverrides('initVapi() / vapiSDK.run()');
 
     // REDESIGN: the call-start-success listener is removed. It existed
     // solely to certify a calibration GATE against a fragile connection
@@ -2509,7 +2539,21 @@
     // REDESIGN: no calibration clock to start here anymore — Q1 was
     // already revealed unconditionally at page load, regardless of this
     // connection attempt's outcome or timing.
-    try{ initVapi(); vapi.start(VAST); }
+    //
+    // v2.5 RECONNECT FIX (2026-07-25): initVapi() no-ops on every call
+    // after the first (vapi is already truthy), so this vapi.start() is
+    // what actually runs on every reconnect — call-end, error/ejection,
+    // and manual retry all land here. It now receives the SAME
+    // VAPI_ASSISTANT_OVERRIDES constant passed to the original
+    // vapiSDK.run() call, per Vapi's documented vapi.start(assistantId,
+    // assistantOverrides) signature. Previously this was vapi.start(VAST)
+    // with no second argument, which is the confirmed root cause of the
+    // assistant losing its silence instruction after any reconnect.
+    try{
+      initVapi();
+      vapi.start(VAST, VAPI_ASSISTANT_OVERRIDES);
+      debugVoiceOverrides('connectVoice() / vapi.start() reconnect');
+    }
     catch(e){ setErr('Failed to connect: '+e.message); return; }
 
     setTimeout(function(){

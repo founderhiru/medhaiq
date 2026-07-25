@@ -210,7 +210,6 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
   vapiPublicKey:    process.env.VAPI_PUBLIC_KEY   || '',
   vapiAssistantId:  process.env.VAPI_ASSISTANT_ID || '',
   voicePlaybackProvider: process.env.VOICE_PLAYBACK_PROVIDER || 'legacy_vapi', // PR3 feature flag, see PR3 Integration Plan §4
-  isProdEnv:        process.env.NODE_ENV === 'production', // gates staging-only console.debug voice-override logging (2026-07-25 reconnect fix)
 });
   } catch (err) {
     console.error('[interview/session]', err);
