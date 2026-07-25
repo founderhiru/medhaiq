@@ -7,6 +7,8 @@
       camVideo, camPlaceholder, camBadge, camBadgeText, camToggle,
       .answer-bar-wrap, answerInput, charCount, submitBtn, skipBtn,
       vapiBtn, vapiSub
+    Guidance strip was removed 2026-07-25 (static content, low value) —
+    center column now flows question-card -> video-panel -> answer-bar.
 ══════════════════════════════════════════════════════════════════ %>
 <main class="col col-center">
 
@@ -43,6 +45,14 @@
       <b><%= personaName %></b>
       <span>AI Interviewer</span>
     </div>
+    <!-- Short tips overlay (UI polish, 2026-07-25): fills the empty gap
+         between the name tag and the audio wave along the bottom edge of
+         the video panel. Content is a reasonable default (short, generic
+         interview tips) — easy to swap for something more specific if a
+         particular message is wanted here instead. -->
+    <div class="overlay ov-tips">
+      <span>Speak naturally</span><span class="ov-tips-dot">&middot;</span><span>Use STAR structure</span><span class="ov-tips-dot">&middot;</span><span>Take your time</span>
+    </div>
     <div class="overlay ov-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </section>
 
@@ -50,18 +60,18 @@
   <div class="answer-bar-wrap">
     <section class="card answer-card">
       <div class="answer-row">
+        <button class="btn-mic" id="vapiBtn" type="button" aria-label="Toggle voice interview">
+          <svg class="ic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        </button>
         <textarea id="answerInput" rows="1" maxlength="4000"
           placeholder="Start speaking or type your answer..."></textarea>
         <button class="btn-submit" id="submitBtn" type="button" disabled aria-label="Submit answer">
           <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
-        <button class="btn-mic" id="vapiBtn" type="button" aria-label="Toggle voice interview">
-          <svg class="ic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
-        </button>
       </div>
+      <p class="vapi-sub" id="vapiSub">Speak directly with your AI interviewer</p>
       <div class="answer-meta">
         <span id="charCount">0 / 4000</span>
-        <span class="vapi-sub" id="vapiSub">Speak directly with your AI interviewer</span>
         <button class="btn-skip" id="skipBtn" type="button">Skip question <span aria-hidden="true">&rarr;</span></button>
       </div>
     </section>

@@ -3,18 +3,16 @@
 <head><meta name="google-site-verification" content="891zCX6HOhXmVEqnjJKxkg5uP6W46PVuWtuOpNPl9a8" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MedhaIQ | AI Career Intelligence Platform </title>
- <meta
-  name="description"
-  content="MedhaIQ is an AI Career Intelligence Platform that helps professionals practice interviews, measure career readiness, and accelerate long-term career growth.">
+  <title>MedhaIQ | AI Career Intelligence &amp; Career Architecture</title
+  <meta name="description" content="Practice, polish, and place with enterprise-grade AI mock interviews. Calibrated for global professionals, GCC leadership, and Fortune 500 rubrics.">
   <meta name="robots" content="index, follow">
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230F172A'/><path d='M6 6 L16 6 L16 16 L26 16' stroke='%233B82F6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/><circle cx='16' cy='16' r='2.5' fill='%233B82F6'/><circle cx='6' cy='6' r='2.5' fill='%233B82F6'/><circle cx='26' cy='16' r='2.5' fill='%233B82F6'/></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230F172A'/><path d='M35 35 L90 35 L90 90 L155 90' stroke='%233B82F6' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/><circle cx='90' cy='90' r='11' fill='%233B82F6'/><circle cx='35' cy='35' r='11' fill='%233B82F6'/><circle cx='155' cy='90' r='11' fill='%233B82F6'/></svg>">
   <meta name="theme-color" content="#0A0F1E">
   <!-- OG / Social -->
-  <meta property="og:title" content="MedhaIQ | AI Career Intelligence Platform">
-  <meta property="og:description" content="Practice interviews, measure career readiness, and accelerate your professional growth with MedhaIQ.">
+   <meta property="og:title" content="MedhaIQ — Practice. Polish. Place.">
+  <meta property="og:description" content="The definitive AI career intelligence platform built defensively for Fortune 500 networks, corporate talent pools, and global executive talent tracks.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://pub-629428d185ca4960a0a73c850d32294b.r2.dev/generated-images/company_214395/og-medhaiq.jpg">
   <!-- Web Manifest -->
@@ -36,13 +34,8 @@
   <%- include('partials/features') %>
   <%- include('partials/score-demo') %>
   <%- include('partials/recruiter') %>
-  <%# Certifications and Research sections hidden from the home page
-      (2026-07-25, explicit request) - NOT deleted. Partial files at
-      views/partials/certifications.ejs and views/partials/research.ejs
-      are untouched. To re-enable on this page, or move them to a
-      different page later, add back an include tag for
-      partials slash certifications and partials slash research,
-      right where this comment is. %>
+  <%- include('partials/certifications') %>
+  <%- include('partials/research') %>
   <%- include('partials/pricing-section') %>
   <%- include('partials/cta-banner') %>
   <%- include('partials/footer') %>
