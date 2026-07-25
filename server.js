@@ -65,6 +65,7 @@ app.use('/api/settings',   require('./routes/account'));
 app.use('/api/public-preview', require('./routes/public-preview'));
 app.use('/preview',        require('./routes/preview'));
 app.use('/api',            require('./routes/vapi'));
+app.use('/api',            require('./routes/vapi-silent-model')); // tts_pipeline custom-llm stub (2026-07-25) — see file header for activation steps
 app.use('/api/voice',      require('./routes/voice-tts'));   // PR3: ElevenLabs proxy, requireAuth-gated
 app.use('/debug/voice',    require('./routes/debug-voice')); // PR3: internal diagnostic page, requireFounder-gated
 app.use('/api/debug/elevenlabs/voices', require('./routes/debug-elevenlabs-voices')); // TEMPORARY -- delete once a working voice is identified
