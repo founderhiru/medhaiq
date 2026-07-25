@@ -1,0 +1,137 @@
+/* ============================================
+   TRUST ARCHITECTURE — scoped styles (Architecture page)
+   Namespaced with .mh-trustarch- prefix so nothing here can
+   collide with the shared .mh-framework / .mh-frame-card
+   classes used by partials/framework.ejs ("Core Architecture").
+   Reuses existing tokens from medhaiq.css (--radius-xl, fonts,
+   --royal-blue, --emerald, --gold) so it matches the site's
+   design language. Adds only the two tokens the spec needs
+   that don't exist yet (orange, purple), scoped locally here
+   rather than added to the global :root.
+   ============================================ */
+
+.mh-trustarch-grid {
+  --trustarch-orange: #EA580C;
+  --trustarch-purple: #7C3AED;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-top: 64px;
+}
+
+.mh-trustarch-card {
+  padding: 32px 28px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.mh-trustarch-card:hover {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.mh-trustarch-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.mh-trustarch-icon-blue   { background: rgba(30, 64, 175, 0.08); color: var(--royal-blue); }
+.mh-trustarch-icon-green  { background: rgba(5, 150, 105, 0.08); color: var(--emerald); }
+.mh-trustarch-icon-orange { background: rgba(234, 88, 12, 0.08); color: var(--trustarch-orange); }
+.mh-trustarch-icon-purple { background: rgba(124, 58, 237, 0.08); color: var(--trustarch-purple); }
+
+.mh-trustarch-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--navy-rich);
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+
+.mh-trustarch-body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.mh-trustarch-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mh-trustarch-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+}
+.mh-trustarch-list svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--emerald);
+}
+
+/* Bottom trust banner */
+.mh-trustarch-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 48px;
+  padding: 36px 40px;
+  background: #F8FAFC;
+  border-radius: var(--radius-xl);
+  text-align: center;
+}
+.mh-trustarch-banner-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(30, 64, 175, 0.08);
+  color: var(--royal-blue);
+}
+.mh-trustarch-banner-text {
+  font-family: var(--font-body);
+  font-size: 17px;
+  color: #475569;
+  line-height: 1.6;
+  max-width: 640px;
+}
+.mh-trustarch-banner-text strong {
+  color: var(--royal-blue);
+  font-weight: 700;
+}
+
+/* Responsive: tablet 2x2, mobile 1-col */
+@media (max-width: 1024px) {
+  .mh-trustarch-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .mh-trustarch-grid { grid-template-columns: 1fr; }
+  .mh-trustarch-banner {
+    flex-direction: column;
+    gap: 14px;
+    padding: 28px 24px;
+  }
+}

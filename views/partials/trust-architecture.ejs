@@ -1,45 +1,101 @@
-<!-- Section: Trust Architecture (merged from the former standalone
-     Trust Architecture page). Reuses the mh-framework section container
-     and mh-frame-card component verbatim — same classes as "Core
-     Architecture" above — so it renders as a native, visually identical
-     section on the Architecture page. -->
+<!-- Section: Trust Architecture (Architecture page).
+     Rebuilt 2026-07-25 per new marketing/brand spec — replaces the former
+     3-card implementation entirely (Data Sovereignty & Privacy /
+     Evaluation Integrity / Compliance Frameworks) with the new 4-card
+     layout below. Same section id ("trust-architecture") and same
+     shared wrapper classes (.mh-framework / .mh-framework-inner /
+     .mh-section-center / .mh-eyebrow / .mh-section-title / .mh-section-sub)
+     as before, so the in-page nav anchor on architecture.ejs
+     (<a href="#trust-architecture">) and the page's visual rhythm are
+     unaffected.
+     Card grid, icons, bullet list, and bottom banner use new
+     .mh-trustarch-* classes (see public/css/trust-architecture.css) —
+     intentionally NOT the .mh-frame-card / .mh-frame-icon-* classes,
+     since those are shared with partials/framework.ejs ("Core
+     Architecture") and must not be restyled. -->
 <section class="mh-framework reveal" id="trust-architecture">
   <div class="mh-framework-inner">
     <div class="mh-section-center">
-      <div class="mh-eyebrow">Governance &amp; Security</div>
+      <div class="mh-eyebrow">Trust &amp; AI Governance</div>
       <h2 class="mh-section-title">Trust Architecture</h2>
       <p class="mh-section-sub">Enterprise-grade security protocols protecting professional data, AI governance, and evaluation integrity.</p>
     </div>
 
-    <div class="mh-framework-grid">
+    <div class="mh-trustarch-grid">
 
-      <!-- Data Sovereignty & Privacy -->
-      <div class="mh-frame-card">
-        <div class="mh-frame-icon mh-frame-icon-blue">
+      <!-- Card 1: Data Privacy & Protection -->
+      <div class="mh-trustarch-card">
+        <div class="mh-trustarch-icon mh-trustarch-icon-blue">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
-        <h3 class="mh-frame-title">Data Sovereignty &amp; Privacy</h3>
-        <p class="mh-frame-body">Zero-retention AI pipelines, encrypted storage, strict PII masking, and complete tenant-level data isolation to protect every professional profile.</p>
+        <h3 class="mh-trustarch-title">Data Privacy &amp; Protection</h3>
+        <p class="mh-trustarch-body">We safeguard professional information through privacy-by-design architecture and responsible handling of user data.</p>
+        <ul class="mh-trustarch-list">
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Secure AI processing</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Encrypted communications</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Privacy-first data handling</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Tenant-aware data isolation</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Role-based access controls</li>
+        </ul>
       </div>
 
-      <!-- Evaluation Integrity -->
-      <div class="mh-frame-card">
-        <div class="mh-frame-icon mh-frame-icon-emerald">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <!-- Card 2: Evaluation Integrity -->
+      <div class="mh-trustarch-card">
+        <div class="mh-trustarch-icon mh-trustarch-icon-green">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
         </div>
-        <h3 class="mh-frame-title">Evaluation Integrity</h3>
-        <p class="mh-frame-body">Multi-layered anti-bias calibration, standardized scoring vectors, explainable AI evaluation logic, and objective leadership assessment frameworks.</p>
+        <h3 class="mh-trustarch-title">Evaluation Integrity</h3>
+        <p class="mh-trustarch-body">Fair, consistent, and objective interview evaluations built on structured competencies and transparent assessment principles.</p>
+        <ul class="mh-trustarch-list">
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Multi-layer competency evaluation</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Standardized scoring vectors</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Explainable evaluation logic</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Evidence-based feedback</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Objective leadership assessment</li>
+        </ul>
       </div>
 
-      <!-- Compliance Frameworks -->
-      <div class="mh-frame-card">
-        <div class="mh-frame-icon mh-frame-icon-gold">
+      <!-- Card 3: Explainable AI -->
+      <div class="mh-trustarch-card">
+        <div class="mh-trustarch-icon mh-trustarch-icon-orange">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+        </div>
+        <h3 class="mh-trustarch-title">Explainable AI</h3>
+        <p class="mh-trustarch-body">Transparent AI that helps professionals understand how interview assessments and recommendations are generated.</p>
+        <ul class="mh-trustarch-list">
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Traceable reasoning</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Structured competency mapping</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Transparent scoring methodology</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Actionable career insights</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Continuous quality improvement</li>
+        </ul>
+      </div>
+
+      <!-- Card 4: Secure Platform & Governance -->
+      <div class="mh-trustarch-card">
+        <div class="mh-trustarch-icon mh-trustarch-icon-purple">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
-        <h3 class="mh-frame-title">Compliance Frameworks</h3>
-        <p class="mh-frame-body">Architecture aligned with enterprise security principles, HR privacy expectations, audit readiness, and globally recognized governance standards.</p>
+        <h3 class="mh-trustarch-title">Secure Platform &amp; Governance</h3>
+        <p class="mh-trustarch-body">Designed on modern cloud architecture with operational controls, responsible AI governance, and secure platform practices.</p>
+        <ul class="mh-trustarch-list">
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Secure cloud architecture</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Industry-standard authentication</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Audit-friendly platform design</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Operational monitoring</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Responsible AI governance</li>
+        </ul>
       </div>
 
     </div>
+
+    <!-- Bottom trust banner -->
+    <div class="mh-trustarch-banner">
+      <div class="mh-trustarch-banner-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <p class="mh-trustarch-banner-text">Built for professionals and enterprises that expect secure, transparent, and trustworthy <strong>AI-powered career intelligence</strong>.</p>
+    </div>
+
   </div>
 </section>
