@@ -1101,27 +1101,26 @@ button { cursor: pointer; }
 
 .mh-bp-col-title {
   font-family: var(--font-display);
-  font-size: 14px; /* was 17px — final restraint pass to match Live Engine / Trust Architecture / Career Architecture */
+  font-size: 13px;
   font-weight: 600;
   color: #F8FAFC;
-  line-height: 1.35;
+  line-height: 1.32;
   letter-spacing: -0.01em;
-  margin-bottom: 14px; /* title -> description — unchanged */
-  display: -webkit-box;
-  -webkit-line-clamp: 2; /* hard cap at two lines, per spec */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  margin-bottom: 8px; /* Tightened from 14px to improve visual clustering */
+  
+  /* Truncation properties explicitly removed */
+  display: block; 
 }
+
 .mh-bp-col-desc {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 400;
-  color: var(--bp-desc);
-  line-height: 1.65; /* was 1.6 — slightly more comfortable reading */
-  display: -webkit-box;
-  -webkit-line-clamp: 3; /* hard cap at three lines, per spec */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  color: #94A3B8; /* Overrides the slightly lighter var(--bp-desc) */
+  line-height: 1.55;
+  
+  /* Truncation properties explicitly removed */
+  display: block;
 }
 
 /* ---- Connector between layers ---- */
