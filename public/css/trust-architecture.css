@@ -41,8 +41,16 @@
   line-height: 1.15;
 }
 
-/* FIX 1: Removed the custom subheading color and styles. 
-   This will now inherit your global styles and match the Core/Career pages perfectly. */
+#trust-architecture .mh-section-sub {
+  color: #94A3B8; /* Slate gray matching the Live Engine design */
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+  max-width: 720px;
+  margin: 0 auto 44px auto;
+  text-align: center;
+  min-height: 58px; /* Prevents text-wrapping from pushing layout on small screens */
+}
 
 /* Outer Card Container */
 .mh-trustarch-shell {
