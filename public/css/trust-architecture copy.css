@@ -1,15 +1,15 @@
 /* ============================================
-   MEDHAIQ TRUST ARCHITECTURE — DESIGN SYSTEM SYNC
+   MEDHAIQ TRUST ARCHITECTURE — FIXED LAYOUT
    ============================================ */
 
 .mh-trustarch {
-  /* Aligns vertical rhythm with the Architecture ecosystem */
+  margin-top: 32px;
   --ta-card-bg: #0B0F19;
   --ta-node-bg: #111827;
   --ta-border-subtle: rgba(255, 255, 255, 0.08);
 }
 
-/* Force Dark Theme Scope & Match Container Width */
+/* Force Dark Theme Scope */
 #trust-architecture.mh-framework {
   background: #030712 !important;
   padding: 80px 0;
@@ -17,21 +17,17 @@
 }
 
 #trust-architecture .mh-framework-inner {
-  max-width: 1140px; /* Exact match to Advanced Platform Architecture */
+  max-width: 1140px;
   margin: 0 auto;
-  padding: 0 24px;
 }
 
-/* ============================================
-   1. HEADER VERTICAL RHYTHM & TYPOGRAPHY
-   ============================================ */
 #trust-architecture .mh-eyebrow {
   color: #3B82F6;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  margin-bottom: 48px; /* Fixed rhythm */
+  margin-bottom: 12px;
   text-align: center;
 }
 
@@ -41,23 +37,26 @@
   font-weight: 800;
   letter-spacing: -0.8px;
   text-align: center;
-  margin-bottom: 28px; /* Fixed rhythm */
+  margin-bottom: 16px;
   line-height: 1.15;
 }
 
 #trust-architecture .mh-section-sub {
-  color: #94A3B8 !important; 
+  color: #94A3B8 !important; /* Exact match to the Live Engine screenshot */
   font-size: 18px !important;
   font-weight: 400 !important;
   line-height: 1.6 !important;
   max-width: 720px;
-  margin: 0 auto 72px auto; /* Fixed rhythm */
+  margin: 0 auto 44px auto;
   text-align: center;
+  /* Lock the minimum height so line wrapping doesn't push the layout */
+  min-height: 60px; 
 }
 
-/* ============================================
-   2. MODULE SHELL & TABS
-   ============================================ */
+/* FIX 1: Removed the custom subheading color and styles. 
+   This will now inherit your global styles and match the Core/Career pages perfectly. */
+
+/* Outer Card Container */
 .mh-trustarch-shell {
   background: var(--ta-card-bg);
   border: 1px solid var(--ta-border-subtle);
@@ -67,6 +66,7 @@
   box-sizing: border-box;
 }
 
+/* Top Tab Bar */
 .mh-trustarch-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -79,7 +79,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  height: 68px; /* Increased tab height */
+  height: 64px;
   padding: 0 16px;
   background: transparent;
   border: none;
@@ -87,7 +87,7 @@
   border-bottom: 2px solid transparent;
   font-size: 14px;
   font-weight: 500;
-  color: #A7B0C2; /* Brighter inactive text */
+  color: #6B7280;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -103,7 +103,7 @@
 
 .mh-trustarch-tab.is-active {
   color: #FFFFFF;
-  font-weight: 600; /* Bolder active state */
+  font-weight: 600;
   background: #0D1322;
   border-bottom-color: #3B82F6;
 }
@@ -120,26 +120,23 @@
   color: #3B82F6;
 }
 
-/* ============================================
-   3. CONTENT AREA (FIXED HEIGHT)
-   ============================================ */
+/* FIX 2: Added box-sizing to strictly enforce dimensions and stop the page jumping */
 .mh-trustarch-panel {
   display: flex;
   align-items: stretch;
-  height: 480px !important; /* Fixed height accommodating larger typography */
-  min-height: 480px !important;
-  max-height: 480px !important;
+  height: 420px !important;
+  min-height: 420px !important;
+  max-height: 420px !important;
   position: relative;
   overflow: hidden !important;
   box-sizing: border-box !important;
 }
 
-/* Left Panel */
 .mh-trustarch-panel-left {
-  flex: 0 0 42%; /* Slightly wider to prevent heading wrap */
-  max-width: 42%;
+  flex: 0 0 38%;
+  max-width: 38%;
   height: 100% !important;
-  padding: 40px 48px;
+  padding: 36px 32px;
   border-right: 1px solid var(--ta-border-subtle);
   display: flex;
   flex-direction: column;
@@ -148,54 +145,44 @@
   overflow: hidden !important;
 }
 
-/* Right Panel (Architecture Matrix Background) */
 .mh-trustarch-panel-right {
-  flex: 0 0 58%;
-  max-width: 58%;
+  flex: 0 0 62%;
+  max-width: 62%;
   height: 100% !important;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  background-color: transparent;
-  /* Premium subtle dot/grid texture with radial lighting */
-  background-image: 
-    radial-gradient(circle at center, rgba(30, 58, 138, 0.15) 0%, transparent 65%),
-    radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 100% 100%, 24px 24px;
+  background: radial-gradient(circle at center, rgba(30, 58, 138, 0.12) 0%, transparent 70%);
   box-sizing: border-box !important;
   overflow: hidden !important;
 }
 
-/* TAB ANIMATION PHYSICS */
+/* Opacity Fade Transitions */
 .mh-trustarch-fade {
-  transition: opacity 150ms ease, transform 150ms ease;
+  transition: opacity 180ms ease;
   opacity: 1;
-  transform: translateY(0);
 }
 
 .mh-trustarch-fade.is-fading {
   opacity: 0;
-  transform: translateY(6px); /* Subtle downward shift during fade */
 }
 
-/* ============================================
-   4. LEFT INFORMATION PANEL
-   ============================================ */
+/* Left Content Styles */
 .mh-trustarch-panel-title {
-  font-size: 32px; /* Polished scale */
+  font-size: 24px;
   font-weight: 700;
   color: #3B82F6;
-  margin: 0 0 16px 0;
+  margin: 0 0 10px 0;
   letter-spacing: -0.3px;
-  line-height: 1.2;
 }
 
 .mh-trustarch-panel-intro {
-  font-size: 17px; /* Polished scale */
+  font-size: 14px;
   color: #9CA3AF;
-  line-height: 1.6;
-  margin: 0 0 24px 0;
+  line-height: 1.55;
+  margin: 0 0 20px 0;
+  min-height: 66px; 
 }
 
 .mh-trustarch-panel-list {
@@ -204,31 +191,28 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .mh-trustarch-panel-list li {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 14px; /* Polished scale */
+  gap: 10px;
+  font-size: 13.5px;
   font-weight: 500;
   color: #E5E7EB;
+  white-space: nowrap;
 }
 
 .mh-trustarch-panel-list li svg {
   flex-shrink: 0;
   color: #3B82F6;
   background: rgba(59, 130, 246, 0.12);
-  padding: 4px;
+  padding: 3px;
   border-radius: 50%;
-  width: 14px;
-  height: 14px;
 }
 
-/* ============================================
-   5. INTERACTIVE DIAGRAM
-   ============================================ */
+/* Interactive Center Hub Diagram */
 .mh-trustarch-diagram {
   position: relative;
   width: 500px;
@@ -244,8 +228,8 @@
 }
 
 .mh-trustarch-diagram-lines line {
-  stroke: #2A4B9B; /* 20% increased visibility */
-  stroke-width: 1.8; /* Increased line weight */
+  stroke: #1E3A8A;
+  stroke-width: 1.5;
   stroke-dasharray: 4 4;
 }
 
@@ -254,8 +238,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 120px; /* Increased 8% (was 110px) */
-  height: 120px; /* Increased 8% (was 110px) */
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
   background: #0B132B;
   border: 2px solid #2563EB;
@@ -268,20 +252,15 @@
   z-index: 2;
   padding: 6px;
   box-sizing: border-box;
-  transition: box-shadow 0.2s ease;
-}
-
-.mh-trustarch-node-center:hover {
-  box-shadow: 0 0 35px rgba(59, 130, 246, 0.5); /* Subtle glow on hover */
 }
 
 .mh-trustarch-node-center svg {
   color: #3B82F6;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .mh-trustarch-node-center span {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   color: #F3F4F6;
   line-height: 1.2;
@@ -301,11 +280,6 @@
   box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
   z-index: 3;
-  transition: box-shadow 0.2s ease;
-}
-
-.mh-trustarch-node:hover {
-  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15); /* Subtle glow on outer nodes */
 }
 
 .mh-trustarch-node-tl { top: 8px; left: 0; }
@@ -351,23 +325,21 @@
   overflow: hidden;
 }
 
-/* ============================================
-   6. PREMIUM FOOTER
-   ============================================ */
+/* Footer Banner */
 .mh-trustarch-banner {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 16px 24px;
+  gap: 10px;
+  padding: 14px 24px;
   background: #070A12;
   border-top: 1px solid var(--ta-border-subtle);
   color: #9CA3AF;
-  font-size: 14px; /* Matched Premium Styling */
+  font-size: 13px;
   text-align: center;
-  font-weight: 400;
 }
 
-.mh-trustarch-banner span {
-  display: inline-block;
+.mh-trustarch-banner svg {
+  color: #3B82F6;
+  flex-shrink: 0;
 }
