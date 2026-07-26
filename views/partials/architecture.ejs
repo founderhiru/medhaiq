@@ -1,4 +1,9 @@
-<!-- Section 4: Platform Architecture -->
+<!-- Section 4: Platform Architecture — Technical Blueprint
+     Rebuilt to match the enterprise-architecture reference (pixel-fidelity pass).
+     All IDs preserved for the hub sticky-nav / scroll-spy script in views/architecture.ejs:
+       #platform, #technical-blueprint, #arch-layer-1/2/3, #ai-engine
+     "Multi-Model Architecture" panel moved to a standalone full-width card below
+     the blueprint (per sign-off) — content unchanged, not deleted. -->
 <section class="mh-arch reveal" id="platform">
   <div class="mh-arch-inner">
     <div class="mh-section-center" id="technical-blueprint">
@@ -7,93 +12,188 @@
       <p class="mh-section-sub">The structural blueprint powering continuous career intelligence and workforce evaluation.</p>
     </div>
 
-    <div class="mh-arch-layout">
-      <!-- 3-layer diagram -->
-      <div class="mh-arch-diagram">
+    <div class="mh-bp-stack">
 
-        <!-- Layer 1 -->
-        <div class="mh-arch-layer mh-arch-layer-blue" id="arch-layer-1">
-          <div class="mh-arch-layer-label">Layer 1 — Career Intelligence Engine</div>
-          <div class="mh-arch-items">
-            <div class="mh-arch-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-              Multi-Persona AI Interview System <span style="color:var(--blue-bright)">(6 archetypes)</span>
+      <!-- ============ LAYER 1 — CAREER INTELLIGENCE ENGINE ============ -->
+      <div class="mh-bp-layer mh-bp-layer-blue reveal-item" id="arch-layer-1">
+        <div class="mh-bp-layer-head">
+          <div class="mh-bp-layer-label">Layer 1 &mdash; Career Intelligence Engine</div>
+        </div>
+        <p class="mh-bp-layer-desc">Captures interview signals through adaptive AI interactions.</p>
+        <div class="mh-bp-divider"></div>
+
+        <div class="mh-bp-grid">
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
-            <div class="mh-arch-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              Adaptive Questioning Engine
+            <h3 class="mh-bp-col-title">Adaptive Interview Engine</h3>
+            <p class="mh-bp-col-desc">AI-driven conversations that adapt in real time to candidate responses.</p>
+          </div>
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
-            <div class="mh-arch-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-              Real-Time Response Analysis
+            <h3 class="mh-bp-col-title">Real-time Reasoning &amp; Analysis</h3>
+            <p class="mh-bp-col-desc">Interprets responses instantly to uncover depth and intent.</p>
+          </div>
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><circle cx="5" cy="19.5" r="2"/><circle cx="19" cy="19.5" r="2"/><path d="M12 6.5v3.5"/><path d="M10.6 10.8 6.6 17.7"/><path d="M13.4 10.8l4 6.9"/></svg>
             </div>
+            <h3 class="mh-bp-col-title">Multi-Persona Orchestration</h3>
+            <p class="mh-bp-col-desc">Simulates stakeholder archetypes for holistic evaluation.</p>
+          </div>
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+            </div>
+            <h3 class="mh-bp-col-title">Resume Intelligence Integration</h3>
+            <p class="mh-bp-col-desc">Extracts context and anchors stories to relevant competencies.</p>
+          </div>
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+            </div>
+            <h3 class="mh-bp-col-title">Dynamic Question Sequencing</h3>
+            <p class="mh-bp-col-desc">Adjusts difficulty and topic flow based on performance signals.</p>
           </div>
         </div>
-
-        <!-- Arrow -->
-        <div class="mh-arch-arrow">
-          <svg width="16" height="24" viewBox="0 0 16 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4 L8 20 M3 15 L8 20 L13 15"/></svg>
-        </div>
-
-        <!-- Layer 2 -->
-        <div class="mh-arch-layer mh-arch-layer-emerald" id="arch-layer-2">
-          <div class="mh-arch-layer-label">Layer 2 — Performance Analytics Layer</div>
-          <div class="mh-arch-items">
-            <div class="mh-arch-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-              5-Vector Scoring Framework
-            </div>
-            <div class="mh-arch-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              STAR Competency Mapping
-            </div>
-            <div class="mh-arch-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-              Longitudinal Progress Tracking
-            </div>
-          </div>
-        </div>
-
-        <!-- Arrow -->
-        <div class="mh-arch-arrow">
-          <svg width="16" height="24" viewBox="0 0 16 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4 L8 20 M3 15 L8 20 L13 15"/></svg>
-        </div>
-
-        <!-- Layer 3 -->
-        <div class="mh-arch-layer mh-arch-layer-gold mh-arch-layer-amber" id="arch-layer-3">
-          <div class="mh-arch-layer-label">Layer 3 — CAREER OPERATING SYSTEM & ENTERPRISE SYNC <span class="mh-arch-future-badge">[FUTURE ROADMAP]</span></div>
-          <div class="mh-arch-items">
-            <div class="mh-arch-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              <span><strong>Continuous Leadership Tracking:</strong> Ongoing post-hire micro-evaluations to map internal talent velocity.</span>
-            </div>
-            <div class="mh-arch-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-              <span><strong>Institutional Data Stack Integration:</strong> Planned API pipelines for direct syncs with Enterprise HRIS and ATS platforms.</span>
-            </div>
-            <div class="mh-arch-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-              <span><strong>Predictive Workforce Analytics:</strong> Aggregate leadership readiness metrics across entire departments or global capability centers (GCCs).</span>
-            </div>
-          </div>
-        </div>
-
       </div>
 
-      <!-- Side panel -->
-      <div class="mh-arch-panel" id="ai-engine">
-        <div class="mh-arch-panel-title">Multi-Model Architecture</div>
-        <div class="mh-arch-panel-body">
-          Orchestrated using a multi-model architecture. System calls leverage foundational Large Language Models (LLMs) paired with fine-tuned, specialised internal layers:
-          <div class="mh-arch-panel-divider"></div>
-          <div>
-            <span class="mh-arch-chip mh-arch-chip-blue">Career Intelligence Models</span>
-            <span class="mh-arch-chip mh-arch-chip-emerald">Leadership Evaluation</span>
-            <span class="mh-arch-chip mh-arch-chip-gold">Resume Parsing</span>
-          </div>
-          <div class="mh-arch-panel-divider"></div>
-          Built on a privacy-first infrastructure with strict data handling standards. Optimized for speed, delivering sub-200ms inference latency across all scoring vectors.
+      <!-- Connector: Layer 1 -> Layer 2 -->
+      <div class="mh-bp-connector mh-bp-connector-blue reveal-item">
+        <div class="mh-bp-connector-line"></div>
+        <div class="mh-bp-connector-circle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
         </div>
+      </div>
+
+      <!-- ============ LAYER 2 — PERFORMANCE ANALYTICS LAYER ============ -->
+      <div class="mh-bp-layer mh-bp-layer-green reveal-item" id="arch-layer-2">
+        <div class="mh-bp-layer-head">
+          <div class="mh-bp-layer-label">Layer 2 &mdash; Performance Analytics Layer</div>
+        </div>
+        <p class="mh-bp-layer-desc">Converts conversational evidence into explainable intelligence.</p>
+        <div class="mh-bp-divider"></div>
+
+        <div class="mh-bp-grid">
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+            </div>
+            <h3 class="mh-bp-col-title">5-Vector Scoring Framework</h3>
+            <p class="mh-bp-col-desc">Measures performance across five core vectors with calibrated scoring.</p>
+          </div>
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <h3 class="mh-bp-col-title">STAR Competency Mapping</h3>
+            <p class="mh-bp-col-desc">Maps responses to real-world competency evidence using STAR.</p>
+          </div>
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+            <h3 class="mh-bp-col-title">Longitudinal Progress Tracking</h3>
+            <p class="mh-bp-col-desc">Tracks growth over time with trend analysis and milestones.</p>
+          </div>
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+            </div>
+            <h3 class="mh-bp-col-title">Benchmarking &amp; Percentiles</h3>
+            <p class="mh-bp-col-desc">Compares performance against role, industry, and peer benchmarks.</p>
+          </div>
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>
+            </div>
+            <h3 class="mh-bp-col-title">Explainable Insights Engine</h3>
+            <p class="mh-bp-col-desc">Generates clear, evidence-backed feedback and recommendations.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connector: Layer 2 -> Layer 3 -->
+      <div class="mh-bp-connector mh-bp-connector-green reveal-item">
+        <div class="mh-bp-connector-line"></div>
+        <div class="mh-bp-connector-circle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+        </div>
+      </div>
+
+      <!-- ============ LAYER 3 — ENTERPRISE INTELLIGENCE PLATFORM ============ -->
+      <div class="mh-bp-layer mh-bp-layer-amber reveal-item" id="arch-layer-3">
+        <div class="mh-bp-layer-head">
+          <div class="mh-bp-layer-label">Layer 3 &mdash; Enterprise Intelligence Platform</div>
+          <span class="mh-bp-future-badge">Future Roadmap</span>
+        </div>
+        <p class="mh-bp-layer-desc">Extends career intelligence into enterprise talent ecosystems.</p>
+        <div class="mh-bp-divider"></div>
+
+        <div class="mh-bp-grid">
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"/><path d="M21 12A9 9 0 0 0 6 5.3L3 8"/><path d="M21 22v-6h-6"/><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"/></svg>
+            </div>
+            <h3 class="mh-bp-col-title">Continuous Leadership Tracking</h3>
+            <p class="mh-bp-col-desc">Ongoing post-hire micro-evaluations to map internal talent velocity.</p>
+          </div>
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </div>
+            <h3 class="mh-bp-col-title">Institutional Data Stack Integration</h3>
+            <p class="mh-bp-col-desc">Planned APIs to sync with Enterprise HRIS, ATS, and LXP systems.</p>
+          </div>
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20.5c0-3.2-1.9-6.2-4-7.9"/></svg>
+            </div>
+            <h3 class="mh-bp-col-title">Team &amp; Capability Analytics</h3>
+            <p class="mh-bp-col-desc">Aggregate insights to measure team strengths, gaps, and readiness.</p>
+          </div>
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3 class="mh-bp-col-title">Governance &amp; Access Controls</h3>
+            <p class="mh-bp-col-desc">Enterprise-grade security with role-based access, audit trails, and data sovereignty.</p>
+          </div>
+          <div class="mh-bp-col">
+            <div class="mh-bp-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+            </div>
+            <h3 class="mh-bp-col-title">Intelligence API Layer</h3>
+            <p class="mh-bp-col-desc">Future-ready APIs to power partner solutions and ecosystem apps.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer badge -->
+      <div class="mh-bp-footer reveal-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Designed for extensibility, explainability, and enterprise-scale deployment.</span>
+      </div>
+
+    </div>
+
+    <!-- Multi-Model Architecture — moved here from the old side-panel layout.
+         Content unchanged, not deleted; now a standalone full-width card. -->
+    <div class="mh-bp-model-panel reveal-item" id="ai-engine">
+      <div class="mh-bp-model-title">Multi-Model Architecture</div>
+      <div class="mh-bp-model-body">
+        Orchestrated using a multi-model architecture. System calls leverage foundational Large Language Models (LLMs) paired with fine-tuned, specialised internal layers:
+        <div class="mh-bp-model-divider"></div>
+        <div>
+          <span class="mh-bp-chip mh-bp-chip-blue">Career Intelligence Models</span>
+          <span class="mh-bp-chip mh-bp-chip-green">Leadership Evaluation</span>
+          <span class="mh-bp-chip mh-bp-chip-amber">Resume Parsing</span>
+        </div>
+        <div class="mh-bp-model-divider"></div>
+        Built on a privacy-first infrastructure with strict data handling standards. Optimized for speed, delivering sub-200ms inference latency across all scoring vectors.
       </div>
     </div>
   </div>

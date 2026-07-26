@@ -982,217 +982,139 @@ button { cursor: pointer; }
 
 /* ============================================
    PLATFORM ARCHITECTURE — Section 4
-   Technical Blueprint — enterprise architecture diagram
-   Namespaced under .mh-bp-* (Blueprint). Local color tokens below
-   match the reference spec exactly without touching global brand
-   tokens (--emerald/--gold) used elsewhere on the site.
    ============================================ */
 .mh-arch {
   padding: var(--section-pad-y) var(--section-pad-x);
   background: var(--navy-deep);
-  --bp-blue:  #3B82F6;
-  --bp-green: #10B981;
-  --bp-amber: #F59E0B;
-  --bp-card:  #0B1220;
-  --bp-border: rgba(255, 255, 255, 0.08);
-  --bp-desc:  #9CA3AF;
 }
 .mh-arch-inner {
   max-width: var(--max-w);
   margin: 0 auto;
 }
 
-.mh-bp-stack {
+.mh-arch-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 48px;
+  align-items: start;
+  margin-top: 64px;
+}
+
+.mh-arch-diagram {
   display: flex;
   flex-direction: column;
-  margin-top: 48px;
+  gap: 16px;
 }
 
-/* ---- Layer card ---- */
-.mh-bp-layer {
-  background: var(--bp-card);
-  border: 1px solid var(--bp-border);
-  border-top: 3px solid transparent;
-  border-radius: 20px;
-  padding: 40px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+.mh-arch-layer {
+  background: var(--navy-card);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
   position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
 }
-.mh-bp-layer-blue  { border-top-color: var(--bp-blue); }
-.mh-bp-layer-green { border-top-color: var(--bp-green); }
-.mh-bp-layer-amber { border-top-color: var(--bp-amber); }
+.mh-arch-layer:hover { border-color: rgba(255,255,255,0.15); }
 
-.mh-bp-layer-head {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-}
-.mh-bp-layer-label {
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-}
-.mh-bp-layer-blue  .mh-bp-layer-label { color: var(--bp-blue); }
-.mh-bp-layer-green .mh-bp-layer-label { color: var(--bp-green); }
-.mh-bp-layer-amber .mh-bp-layer-label { color: var(--bp-amber); }
-
-.mh-bp-future-badge {
-  font-family: var(--font-body);
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--bp-amber);
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  padding: 3px 10px;
-  border-radius: 999px;
-}
-
-.mh-bp-layer-desc {
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-muted);
-  margin-top: 6px;
-  max-width: 640px;
-}
-
-.mh-bp-divider {
-  height: 1px;
-  background: var(--bp-border);
-  margin: 24px 0 32px;
-}
-
-/* ---- Five-column grid ---- */
-.mh-bp-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-}
-.mh-bp-col {
-  padding: 0 20px;
-}
-.mh-bp-col:first-child { padding-left: 0; }
-.mh-bp-col:last-child { padding-right: 0; }
-.mh-bp-col:not(:first-child) {
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.mh-bp-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--bp-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-.mh-bp-layer-blue  .mh-bp-icon svg { color: var(--bp-blue); }
-.mh-bp-layer-green .mh-bp-icon svg { color: var(--bp-green); }
-.mh-bp-layer-amber .mh-bp-icon svg { color: var(--bp-amber); }
-
-.mh-bp-col-title {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--white);
-  line-height: 1.3;
-  margin-bottom: 8px;
-}
-.mh-bp-col-desc {
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--bp-desc);
-  line-height: 1.6;
-}
-
-/* ---- Connector between layers ---- */
-.mh-bp-connector {
-  position: relative;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.mh-bp-connector-line {
+.mh-arch-layer::before {
+  content: '';
   position: absolute;
   top: 0;
-  bottom: 0;
-  left: 50%;
-  border-left: 2px dashed rgba(255, 255, 255, 0.15);
+  left: 0;
+  right: 0;
+  height: 3px;
 }
-.mh-bp-connector-circle {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--bp-card);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 1;
-  animation: bp-glow 2.5s ease-in-out infinite;
+.mh-arch-layer-blue::before { background: linear-gradient(90deg, var(--royal-blue), var(--blue-bright)); }
+.mh-arch-layer-emerald::before { background: linear-gradient(90deg, var(--emerald), #10b981); }
+.mh-arch-layer-gold::before { background: linear-gradient(90deg, var(--gold), #fbbf24); }
+.mh-arch-layer-amber::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+.mh-arch-layer-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
 }
-.mh-bp-connector-blue  .mh-bp-connector-circle { color: var(--bp-blue); box-shadow: 0 0 14px rgba(59, 130, 246, 0.35); }
-.mh-bp-connector-green .mh-bp-connector-circle { color: var(--bp-green); box-shadow: 0 0 14px rgba(16, 185, 129, 0.35); }
-@keyframes bp-glow {
-  0%, 100% { opacity: 0.75; }
-  50% { opacity: 1; }
+.mh-arch-layer-blue .mh-arch-layer-label { color: var(--blue-bright); }
+.mh-arch-layer-emerald .mh-arch-layer-label { color: var(--emerald); }
+.mh-arch-layer-gold .mh-arch-layer-label { color: var(--gold); }
+.mh-arch-future-badge {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-faint);
+  background: var(--navy-card);
+  border: 1px solid var(--navy-border);
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-left: 10px;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
 }
 
-/* ---- Footer badge ---- */
-.mh-bp-footer {
+.mh-arch-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mh-arch-item {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
-  width: fit-content;
-  margin: 40px auto 0;
-  padding: 14px 26px;
-  background: var(--bp-card);
-  border: 1px solid var(--bp-border);
-  border-radius: 999px;
   font-family: var(--font-body);
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--text-muted);
 }
-.mh-bp-footer svg { color: var(--bp-blue); flex-shrink: 0; }
+.mh-arch-item svg { color: var(--text-faint); flex-shrink: 0; }
 
-/* ---- Multi-Model Architecture panel (standalone, full width) ---- */
-.mh-bp-model-panel {
-  margin-top: 32px;
-  background: var(--bp-card);
-  border: 1px solid var(--bp-border);
-  border-radius: 20px;
-  padding: 32px 40px;
+/* Arrow connector between layers */
+.mh-arch-arrow {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
 }
-.mh-bp-model-title {
+.mh-arch-arrow svg {
+  color: var(--blue-bright);
+  opacity: 0.4;
+  animation: arch-pulse 2s ease-in-out infinite;
+}
+@keyframes arch-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* Side panel */
+.mh-arch-panel {
+  background: var(--navy-card);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  position: sticky;
+  top: 88px;
+}
+.mh-arch-panel-title {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--white);
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   letter-spacing: -0.2px;
 }
-.mh-bp-model-body {
+.mh-arch-panel-body {
   font-family: var(--font-body);
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--text-muted);
   line-height: 1.7;
 }
-.mh-bp-model-divider {
+.mh-arch-panel-body strong { color: var(--text-muted); }
+.mh-arch-panel-divider {
   height: 1px;
-  background: var(--bp-border);
-  margin: 18px 0;
+  background: var(--navy-border);
+  margin: 20px 0;
 }
-.mh-bp-chip {
+.mh-arch-chip {
   display: inline-block;
   font-size: 11px;
   font-weight: 600;
@@ -1202,25 +1124,9 @@ button { cursor: pointer; }
   border-radius: 6px;
   margin: 4px 4px 4px 0;
 }
-.mh-bp-chip-blue  { background: rgba(59, 130, 246, 0.15); color: var(--bp-blue); }
-.mh-bp-chip-green { background: rgba(16, 185, 129, 0.12); color: var(--bp-green); }
-.mh-bp-chip-amber { background: rgba(245, 158, 11, 0.12); color: var(--bp-amber); }
-
-/* ---- Responsive ----
-   Desktop (>1024px): full 5-column grid with vertical dividers, exactly like the reference.
-   Tablet (769–1024px): 3 columns, dividers dropped (they'd misalign across wrapped rows).
-   Mobile (<=768px): each layer stacks to a single column; typography hierarchy preserved. */
-@media (max-width: 1024px) {
-  .mh-bp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 28px; }
-  .mh-bp-col { border-left: none !important; padding: 0 16px; }
-  .mh-bp-col:first-child, .mh-bp-col:last-child { padding: 0 16px; }
-}
-@media (max-width: 640px) {
-  .mh-bp-grid { grid-template-columns: 1fr; row-gap: 28px; }
-  .mh-bp-col { padding: 0 !important; }
-  .mh-bp-layer { padding: 28px 24px; }
-  .mh-bp-model-panel { padding: 24px; }
-}
+.mh-arch-chip-blue { background: rgba(30, 64, 175, 0.15); color: var(--blue-bright); }
+.mh-arch-chip-emerald { background: rgba(5, 150, 105, 0.12); color: var(--emerald); }
+.mh-arch-chip-gold { background: rgba(217, 119, 6, 0.12); color: var(--gold); }
 
 /* ============================================
    AI CAREER SCORE — Section 5
@@ -2682,6 +2588,8 @@ button { cursor: pointer; }
    RESPONSIVE
    ============================================ */
 @media (max-width: 1024px) {
+  .mh-arch-layout { grid-template-columns: 1fr; }
+  .mh-arch-panel { position: static; }
   .mh-score-layout { grid-template-columns: 1fr; }
   .mh-recruiter-grid { grid-template-columns: 1fr; }
   .mh-proof-grid { grid-template-columns: 1fr; }
@@ -4309,6 +4217,13 @@ button { cursor: pointer; }
 }
 .mh-hub-content { min-width: 0; }
 
+.mh-hub-content .mh-arch-layout {
+  grid-template-columns: 1fr; /* fixes the reported rendering defect: this diagram's
+    1fr/320px split assumed full page width; nested inside the hub's narrower right
+    panel (next to a 240px sidebar) it needs to stack regardless of viewport size,
+    not just below the sitewide 1024px breakpoint */
+}
+.mh-hub-content .mh-arch-panel { position: static; }
 /* PART 3 fix: destination headings were rendering underneath the fixed
       68px nav on click. scroll-margin-top gives the browser's native scroll
       target (and the existing scrollIntoView() call in the JS below, which
