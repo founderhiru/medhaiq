@@ -8,7 +8,7 @@
       <p class="mh-section-sub">Built for professionals and enterprises that expect secure, transparent, and trustworthy AI-powered career intelligence.</p>
     </div>
 
-    <div class="mh-trustarch" id="trustarch-root">
+    <div class="mh-trustarch" id="trustarch-root" data-active-tab="privacy">
       <div class="mh-trustarch-shell">
         
         <!-- Navigation Tabs -->
@@ -214,6 +214,11 @@
       t.classList.toggle('is-active', isActive);
       t.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
+
+    // Lets the four diagram callout icons inherit the current tab's accent
+    // color via CSS (see trust-architecture.css). Purely presentational —
+    // does not affect tab-switching or animation behavior.
+    root.setAttribute('data-active-tab', key);
 
     var checkIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
 

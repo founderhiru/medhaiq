@@ -6,6 +6,8 @@
   --ta-card-bg: #0B0F19;
   --ta-node-bg: #111827;
   --ta-border-subtle: rgba(255, 255, 255, 0.08);
+  margin-top: 64px; /* matches the hero->module gap used by Career Architecture,
+    Live Engine, and Core Architecture (all 64px) */
 }
 
 /* Force Dark Theme Scope & Match Container Width */
@@ -23,36 +25,23 @@
 
 /* ============================================
    1. SHARED ARCHITECTURE HERO (EXACTLY REUSED)
-   ============================================ */
+   .mh-eyebrow/.mh-section-title/.mh-section-sub are defined once, globally,
+   in medhaiq.css and used as-is by Technical Blueprint, Career Architecture,
+   and Live Engine. .mh-framework (the container class this section reuses)
+   is normally a LIGHT-background section, so it carries its own color
+   overrides (.mh-framework .mh-section-title { color: navy-rich } etc.) —
+   those would be invisible against this section's dark background, so the
+   three color overrides below are necessary. Every size/weight/spacing/
+   width value has been removed so this hero inherits the exact same
+   typography as the other three sections, pixel for pixel. */
 #trust-architecture .mh-eyebrow {
   color: #3B82F6;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin-bottom: 48px;
-  text-align: center;
 }
-
 #trust-architecture .mh-section-title {
   color: #FFFFFF;
-  font-size: 40px;
-  font-weight: 800;
-  letter-spacing: -0.8px;
-  text-align: center;
-  margin-bottom: 28px;
-  line-height: 1.15;
 }
-
-/* Reused exact subheading typography with reduced bottom spacing (~20px reduction from 72px to 52px) */
 #trust-architecture .mh-section-sub {
-  color: #94A3B8 !important; 
-  font-size: 18px !important;
-  font-weight: 400 !important;
-  line-height: 1.6 !important;
-  max-width: 720px;
-  margin: 0 auto 52px auto; 
-  text-align: center;
+  color: #94A3B8;
 }
 
 /* ============================================
@@ -179,7 +168,9 @@
    4. LEFT INFORMATION PANEL — REDUCED HEADING HIERARCHY
    ============================================ */
 .mh-trustarch-panel-title {
-  font-size: 26px; /* Reduced by ~15-20% from 32px to establish correct sub-hierarchy below page title & tabs */
+  font-size: 21px; /* further reduced ~19% from 26px per polish pass — still visually
+    competed with the section H2; this establishes card-title-level hierarchy:
+    Section Hero > Tab Heading > Body > Bullet list */
   font-weight: 700;
   color: #3B82F6;
   margin: 0 0 14px 0;
@@ -240,9 +231,11 @@
 }
 
 .mh-trustarch-diagram-lines line {
-  stroke: #2A4B9B;
-  stroke-width: 1.8;
+  stroke: rgba(96, 150, 255, 0.55);
+  stroke-width: 1.6;
+  stroke-linecap: round;
   stroke-dasharray: 4 4;
+  filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.25));
 }
 
 .mh-trustarch-node-center {
@@ -255,7 +248,7 @@
   border-radius: 50%;
   background: #0B132B;
   border: 2px solid #2563EB;
-  box-shadow: 0 0 25px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 0 30px rgba(37, 99, 235, 0.42), inset 0 0 22px rgba(37, 99, 235, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -289,12 +282,12 @@
   height: 60px;
   padding: 8px 12px;
   background: var(--ta-node-bg);
-  border: 1px solid var(--ta-border-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.04);
   box-sizing: border-box;
   z-index: 3;
   transition: box-shadow 0.2s ease;
@@ -310,16 +303,51 @@
 .mh-trustarch-node-br { bottom: 8px; right: 0; }
 
 .mh-trustarch-node-icon {
+  --icon-accent: #3B82F6;
+  --icon-accent-bg: rgba(59, 130, 246, 0.14);
+  --icon-accent-border: rgba(59, 130, 246, 0.4);
+  --icon-accent-glow: rgba(59, 130, 246, 0.3);
   flex-shrink: 0;
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: #1F2937;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.01)),
+    var(--icon-accent-bg);
+  border: 1px solid var(--icon-accent-border);
+  box-shadow: 0 0 10px var(--icon-accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #3B82F6;
+  color: var(--icon-accent);
+  transition: box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+/* Per-tab accent — icons inherit the current tab's color instead of a
+   fixed blue. Kept within the existing MedhaIQ palette (no rainbow). */
+[data-active-tab="privacy"] .mh-trustarch-node-icon {
+  --icon-accent: #3B82F6;
+  --icon-accent-bg: rgba(59, 130, 246, 0.14);
+  --icon-accent-border: rgba(59, 130, 246, 0.4);
+  --icon-accent-glow: rgba(59, 130, 246, 0.3);
+}
+[data-active-tab="evaluation"] .mh-trustarch-node-icon {
+  --icon-accent: #22D3EE;
+  --icon-accent-bg: rgba(34, 211, 238, 0.14);
+  --icon-accent-border: rgba(34, 211, 238, 0.4);
+  --icon-accent-glow: rgba(34, 211, 238, 0.3);
+}
+[data-active-tab="explainable"] .mh-trustarch-node-icon {
+  --icon-accent: #818CF8;
+  --icon-accent-bg: rgba(129, 140, 248, 0.14);
+  --icon-accent-border: rgba(129, 140, 248, 0.4);
+  --icon-accent-glow: rgba(129, 140, 248, 0.3);
+}
+[data-active-tab="governance"] .mh-trustarch-node-icon {
+  --icon-accent: #F59E0B;
+  --icon-accent-bg: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(59, 130, 246, 0.1));
+  --icon-accent-border: rgba(245, 158, 11, 0.4);
+  --icon-accent-glow: rgba(245, 158, 11, 0.28);
 }
 
 .mh-trustarch-node-text {

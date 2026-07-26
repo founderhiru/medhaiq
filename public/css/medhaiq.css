@@ -1057,14 +1057,14 @@ button { cursor: pointer; }
   font-size: 15px;
   font-weight: 500;
   color: var(--text-muted);
-  margin-top: 6px;
+  margin-top: 16px; /* layer title -> description, per typography refinement pass */
   max-width: 640px;
 }
 
 .mh-bp-divider {
   height: 1px;
-  background: var(--bp-border);
-  margin: 24px 0 32px;
+  background: rgba(255, 255, 255, 0.06); /* slightly softer than the shared --bp-border */
+  margin: 18px 0 26px; /* description -> divider: 18px, divider -> capability row: 26px */
 }
 
 /* ---- Five-column grid ---- */
@@ -1073,43 +1073,54 @@ button { cursor: pointer; }
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 .mh-bp-col {
-  padding: 0 20px;
+  padding: 0 20px; /* uniform on every column, including first/last, for more even
+    capability spacing (previously the edge columns had asymmetric padding) */
 }
-.mh-bp-col:first-child { padding-left: 0; }
-.mh-bp-col:last-child { padding-right: 0; }
 .mh-bp-col:not(:first-child) {
   border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .mh-bp-icon {
-  width: 48px;
-  height: 48px;
+  width: 52px; /* was 44/48px — the icon is now the visual anchor of each capability */
+  height: 52px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--bp-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 18px; /* icon -> title */
 }
+.mh-bp-icon svg { width: 24px; height: 24px; } /* icon glyph sized up slightly with the container */
+.mh-bp-layer-blue  .mh-bp-icon { box-shadow: 0 0 12px rgba(59, 130, 246, 0.16); }
+.mh-bp-layer-green .mh-bp-icon { box-shadow: 0 0 12px rgba(16, 185, 129, 0.16); }
+.mh-bp-layer-amber .mh-bp-icon { box-shadow: 0 0 12px rgba(245, 158, 11, 0.16); }
 .mh-bp-layer-blue  .mh-bp-icon svg { color: var(--bp-blue); }
 .mh-bp-layer-green .mh-bp-icon svg { color: var(--bp-green); }
 .mh-bp-layer-amber .mh-bp-icon svg { color: var(--bp-amber); }
 
 .mh-bp-col-title {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 17px; /* was 18px — reduced per reference proportions */
   font-weight: 600;
   color: var(--white);
-  line-height: 1.3;
-  margin-bottom: 8px;
+  line-height: 1.25;
+  margin-bottom: 14px; /* title -> description */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* hard cap at two lines, per spec */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .mh-bp-col-desc {
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 400;
   color: var(--bp-desc);
-  line-height: 1.6;
+  line-height: 1.65; /* was 1.6 — slightly more comfortable reading */
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* hard cap at three lines, per spec */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ---- Connector between layers ---- */
@@ -1213,7 +1224,6 @@ button { cursor: pointer; }
 @media (max-width: 1024px) {
   .mh-bp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 28px; }
   .mh-bp-col { border-left: none !important; padding: 0 16px; }
-  .mh-bp-col:first-child, .mh-bp-col:last-child { padding: 0 16px; }
 }
 @media (max-width: 640px) {
   .mh-bp-grid { grid-template-columns: 1fr; row-gap: 28px; }
@@ -2037,7 +2047,20 @@ button { cursor: pointer; }
   position: relative;
 }
 
-/* Panel 1: Interview in progress */
+/* Panel 1: Interview in progress —
+   FIX: the typewriter animation used to grow these elements past their
+   min-height while typing, which grew #mh-proof-1's row height and pushed
+   everything below (including Trust Architecture) down the page — a
+   real, reproducible CLS bug. #mh-proof-1 (this panel only, by ID) now
+   gets a fixed height + overflow:hidden so the panel itself can never
+   grow, and the two text elements below get fixed heights sized to
+   comfortably contain the longest question / the full answer, so text
+   animates inside a stable container instead of expanding it. The other
+   three .mh-proof-content panels are untouched — this only targets #mh-proof-1. */
+#mh-proof-1 {
+  height: 210px;
+  overflow: hidden;
+}
 .mh-interview-q {
   font-family: var(--font-body);
   font-size: 13px;
@@ -2045,17 +2068,20 @@ button { cursor: pointer; }
   color: var(--text-muted);
   line-height: 1.6;
   margin-bottom: 16px;
-  min-height: 40px;
+  height: 50px;
+  overflow: hidden;
 }
 .mh-interview-ans {
   background: var(--navy-deep);
   border-radius: var(--radius);
   padding: 12px 14px;
-  min-height: 48px;
+  height: 90px;
+  box-sizing: border-box;
   font-family: var(--font-body);
   font-size: 12px;
   color: var(--text-muted);
   line-height: 1.6;
+  overflow: hidden;
 }
 .mh-interview-cursor {
   display: inline-block;
