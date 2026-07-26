@@ -1,113 +1,137 @@
-<!-- Section: Trust Architecture (Architecture page).
-     Redesigned 2026-07-25 — Option C: compact interactive tab experience,
-     replacing the previous 4-tall-card grid entirely. Same section id
-     ("trust-architecture") and same shared wrapper/typography classes
-     (.mh-framework / .mh-framework-inner / .mh-section-center /
-     .mh-eyebrow / .mh-section-title / .mh-section-sub) as every prior
-     version, so the in-page nav anchor on architecture.ejs
-     (<a href="#trust-architecture">) keeps working and the hero
-     typography matches the rest of the page.
-     Everything below the hero (tabs, split content panel, architecture
-     diagram, bottom banner) uses new .mh-trustarch-* classes — see
-     public/css/trust-architecture.css. These are NOT the .mh-frame-card
-     classes shared with partials/framework.ejs ("Core Architecture"),
-     so that section remains completely unaffected.
-     One diagram is rendered once; switching tabs only swaps the center
-     icon, the 4 node icons/labels, and an accent color via JS + a CSS
-     class — the diagram's structure, size, and position never move. -->
+<!-- Section: Trust Architecture (Architecture page) -->
 <section class="mh-framework reveal" id="trust-architecture">
   <div class="mh-framework-inner">
     <div class="mh-section-center">
       <div class="mh-eyebrow">Trust &amp; AI Governance</div>
       <h2 class="mh-section-title">Trust Architecture</h2>
-      <p class="mh-section-sub">Designed with privacy, transparent AI, and responsible evaluation principles for professionals and enterprise organizations.</p>
+      <p class="mh-section-sub">Built for professionals and enterprises that expect secure, transparent, and trustworthy AI-powered career intelligence.</p>
     </div>
 
-    <div class="mh-trustarch" data-active="privacy">
-
-      <!-- Tabs -->
-      <div class="mh-trustarch-tabs" role="tablist" aria-label="Trust Architecture categories">
-        <button type="button" class="mh-trustarch-tab is-active" data-tab="privacy" role="tab" aria-selected="true">
-          <span class="mh-trustarch-tab-icon" data-accent="blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
-          <span class="mh-trustarch-tab-label">Privacy &amp; Protection</span>
-        </button>
-        <button type="button" class="mh-trustarch-tab" data-tab="evaluation" role="tab" aria-selected="false">
-          <span class="mh-trustarch-tab-icon" data-accent="green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>
-          <span class="mh-trustarch-tab-label">Evaluation Engine</span>
-        </button>
-        <button type="button" class="mh-trustarch-tab" data-tab="explainable" role="tab" aria-selected="false">
-          <span class="mh-trustarch-tab-icon" data-accent="orange"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span>
-          <span class="mh-trustarch-tab-label">Explainable Intelligence</span>
-        </button>
-        <button type="button" class="mh-trustarch-tab" data-tab="governance" role="tab" aria-selected="false">
-          <span class="mh-trustarch-tab-icon" data-accent="purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
-          <span class="mh-trustarch-tab-label">Platform Governance</span>
-        </button>
-      </div>
-
-      <!-- Shared content panel: 40% left (dynamic text) / 60% right (dynamic diagram) -->
-      <div class="mh-trustarch-panel" data-accent="blue">
-        <div class="mh-trustarch-panel-left">
-          <div class="mh-trustarch-fade" data-role="left-content">
-            <h3 class="mh-trustarch-panel-title" data-role="panel-title">Privacy &amp; Protection</h3>
-            <p class="mh-trustarch-panel-intro" data-role="panel-intro">We protect professional data through privacy-by-design architecture. Every interaction is encrypted, isolated by tenant, and access-controlled by role.</p>
-            <div class="mh-trustarch-divider"></div>
-            <ul class="mh-trustarch-panel-list" data-role="panel-list">
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Secure AI processing</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Encrypted communications</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Privacy-first data handling</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Tenant-aware data isolation</li>
-            </ul>
-          </div>
+    <div class="mh-trustarch" id="trustarch-root">
+      <div class="mh-trustarch-shell">
+        
+        <!-- Navigation Tabs -->
+        <div class="mh-trustarch-tabs" role="tablist" aria-label="Trust Architecture Tabs">
+          <button type="button" class="mh-trustarch-tab is-active" data-tab="privacy" role="tab" aria-selected="true">
+            <span class="mh-trustarch-tab-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span>
+            <span>Privacy &amp; Protection</span>
+          </button>
+          
+          <button type="button" class="mh-trustarch-tab" data-tab="evaluation" role="tab" aria-selected="false">
+            <span class="mh-trustarch-tab-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            </span>
+            <span>Evaluation Integrity</span>
+          </button>
+          
+          <button type="button" class="mh-trustarch-tab" data-tab="explainable" role="tab" aria-selected="false">
+            <span class="mh-trustarch-tab-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </span>
+            <span>Explainable AI</span>
+          </button>
+          
+          <button type="button" class="mh-trustarch-tab" data-tab="governance" role="tab" aria-selected="false">
+            <span class="mh-trustarch-tab-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <span>Secure Platform &amp; Governance</span>
+          </button>
         </div>
 
-        <div class="mh-trustarch-panel-right">
-          <div class="mh-trustarch-diagram">
-            <svg class="mh-trustarch-diagram-lines" viewBox="0 0 400 280" preserveAspectRatio="none" aria-hidden="true">
-              <line x1="200" y1="140" x2="70" y2="55"/>
-              <line x1="200" y1="140" x2="330" y2="55"/>
-              <line x1="200" y1="140" x2="70" y2="225"/>
-              <line x1="200" y1="140" x2="330" y2="225"/>
-            </svg>
-
-            <div class="mh-trustarch-node-center">
-              <span class="mh-trustarch-fade" data-role="center-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              </span>
-            </div>
-
-            <div class="mh-trustarch-node mh-trustarch-node-tl">
-              <span class="mh-trustarch-node-icon" data-role="node-icon-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
-              <span class="mh-trustarch-node-label" data-role="node-label-0">Secure AI Processing</span>
-            </div>
-
-            <div class="mh-trustarch-node mh-trustarch-node-tr">
-              <span class="mh-trustarch-node-icon" data-role="node-icon-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><circle cx="12" cy="16" r="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
-              <span class="mh-trustarch-node-label" data-role="node-label-1">Encryption</span>
-            </div>
-
-            <div class="mh-trustarch-node mh-trustarch-node-bl">
-              <span class="mh-trustarch-node-icon" data-role="node-icon-2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="15" y2="14"/></svg></span>
-              <span class="mh-trustarch-node-label" data-role="node-label-2">Data Isolation</span>
-            </div>
-
-            <div class="mh-trustarch-node mh-trustarch-node-br">
-              <span class="mh-trustarch-node-icon" data-role="node-icon-3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg></span>
-              <span class="mh-trustarch-node-label" data-role="node-label-3">Role-based Access</span>
+        <!-- 2-Column Fixed-Height Architecture Content -->
+        <div class="mh-trustarch-panel">
+          
+          <!-- LEFT COLUMN: Description & Key Highlights -->
+          <div class="mh-trustarch-panel-left">
+            <div class="mh-trustarch-fade" data-role="left-content">
+              <h3 class="mh-trustarch-panel-title" data-role="panel-title">Privacy &amp; Protection</h3>
+              <p class="mh-trustarch-panel-intro" data-role="panel-intro">
+                We protect professional data through privacy-by-design architecture. Every interaction is encrypted, isolated by tenant, and access-controlled by role.
+              </p>
+              <ul class="mh-trustarch-panel-list" data-role="panel-list">
+                <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Secure AI Processing</li>
+                <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Encrypted Communications</li>
+                <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Privacy-first Data Handling</li>
+                <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Tenant-aware Data Isolation</li>
+              </ul>
             </div>
           </div>
+
+          <!-- RIGHT COLUMN: Interactive Hub Blueprint -->
+          <div class="mh-trustarch-panel-right">
+            <div class="mh-trustarch-diagram">
+              <svg class="mh-trustarch-diagram-lines" viewBox="0 0 540 340" aria-hidden="true">
+                <line x1="270" y1="170" x2="100" y2="42" />
+                <line x1="270" y1="170" x2="440" y2="42" />
+                <line x1="270" y1="170" x2="100" y2="298" />
+                <line x1="270" y1="170" x2="440" y2="298" />
+              </svg>
+
+              <!-- Central Active Node -->
+              <div class="mh-trustarch-node-center">
+                <span class="mh-trustarch-fade" data-role="center-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </span>
+                <span data-role="center-label">Privacy &amp;<br>Protection</span>
+              </div>
+
+              <!-- Satellite Nodes -->
+              <div class="mh-trustarch-node mh-trustarch-node-tl">
+                <span class="mh-trustarch-node-icon" data-role="node-icon-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </span>
+                <div class="mh-trustarch-node-text">
+                  <span class="mh-trustarch-node-label" data-role="node-label-0">Secure AI Processing</span>
+                  <span class="mh-trustarch-node-sub" data-role="node-sub-0">Isolated AI workloads</span>
+                </div>
+              </div>
+
+              <div class="mh-trustarch-node mh-trustarch-node-tr">
+                <span class="mh-trustarch-node-icon" data-role="node-icon-1">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><circle cx="12" cy="16" r="1"/></svg>
+                </span>
+                <div class="mh-trustarch-node-text">
+                  <span class="mh-trustarch-node-label" data-role="node-label-1">Encryption</span>
+                  <span class="mh-trustarch-node-sub" data-role="node-sub-1">End-to-end security</span>
+                </div>
+              </div>
+
+              <div class="mh-trustarch-node mh-trustarch-node-bl">
+                <span class="mh-trustarch-node-icon" data-role="node-icon-2">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><database/><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
+                </span>
+                <div class="mh-trustarch-node-text">
+                  <span class="mh-trustarch-node-label" data-role="node-label-2">Data Isolation</span>
+                  <span class="mh-trustarch-node-sub" data-role="node-sub-2">Tenant-level separation</span>
+                </div>
+              </div>
+
+              <div class="mh-trustarch-node mh-trustarch-node-br">
+                <span class="mh-trustarch-node-icon" data-role="node-icon-3">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                </span>
+                <div class="mh-trustarch-node-text">
+                  <span class="mh-trustarch-node-label" data-role="node-label-3">Role-based Access</span>
+                  <span class="mh-trustarch-node-sub" data-role="node-sub-3">Granular permissions</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
         </div>
+
+        <!-- Bottom Banner -->
+        <div class="mh-trustarch-banner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          <span>Designed for extensibility, explainability, and enterprise-scale deployment.</span>
+        </div>
+
       </div>
     </div>
-
-    <!-- Bottom trust banner -->
-    <div class="mh-trustarch-banner">
-      <div class="mh-trustarch-banner-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
-      <p class="mh-trustarch-banner-text">Built for professionals and enterprises that expect secure, transparent, and trustworthy <strong>AI-powered career intelligence</strong>.</p>
-    </div>
-
   </div>
 </section>
 
@@ -115,69 +139,70 @@
 (function() {
   var TRUSTARCH_DATA = {
     privacy: {
-      accent: 'blue',
       title: 'Privacy & Protection',
       intro: 'We protect professional data through privacy-by-design architecture. Every interaction is encrypted, isolated by tenant, and access-controlled by role.',
-      bullets: ['Secure AI processing', 'Encrypted communications', 'Privacy-first data handling', 'Tenant-aware data isolation'],
-      centerIcon: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+      bullets: ['Secure AI Processing', 'Encrypted Communications', 'Privacy-first Data Handling', 'Tenant-aware Data Isolation'],
+      centerLabel: 'Privacy &<br>Protection',
+      centerIcon: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
       nodes: [
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>', label: 'Secure AI Processing' },
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><circle cx="12" cy="16" r="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>', label: 'Encryption' },
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="15" y2="14"/></svg>', label: 'Data Isolation' },
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>', label: 'Role-based Access' }
+        { label: 'Secure AI Processing', sub: 'Isolated AI workloads', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' },
+        { label: 'Encryption', sub: 'End-to-end security', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><circle cx="12" cy="16" r="1"/></svg>' },
+        { label: 'Data Isolation', sub: 'Tenant-level separation', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>' },
+        { label: 'Role-based Access', sub: 'Granular permissions', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' }
       ]
     },
     evaluation: {
-      accent: 'green',
       title: 'Evaluation Integrity',
       intro: 'Every interview evaluation is built on structured competencies and standardized scoring. Assessments stay consistent, evidence-based, and free from bias.',
-      bullets: ['Multi-layer competency evaluation', 'Standardized scoring vectors', 'Explainable evaluation logic', 'Evidence-based feedback'],
-      centerIcon: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+      bullets: ['Multi-layer Competency Mapping', 'Standardized Scoring Vectors', 'Explainable Evaluation Logic', 'Evidence-based Feedback'],
+      centerLabel: 'Evaluation<br>Integrity',
+      centerIcon: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',
       nodes: [
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.5" fill="currentColor"/></svg>', label: 'Competency Engine' },
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>', label: 'STAR Detection' },
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>', label: 'Multi-vector Scoring' },
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>', label: 'Evidence-based Feedback' }
+        { label: 'Competency Engine', sub: 'Structured frameworks', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>' },
+        { label: 'STAR Mapping', sub: 'Behavioral detection', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' },
+        { label: 'Multi-vector Scoring', sub: 'Objective benchmarks', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>' },
+        { label: 'Explainability', sub: 'Traceable feedback', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' }
       ]
     },
     explainable: {
-      accent: 'orange',
       title: 'Explainable AI',
       intro: 'Our AI shows its work. Every assessment includes traceable reasoning and transparent scoring so professionals understand exactly how conclusions are reached.',
-      bullets: ['Traceable reasoning', 'Structured competency mapping', 'Transparent scoring methodology', 'Actionable career insights'],
-      centerIcon: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+      bullets: ['Transparent Scoring Methodology', 'Structured Competency Maps', 'Actionable Career Insights', 'Traceable AI Decisions'],
+      centerLabel: 'Explainable<br>AI Node',
+      centerIcon: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
       nodes: [
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>', label: 'Transparent Reasoning' },
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>', label: 'Explainable Scoring' },
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>', label: 'Confidence Signals' },
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>', label: 'Career Insights' }
+        { label: 'Transparent Scoring', sub: 'Clear metric pathways', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' },
+        { label: 'Structured Competencies', sub: 'Mapped skill domains', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="20" y1="21" x2="20" y2="16"/></svg>' },
+        { label: 'Actionable Insights', sub: 'Targeted growth steps', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' },
+        { label: 'Traceable Decisions', sub: 'Auditable logic trails', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' }
       ]
     },
     governance: {
-      accent: 'purple',
       title: 'Secure Platform & Governance',
       intro: 'MedhaIQ runs on modern cloud infrastructure with strong operational controls. Security and responsible AI governance are built into the platform, not bolted on.',
-      bullets: ['Secure cloud architecture', 'Industry-standard authentication', 'Audit-friendly platform design', 'Responsible AI governance'],
-      centerIcon: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+      bullets: ['Industry Authentication Standards', 'Cloud Security Architecture', 'Audit Logging & Verification', 'Operational Access Controls'],
+      centerLabel: 'Platform &<br>Governance',
+      centerIcon: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
       nodes: [
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="8" rx="2"/><rect x="2" y="13" width="20" height="8" rx="2"/><line x1="6" y1="7" x2="6.01" y2="7"/><line x1="6" y1="17" x2="6.01" y2="17"/></svg>', label: 'Secure Infrastructure' },
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>', label: 'Authentication' },
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>', label: 'Monitoring' },
-        { icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>', label: 'Responsible AI' }
+        { label: 'Authentication', sub: 'OAuth & Zero Trust', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><circle cx="12" cy="16" r="1"/></svg>' },
+        { label: 'Cloud Security', sub: 'Isolated infrastructure', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="8" rx="2"/><rect x="2" y="13" width="20" height="8" rx="2"/></svg>' },
+        { label: 'Audit Logging', sub: 'Continuous verification', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+        { label: 'Operational Controls', sub: 'Strict policy enforcement', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' }
       ]
     }
   };
 
-  var root = document.getElementById('trust-architecture');
+  var root = document.getElementById('trustarch-root');
   if (!root) return;
 
   var tabs = root.querySelectorAll('.mh-trustarch-tab');
-  var panel = root.querySelector('.mh-trustarch-panel');
-  var leftContent = root.querySelector('[data-role="left-content"]');
   var centerIconEl = root.querySelector('[data-role="center-icon"]');
-  var FADE_MS = 220;
+  var centerLabelEl = root.querySelector('[data-role="center-label"]');
+  var titleEl = root.querySelector('[data-role="panel-title"]');
+  var introEl = root.querySelector('[data-role="panel-intro"]');
+  var listEl = root.querySelector('[data-role="panel-list"]');
 
-  function applyTab(key, animate) {
+  function updateTab(key) {
     var data = TRUSTARCH_DATA[key];
     if (!data) return;
 
@@ -187,47 +212,40 @@
       t.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
 
-    function swap() {
-      panel.setAttribute('data-accent', data.accent);
+    var checkIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
 
-      var titleEl = root.querySelector('[data-role="panel-title"]');
-      var introEl = root.querySelector('[data-role="panel-intro"]');
-      var listEl = root.querySelector('[data-role="panel-list"]');
-      var checkSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    if (titleEl) titleEl.textContent = data.title;
+    if (introEl) introEl.textContent = data.intro;
+    if (centerLabelEl) centerLabelEl.innerHTML = data.centerLabel;
+    if (centerIconEl) centerIconEl.innerHTML = data.centerIcon;
 
-      if (titleEl) titleEl.textContent = data.title;
-      if (introEl) introEl.textContent = data.intro;
-      if (listEl) {
-        listEl.innerHTML = data.bullets.map(function(b) {
-          return '<li>' + checkSvg + b + '</li>';
-        }).join('');
-      }
-      if (centerIconEl) centerIconEl.innerHTML = data.centerIcon;
-
-      data.nodes.forEach(function(node, i) {
-        var iconEl = root.querySelector('[data-role="node-icon-' + i + '"]');
-        var labelEl = root.querySelector('[data-role="node-label-' + i + '"]');
-        if (iconEl) iconEl.innerHTML = node.icon;
-        if (labelEl) labelEl.textContent = node.label;
-      });
+    if (listEl) {
+      listEl.innerHTML = data.bullets.map(function(bullet) {
+        return '<li>' + checkIcon + bullet + '</li>';
+      }).join('');
     }
 
-    if (!animate) { swap(); return; }
+    data.nodes.forEach(function(node, i) {
+      var iconEl = root.querySelector('[data-role="node-icon-' + i + '"]');
+      var labelEl = root.querySelector('[data-role="node-label-' + i + '"]');
+      var subEl = root.querySelector('[data-role="node-sub-' + i + '"]');
 
-    var fadeTargets = root.querySelectorAll('.mh-trustarch-fade');
-    fadeTargets.forEach(function(el) { el.classList.add('is-fading'); });
-    setTimeout(function() {
-      swap();
-      fadeTargets.forEach(function(el) { el.classList.remove('is-fading'); });
-    }, FADE_MS);
+      if (iconEl) iconEl.innerHTML = node.icon;
+      if (labelEl) labelEl.textContent = node.label;
+      if (subEl) subEl.textContent = node.sub;
+    });
   }
 
   tabs.forEach(function(tab) {
     tab.addEventListener('click', function() {
       var key = tab.getAttribute('data-tab');
-      if (root.getAttribute('data-active') === key) return;
-      root.setAttribute('data-active', key);
-      applyTab(key, true);
+      var fadeTargets = root.querySelectorAll('.mh-trustarch-fade');
+
+      fadeTargets.forEach(function(el) { el.classList.add('is-fading'); });
+      setTimeout(function() {
+        updateTab(key);
+        fadeTargets.forEach(function(el) { el.classList.remove('is-fading'); });
+      }, 150);
     });
   });
 })();
