@@ -1114,7 +1114,7 @@ button { cursor: pointer; }
 
 .mh-bp-col-desc {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   color: #94A3B8; /* Overrides the slightly lighter var(--bp-desc) */
   line-height: 1.55;
