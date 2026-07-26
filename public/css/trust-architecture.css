@@ -1,21 +1,19 @@
 /* ============================================
-   MEDHAIQ TRUST ARCHITECTURE — ENTERPRISE BLUEPRINT
-   Dark Mode Architectural Component (Stripe/Linear Aesthetic)
+   MEDHAIQ TRUST ARCHITECTURE — FIXED LAYOUT
    ============================================ */
 
 .mh-trustarch {
   margin-top: 32px;
-  --ta-blue-glow: rgba(59, 130, 246, 0.15);
-  --ta-blue-border: #1E3A8A;
   --ta-card-bg: #0B0F19;
   --ta-node-bg: #111827;
   --ta-border-subtle: rgba(255, 255, 255, 0.08);
 }
 
-/* Force Dark Theme Container Scope */
+/* Force Dark Theme Scope */
 #trust-architecture.mh-framework {
   background: #030712 !important;
-  padding: 60px 0;
+  padding: 80px 0;
+  scroll-margin-top: 80px; /* Essential for accurate sidebar scroll-spy tracking */
 }
 
 #trust-architecture .mh-framework-inner {
@@ -29,29 +27,32 @@
   font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   text-align: center;
 }
 
 #trust-architecture .mh-section-title {
-  color: #F9FAFB;
-  font-size: 36px;
+  color: #FFFFFF;
+  font-size: 40px;
   font-weight: 800;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.8px;
   text-align: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  line-height: 1.15;
 }
 
+/* BUG 3 FIX: Matches exact Live Engine Subhead Typography */
 #trust-architecture .mh-section-sub {
-  color: #9CA3AF;
-  font-size: 16px;
-  max-width: 680px;
-  margin: 0 auto 36px auto;
+  color: #94A3B8; /* Muted gray matching Live Engine */
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+  max-width: 720px;
+  margin: 0 auto 44px auto;
   text-align: center;
-  line-height: 1.5;
 }
 
-/* ---------- Outer Architecture Shell ---------- */
+/* Outer Card Container */
 .mh-trustarch-shell {
   background: var(--ta-card-bg);
   border: 1px solid var(--ta-border-subtle);
@@ -60,7 +61,7 @@
   overflow: hidden;
 }
 
-/* ---------- Architectural Tab Bar ---------- */
+/* Top Tab Bar */
 .mh-trustarch-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -73,7 +74,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  height: 60px;
+  height: 64px;
   padding: 0 16px;
   background: transparent;
   border: none;
@@ -114,41 +115,46 @@
   color: #3B82F6;
 }
 
-/* ---------- Main Split Panel (Zero Height Shift) ---------- */
+/* BUG 1 FIX: Strictly locked height panel preventing vertical movement */
 .mh-trustarch-panel {
   display: flex;
   align-items: stretch;
-  height: 440px; /* Fixed height eliminates layout jumping */
+  height: 420px !important;
+  min-height: 420px !important;
+  max-height: 420px !important;
   position: relative;
+  overflow: hidden !important;
 }
 
 .mh-trustarch-panel-left {
   flex: 0 0 38%;
   max-width: 38%;
-  height: 100%;
-  padding: 40px 36px;
+  height: 100% !important;
+  padding: 36px 32px;
   border-right: 1px solid var(--ta-border-subtle);
   display: flex;
   flex-direction: column;
   justify-content: center;
   box-sizing: border-box;
+  overflow: hidden !important;
 }
 
 .mh-trustarch-panel-right {
   flex: 0 0 62%;
   max-width: 62%;
-  height: 100%;
+  height: 100% !important;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   background: radial-gradient(circle at center, rgba(30, 58, 138, 0.12) 0%, transparent 70%);
   box-sizing: border-box;
+  overflow: hidden !important;
 }
 
-/* Transitions */
+/* Opacity Fade Transitions (Zero layout displacement) */
 .mh-trustarch-fade {
-  transition: opacity 200ms ease;
+  transition: opacity 180ms ease;
   opacity: 1;
 }
 
@@ -156,20 +162,21 @@
   opacity: 0;
 }
 
-/* Typography & List Styling */
+/* Left Content Styles */
 .mh-trustarch-panel-title {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
   color: #3B82F6;
-  margin: 0 0 12px 0;
+  margin: 0 0 10px 0;
   letter-spacing: -0.3px;
 }
 
 .mh-trustarch-panel-intro {
   font-size: 14px;
   color: #9CA3AF;
-  line-height: 1.6;
-  margin: 0 0 24px 0;
+  line-height: 1.55;
+  margin: 0 0 20px 0;
+  min-height: 66px; /* Lock paragraph height to prevent flow shift */
 }
 
 .mh-trustarch-panel-list {
@@ -178,16 +185,17 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .mh-trustarch-panel-list li {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 14px;
+  gap: 10px;
+  font-size: 13.5px;
   font-weight: 500;
   color: #E5E7EB;
+  white-space: nowrap;
 }
 
 .mh-trustarch-panel-list li svg {
@@ -198,11 +206,11 @@
   border-radius: 50%;
 }
 
-/* ---------- Interactive Architecture Diagram ---------- */
+/* Interactive Center Hub Diagram */
 .mh-trustarch-diagram {
   position: relative;
-  width: 540px;
-  height: 340px;
+  width: 500px;
+  height: 320px;
 }
 
 .mh-trustarch-diagram-lines {
@@ -219,66 +227,64 @@
   stroke-dasharray: 4 4;
 }
 
-/* Central Hub Node */
 .mh-trustarch-node-center {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 120px;
-  height: 120px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
   background: #0B132B;
   border: 2px solid #2563EB;
-  box-shadow: 0 0 30px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 0 25px rgba(37, 99, 235, 0.35);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   z-index: 2;
-  padding: 8px;
+  padding: 6px;
   box-sizing: border-box;
 }
 
 .mh-trustarch-node-center svg {
   color: #3B82F6;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .mh-trustarch-node-center span {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: #F3F4F6;
   line-height: 1.2;
 }
 
-/* Satellite Nodes */
 .mh-trustarch-node {
   position: absolute;
-  width: 200px;
-  height: 64px;
-  padding: 10px 14px;
+  width: 190px;
+  height: 60px;
+  padding: 8px 12px;
   background: var(--ta-node-bg);
   border: 1px solid var(--ta-border-subtle);
   border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  gap: 10px;
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
   z-index: 3;
 }
 
-.mh-trustarch-node-tl { top: 10px; left: 0; }
-.mh-trustarch-node-tr { top: 10px; right: 0; }
-.mh-trustarch-node-bl { bottom: 10px; left: 0; }
-.mh-trustarch-node-br { bottom: 10px; right: 0; }
+.mh-trustarch-node-tl { top: 8px; left: 0; }
+.mh-trustarch-node-tr { top: 8px; right: 0; }
+.mh-trustarch-node-bl { bottom: 8px; left: 0; }
+.mh-trustarch-node-br { bottom: 8px; right: 0; }
 
 .mh-trustarch-node-icon {
   flex-shrink: 0;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   background: #1F2937;
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -291,56 +297,43 @@
 .mh-trustarch-node-text {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .mh-trustarch-node-label {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #F9FAFB;
   line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .mh-trustarch-node-sub {
-  font-size: 11px;
+  font-size: 10.5px;
   color: #6B7280;
   margin-top: 2px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
-/* ---------- Bottom Footer Banner ---------- */
+/* Footer Banner */
 .mh-trustarch-banner {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 16px 24px;
+  gap: 10px;
+  padding: 14px 24px;
   background: #070A12;
   border-top: 1px solid var(--ta-border-subtle);
   color: #9CA3AF;
-  font-size: 13.5px;
+  font-size: 13px;
   text-align: center;
 }
 
 .mh-trustarch-banner svg {
   color: #3B82F6;
   flex-shrink: 0;
-}
-
-/* ---------- Responsive Layout Adjustments ---------- */
-@media (max-width: 1024px) {
-  .mh-trustarch-diagram { width: 460px; height: 320px; }
-  .mh-trustarch-node { width: 175px; }
-  .mh-trustarch-panel-left { padding: 28px 24px; }
-}
-
-@media (max-width: 860px) {
-  .mh-trustarch-tabs { grid-template-columns: repeat(2, 1fr); }
-  .mh-trustarch-tab { border-bottom: 1px solid var(--ta-border-subtle); }
-  .mh-trustarch-panel { flex-direction: column; height: auto; }
-  .mh-trustarch-panel-left,
-  .mh-trustarch-panel-right {
-    max-width: 100%;
-    flex: 1 1 auto;
-  }
-  .mh-trustarch-panel-left { border-right: none; border-bottom: 1px solid var(--ta-border-subtle); }
-  .mh-trustarch-panel-right { padding: 40px 0; }
 }
