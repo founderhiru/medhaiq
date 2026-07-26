@@ -2,265 +2,212 @@
    TRUST ARCHITECTURE — DETERMINISTIC REBUILD
    ============================================ */
 
-<!-- ==========================================
-     1. THE STYLES
-     (Keep these inside the <style> tags)
-     ========================================== -->
-<style>
-  /* Theme Variables (Matches Architecture Page) */
-  #trust-architecture {
-    --ta-bg-navy: #0B0F19;
-    --ta-bg-tab: #070A12;
-    --ta-border: rgba(255, 255, 255, 0.08);
-    --ta-text-white: #FFFFFF;
-    --ta-text-slate: #9CA3AF;
-    --ta-blue-accent: #3B82F6;
-    
-    padding: 80px 0;
-    background: #030712;
-    scroll-margin-top: 80px;
-  }
+/* Theme Variables (Matches Architecture Page) */
+#trust-architecture {
+  --ta-bg-navy: #0B0F19;
+  --ta-bg-tab: #070A12;
+  --ta-border: rgba(255, 255, 255, 0.08);
+  --ta-text-white: #FFFFFF;
+  --ta-text-slate: #9CA3AF;
+  --ta-blue-accent: #3B82F6;
+  
+  padding: 80px 0;
+  background: #030712;
+  scroll-margin-top: 80px;
+}
 
-  #trust-architecture .mh-framework-inner {
-    max-width: 1140px;
-    margin: 0 auto;
-  }
+#trust-architecture .mh-framework-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+}
 
-  /* TYPOGRAPHY */
-  .ta-eyebrow {
-    color: var(--ta-blue-accent);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    text-align: center;
-    margin-bottom: 8px;
-  }
+/* ============================================
+   TYPOGRAPHY (Inherited from Core Architecture)
+   ============================================ */
+.ta-eyebrow {
+  color: var(--ta-blue-accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 8px;
+}
 
-  .ta-title {
-    color: var(--ta-text-white);
-    font-size: 40px;
-    font-weight: 800;
-    letter-spacing: -0.8px;
-    text-align: center;
-    margin-bottom: 12px;
-    line-height: 1.15;
-  }
+.ta-title {
+  color: var(--ta-text-white);
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  text-align: center;
+  margin-bottom: 12px;
+  line-height: 1.15;
+}
 
-  .ta-subtitle {
-    color: var(--ta-text-slate);
-    font-size: 18px;
-    font-weight: 400;
-    line-height: 1.6;
-    text-align: center;
-    max-width: 720px;
-    margin: 0 auto 32px auto;
-  }
+.ta-subtitle {
+  color: var(--ta-text-slate);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 32px auto;
+}
 
-  /* MAIN MODULE SHELL */
-  .ta-module-shell {
-    background: var(--ta-bg-navy);
-    border: 1px solid var(--ta-border);
-    border-radius: 16px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
-  }
+/* ============================================
+   MAIN MODULE SHELL
+   ============================================ */
+.ta-module-shell {
+  background: var(--ta-bg-navy);
+  border: 1px solid var(--ta-border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+}
 
-  /* TABS */
-  .ta-tabs {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    background: var(--ta-bg-tab);
-    border-bottom: 1px solid var(--ta-border);
-    width: 100%;
-  }
+/* ============================================
+   TABS (1 Row, 4 Columns, No Wrap)
+   ============================================ */
+.ta-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--ta-bg-tab);
+  border-bottom: 1px solid var(--ta-border);
+  width: 100%;
+}
 
-  .ta-tab {
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    color: var(--ta-text-slate);
-    font-size: 14px;
-    font-weight: 500;
-    background: transparent;
-    border: none;
-    border-right: 1px solid var(--ta-border);
-    border-bottom: 2px solid transparent;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.2s ease;
-  }
+.ta-tab {
+  height: 60px; /* Reduced for compactness */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--ta-text-slate);
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--ta-border);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap; /* Forces text onto one line */
+  transition: all 0.2s ease;
+}
 
-  .ta-tab:last-child {
-    border-right: none;
-  }
+.ta-tab:last-child {
+  border-right: none;
+}
 
-  .ta-tab:hover {
-    color: #E5E7EB;
-    background: rgba(255, 255, 255, 0.02);
-  }
+.ta-tab:hover {
+  color: #E5E7EB;
+  background: rgba(255, 255, 255, 0.02);
+}
 
-  .ta-tab.is-active {
-    color: var(--ta-text-white);
-    font-weight: 600;
-    background: #0D1322;
-    border-bottom-color: var(--ta-blue-accent);
-  }
+.ta-tab.is-active {
+  color: var(--ta-text-white);
+  font-weight: 600;
+  background: #0D1322;
+  border-bottom-color: var(--ta-blue-accent);
+}
 
-  /* CONTENT AREA */
-  .ta-content-area {
-    display: grid;
-    grid-template-columns: 40% 60%;
-    height: 340px;
-    min-height: 340px;
-    max-height: 340px;
-    overflow: hidden;
-  }
+/* ============================================
+   CONTENT AREA (Grid Layout, Fixed Height)
+   ============================================ */
+.ta-content-area {
+  display: grid;
+  grid-template-columns: 40% 60%; /* Strict 2-column layout */
+  height: 340px; /* Reduced overall height by ~20% */
+  min-height: 340px;
+  max-height: 340px;
+  overflow: hidden;
+}
 
-  /* LEFT PANEL */
-  .ta-panel-left {
-    padding: 32px;
-    border-right: 1px solid var(--ta-border);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-  }
+/* Left Panel: Text & Bullets */
+.ta-panel-left {
+  padding: 32px;
+  border-right: 1px solid var(--ta-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
 
-  .ta-panel-title {
-    color: var(--ta-blue-accent);
-    font-size: 22px;
-    font-weight: 700;
-    margin: 0 0 12px 0;
-    white-space: nowrap;
-  }
+.ta-panel-title {
+  color: var(--ta-blue-accent);
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  white-space: nowrap; /* Prevents "Privacy & \n Protection" */
+}
 
-  .ta-panel-desc {
-    color: var(--ta-text-slate);
-    font-size: 14px;
-    line-height: 1.55;
-    margin: 0 0 20px 0;
-  }
+.ta-panel-desc {
+  color: var(--ta-text-slate);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 20px 0;
+}
 
-  .ta-panel-bullets {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+.ta-panel-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  .ta-panel-bullets li {
-    color: #E5E7EB;
-    font-size: 13.5px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    white-space: nowrap;
-  }
+.ta-panel-bullets li {
+  color: #E5E7EB;
+  font-size: 13.5px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
 
-  .ta-panel-bullets li svg {
-    color: var(--ta-blue-accent);
-    background: rgba(59, 130, 246, 0.12);
-    padding: 3px;
-    border-radius: 50%;
-  }
+.ta-panel-bullets li svg {
+  color: var(--ta-blue-accent);
+  background: rgba(59, 130, 246, 0.12);
+  padding: 3px;
+  border-radius: 50%;
+}
 
-  /* RIGHT PANEL */
-  .ta-panel-right {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at center, rgba(30, 58, 138, 0.1) 0%, transparent 70%);
-    overflow: hidden;
-  }
+/* Right Panel: Interactive Diagram */
+.ta-panel-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(30, 58, 138, 0.1) 0%, transparent 70%);
+  overflow: hidden; /* Never allows diagram to overflow or overlap */
+}
 
-  .ta-diagram-container {
-    position: relative;
-    width: 480px; 
-    height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.ta-diagram-container {
+  position: relative;
+  width: 480px; 
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  /* FOOTER */
-  .ta-footer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    height: 52px;
-    background: var(--ta-bg-tab);
-    border-top: 1px solid var(--ta-border);
-    color: var(--ta-text-slate);
-    font-size: 13px;
-  }
+/* ============================================
+   FOOTER (Pinned & Fixed)
+   ============================================ */
+.ta-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 52px;
+  background: var(--ta-bg-tab);
+  border-top: 1px solid var(--ta-border);
+  color: var(--ta-text-slate);
+  font-size: 13px;
+}
 
-  .ta-footer svg {
-    color: var(--ta-blue-accent);
-  }
-</style>
-
-
-<!-- ==========================================
-     2. THE HTML STRUCTURE
-     ========================================== -->
-<section id="trust-architecture" class="mh-framework">
-  <div class="mh-framework-inner">
-    
-    <!-- Section Header -->
-    <div class="ta-eyebrow">Trust Architecture</div>
-    <h2 class="ta-title">Engineered for Certainty. Built with Precision.</h2>
-    <p class="ta-subtitle">Built for professionals and enterprises that expect secure, transparent, and trustworthy AI-powered career intelligence.</p>
-
-    <!-- Module Shell -->
-    <div class="ta-module-shell">
-      
-      <!-- Tabs -->
-      <div class="ta-tabs">
-        <button class="ta-tab is-active">Privacy & Protection</button>
-        <button class="ta-tab">Evaluation Integrity</button>
-        <button class="ta-tab">Explainable AI</button>
-        <button class="ta-tab">Secure Platform & Governance</button>
-      </div>
-
-      <!-- Content Area -->
-      <div class="ta-content-area">
-        
-        <!-- Left Panel -->
-        <div class="ta-panel-left">
-          <h3 class="ta-panel-title">Privacy & Protection</h3>
-          <p class="ta-panel-desc">We protect professional data through privacy-by-design architecture. Every interaction is encrypted, isolated by tenant, and access-controlled by role.</p>
-          <ul class="ta-panel-bullets">
-            <li><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Secure AI Processing</li>
-            <li><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Encrypted Communications</li>
-            <li><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Privacy-first Data Handling</li>
-            <li><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Tenant-aware Data Isolation</li>
-          </ul>
-        </div>
-
-        <!-- Right Panel (Diagram Goes Here) -->
-        <div class="ta-panel-right">
-          <div class="ta-diagram-container">
-             <!-- Interactive Diagram Elements Go Here -->
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Footer Statement -->
-      <div class="ta-footer">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        <span>Designed for extensibility, explainability, and enterprise-scale deployment.</span>
-      </div>
-
-    </div>
-  </div>
-</section>
+.ta-footer svg {
+  color: var(--ta-blue-accent);
+}
