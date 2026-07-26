@@ -42,14 +42,14 @@
 }
 
 #trust-architecture .mh-section-sub {
-  color: #94A3B8; /* Slate gray matching the Live Engine design */
+  color: #94A3B8; 
   font-size: 18px;
   font-weight: 400;
   line-height: 1.6;
   max-width: 720px;
-  margin: 0 auto 44px auto;
+  margin: 0 auto 28px auto; /* Reduced from 44px for tighter spacing */
   text-align: center;
-  min-height: 58px; /* Prevents text-wrapping from pushing layout on small screens */
+  min-height: 58px; 
 }
 
 /* Outer Card Container */
@@ -63,11 +63,22 @@
 }
 
 /* Top Tab Bar */
-.mh-trustarch-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  background: #070A12;
-  border-bottom: 1px solid var(--ta-border-subtle);
+.mh-trustarch-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 64px;
+  padding: 0 16px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--ta-border-subtle);
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: #9CA3AF; /* Brightened inactive text */
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .mh-trustarch-tab {
@@ -108,7 +119,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4B5563;
+  color: #6B7280; /* Brightened inactive icon */
   transition: color 0.2s ease;
 }
 
@@ -120,9 +131,9 @@
 .mh-trustarch-panel {
   display: flex;
   align-items: stretch;
-  height: 420px !important;
-  min-height: 420px !important;
-  max-height: 420px !important;
+  height: 380px !important; /* Shaved 40px off the total height */
+  min-height: 380px !important;
+  max-height: 380px !important;
   position: relative;
   overflow: hidden !important;
   box-sizing: border-box !important;
@@ -172,7 +183,12 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  background: radial-gradient(circle at center, rgba(30, 58, 138, 0.12) 0%, transparent 70%);
+  /* Added subtle blueprint dot grid and stronger radial glow */
+  background-color: transparent;
+  background-image: 
+    radial-gradient(circle at center, rgba(30, 58, 138, 0.18) 0%, transparent 60%),
+    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 20px 20px;
   box-sizing: border-box !important;
   overflow: hidden !important;
 }
@@ -210,7 +226,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px; /* Tightened from 10px */
 }
 
 .mh-trustarch-panel-list li {
@@ -236,6 +252,8 @@
   position: relative;
   width: 500px;
   height: 320px;
+  transform: scale(1.2); /* Enlarges the diagram by 20% */
+  transform-origin: center center;
 }
 
 .mh-trustarch-diagram-lines {
@@ -362,3 +380,24 @@
   color: #3B82F6;
   flex-shrink: 0;
 }
+/* ============================================
+   ENTERPRISE TAB COLOR IDENTITIES
+   ============================================ */
+
+/* Theme: Evaluation (Emerald) */
+.theme-emerald .mh-trustarch-node-center { border-color: #10B981; box-shadow: 0 0 25px rgba(16, 185, 129, 0.35); }
+.theme-emerald .mh-trustarch-node-center svg, .theme-emerald .mh-trustarch-node-icon { color: #10B981; }
+.theme-emerald .mh-trustarch-diagram-lines line { stroke: #047857; }
+.theme-emerald .mh-trustarch-panel-list li svg { color: #10B981; background: rgba(16, 185, 129, 0.12); }
+
+/* Theme: Explainable AI (Amber) */
+.theme-amber .mh-trustarch-node-center { border-color: #F59E0B; box-shadow: 0 0 25px rgba(245, 158, 11, 0.35); }
+.theme-amber .mh-trustarch-node-center svg, .theme-amber .mh-trustarch-node-icon { color: #F59E0B; }
+.theme-amber .mh-trustarch-diagram-lines line { stroke: #B45309; }
+.theme-amber .mh-trustarch-panel-list li svg { color: #F59E0B; background: rgba(245, 158, 11, 0.12); }
+
+/* Theme: Governance (Violet) */
+.theme-violet .mh-trustarch-node-center { border-color: #8B5CF6; box-shadow: 0 0 25px rgba(139, 92, 246, 0.35); }
+.theme-violet .mh-trustarch-node-center svg, .theme-violet .mh-trustarch-node-icon { color: #8B5CF6; }
+.theme-violet .mh-trustarch-diagram-lines line { stroke: #5B21B6; }
+.theme-violet .mh-trustarch-panel-list li svg { color: #8B5CF6; background: rgba(139, 92, 246, 0.12); }
