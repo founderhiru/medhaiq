@@ -31,6 +31,16 @@
   text-align: center;
 }
 
+#trust-architecture .mh-section-title {
+  color: #FFFFFF;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  text-align: center;
+  margin-bottom: 16px;
+  line-height: 1.15;
+}
+
 #trust-architecture .mh-section-sub {
   color: #94A3B8 !important; /* Exact match to the Live Engine screenshot */
   font-size: 18px !important;
@@ -148,22 +158,14 @@
   overflow: hidden !important;
 }
 
-/* Opacity Fade Transitions - Absolute Positioning Fix */
+/* Opacity Fade Transitions */
 .mh-trustarch-fade {
   transition: opacity 180ms ease;
   opacity: 1;
-  /* The fix: prevents elements from stacking vertically during tab switches */
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: auto;
 }
 
 .mh-trustarch-fade.is-fading {
   opacity: 0;
-  pointer-events: none; /* Prevents clicking on hidden tabs */
 }
 
 /* Left Content Styles */
