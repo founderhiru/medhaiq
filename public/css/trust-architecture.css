@@ -1,0 +1,397 @@
+/* ============================================
+   MEDHAIQ TRUST ARCHITECTURE — FINAL TYPOGRAPHY & SPACING POLISH
+   ============================================ */
+
+.mh-trustarch {
+  --ta-card-bg: #0B0F19;
+  --ta-node-bg: #111827;
+  --ta-border-subtle: rgba(255, 255, 255, 0.08);
+  margin-top: 64px; /* matches the hero->module gap used by Career Architecture,
+    Live Engine, and Core Architecture (all 64px) */
+}
+
+/* Force Dark Theme Scope & Match Container Width */
+#trust-architecture.mh-framework {
+  background: #030712 !important;
+  padding: 80px 0;
+  scroll-margin-top: 80px; 
+}
+
+#trust-architecture .mh-framework-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ============================================
+   1. SHARED ARCHITECTURE HERO (EXACTLY REUSED)
+   .mh-eyebrow/.mh-section-title/.mh-section-sub are defined once, globally,
+   in medhaiq.css and used as-is by Technical Blueprint, Career Architecture,
+   and Live Engine. .mh-framework (the container class this section reuses)
+   is normally a LIGHT-background section, so it carries its own color
+   overrides (.mh-framework .mh-section-title { color: navy-rich } etc.) —
+   those would be invisible against this section's dark background, so the
+   three color overrides below are necessary. Every size/weight/spacing/
+   width value has been removed so this hero inherits the exact same
+   typography as the other three sections, pixel for pixel. */
+#trust-architecture .mh-eyebrow {
+  color: #3B82F6;
+}
+#trust-architecture .mh-section-title {
+  color: #FFFFFF;
+}
+#trust-architecture .mh-section-sub {
+  color: #94A3B8;
+}
+
+/* ============================================
+   2. MODULE SHELL & TABS (PRESERVED)
+   ============================================ */
+.mh-trustarch-shell {
+  background: var(--ta-card-bg);
+  border: 1px solid var(--ta-border-subtle);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.mh-trustarch-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: #070A12;
+  border-bottom: 1px solid var(--ta-border-subtle);
+}
+
+.mh-trustarch-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 68px;
+  padding: 0 16px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--ta-border-subtle);
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: #A7B0C2;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mh-trustarch-tab:last-child {
+  border-right: none;
+}
+
+.mh-trustarch-tab:hover {
+  color: #E5E7EB;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.mh-trustarch-tab.is-active {
+  color: #FFFFFF;
+  font-weight: 600;
+  background: #0D1322;
+  border-bottom-color: #3B82F6;
+}
+
+.mh-trustarch-tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4B5563;
+  transition: color 0.2s ease;
+}
+
+.mh-trustarch-tab.is-active .mh-trustarch-tab-icon {
+  color: #3B82F6;
+}
+
+/* ============================================
+   3. CONTENT AREA & ANIMATION PHYSICS
+   ============================================ */
+.mh-trustarch-panel {
+  display: flex;
+  align-items: stretch;
+  height: 480px !important;
+  min-height: 480px !important;
+  max-height: 480px !important;
+  position: relative;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.mh-trustarch-panel-left {
+  flex: 0 0 42%;
+  max-width: 42%;
+  height: 100% !important;
+  padding: 40px 48px;
+  border-right: 1px solid var(--ta-border-subtle);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.mh-trustarch-panel-right {
+  flex: 0 0 58%;
+  max-width: 58%;
+  height: 100% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-color: transparent;
+  background-image: 
+    radial-gradient(circle at center, rgba(30, 58, 138, 0.15) 0%, transparent 65%),
+    radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 24px 24px;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.mh-trustarch-fade {
+  transition: opacity 150ms ease, transform 150ms ease;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mh-trustarch-fade.is-fading {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* ============================================
+   4. LEFT INFORMATION PANEL — REDUCED HEADING HIERARCHY
+   ============================================ */
+.mh-trustarch-panel-title {
+  font-size: 21px; /* further reduced ~19% from 26px per polish pass — still visually
+    competed with the section H2; this establishes card-title-level hierarchy:
+    Section Hero > Tab Heading > Body > Bullet list */
+  font-weight: 700;
+  color: #3B82F6;
+  margin: 0 0 14px 0;
+  letter-spacing: -0.3px;
+  line-height: 1.15;
+}
+
+.mh-trustarch-panel-intro {
+  font-size: 16px;
+  color: #94A3B8;
+  line-height: 1.62;
+  margin: 0 0 22px 0;
+}
+
+.mh-trustarch-panel-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mh-trustarch-panel-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #E5E7EB;
+}
+
+.mh-trustarch-panel-list li svg {
+  flex-shrink: 0;
+  color: #3B82F6;
+  background: rgba(59, 130, 246, 0.12);
+  padding: 4px;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+}
+
+/* ============================================
+   5. INTERACTIVE DIAGRAM (PRESERVED)
+   ============================================ */
+.mh-trustarch-diagram {
+  position: relative;
+  width: 500px;
+  height: 320px;
+}
+
+.mh-trustarch-diagram-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.mh-trustarch-diagram-lines line {
+  stroke: rgba(96, 150, 255, 0.55);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 4 4;
+  filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.25));
+}
+
+.mh-trustarch-node-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #0B132B;
+  border: 2px solid #2563EB;
+  box-shadow: 0 0 30px rgba(37, 99, 235, 0.42), inset 0 0 22px rgba(37, 99, 235, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 2;
+  padding: 6px;
+  box-sizing: border-box;
+  transition: box-shadow 0.2s ease;
+}
+
+.mh-trustarch-node-center:hover {
+  box-shadow: 0 0 35px rgba(59, 130, 246, 0.5);
+}
+
+.mh-trustarch-node-center svg {
+  color: #3B82F6;
+  margin-bottom: 6px;
+}
+
+.mh-trustarch-node-center span {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #F3F4F6;
+  line-height: 1.2;
+}
+
+.mh-trustarch-node {
+  position: absolute;
+  width: 190px;
+  height: 60px;
+  padding: 8px 12px;
+  background: var(--ta-node-bg);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
+  z-index: 3;
+  transition: box-shadow 0.2s ease;
+}
+
+.mh-trustarch-node:hover {
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
+}
+
+.mh-trustarch-node-tl { top: 8px; left: 0; }
+.mh-trustarch-node-tr { top: 8px; right: 0; }
+.mh-trustarch-node-bl { bottom: 8px; left: 0; }
+.mh-trustarch-node-br { bottom: 8px; right: 0; }
+
+.mh-trustarch-node-icon {
+  --icon-accent: #3B82F6;
+  --icon-accent-bg: rgba(59, 130, 246, 0.14);
+  --icon-accent-border: rgba(59, 130, 246, 0.4);
+  --icon-accent-glow: rgba(59, 130, 246, 0.3);
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.01)),
+    var(--icon-accent-bg);
+  border: 1px solid var(--icon-accent-border);
+  box-shadow: 0 0 10px var(--icon-accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--icon-accent);
+  transition: box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+/* Per-tab accent — icons inherit the current tab's color instead of a
+   fixed blue. Kept within the existing MedhaIQ palette (no rainbow). */
+[data-active-tab="privacy"] .mh-trustarch-node-icon {
+  --icon-accent: #3B82F6;
+  --icon-accent-bg: rgba(59, 130, 246, 0.14);
+  --icon-accent-border: rgba(59, 130, 246, 0.4);
+  --icon-accent-glow: rgba(59, 130, 246, 0.3);
+}
+[data-active-tab="evaluation"] .mh-trustarch-node-icon {
+  --icon-accent: #22D3EE;
+  --icon-accent-bg: rgba(34, 211, 238, 0.14);
+  --icon-accent-border: rgba(34, 211, 238, 0.4);
+  --icon-accent-glow: rgba(34, 211, 238, 0.3);
+}
+[data-active-tab="explainable"] .mh-trustarch-node-icon {
+  --icon-accent: #818CF8;
+  --icon-accent-bg: rgba(129, 140, 248, 0.14);
+  --icon-accent-border: rgba(129, 140, 248, 0.4);
+  --icon-accent-glow: rgba(129, 140, 248, 0.3);
+}
+[data-active-tab="governance"] .mh-trustarch-node-icon {
+  --icon-accent: #F59E0B;
+  --icon-accent-bg: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(59, 130, 246, 0.1));
+  --icon-accent-border: rgba(245, 158, 11, 0.4);
+  --icon-accent-glow: rgba(245, 158, 11, 0.28);
+}
+
+.mh-trustarch-node-text {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mh-trustarch-node-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #F9FAFB;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.mh-trustarch-node-sub {
+  font-size: 10.5px;
+  color: #6B7280;
+  margin-top: 2px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* ============================================
+   6. PREMIUM FOOTER
+   ============================================ */
+.mh-trustarch-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: #070A12;
+  border-top: 1px solid var(--ta-border-subtle);
+  color: #9CA3AF;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 400;
+}
+
+.mh-trustarch-banner span {
+  display: inline-block;
+}
