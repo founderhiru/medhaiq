@@ -41,7 +41,7 @@
 
   #pricing .mh-section-sub {
     color: #475569;
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.5;
     font-weight: 400;
     margin: 0 auto;
@@ -59,8 +59,8 @@
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
     border-radius: 999px;
-    padding: 6px 32px 6px 14px;
-    font-size: 13px;
+    padding: 6px 34px 6px 14px;
+    font-size: 14px;
     font-weight: 600;
     color: #1E293B;
     cursor: pointer;
@@ -78,7 +78,7 @@
   .mh-pricing-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 24px;
     align-items: stretch;
   }
   @media (max-width: 992px) {
@@ -93,9 +93,9 @@
   .mh-pricing-card {
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
-    border-radius: 16px;
+    border-radius: 20px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-    padding: 20px 20px; /* Reduced padding from var(--card-pad) */
+    padding: 20px 20px 18px 20px; /* Reduced vertical padding */
     display: flex;
     flex-direction: column;
     position: relative;
@@ -106,7 +106,7 @@
     box-shadow: 0 12px 24px rgba(0,0,0,0.05);
   }
 
-  /* Growth Card Accent Highlight preserved */
+  /* Featured Growth Card Accent */
   .mh-pricing-card.mh-card-growth {
     border-color: #3B82F6;
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.08);
@@ -118,12 +118,12 @@
   /* Badges */
   .mh-card-badge {
     position: absolute;
-    top: -11px;
+    top: -12px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 3px 12px;
+    padding: 4px 14px;
     border-radius: 999px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -137,17 +137,17 @@
   .mh-badge-blue { background: #2563EB; }
   .mh-badge-purple { background: #7C3AED; }
 
-  /* Compact Header inside Card */
+  /* Compact Header & Fixed Description Container */
   .mh-card-header {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
   }
   .mh-card-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -163,36 +163,40 @@
   }
   
   .mh-pricing-tier {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 700;
     color: #0F172A;
     line-height: 1.2;
   }
   .mh-pricing-tagline {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    margin-top: 1px;
+    margin-top: 2px;
   }
   .mh-tagline-green { color: #059669; }
   .mh-tagline-blue { color: #2563EB; }
   .mh-tagline-purple { color: #6D28D9; }
   
+  /* Fixed Height Block Ensures Price Horizontal Alignment */
   .mh-pricing-desc {
-    font-size: 12px;
+    font-size: 13px;
     color: #64748B;
-    margin-top: 2px;
+    margin-top: 4px;
     line-height: 1.35;
+    min-height: 38px; 
+    display: flex;
+    align-items: flex-start;
   }
 
   /* Price Area (Compacted) */
   .mh-pricing-price-wrap {
-    margin: 8px 0 12px 0;
-    padding-bottom: 10px;
+    margin: 10px 0 12px 0;
+    padding-bottom: 12px;
     border-bottom: 1px solid #F1F5F9;
   }
   
   .mh-pricing-price {
-    font-size: 34px;
+    font-size: 40px;
     font-weight: 700;
     color: #0F172A;
     line-height: 1;
@@ -201,38 +205,38 @@
     letter-spacing: -0.02em;
   }
   .mh-price-sym {
-    font-size: 20px;
-    margin-top: 2px;
+    font-size: 24px;
+    margin-top: 3px;
     margin-right: 2px;
   }
   .mh-price-subtext {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    color: #475569;
-    margin-top: 4px;
+    color: #2563EB; /* Highlighted for UX clarity */
+    margin-top: 6px;
   }
 
   /* Section Labels & Headers */
   .mh-features-label {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: #94A3B8;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
 
   .mh-feature-group-header {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin: 8px 0 4px 0;
+    margin: 8px 0 6px 0;
   }
-  .mh-feature-group-header svg { width: 12px; height: 12px; }
+  .mh-feature-group-header svg { width: 14px; height: 14px; }
   .mh-fg-blue { color: #2563EB; }
   .mh-fg-purple { color: #7C3AED; }
 
@@ -244,7 +248,7 @@
     flex-grow: 1;
   }
   .mh-pricing-features li {
-    font-size: 13px;
+    font-size: 14px;
     color: #334155;
     margin-bottom: 5px; /* Reduced from 8px */
     display: flex;
@@ -255,8 +259,8 @@
     flex-shrink: 0;
     margin-right: 8px;
     margin-top: 2px;
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 16px;
   }
   .mh-check-green { color: #10B981; }
   .mh-check-blue { color: #2563EB; }
@@ -264,16 +268,16 @@
 
   .mh-feature-bold { font-weight: 600; color: #0F172A; }
 
-  /* Compact Info Highlight Boxes */
+  /* Info Highlight Boxes */
   .mh-info-box {
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 8px 10px;
-    margin: 8px 0;
+    margin: 10px 0;
     display: flex;
     align-items: flex-start;
     gap: 8px;
   }
-  .mh-info-box svg { flex-shrink: 0; width: 14px; height: 14px; margin-top: 2px; }
+  .mh-info-box svg { flex-shrink: 0; width: 15px; height: 15px; margin-top: 2px; }
   .mh-info-title { font-size: 12px; font-weight: 700; margin-bottom: 1px; }
   .mh-info-desc { font-size: 11px; line-height: 1.35; }
 
@@ -281,20 +285,20 @@
   .mh-info-blue { background: #EFF6FF; color: #1E40AF; }
   .mh-info-purple { background: #F5F3FF; color: #5B21B6; }
 
-  /* Compact Buttons & CTA */
+  /* Buttons & CTA Spacing */
   .mh-pricing-cta {
     display: block;
     width: 100%;
     text-align: center;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
-    padding: 10px 16px;
-    border-radius: 8px;
+    padding: 10px 18px; /* Compact padding */
+    border-radius: 10px;
     text-decoration: none;
     transition: all 0.2s ease;
     border: none;
     cursor: pointer;
-    margin-top: 8px;
+    margin-top: 10px;
   }
   .mh-cta-green { background: #10B981; color: #FFFFFF; }
   .mh-cta-green:hover { background: #059669; }
@@ -307,18 +311,18 @@
 
   .mh-card-footer {
     text-align: center;
-    font-size: 11px;
+    font-size: 12px;
     color: #64748B;
-    margin-top: 6px;
+    margin-top: 6px; /* Reduced spacing */
   }
 
   /* Bottom Value Strip */
   .mh-pricing-bottom-strip {
-    margin-top: 36px;
+    margin-top: 40px;
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
-    border-radius: 14px;
-    padding: 20px 20px;
+    border-radius: 16px;
+    padding: 24px 20px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
@@ -336,9 +340,9 @@
     gap: 10px;
   }
   .mh-strip-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
     background: #F8FAFC;
     border: 1px solid #F1F5F9;
     color: #475569;
