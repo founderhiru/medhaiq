@@ -5,12 +5,12 @@
   /* System-Locked Pricing Section Overrides */
   #pricing {
     background-color: #FAFBFC;
-    padding: 96px 24px;
+    padding: var(--section-pad-y) var(--section-pad-x);
     font-family: inherit;
   }
 
   .mh-pricing-inner {
-    max-width: 1200px;
+    max-width: var(--max-w);
     margin: 0 auto;
   }
 
@@ -21,30 +21,28 @@
     margin: 0 auto 36px auto;
   }
 
-  /* Eyebrow: Matches PROCESS / WHY MEDHAIQ exactly */
+  /* Eyebrow: uses the real shared tokens (--eyebrow-size / --eyebrow-tracking)
+     instead of hand-copied values, so it can't drift from the rest of the
+     homepage again. */
   #pricing .mh-eyebrow {
     color: #2563EB;
-    font-size: 13px;
+    font-size: var(--eyebrow-size);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--eyebrow-tracking);
     margin-bottom: 12px;
   }
 
-  /* Main Title: Uses existing section title scale */
+  /* Main Title: uses --h2-size (clamp(22px, 4.5vw, 29px)), the same token
+     every other section heading uses — no separate mobile override needed,
+     clamp() already handles that. */
   #pricing .mh-section-title {
     color: #0F172A;
-    font-size: 36px;
+    font-size: var(--h2-size);
     line-height: 1.25;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: var(--h2-tracking);
     margin-bottom: 12px;
-  }
-
-  @media (max-width: 768px) {
-    #pricing .mh-section-title {
-      font-size: 28px;
-    }
   }
 
   /* Subheading: Uses standard section sub scale */
@@ -104,7 +102,7 @@
     border: 1px solid #E2E8F0;
     border-radius: 20px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-    padding: 32px 28px;
+    padding: var(--card-pad);
     display: flex;
     flex-direction: column;
     position: relative;
@@ -148,7 +146,7 @@
 
   /* Header inside Card */
   .mh-card-header {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     display: flex;
     align-items: flex-start;
     gap: 12px;
@@ -196,8 +194,8 @@
 
   /* Price Area */
   .mh-pricing-price-wrap {
-    margin: 16px 0 24px 0;
-    padding-bottom: 20px;
+    margin: 12px 0 18px 0;
+    padding-bottom: 16px;
     border-bottom: 1px solid #F1F5F9;
   }
   
@@ -241,7 +239,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin: 16px 0 10px 0;
+    margin: 12px 0 8px 0;
   }
   .mh-feature-group-header svg { width: 14px; height: 14px; }
   .mh-fg-blue { color: #2563EB; }
@@ -257,7 +255,7 @@
   .mh-pricing-features li {
     font-size: 14px;
     color: #334155;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     display: flex;
     align-items: flex-start;
     line-height: 1.4;
@@ -278,8 +276,8 @@
   /* Info Highlight Boxes */
   .mh-info-box {
     border-radius: 10px;
-    padding: 12px 14px;
-    margin: 20px 0;
+    padding: 10px 12px;
+    margin: 14px 0;
     display: flex;
     align-items: flex-start;
     gap: 10px;
