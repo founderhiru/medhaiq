@@ -30,7 +30,7 @@ const plans = [
     tagline: 'Discover MedhaIQ before you practice.',
     description: null,
     price: { INR: 0, USD: 0, EUR: 0 },
-    priceSubtext: 'Forever Free',
+    priceSubtext: '30 AI Interview Minutes Included',
     minutes: 30,
     approxInterviews: 1,
     validityMonths: null,
@@ -133,7 +133,7 @@ const plans = [
       {
         header: { text: 'AI Practice', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
         items: [
-          { text: 'Everything in Growth', bold: true },
+          { text: 'Everything in Growth', bold: false },
           { text: '300 AI Interview Minutes', bold: true },
           { text: 'Leadership Personas', bold: false },
           { text: 'Advanced Follow-up Questions', bold: false },
