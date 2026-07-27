@@ -77,11 +77,13 @@
   }
 
   /* Cards Grid */
-  .mh-pricing-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    align-items: stretch;
+ .mh-pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  max-width: 1020px;
+  margin: 0 auto;
+  align-items: stretch;
   }
   @media (max-width: 992px) {
     .mh-pricing-cards { 
@@ -120,7 +122,7 @@
   /* Badges */
   .mh-card-badge {
     position: absolute;
-    top: -11px;
+    top: -8px;
     left: 50%;
     transform: translateX(-50%);
     padding: 3px 12px;
@@ -162,7 +164,7 @@
   .mh-card-title-wrap {
     display: flex;
     flex-direction: column;
-    min-height: 32px; /* Normalized title height */
+    min-height: 42px; /* Normalized title height */
     justify-content: center;
   }
   
@@ -187,7 +189,7 @@
     color: #64748B;
     margin-top: 2px;
     line-height: 1.35;
-    min-height: 36px;
+    min-height: 38px;
     height: 36px; /* Equal vertical footprint across all cards */
     display: flex;
     align-items: flex-start;
@@ -198,6 +200,7 @@
     margin: 4px 0 6px 0;
     padding-bottom: 4px;
     border-bottom: 1px solid #F1F5F9;
+    min-height: 68px;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;

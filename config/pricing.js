@@ -133,7 +133,7 @@ const plans = [
       {
         header: { text: 'AI Practice', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
         items: [
-          { text: 'Everything in Growth', bold: false },
+          { text: 'Includes all Growth features', bold: false },
           { text: '300 AI Interview Minutes', bold: true },
           { text: 'Leadership Personas', bold: false },
           { text: 'Advanced Follow-up Questions', bold: false },
