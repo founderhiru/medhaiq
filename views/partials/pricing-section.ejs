@@ -1,5 +1,5 @@
 <!-- ============================================
-     SECTION 16 — Pricing Matrix (MedhaIQ Design System System-Locked)
+     SECTION — Pricing Matrix (MedhaIQ Design System System-Locked)
      ============================================ -->
 <style>
   /* System-Locked Pricing Section Overrides */
@@ -34,14 +34,24 @@
   /* Main Title: Uses existing section title scale */
   #pricing .mh-section-title {
     color: #0F172A;
+    font-size: 36px;
+    line-height: 1.25;
     font-weight: 700;
     letter-spacing: -0.02em;
     margin-bottom: 12px;
   }
 
+  @media (max-width: 768px) {
+    #pricing .mh-section-title {
+      font-size: 28px;
+    }
+  }
+
   /* Subheading: Uses standard section sub scale */
   #pricing .mh-section-sub {
     color: #475569;
+    font-size: 16px;
+    line-height: 1.6;
     font-weight: 400;
     margin: 0 auto;
   }
@@ -105,7 +115,7 @@
     box-shadow: 0 12px 24px rgba(0,0,0,0.05);
   }
 
-  /* Growth Card Elevation & Border Glow */
+  /* Growth Card Accent */
   .mh-pricing-card.mh-card-growth {
     border-color: #3B82F6;
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.08);
@@ -163,7 +173,7 @@
   
   /* Scaled Plan Title */
   .mh-pricing-tier {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 700;
     color: #0F172A;
     line-height: 1.2;
@@ -193,7 +203,7 @@
   
   /* Scaled Price Typography */
   .mh-pricing-price {
-    font-size: 42px;
+    font-size: 40px;
     font-weight: 700;
     color: #0F172A;
     line-height: 1;
@@ -202,12 +212,12 @@
     letter-spacing: -0.02em;
   }
   .mh-price-sym {
-    font-size: 26px;
+    font-size: 24px;
     margin-top: 3px;
     margin-right: 2px;
   }
   .mh-price-subtext {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: #475569;
     margin-top: 6px;
@@ -365,14 +375,14 @@
 <section class="mh-pricing reveal" id="pricing">
   <div class="mh-pricing-inner">
 
-    <!-- Top Section -->
+    <!-- Section Header -->
     <div class="mh-section-center">
       <div class="mh-eyebrow">PRICING</div>
       <h2 class="mh-section-title">Choose the Right Plan for Your Career Journey</h2>
       <p class="mh-section-sub">Start free. Upgrade only when you need more AI interview minutes.<br>No subscriptions. No surprises.</p>
     </div>
 
-    <!-- Control Bar: Currency Selector -->
+    <!-- Currency Selector -->
     <div class="mh-pricing-control-bar reveal">
       <div class="mh-currency-selector">
         <select id="currency-select" aria-label="Select currency">
@@ -588,7 +598,7 @@
   </div>
 </section>
 
-<!-- Email Capture Modal (Preserved structurally) -->
+<!-- Email Capture Modal -->
 <div class="mh-modal-overlay" id="mh-email-modal" style="display:none">
   <div class="mh-modal">
     <button class="mh-modal-close" id="mh-modal-close">
@@ -643,7 +653,7 @@
   // USD equivalents
   var USD_PRICES = { free: 0, growth: 12, leadership: 39 };
 
-  // EUR equivalents (~0.92x USD)
+  // EUR equivalents
   var EUR_PRICES = { free: 0, growth: 11, leadership: 36 };
 
   // Currency symbols
@@ -674,7 +684,6 @@
       var price = getPrice(tier);
       priceEl.textContent = fmt(price);
 
-      // Update currency symbol
       var symEl = priceEl.parentElement.querySelector('.mh-price-sym');
       if (symEl) symEl.innerHTML = sym;
     });
@@ -689,7 +698,7 @@
     });
   }
 
-  // ── Modal logic (Preserved) ───────────────────────────────
+  // ── Modal Logic ───────────────────────────────
   var ctas = document.querySelectorAll('[data-plan]');
   var modal = document.getElementById('mh-email-modal');
   var form = document.getElementById('mh-modal-form');
