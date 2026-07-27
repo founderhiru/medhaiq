@@ -18,38 +18,31 @@
   #pricing .mh-section-center {
     text-align: center;
     max-width: 680px;
-    margin: 0 auto 36px auto;
+    margin: 0 auto 28px auto;
   }
 
-  /* Eyebrow: uses the real shared tokens (--eyebrow-size / --eyebrow-tracking)
-     instead of hand-copied values, so it can't drift from the rest of the
-     homepage again. */
   #pricing .mh-eyebrow {
     color: #2563EB;
     font-size: var(--eyebrow-size);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: var(--eyebrow-tracking);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
-  /* Main Title: uses --h2-size (clamp(22px, 4.5vw, 29px)), the same token
-     every other section heading uses — no separate mobile override needed,
-     clamp() already handles that. */
   #pricing .mh-section-title {
     color: #0F172A;
     font-size: var(--h2-size);
     line-height: 1.25;
     font-weight: 700;
     letter-spacing: var(--h2-tracking);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
-  /* Subheading: Uses standard section sub scale */
   #pricing .mh-section-sub {
     color: #475569;
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: 15px;
+    line-height: 1.5;
     font-weight: 400;
     margin: 0 auto;
   }
@@ -58,7 +51,7 @@
   .mh-pricing-control-bar {
     display: flex;
     justify-content: center;
-    margin-bottom: 48px;
+    margin-bottom: 32px;
   }
 
   .mh-currency-selector select {
@@ -66,14 +59,14 @@
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
     border-radius: 999px;
-    padding: 8px 36px 8px 16px;
-    font-size: 14px;
+    padding: 6px 32px 6px 14px;
+    font-size: 13px;
     font-weight: 600;
     color: #1E293B;
     cursor: pointer;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 14px center;
+    background-position: right 12px center;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     transition: border-color 0.15s ease;
   }
@@ -85,7 +78,7 @@
   .mh-pricing-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
+    gap: 20px;
     align-items: stretch;
   }
   @media (max-width: 992px) {
@@ -96,13 +89,13 @@
     }
   }
 
-  /* Pricing Card Base */
+  /* Compact Pricing Card Base */
   .mh-pricing-card {
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
-    border-radius: 20px;
+    border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-    padding: var(--card-pad);
+    padding: 20px 20px; /* Reduced padding from var(--card-pad) */
     display: flex;
     flex-direction: column;
     position: relative;
@@ -113,7 +106,7 @@
     box-shadow: 0 12px 24px rgba(0,0,0,0.05);
   }
 
-  /* Growth Card Accent */
+  /* Growth Card Accent Highlight preserved */
   .mh-pricing-card.mh-card-growth {
     border-color: #3B82F6;
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.08);
@@ -125,12 +118,12 @@
   /* Badges */
   .mh-card-badge {
     position: absolute;
-    top: -12px;
+    top: -11px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 4px 14px;
+    padding: 3px 12px;
     border-radius: 999px;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -144,17 +137,17 @@
   .mh-badge-blue { background: #2563EB; }
   .mh-badge-purple { background: #7C3AED; }
 
-  /* Header inside Card */
+  /* Compact Header inside Card */
   .mh-card-header {
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     display: flex;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
   }
   .mh-card-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -169,39 +162,37 @@
     flex-direction: column;
   }
   
-  /* Scaled Plan Title */
   .mh-pricing-tier {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     color: #0F172A;
     line-height: 1.2;
   }
   .mh-pricing-tagline {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    margin-top: 2px;
+    margin-top: 1px;
   }
   .mh-tagline-green { color: #059669; }
   .mh-tagline-blue { color: #2563EB; }
   .mh-tagline-purple { color: #6D28D9; }
   
   .mh-pricing-desc {
-    font-size: 13px;
+    font-size: 12px;
     color: #64748B;
-    margin-top: 4px;
-    line-height: 1.4;
+    margin-top: 2px;
+    line-height: 1.35;
   }
 
-  /* Price Area */
+  /* Price Area (Compacted) */
   .mh-pricing-price-wrap {
-    margin: 12px 0 18px 0;
-    padding-bottom: 16px;
+    margin: 8px 0 12px 0;
+    padding-bottom: 10px;
     border-bottom: 1px solid #F1F5F9;
   }
   
-  /* Scaled Price Typography */
   .mh-pricing-price {
-    font-size: 40px;
+    font-size: 34px;
     font-weight: 700;
     color: #0F172A;
     line-height: 1;
@@ -210,42 +201,42 @@
     letter-spacing: -0.02em;
   }
   .mh-price-sym {
-    font-size: 24px;
-    margin-top: 3px;
+    font-size: 20px;
+    margin-top: 2px;
     margin-right: 2px;
   }
   .mh-price-subtext {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #475569;
-    margin-top: 6px;
+    margin-top: 4px;
   }
 
   /* Section Labels & Headers */
   .mh-features-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: #94A3B8;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
   }
 
   .mh-feature-group-header {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin: 12px 0 8px 0;
+    margin: 8px 0 4px 0;
   }
-  .mh-feature-group-header svg { width: 14px; height: 14px; }
+  .mh-feature-group-header svg { width: 12px; height: 12px; }
   .mh-fg-blue { color: #2563EB; }
   .mh-fg-purple { color: #7C3AED; }
 
-  /* Feature Lists */
+  /* Compact Feature Lists */
   .mh-pricing-features {
     list-style: none;
     padding: 0;
@@ -253,19 +244,19 @@
     flex-grow: 1;
   }
   .mh-pricing-features li {
-    font-size: 14px;
+    font-size: 13px;
     color: #334155;
-    margin-bottom: 8px;
+    margin-bottom: 5px; /* Reduced from 8px */
     display: flex;
     align-items: flex-start;
-    line-height: 1.4;
+    line-height: 1.35;
   }
   .mh-pricing-features li svg {
     flex-shrink: 0;
-    margin-right: 10px;
+    margin-right: 8px;
     margin-top: 2px;
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
   }
   .mh-check-green { color: #10B981; }
   .mh-check-blue { color: #2563EB; }
@@ -273,36 +264,37 @@
 
   .mh-feature-bold { font-weight: 600; color: #0F172A; }
 
-  /* Info Highlight Boxes */
+  /* Compact Info Highlight Boxes */
   .mh-info-box {
-    border-radius: 10px;
-    padding: 10px 12px;
-    margin: 14px 0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 8px 0;
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: 8px;
   }
-  .mh-info-box svg { flex-shrink: 0; width: 16px; height: 16px; margin-top: 2px; }
-  .mh-info-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-  .mh-info-desc { font-size: 12px; line-height: 1.4; }
+  .mh-info-box svg { flex-shrink: 0; width: 14px; height: 14px; margin-top: 2px; }
+  .mh-info-title { font-size: 12px; font-weight: 700; margin-bottom: 1px; }
+  .mh-info-desc { font-size: 11px; line-height: 1.35; }
 
   .mh-info-green { background: #ECFDF5; color: #065F46; }
   .mh-info-blue { background: #EFF6FF; color: #1E40AF; }
   .mh-info-purple { background: #F5F3FF; color: #5B21B6; }
 
-  /* Buttons */
+  /* Compact Buttons & CTA */
   .mh-pricing-cta {
     display: block;
     width: 100%;
     text-align: center;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    padding: 12px 20px;
-    border-radius: 10px;
+    padding: 10px 16px;
+    border-radius: 8px;
     text-decoration: none;
     transition: all 0.2s ease;
     border: none;
     cursor: pointer;
+    margin-top: 8px;
   }
   .mh-cta-green { background: #10B981; color: #FFFFFF; }
   .mh-cta-green:hover { background: #059669; }
@@ -315,21 +307,21 @@
 
   .mh-card-footer {
     text-align: center;
-    font-size: 12px;
+    font-size: 11px;
     color: #64748B;
-    margin-top: 10px;
+    margin-top: 6px;
   }
 
   /* Bottom Value Strip */
   .mh-pricing-bottom-strip {
-    margin-top: 56px;
+    margin-top: 36px;
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
-    border-radius: 16px;
-    padding: 28px 24px;
+    border-radius: 14px;
+    padding: 20px 20px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    gap: 16px;
   }
   @media (max-width: 992px) {
     .mh-pricing-bottom-strip { grid-template-columns: repeat(2, 1fr); }
@@ -341,12 +333,12 @@
   .mh-strip-item {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
   }
   .mh-strip-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
     background: #F8FAFC;
     border: 1px solid #F1F5F9;
     color: #475569;
@@ -356,15 +348,15 @@
     flex-shrink: 0;
   }
   .mh-strip-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     color: #0F172A;
     margin-bottom: 2px;
   }
   .mh-strip-desc {
-    font-size: 13px;
+    font-size: 12px;
     color: #64748B;
-    line-height: 1.4;
+    line-height: 1.35;
   }
 
   .svg-icon { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
