@@ -377,222 +377,42 @@
 
     <!-- Section Header -->
     <div class="mh-section-center">
-      <div class="mh-eyebrow">PRICING</div>
-      <h2 class="mh-section-title">Choose the Right Plan for Your Career Journey</h2>
-      <p class="mh-section-sub">Start free. Upgrade only when you need more AI interview minutes.<br>No subscriptions. No surprises.</p>
+      <div class="mh-eyebrow"><%= pricing.section.eyebrow %></div>
+      <h2 class="mh-section-title"><%= pricing.section.title %></h2>
+      <p class="mh-section-sub"><%- pricing.section.subtitle %></p>
     </div>
 
     <!-- Currency Selector -->
     <div class="mh-pricing-control-bar reveal">
       <div class="mh-currency-selector">
         <select id="currency-select" aria-label="Select currency">
-          <option value="INR" selected>&#8377; INR</option>
-          <option value="USD">$ USD</option>
-          <option value="EUR">&euro; EUR</option>
+          <% pricing.section.currencies.forEach(function(code) { %>
+            <option value="<%= code %>" <%= code === pricing.section.defaultCurrency ? 'selected' : '' %>><%- pricing.currencySymbols[code] %> <%= code %></option>
+          <% }); %>
         </select>
       </div>
     </div>
 
     <!-- Cards Container -->
-    <div class="mh-pricing-tab" id="tab-individual" style="display: block;">
-      <div class="mh-pricing-cards">
-
-        <!-- Tier 1: Explorer -->
-        <div class="mh-pricing-card mh-card-explorer reveal reveal-item">
-          <div class="mh-card-badge mh-badge-green">Always Free</div>
-          
-          <div class="mh-card-header">
-            <div class="mh-card-icon mh-icon-green">
-              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
-            </div>
-            <div class="mh-card-title-wrap">
-              <div class="mh-pricing-tier">Explorer</div>
-              <div class="mh-pricing-tagline mh-tagline-green">Discover MedhaIQ before you practice.</div>
-            </div>
-          </div>
-
-          <div class="mh-pricing-price-wrap">
-            <div class="mh-pricing-price">
-              <span class="mh-price-sym">&#8377;</span><span class="mh-price-val" data-base="0">0</span>
-            </div>
-            <div class="mh-price-subtext">Forever Free</div>
-          </div>
-
-          <div class="mh-features-label">Includes</div>
-          <ul class="mh-pricing-features">
-            <li><svg class="svg-icon mh-check-green" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Company Interview Library</li>
-            <li><svg class="svg-icon mh-check-green" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Role Library</li>
-            <li><svg class="svg-icon mh-check-green" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Sample Interview Reports</li>
-            <li><svg class="svg-icon mh-check-green" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Resume + JD Upload</li>
-            <li><svg class="svg-icon mh-check-green" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 30 Welcome AI Minutes</li>
-            <li><svg class="svg-icon mh-check-green" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> AI Interview Experience</li>
-          </ul>
-
-          <div class="mh-info-box mh-info-green">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            <div>
-              <div class="mh-info-title">30 Welcome AI Minutes</div>
-              <div class="mh-info-desc">Experience one complete AI interview with personalized feedback.</div>
-            </div>
-          </div>
-
-          <a href="/login" class="mh-pricing-cta mh-cta-green">Start Free</a>
-          <div class="mh-card-footer">No credit card required</div>
-        </div>
-
-        <!-- Tier 2: Growth -->
-        <div class="mh-pricing-card mh-card-growth reveal reveal-item">
-          <div class="mh-card-badge mh-badge-blue">
-            <svg class="svg-icon" width="12" height="12" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 
-            Most Popular
-          </div>
-          
-          <div class="mh-card-header">
-            <div class="mh-card-icon mh-icon-blue">
-              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            </div>
-            <div class="mh-card-title-wrap">
-              <div class="mh-pricing-tier">Growth</div>
-              <div class="mh-pricing-tagline mh-tagline-blue">Practice. Improve. Progress.</div>
-              <div class="mh-pricing-desc">Everything you need to prepare for your next career move.</div>
-            </div>
-          </div>
-
-          <div class="mh-pricing-price-wrap">
-            <div class="mh-pricing-price">
-              <span class="mh-price-sym">&#8377;</span><span class="mh-price-val" data-base="999">999</span>
-            </div>
-            <div class="mh-price-subtext">120 AI Minutes Included</div>
-          </div>
-
-          <div class="mh-features-label">Includes</div>
-          <ul class="mh-pricing-features">
-            <div class="mh-feature-group-header mh-fg-blue">
-              <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> AI Practice
-            </div>
-            <li><svg class="svg-icon mh-check-blue" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> <span class="mh-feature-bold">120 AI Interview Minutes</span></li>
-            <li><svg class="svg-icon mh-check-blue" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Resume Intelligence</li>
-            <li><svg class="svg-icon mh-check-blue" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> JD Intelligence</li>
-            <li><svg class="svg-icon mh-check-blue" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Adaptive AI Interviews</li>
-
-            <div class="mh-feature-group-header mh-fg-blue">
-              <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Insights
-            </div>
-            <li><svg class="svg-icon mh-check-blue" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> AI Interview Reports</li>
-            <li><svg class="svg-icon mh-check-blue" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Progress Dashboard</li>
-            <li><svg class="svg-icon mh-check-blue" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Interview History</li>
-          </ul>
-
-          <div class="mh-info-box mh-info-blue">
-            <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <div>
-              <div class="mh-info-title">Need more practice?</div>
-              <div class="mh-info-desc">Purchase additional AI Minutes anytime.</div>
-            </div>
-          </div>
-
-          <a href="/login" class="mh-pricing-cta mh-cta-blue">Get Growth</a>
-          <div class="mh-card-footer">Credits valid for 12 months</div>
-        </div>
-
-        <!-- Tier 3: Leadership -->
-        <div class="mh-pricing-card mh-card-leadership reveal reveal-item">
-          <div class="mh-card-badge mh-badge-purple">
-            <svg class="svg-icon" width="12" height="12" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Best Value
-          </div>
-          
-          <div class="mh-card-header">
-            <div class="mh-card-icon mh-icon-purple">
-              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24"><polygon points="12 2 19 21 12 17 5 21 12 2"/></svg>
-            </div>
-            <div class="mh-card-title-wrap">
-              <div class="mh-pricing-tier">Leadership</div>
-              <div class="mh-pricing-tagline mh-tagline-purple">Lead with confidence.</div>
-              <div class="mh-pricing-desc">Advanced practice for experienced professionals & aspiring leaders.</div>
-            </div>
-          </div>
-
-          <div class="mh-pricing-price-wrap">
-            <div class="mh-pricing-price">
-              <span class="mh-price-sym">&#8377;</span><span class="mh-price-val" data-base="2999">2,999</span>
-            </div>
-            <div class="mh-price-subtext">300 AI Minutes Included</div>
-          </div>
-
-          <div class="mh-features-label">Includes</div>
-          <ul class="mh-pricing-features">
-            <div class="mh-feature-group-header mh-fg-purple">
-              <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> AI Practice
-            </div>
-            <li><svg class="svg-icon mh-check-purple" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> <span class="mh-feature-bold">Everything in Growth</span></li>
-            <li><svg class="svg-icon mh-check-purple" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> <span class="mh-feature-bold">300 AI Interview Minutes</span></li>
-            <li><svg class="svg-icon mh-check-purple" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Leadership Personas</li>
-            <li><svg class="svg-icon mh-check-purple" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Advanced Follow-up Questions</li>
-            <li><svg class="svg-icon mh-check-purple" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Longer Practice Sessions</li>
-
-            <div class="mh-feature-group-header mh-fg-purple">
-              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Support
-            </div>
-            <li><svg class="svg-icon mh-check-purple" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Priority Support</li>
-          </ul>
-
-          <div class="mh-info-box mh-info-purple">
-            <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <div>
-              <div class="mh-info-title">Need more practice?</div>
-              <div class="mh-info-desc">Purchase additional AI Minutes anytime.</div>
-            </div>
-          </div>
-
-          <a href="/login" class="mh-pricing-cta mh-cta-purple">Get Leadership</a>
-          <div class="mh-card-footer">Credits valid for 12 months</div>
-        </div>
-
-      </div>
+    <div class="mh-pricing-cards">
+      <% pricing.plans.forEach(function(plan) { %>
+        <%- include('pricing-card', { plan: plan, currencySymbols: pricing.currencySymbols, defaultCurrency: pricing.section.defaultCurrency }) %>
+      <% }); %>
     </div>
 
     <!-- Bottom Value Strip -->
     <div class="mh-pricing-bottom-strip reveal">
-      <div class="mh-strip-item">
-        <div class="mh-strip-icon">
-          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="7" y1="15" x2="7.01" y2="15"/><line x1="11" y1="15" x2="13" y2="15"/></svg>
+      <% pricing.valueStrip.forEach(function(item) { %>
+        <div class="mh-strip-item">
+          <div class="mh-strip-icon">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24"><%- item.icon %></svg>
+          </div>
+          <div>
+            <div class="mh-strip-title"><%- item.title %></div>
+            <div class="mh-strip-desc"><%- item.desc %></div>
+          </div>
         </div>
-        <div>
-          <div class="mh-strip-title">No Subscriptions</div>
-          <div class="mh-strip-desc">One-time credit packs.<br>100% flexible.</div>
-        </div>
-      </div>
-
-      <div class="mh-strip-item">
-        <div class="mh-strip-icon">
-          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </div>
-        <div>
-          <div class="mh-strip-title">Credits Valid for 12 Months</div>
-          <div class="mh-strip-desc">Use your AI minutes<br>at your own pace.</div>
-        </div>
-      </div>
-
-      <div class="mh-strip-item">
-        <div class="mh-strip-icon">
-          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-        </div>
-        <div>
-          <div class="mh-strip-title">Secure &amp; Private</div>
-          <div class="mh-strip-desc">Your data is 100%<br>protected.</div>
-        </div>
-      </div>
-
-      <div class="mh-strip-item">
-        <div class="mh-strip-icon">
-          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        </div>
-        <div>
-          <div class="mh-strip-title">Buy More Minutes Anytime</div>
-          <div class="mh-strip-desc">Top up only when<br>needed.</div>
-        </div>
-      </div>
+      <% }); %>
     </div>
 
   </div>
@@ -643,21 +463,22 @@
 </div>
 
 <script>
+  // Server-rendered from config/pricing.js — the only place these numbers live.
+  var PRICING_DATA = {
+    defaultCurrency: <%- JSON.stringify(pricing.section.defaultCurrency) %>,
+    symbols: <%- JSON.stringify(pricing.currencySymbols) %>,
+    plans: <%- JSON.stringify(pricing.plans.map(function(p) { return { id: p.id, price: p.price }; })) %>
+  };
+</script>
+<script>
 (function() {
   // ── State ─────────────────────────────────────────────
-  var currency = 'INR';
-
-  // Base prices (INR)
-  var BASE_PRICES = { free: 0, growth: 999, leadership: 2999 };
-
-  // USD equivalents
-  var USD_PRICES = { free: 0, growth: 12, leadership: 39 };
-
-  // EUR equivalents
-  var EUR_PRICES = { free: 0, growth: 11, leadership: 36 };
-
-  // Currency symbols
-  var CURRENCY_SYMBOLS = { INR: '\u20B9', USD: '$', EUR: '\u20AC' };
+  // PRICING_DATA is rendered server-side from config/pricing.js — see the
+  // <script> block at the top of pricing-section.ejs. No prices are
+  // hardcoded here; this file only knows how to *display* them.
+  var currency = PRICING_DATA.defaultCurrency;
+  var PLAN_PRICES = PRICING_DATA.plans;       // [{ id, price: { INR, USD, EUR } }, ...]
+  var CURRENCY_SYMBOLS = PRICING_DATA.symbols; // { INR, USD, EUR }
 
   // ── Helpers ─────────────────────────────────────────────
   function fmt(n) {
@@ -667,22 +488,15 @@
     return n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   }
 
-  function getPrice(tier) {
-    if (currency === 'USD') return USD_PRICES[tier] || 0;
-    if (currency === 'EUR') return EUR_PRICES[tier] || 0;
-    return BASE_PRICES[tier] || 0;
-  }
-
   // ── Update Prices ──────────────────────────────
   function updatePrices() {
     var sym = CURRENCY_SYMBOLS[currency];
 
-    ['free', 'growth', 'leadership'].forEach(function(tier) {
-      var priceEl = document.querySelector('[data-base="' + BASE_PRICES[tier] + '"]');
+    PLAN_PRICES.forEach(function(plan) {
+      var priceEl = document.querySelector('[data-plan-id="' + plan.id + '"]');
       if (!priceEl) return;
-      
-      var price = getPrice(tier);
-      priceEl.textContent = fmt(price);
+
+      priceEl.textContent = fmt(plan.price[currency] || 0);
 
       var symEl = priceEl.parentElement.querySelector('.mh-price-sym');
       if (symEl) symEl.innerHTML = sym;
@@ -781,4 +595,3 @@
   // Initial render
   updatePrices();
 })();
-</script>
