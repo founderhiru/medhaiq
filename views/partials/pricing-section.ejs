@@ -3,11 +3,13 @@
      ============================================ -->
 <style>
   /* System-Locked Pricing Section Overrides */
-  #pricing {
-    background-color: #FAFBFC;
-    padding: var(--section-pad-y) var(--section-pad-x);
-    font-family: inherit;
-  }
+ #pricing {
+  background-color: #FAFBFC;
+  padding: var(--section-pad-y) var(--section-pad-x);
+  font-family: inherit;
+  border-top: none;
+  box-shadow: none;
+}
 
   .mh-pricing-inner {
     max-width: var(--max-w);
@@ -21,14 +23,14 @@
     margin: 0 auto 24px auto;
   }
 
-  #pricing .mh-eyebrow {
-    color: #2563EB;
-    font-size: var(--eyebrow-size);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: var(--eyebrow-tracking);
-    margin-bottom: 6px;
-  }
+ #pricing .mh-eyebrow {
+  color: var(--eyebrow-color, #2563EB);
+  font-size: var(--eyebrow-size);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--eyebrow-tracking);
+  margin-bottom: var(--eyebrow-margin-bottom, 6px);
+}
 
   #pricing .mh-section-title {
     color: #0F172A;
@@ -59,8 +61,8 @@
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
     border-radius: 999px;
-    padding: 6px 34px 6px 14px;
-    font-size: 14px;
+    padding: 4px 28px 4px 10px;
+    font-size: 12px;
     font-weight: 600;
     color: #1E293B;
     cursor: pointer;
@@ -185,7 +187,8 @@
     color: #64748B;
     margin-top: 2px;
     line-height: 1.35;
-    min-height: 28px; /* Equal vertical footprint across all cards */
+    min-height: 36px;
+    height: 36px; /* Equal vertical footprint across all cards */
     display: flex;
     align-items: flex-start;
   }
@@ -201,19 +204,19 @@
   }
   
   .mh-pricing-price {
-    font-size: 40px;
-    font-weight: 700;
-    color: #0F172A;
-    line-height: 1;
-    display: flex;
-    align-items: flex-start;
-    letter-spacing: -0.02em;
-  }
-  .mh-price-sym {
-    font-size: 24px;
-    margin-top: 3px;
-    margin-right: 2px;
-  }
+  font-size: 36px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1;
+  display: flex;
+  align-items: flex-start;
+  letter-spacing: -0.02em;
+ }
+ .mh-price-sym {
+  font-size: 22px;
+  margin-top: 2px;
+  margin-right: 2px;
+ }
   .mh-price-subtext {
     font-size: 13px;
     font-weight: 600;
