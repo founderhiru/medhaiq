@@ -363,6 +363,12 @@ const { runCoverageAndMemoryEngine, textMentionsSubskill, qaBelongsToCompetency 
 // unchanged (defined further below in this file), no new persistence, no
 // change to composePrompt/scoring/Coverage Engine/selectNextCompetency.
 const { detectBehavioralCategories, detectBehavioralCategoriesWithMatches, BEHAVIORAL_CATEGORIES } = require('./behavioral/behavioral-evidence-engine');
+// ── Milestone 2A — Evidence Graph (2026-07-29, founder-approved scope) ──
+// Log-only, read-only aggregation layer — see buildInterviewSnapshot
+// below for the single call site. Consumes hypothesisMap and
+// behavioralHypothesisMap (both already computed here), plus qaPairs;
+// modifies neither. No downstream consumer this phase.
+const { buildEvidenceGraph } = require('./evidence-graph/evidence-graph-engine');
 // Observability hardening (2026-07-29) — human-readable labels for the
 // structured [BEHAVIORAL-*] logs only; does not affect detection, tiering,
 // or the BEHAVIORAL_CATEGORIES keys themselves anywhere else in the file.
@@ -561,6 +567,28 @@ function buildInterviewSnapshot({ roleTitle, qaPairs, questionCount }) {
     }
     console.log(`[BEHAVIORAL-EVIDENCE] turn=${currentTurn} No Evidence this turn\nReason: ${reason}`);
   }
+
+  // Milestone 2A — Evidence Graph (log-only, founder-approved scope,
+  // 2026-07-29): computed alongside the existing snapshot, exactly like
+  // Phase 2B's behavioral evidence before it — NOT merged into the return
+  // value below. Nothing downstream reads this snapshot object for a
+  // "graph" field, so simply not adding one is the actual safety
+  // mechanism, same discipline as Phase 2B's own first pass.
+  const evidenceGraph = buildEvidenceGraph(qaPairs, hypothesisMap, behavioralHypothesisMap);
+  const graphSummaryLines = [];
+  priority.forEach((c) => {
+    const s = evidenceGraph.getCoverageSummary('competency', c);
+    if (s.totalObservations > 0) {
+      graphSummaryLines.push(`competency/${c}: tier=${s.bestTierLabel} observations=${s.totalObservations} distinctExperiences=${s.distinctExperienceCount} starComplete=${s.starCompleteCount}`);
+    }
+  });
+  BEHAVIORAL_CATEGORIES.forEach((c) => {
+    const s = evidenceGraph.getCoverageSummary('behavioral', c);
+    if (s.totalObservations > 0) {
+      graphSummaryLines.push(`behavioral/${c}: tier=${s.bestTierLabel} observations=${s.totalObservations} distinctExperiences=${s.distinctExperienceCount} starComplete=${s.starCompleteCount}`);
+    }
+  });
+  console.log(`[EVIDENCE-GRAPH] turn=${currentTurn} experiences=${evidenceGraph.experiences.size} nodes=${evidenceGraph.evidenceNodes.length}\n${graphSummaryLines.length ? graphSummaryLines.join('\n') : '(no evidence recorded yet)'}`);
 
   return { roleKey, priority, currentTurn, memoryMap, hypothesisMap, globalMaturityTiers };
 }
