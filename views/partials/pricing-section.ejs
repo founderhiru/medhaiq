@@ -326,7 +326,25 @@
     color: #64748B;
     margin-top: 4px;
   }
-
+/* Full-Width Informational Banner */
+  .mh-minutes-info-note {
+    margin-top: 24px;
+    background: #EFF6FF;
+    border: 1px solid #DBEAFE;
+    border-radius: 12px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #1E40AF;
+    line-height: 1.4;
+    text-align: center;
+  }
+  .mh-minutes-info-note span.mh-note-bold {
+    font-weight: 600;
+  }
   /* Bottom Value Strip Spacing */
   .mh-pricing-bottom-strip {
     margin-top: 36px;
@@ -397,12 +415,16 @@
         </select>
       </div>
     </div>
-
     <!-- Cards Container -->
     <div class="mh-pricing-cards">
       <% pricing.plans.forEach(function(plan) { %>
         <%- include('pricing-card', { plan: plan, currencySymbols: pricing.currencySymbols, defaultCurrency: pricing.section.defaultCurrency }) %>
       <% }); %>
+    </div>
+
+    <!-- Informational Note Banner -->
+    <div class="mh-minutes-info-note reveal">
+      <span>💡 <strong>AI Interview Minutes are only used during live interview sessions.</strong> Resume analysis, JD Intelligence, interview setup, reports, and dashboard features do not consume minutes.</span>
     </div>
 
     <!-- Bottom Value Strip -->
