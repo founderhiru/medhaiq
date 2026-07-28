@@ -134,6 +134,80 @@ class EvidenceGraph {
         : 'No Evidence',
     };
   }
+
+  // ── Query methods (non-functional hardening, 2026-07-29) ────────────────
+  // Purely additive — every method below is read-only and none change how
+  // getOrCreateExperience/addEvidenceNode/getCoverageSummary behave. Added
+  // so a future consumer (Milestone 2B integration, or any other reader)
+  // has a real query surface to build against instead of reaching into
+  // `experiences`/`evidenceNodes` directly. Grouped into three families,
+  // matching how the founder described them: experience, evidence, summary.
+
+  // — Experience queries —
+
+  /** A single Experience by id, or undefined if it doesn't exist. */
+  getExperience(id) {
+    return this.experiences.get(id);
+  }
+
+  /** Every Experience currently in the graph, as a plain array (a copy —
+   * mutating the returned array never affects the graph's internal Map). */
+  getAllExperiences() {
+    return Array.from(this.experiences.values());
+  }
+
+  /** All Experiences of a given type ('resume_story' | 'no_story_turn'). */
+  getExperiencesByType(type) {
+    return this.getAllExperiences().filter((exp) => exp.type === type);
+  }
+
+  // — Evidence queries —
+
+  /** A shallow copy of every EvidenceNode in the graph, in insertion
+   * order. A copy, not the live internal array — callers can't
+   * accidentally push/splice the graph's own node list through this. */
+  getAllEvidenceNodes() {
+    return this.evidenceNodes.slice();
+  }
+
+  /** All EvidenceNodes tied to one specific Experience, across every
+   * dimension/key they touched. */
+  getEvidenceForExperience(experienceId) {
+    return this.evidenceNodes.filter((n) => n.experienceId === experienceId);
+  }
+
+  /** All EvidenceNodes recorded at a specific turn index, across every
+   * dimension/key/experience that turn touched. */
+  getEvidenceForTurn(turnIdx) {
+    return this.evidenceNodes.filter((n) => n.turnIdx === turnIdx);
+  }
+
+  // — Summary queries —
+
+  /** Every distinct (dimension, key) pair currently present in the graph
+   * — the input list getFullSummary() iterates, also useful on its own
+   * for a caller that wants to know what's been observed at all so far. */
+  getObservedKeys() {
+    const seen = new Set();
+    const result = [];
+    this.evidenceNodes.forEach((n) => {
+      const id = `${n.dimension}:${n.key}`;
+      if (!seen.has(id)) {
+        seen.add(id);
+        result.push({ dimension: n.dimension, key: n.key });
+      }
+    });
+    return result;
+  }
+
+  /** getCoverageSummary() for every (dimension, key) pair actually present
+   * in the graph, in one call — a broader view than asking one key at a
+   * time, for a future caller that wants the whole picture (e.g. a report,
+   * or a future rotation decision) without knowing the full key list
+   * up front. */
+  getFullSummary() {
+    return this.getObservedKeys().map(({ dimension, key }) => this.getCoverageSummary(dimension, key));
+  }
 }
 
 /**

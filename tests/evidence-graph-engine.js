@@ -217,5 +217,68 @@ check('buildInterviewSnapshot does not throw with an empty session (turn 0)', ()
   });
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Part 6 — Future-friendly query methods (non-functional hardening, 2026-07-29)
+// ═══════════════════════════════════════════════════════════════════════════
+console.log('\nPart 6 — Query methods: experience, evidence, summary\n');
+
+const queryTestQaPairs = [
+  { question: 'Q1', answer: 'I led the transformation across the org.', score: 82, wasSkipped: false, storyKey: 'STORY_A', competency: 'leadership' },
+  { question: 'Q1 follow-up', answer: 'I convinced the board with a cost model.', score: 78, wasSkipped: false, storyKey: 'STORY_A', competency: 'leadership' },
+  { question: 'Q2', answer: 'I aligned five VPs with competing priorities.', score: 70, wasSkipped: false, storyKey: null, competency: 'strategy' },
+];
+
+check('getExperience() returns the matching Experience by id, undefined if not found', () => {
+  const graph = buildEvidenceGraph(queryTestQaPairs, hypothesisMap, behavioralHypothesisMap);
+  assert.strictEqual(graph.getExperience('story:STORY_A').type, 'resume_story');
+  assert.strictEqual(graph.getExperience('does-not-exist'), undefined);
+});
+
+check('getAllExperiences() and getExperiencesByType() return the correct counts', () => {
+  const graph = buildEvidenceGraph(queryTestQaPairs, hypothesisMap, behavioralHypothesisMap);
+  assert.strictEqual(graph.getAllExperiences().length, 2);
+  assert.strictEqual(graph.getExperiencesByType('resume_story').length, 1);
+  assert.strictEqual(graph.getExperiencesByType('no_story_turn').length, 1);
+});
+
+check('getAllEvidenceNodes() returns a mutation-safe copy, not the live internal array', () => {
+  const graph = buildEvidenceGraph(queryTestQaPairs, hypothesisMap, behavioralHypothesisMap);
+  const nodes = graph.getAllEvidenceNodes();
+  const originalLength = graph.evidenceNodes.length;
+  nodes.push('should not affect the graph');
+  assert.strictEqual(graph.evidenceNodes.length, originalLength, 'mutating the returned array must not affect the graph');
+});
+
+check('getEvidenceForExperience() returns only nodes tied to that experience', () => {
+  const graph = buildEvidenceGraph(queryTestQaPairs, hypothesisMap, behavioralHypothesisMap);
+  const nodes = graph.getEvidenceForExperience('story:STORY_A');
+  assert.ok(nodes.length > 0);
+  assert.ok(nodes.every((n) => n.experienceId === 'story:STORY_A'));
+});
+
+check('getEvidenceForTurn() returns only nodes recorded at that turn index', () => {
+  const graph = buildEvidenceGraph(queryTestQaPairs, hypothesisMap, behavioralHypothesisMap);
+  const nodes = graph.getEvidenceForTurn(0);
+  assert.ok(nodes.length > 0);
+  assert.ok(nodes.every((n) => n.turnIdx === 0));
+});
+
+check('getObservedKeys() lists every distinct (dimension, key) pair present, no duplicates', () => {
+  const graph = buildEvidenceGraph(queryTestQaPairs, hypothesisMap, behavioralHypothesisMap);
+  const keys = graph.getObservedKeys();
+  const asStrings = keys.map((k) => `${k.dimension}:${k.key}`);
+  assert.strictEqual(new Set(asStrings).size, asStrings.length, 'no duplicate keys');
+  assert.ok(asStrings.includes('competency:leadership'));
+  assert.ok(asStrings.includes('competency:strategy'));
+});
+
+check('getFullSummary() matches getCoverageSummary() called individually for the same key', () => {
+  const graph = buildEvidenceGraph(queryTestQaPairs, hypothesisMap, behavioralHypothesisMap);
+  const full = graph.getFullSummary();
+  const individual = graph.getCoverageSummary('competency', 'leadership');
+  const fromFull = full.find((s) => s.dimension === 'competency' && s.key === 'leadership');
+  assert.deepStrictEqual(fromFull, individual);
+});
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
