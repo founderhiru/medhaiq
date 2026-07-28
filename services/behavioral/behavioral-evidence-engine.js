@@ -77,8 +77,31 @@ function detectBehavioralCategories(answerText) {
   return result;
 }
 
+/**
+ * Observability only (Phase 2B final hardening, 2026-07-29) — a pure,
+ * additive sibling to detectBehavioralCategories, NOT a replacement.
+ * Same patterns, same text, zero change to what counts as a match; the
+ * only difference is .exec() instead of .test(), so the matched
+ * substring itself can be surfaced in diagnostic logs ("Matched: 'led'
+ * -> Executive Influence"). detectBehavioralCategories remains the one
+ * function actually consumed by buildBehavioralEvidenceSnapshot's tier
+ * math — this function exists purely so the log can show WHY a category
+ * did or didn't fire, without touching detection itself.
+ * @returns {Object<string, string|null>} matched substring per category, or null
+ */
+function detectBehavioralCategoriesWithMatches(answerText) {
+  const text = String(answerText || '').toLowerCase();
+  const matches = {};
+  BEHAVIORAL_CATEGORIES.forEach((category) => {
+    const m = BEHAVIORAL_PATTERNS[category].exec(text);
+    matches[category] = m ? m[0] : null;
+  });
+  return matches;
+}
+
 module.exports = {
   BEHAVIORAL_CATEGORIES,
   BEHAVIORAL_PATTERNS,
   detectBehavioralCategories,
+  detectBehavioralCategoriesWithMatches,
 };
