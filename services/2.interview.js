@@ -731,8 +731,7 @@ Phrasing rules:
 - If no story was retrieved but a JD requirement is listed, frame a role-specific scenario around that requirement instead — no resume reference.
 - If neither is present, ask a general competency question.
 ${(!story && !(isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt) && !(questionBlueprint && questionBlueprint.strategy_source === 'JDScenario')) ? `
-CRITICAL — NO STORY WAS SELECTED FOR THIS TURN: the blueprint above deliberately chose not to use a resume story. This is a real decision, not an oversight, and it is not yours to override. Your question MUST NOT name, reference, or allude to ANY company, employer, customer, or project from the candidate's career history — not the one from a previous question, not one you might infer from context, none. Do not open with "At [company]...", "During your [X] work...", "While you were leading...", or any phrase that implies a specific past employer. Build entirely hypothetical, forward-looking, or general-scenario language instead (e.g. "Imagine you inherit an organisation where...", "If you were leading a team where..."). If you catch yourself about to type a real company name, stop and rewrite the sentence without it.
-${!isFollowup ? `CRITICAL — DO NOT RE-ANCHOR ON A PREVIOUSLY-DISCUSSED EXPERIENCE (bug fix, 2026-07-28): this is a PRIMARY question, not a follow-up — its job is to broaden the interview into new ground, not deepen what's already been covered. The Conversational History above (layer 8) exists so you understand what's already been asked and scored, NOT as a well of scenario material to keep drawing this new question from. If the candidate described a specific project, transformation, or situation in an earlier answer, do NOT build this new question around that same experience, even reframed as a hypothetical — introduce a genuinely different scenario, angle, or competency instead. Reusing the shape of an experience the candidate already walked through, turn after turn, is exactly the "mining one story" pattern this rule exists to prevent.` : `NOTE: this IS a follow-up with no résumé story behind it (nothing was ever planned for this thread) — deepen the candidate's immediately preceding answer specifically, using only what they actually said. Do not introduce a new scenario here; that restriction is for primaries only.`}` : ''}
+CRITICAL — NO STORY WAS SELECTED FOR THIS TURN: the blueprint above deliberately chose not to use a resume story. This is a real decision, not an oversight, and it is not yours to override. Your question MUST NOT name, reference, or allude to ANY company, employer, customer, or project from the candidate's career history — not the one from a previous question, not one you might infer from context, none. Do not open with "At [company]...", "During your [X] work...", "While you were leading...", or any phrase that implies a specific past employer. Build entirely hypothetical, forward-looking, or general-scenario language instead (e.g. "Imagine you inherit an organisation where...", "If you were leading a team where..."). If you catch yourself about to type a real company name, stop and rewrite the sentence without it.` : ''}
 ${(!story && isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt) ? `
 CRITICAL — GROUND THIS FOLLOW-UP IN WHAT THE CANDIDATE ACTUALLY SAID: a resume story was originally planned for this follow-up, but it does not match what the candidate described in their last answer, so it has been deliberately abandoned — do not use it, and do not invent a similar-sounding one. Build this follow-up ENTIRELY from the candidate's own words below. Do not introduce any company, technology, metric, or project that is not present in this quoted answer:
 """
@@ -925,30 +924,7 @@ function selectStoryForCompetency({ storyLibrary, competency, usedStoryKeys, jdT
   const used = usedStoryKeys instanceof Set ? usedStoryKeys : new Set(usedStoryKeys || []);
   const jdLower = (typeof jdText === 'string') ? jdText.toLowerCase() : '';
 
-  // Story Lifecycle / Retirement (feature, 2026-07-28, founder-approved):
-  // this function is only ever called to pick a story for a NEW PRIMARY
-  // question — follow-ups use a separately forced story_key and never
-  // reach this code at all. So "has this story_key already appeared in
-  // usedStoryKeys" already means exactly "was this story used for an
-  // earlier primary (and whatever follow-up did or didn't happen after
-  // it)" — i.e. it has already completed its Primary -> Optional
-  // Follow-up lifecycle. Previously this only cost a story a soft -100
-  // scoring penalty below, which could still let it be re-selected once
-  // every story in a small library had taken the same penalty. Retirement
-  // makes this a hard exclusion instead: a used story is removed from the
-  // candidate pool outright. The one explicit exception the founder asked
-  // for — "unless there are no alternative stories available" — is the
-  // fallback below: if excluding used stories would leave nothing to
-  // choose from, allow reuse rather than force a story-less turn. The
-  // -100 penalty further down is left in place, unchanged; it's now a
-  // no-op in both branches (never true in the unused pool, always true
-  // uniformly in the fallback pool), which is harmless and avoids
-  // touching the scoring internals beyond this one additive filter.
-  const unusedStories = stories.filter(s => !used.has(s.story_key));
-  const candidatePool = unusedStories.length ? unusedStories : stories;
-  const isRetirementFallback = !unusedStories.length; // every story already used — the founder's explicit exception
-
-  const scored = candidatePool.map((s) => {
+  const scored = stories.map((s) => {
     const hints = Array.isArray(s.competency_hints) ? s.competency_hints.map(h => String(h).toLowerCase()) : [];
     const businessContext = Array.isArray(s.business_context) ? s.business_context.map(h => String(h).toLowerCase()) : [];
     const jdAlignmentTags = Array.isArray(s.jd_alignment_tags) ? s.jd_alignment_tags.map(h => String(h).toLowerCase()) : [];
@@ -987,7 +963,7 @@ function selectStoryForCompetency({ storyLibrary, competency, usedStoryKeys, jdT
     if (competency === 'leadership' && (s.leadership_scope || /(led |leading |managed |team of |direct reports)/.test(storyText))) {
       score += 3;                                                                     // leadership-level signal
     }
-    if (!isRetirementFallback && used.has(s.story_key)) score -= 100; // hard diversity penalty, not an outright ban — a candidate
+    if (used.has(s.story_key)) score -= 100; // hard diversity penalty, not an outright ban — a candidate
                                               // with only one relevant story can still reuse it eventually
     return { story_key: s.story_key, score };
   });
