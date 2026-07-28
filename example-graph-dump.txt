@@ -1,0 +1,49 @@
+EvidenceGraph
+
+Experiences
+-----------
+EXP-1 (Resume Story)
+  Turns: 1,2,4
+  Competencies:
+    Leadership
+    Communication
+  Behavioral Signals:
+    Executive Influence
+    Stakeholder Management
+
+EXP-2 (Hypothetical)
+  Turns: 3
+  Competencies:
+    Strategy
+
+Evidence
+
+Leadership
+  Observations: 2
+  Experiences: 1
+  STAR-complete: 1
+  Strong Evidence
+
+Executive Influence
+  Observations: 1
+  Experiences: 1
+  STAR-complete: 1
+  Moderate Evidence
+
+Stakeholder Management
+  Observations: 1
+  Experiences: 1
+  STAR-complete: 0
+  Moderate Evidence
+
+Strategy
+  Observations: 1
+  Experiences: 1
+  STAR-complete: 0
+  Moderate Evidence
+
+Communication
+  Observations: 1
+  Experiences: 1
+  STAR-complete: 0
+  Moderate Evidence

@@ -574,45 +574,21 @@ function buildInterviewSnapshot({ roleTitle, qaPairs, questionCount }) {
   // value below. Nothing downstream reads this snapshot object for a
   // "graph" field, so simply not adding one is the actual safety
   // mechanism, same discipline as Phase 2B's own first pass.
-  //
-  // Enhanced observability (Milestone 2B, 2026-07-29): rebuilt on the new
-  // query API rather than reaching into evidenceGraph.experiences/
-  // evidenceNodes directly — this log is now itself a real consumer of
-  // getExperienceCoverage()/getCoverageSummary(), proving the query
-  // surface is usable, not just tested in isolation.
   const evidenceGraph = buildEvidenceGraph(qaPairs, hypothesisMap, behavioralHypothesisMap);
-
-  function humanizeKey(key) {
-    return String(key).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-  }
-
-  const experienceLines = [];
-  let resumeStoryCount = 0;
-  let hypotheticalCount = 0;
-  evidenceGraph.getExperienceCoverage().forEach((exp) => {
-    if (!exp.keysCovered.length) return; // an experience with no evidence yet has nothing to show here
-    const label = exp.type === 'resume_story' ? `Resume Story #${++resumeStoryCount}` : `Hypothetical #${++hypotheticalCount}`;
-    experienceLines.push(`  ${label}`);
-    exp.keysCovered.forEach(({ key }) => experienceLines.push(`    ${humanizeKey(key)}`));
-    experienceLines.push('');
+  const graphSummaryLines = [];
+  priority.forEach((c) => {
+    const s = evidenceGraph.getCoverageSummary('competency', c);
+    if (s.totalObservations > 0) {
+      graphSummaryLines.push(`competency/${c}: tier=${s.bestTierLabel} observations=${s.totalObservations} distinctExperiences=${s.distinctExperienceCount} starComplete=${s.starCompleteCount}`);
+    }
   });
-
-  const coverageLines = [];
-  evidenceGraph.getCoverageSummary().forEach((s) => {
-    if (s.totalObservations === 0) return;
-    coverageLines.push(`${humanizeKey(s.key)}`);
-    coverageLines.push(`  Observations: ${s.totalObservations}`);
-    coverageLines.push(`  Experiences: ${s.distinctExperienceCount}`);
-    coverageLines.push(`  Tier: ${s.bestTierLabel}`);
-    coverageLines.push(`  STAR-complete: ${s.starCompleteCount}`);
-    coverageLines.push('');
+  BEHAVIORAL_CATEGORIES.forEach((c) => {
+    const s = evidenceGraph.getCoverageSummary('behavioral', c);
+    if (s.totalObservations > 0) {
+      graphSummaryLines.push(`behavioral/${c}: tier=${s.bestTierLabel} observations=${s.totalObservations} distinctExperiences=${s.distinctExperienceCount} starComplete=${s.starCompleteCount}`);
+    }
   });
-
-  console.log(
-    `[EVIDENCE-GRAPH] turn=${currentTurn}\n` +
-    `Experiences:\n${experienceLines.length ? experienceLines.join('\n') : '  (none yet)\n'}\n` +
-    `Coverage:\n${coverageLines.length ? coverageLines.join('\n') : '  (no evidence recorded yet)'}`
-  );
+  console.log(`[EVIDENCE-GRAPH] turn=${currentTurn} experiences=${evidenceGraph.experiences.size} nodes=${evidenceGraph.evidenceNodes.length}\n${graphSummaryLines.length ? graphSummaryLines.join('\n') : '(no evidence recorded yet)'}`);
 
   return { roleKey, priority, currentTurn, memoryMap, hypothesisMap, globalMaturityTiers };
 }

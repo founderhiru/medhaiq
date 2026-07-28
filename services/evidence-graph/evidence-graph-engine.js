@@ -112,11 +112,17 @@ class EvidenceGraph {
   }
 
   /**
-   * Derived, computed-not-stored summary for one dimension/key — the
-   * thing Phase 2B/Conversation Memory alone couldn't answer: how many
-   * DISTINCT experiences contributed evidence, not just how many turns.
+   * Derived, computed-not-stored summary. Called with (dimension, key) it
+   * returns one summary object, exactly as before Milestone 2B. Called
+   * with NO arguments, it returns the full summary array across every
+   * (dimension, key) pair actually observed in the graph — the shape
+   * requested for Milestone 2B's query API. Backward compatible: every
+   * existing call site with two arguments behaves identically to before.
    */
   getCoverageSummary(dimension, key) {
+    if (dimension === undefined && key === undefined) {
+      return this.getObservedKeys().map(({ dimension: d, key: k }) => this.getCoverageSummary(d, k));
+    }
     const nodes = this.getNodesFor(dimension, key);
     const distinctExperienceIds = new Set(nodes.map((n) => n.experienceId));
     const starCompleteCount = nodes.filter((n) => n.starComplete).length;
@@ -135,58 +141,56 @@ class EvidenceGraph {
     };
   }
 
-  // ── Query methods (non-functional hardening, 2026-07-29) ────────────────
-  // Purely additive — every method below is read-only and none change how
-  // getOrCreateExperience/addEvidenceNode/getCoverageSummary behave. Added
-  // so a future consumer (Milestone 2B integration, or any other reader)
-  // has a real query surface to build against instead of reaching into
-  // `experiences`/`evidenceNodes` directly. Grouped into three families,
-  // matching how the founder described them: experience, evidence, summary.
-
-  // — Experience queries —
+  // ── Milestone 2B query API (2026-07-29) ──────────────────────────────
+  // All read-only. No method below mutates experiences, evidenceNodes, or
+  // any EvidenceNode's contents. This is the "clean query layer" the
+  // milestone asks for — every method is a view over data already built
+  // by buildEvidenceGraph, computed on demand, never stored.
 
   /** A single Experience by id, or undefined if it doesn't exist. */
   getExperience(id) {
     return this.experiences.get(id);
   }
 
-  /** Every Experience currently in the graph, as a plain array (a copy —
-   * mutating the returned array never affects the graph's internal Map). */
-  getAllExperiences() {
+  /** Every Experience currently in the graph, as a plain array — a copy;
+   * mutating the returned array never affects the graph's internal Map. */
+  getExperiences() {
     return Array.from(this.experiences.values());
   }
 
   /** All Experiences of a given type ('resume_story' | 'no_story_turn'). */
   getExperiencesByType(type) {
-    return this.getAllExperiences().filter((exp) => exp.type === type);
+    return this.getExperiences().filter((exp) => exp.type === type);
   }
 
-  // — Evidence queries —
+  /** All EvidenceNodes recorded for a structural competency. */
+  getEvidenceForCompetency(key) {
+    return this.getNodesFor('competency', key);
+  }
+
+  /** All EvidenceNodes recorded for a behavioral category. */
+  getEvidenceForBehavior(key) {
+    return this.getNodesFor('behavioral', key);
+  }
 
   /** A shallow copy of every EvidenceNode in the graph, in insertion
-   * order. A copy, not the live internal array — callers can't
-   * accidentally push/splice the graph's own node list through this. */
+   * order. A copy, not the live internal array. */
   getAllEvidenceNodes() {
     return this.evidenceNodes.slice();
   }
 
   /** All EvidenceNodes tied to one specific Experience, across every
-   * dimension/key they touched. */
+   * dimension/key it touched. */
   getEvidenceForExperience(experienceId) {
     return this.evidenceNodes.filter((n) => n.experienceId === experienceId);
   }
 
-  /** All EvidenceNodes recorded at a specific turn index, across every
-   * dimension/key/experience that turn touched. */
+  /** All EvidenceNodes recorded at a specific turn index. */
   getEvidenceForTurn(turnIdx) {
     return this.evidenceNodes.filter((n) => n.turnIdx === turnIdx);
   }
 
-  // — Summary queries —
-
-  /** Every distinct (dimension, key) pair currently present in the graph
-   * — the input list getFullSummary() iterates, also useful on its own
-   * for a caller that wants to know what's been observed at all so far. */
+  /** Every distinct (dimension, key) pair currently present in the graph. */
   getObservedKeys() {
     const seen = new Set();
     const result = [];
@@ -200,13 +204,96 @@ class EvidenceGraph {
     return result;
   }
 
-  /** getCoverageSummary() for every (dimension, key) pair actually present
-   * in the graph, in one call — a broader view than asking one key at a
-   * time, for a future caller that wants the whole picture (e.g. a report,
-   * or a future rotation decision) without knowing the full key list
-   * up front. */
-  getFullSummary() {
-    return this.getObservedKeys().map(({ dimension, key }) => this.getCoverageSummary(dimension, key));
+  /**
+   * Per-EXPERIENCE view — the inverse of getCoverageSummary(): for each
+   * experience, which (dimension, key) pairs did it contribute evidence
+   * to. This is what the enhanced [EVIDENCE-GRAPH] log's "Experiences:"
+   * section is built from (see services/interview.js).
+   */
+  getExperienceCoverage() {
+    return this.getExperiences().map((exp) => {
+      const nodes = this.getEvidenceForExperience(exp.id);
+      const keysCovered = [];
+      const seen = new Set();
+      nodes.forEach((n) => {
+        const id = `${n.dimension}:${n.key}`;
+        if (!seen.has(id)) { seen.add(id); keysCovered.push({ dimension: n.dimension, key: n.key }); }
+      });
+      return { experienceId: exp.id, type: exp.type, turnIndices: exp.turnIndices.slice(), keysCovered };
+    });
+  }
+
+  /** getCoverageSummary() filtered to structural competencies only. */
+  getCompetencyCoverage() {
+    return this.getCoverageSummary().filter((s) => s.dimension === 'competency');
+  }
+
+  /** getCoverageSummary() filtered to behavioral categories only — the
+   * natural symmetric counterpart to getCompetencyCoverage(), not
+   * explicitly requested but added for a consistent, complete API. */
+  getBehavioralCoverage() {
+    return this.getCoverageSummary().filter((s) => s.dimension === 'behavioral');
+  }
+
+  /**
+   * dumpGraph() — a full, human-readable text dump of the entire graph
+   * (Milestone 2B, 2026-07-29). Distinct from the per-turn [EVIDENCE-
+   * GRAPH] log in services/interview.js — that log is for glancing at
+   * one turn as the interview progresses; this is the "show me
+   * everything, all at once" artifact for validating a completed session
+   * against the actual transcript, and the reference format for future
+   * milestones that consume the graph. Built entirely on the existing
+   * query API (getExperiences/getExperienceCoverage/getCoverageSummary)
+   * — no new data access, purely a formatting layer over what's already
+   * queryable.
+   * @returns {string}
+   */
+  dumpGraph() {
+    function humanizeKey(key) {
+      return String(key).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    function typeLabel(type) {
+      return type === 'resume_story' ? 'Resume Story' : 'Hypothetical';
+    }
+
+    const lines = ['EvidenceGraph', '', 'Experiences', '-----------'];
+    const experienceCoverage = this.getExperienceCoverage();
+    if (!experienceCoverage.length) {
+      lines.push('(none yet)');
+    } else {
+      experienceCoverage.forEach((exp, idx) => {
+        lines.push(`EXP-${idx + 1} (${typeLabel(exp.type)})`);
+        lines.push(`  Turns: ${exp.turnIndices.map((t) => t + 1).join(',')}`);
+        const competencyKeys = exp.keysCovered.filter((k) => k.dimension === 'competency');
+        const behavioralKeys = exp.keysCovered.filter((k) => k.dimension === 'behavioral');
+        if (competencyKeys.length) {
+          lines.push('  Competencies:');
+          competencyKeys.forEach((k) => lines.push(`    ${humanizeKey(k.key)}`));
+        }
+        if (behavioralKeys.length) {
+          lines.push('  Behavioral Signals:');
+          behavioralKeys.forEach((k) => lines.push(`    ${humanizeKey(k.key)}`));
+        }
+        lines.push('');
+      });
+    }
+
+    lines.push('Evidence', '');
+    const summary = this.getCoverageSummary();
+    if (!summary.length) {
+      lines.push('(no evidence recorded yet)');
+    } else {
+      summary.forEach((s) => {
+        lines.push(humanizeKey(s.key));
+        lines.push(`  Observations: ${s.totalObservations}`);
+        lines.push(`  Experiences: ${s.distinctExperienceCount}`);
+        lines.push(`  STAR-complete: ${s.starCompleteCount}`);
+        lines.push(`  ${s.bestTierLabel}`);
+        lines.push('');
+      });
+    }
+
+    return lines.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd();
   }
 }
 
