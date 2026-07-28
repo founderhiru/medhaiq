@@ -143,11 +143,10 @@
 
   /* Card Header & Normalized Title Container */
   .mh-card-header {
-  margin-bottom: 6px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  min-height: 84px; /* Locks header area baseline across all cards */
+    margin-bottom: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
   }
   .mh-card-icon {
     width: 36px;
@@ -185,28 +184,28 @@
   .mh-tagline-purple { color: #6D28D9; }
   
   /* Normalized Description Container (Forces Equal Alignment) */
- .mh-pricing-desc {
-  font-size: 12px; /* Reduced by 1px (~8%) for cleaner hierarchy */
-  color: #64748B;
-  margin-top: 3px;
-  line-height: 1.4;
-  min-height: 34px; /* Equalized description container */
-  height: 34px;
-  display: flex;
-  align-items: flex-start;
+  .mh-pricing-desc {
+    font-size: 13px;
+    color: #64748B;
+    margin-top: 2px;
+    line-height: 1.35;
+    min-height: 38px;
+    height: 36px; /* Equal vertical footprint across all cards */
+    display: flex;
+    align-items: flex-start;
   }
 
   /* Price Area (Horizontal Locking) */
   .mh-pricing-price-wrap {
-  margin: 8px 0 10px 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #F1F5F9;
-  min-height: 64px; /* Locked height so divider starts at exact same baseline */
-  height: 64px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
+    margin: 4px 0 6px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #F1F5F9;
+    min-height: 68px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  
   .mh-pricing-price {
   font-size: 34px;
   font-weight: 700;
@@ -229,14 +228,14 @@
   }
 
   /* Features Label */
- .mh-features-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #475569; /* Darker slate for sharper visual anchor */
-  margin-bottom: 6px;
- }
+  .mh-features-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748B;
+    margin-bottom: 6px;
+  }
 
   .mh-feature-group-header {
     display: flex;
@@ -327,25 +326,7 @@
     color: #64748B;
     margin-top: 4px;
   }
-/* Full-Width Informational Banner */
-  .mh-minutes-info-note {
-    margin-top: 24px;
-    background: #EFF6FF;
-    border: 1px solid #DBEAFE;
-    border-radius: 12px;
-    padding: 12px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-size: 13px;
-    color: #1E40AF;
-    line-height: 1.4;
-    text-align: center;
-  }
-  .mh-minutes-info-note span.mh-note-bold {
-    font-weight: 600;
-  }
+
   /* Bottom Value Strip Spacing */
   .mh-pricing-bottom-strip {
     margin-top: 36px;
@@ -416,16 +397,12 @@
         </select>
       </div>
     </div>
+
     <!-- Cards Container -->
     <div class="mh-pricing-cards">
       <% pricing.plans.forEach(function(plan) { %>
         <%- include('pricing-card', { plan: plan, currencySymbols: pricing.currencySymbols, defaultCurrency: pricing.section.defaultCurrency }) %>
       <% }); %>
-    </div>
-
-    <!-- Informational Note Banner -->
-    <div class="mh-minutes-info-note reveal">
-      <span>💡 <strong>AI Interview Minutes are only used during live interview sessions.</strong> Resume analysis, JD Intelligence, interview setup, reports, and dashboard features do not consume minutes.</span>
     </div>
 
     <!-- Bottom Value Strip -->
