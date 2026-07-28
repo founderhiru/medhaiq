@@ -69,6 +69,18 @@ const DEFAULT_TIER = 'free';
 module.exports = {
   PLAN_CONFIG,
   MAX_SESSION_MINUTES,
+  // Bug fix (2026-07-29): routes/interview.js has always destructured
+  // INTERVIEW_MAX_SESSION_MINUTES (not MAX_SESSION_MINUTES) from this
+  // module — a name that was never actually exported, so the time-cap
+  // comparison in pickAndPersistNextQuestion (`elapsedMinutes >=
+  // INTERVIEW_MAX_SESSION_MINUTES`) has always evaluated against
+  // `undefined` and could never be true, for any elapsed time. Confirmed
+  // directly: `30 >= undefined` is `false`. This is the single-line fix —
+  // an aliased export under the name the consuming code already expects,
+  // no rename of the MAX_SESSION_MINUTES variable itself (still used
+  // internally by PLAN_CONFIG above, unchanged), no change required in
+  // routes/interview.js at all.
+  INTERVIEW_MAX_SESSION_MINUTES: MAX_SESSION_MINUTES,
   LIVE_HEARTBEAT_GRACE_PERIOD_MINUTES,
   SESSION_RECOVERY_WINDOW_MINUTES,
   SESSION_UNCONFIRMED_TIMEOUT_MINUTES,
