@@ -27,7 +27,7 @@ const plans = [
     badge: { text: 'Always Free', icon: null },
     icon: '<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
     title: 'Explorer',
-    tagline: 'Discover MedhaIQ before you practice.',
+    tagline: 'Discover before you practice.',
     description: null,
     price: { INR: 0, USD: 0, EUR: 0 },
     priceSubtext: 'Forever Free',
