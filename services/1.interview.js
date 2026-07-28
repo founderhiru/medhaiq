@@ -355,15 +355,6 @@ const COMPETENCY_UNIVERSE = Object.keys(SUBSKILL_MATRIX).filter(k => k !== 'defa
 const createConversationMemory = require('./interview/conversation-memory');
 const { runCoverageAndMemoryEngine, textMentionsSubskill, qaBelongsToCompetency } = createConversationMemory(SUBSKILL_MATRIX);
 
-// ── Phase 2B — Behavioral Evidence (2026-07-25, founder-approved scope) ──
-// Detection lives in its own STAR-style module (services/behavioral/), kept
-// isolated from ConversationMemory/Coverage Engine on purpose — see
-// buildBehavioralEvidenceSnapshot below for how it's wired in: log-only
-// this phase, reuses runHypothesisEngine/EVIDENCE_TIERS completely
-// unchanged (defined further below in this file), no new persistence, no
-// change to composePrompt/scoring/Coverage Engine/selectNextCompetency.
-const { detectBehavioralCategories, BEHAVIORAL_CATEGORIES } = require('./behavioral/behavioral-evidence-engine');
-
 // ── B. The Hypothesis & Evidence Engine ──
 // Returns STRUCTURED DATA ONLY (per production-readiness audit item 2/7)
 // — no hard-coded English sentences here. The sentence that used to be
@@ -393,61 +384,6 @@ function runHypothesisEngine(comp, compData) {
   });
 
   return { evidenceTier, leastValidatedSubskill, coverageRatio, avgScore, needsVerification: evidenceTier.needsVerification };
-}
-
-// ── B.1 Behavioral Evidence Snapshot (Phase 2B, 2026-07-25) ──
-// Small, isolated helper — NOT inlined into buildInterviewSnapshot, per
-// explicit founder preference, so that function stays a pure orchestrator.
-// Reuses runHypothesisEngine (immediately above, completely unchanged —
-// not even a new parameter) for the tier/count math; the only new logic
-// here is tallying which behavioral categories each answer touches, via
-// the isolated detector in services/behavioral/behavioral-evidence-engine.js.
-//
-// compData shape fed into runHypothesisEngine mirrors exactly what
-// runCoverageAndMemoryEngine already produces for structural competencies
-// ({ scores: [], observedSubskills: Set }), so the reuse is genuinely
-// drop-in, not adapted:
-//   - scores: for each answer where this behavioral category was
-//     detected, its own overall weighted score (already present on the
-//     qaPair, already computed by scoreAnswer for an entirely different
-//     purpose) is reused as that instance's "strength" signal — no new
-//     AI judgment, no new LLM call, just reusing a number that already
-//     exists.
-//   - observedSubskills: always an empty Set in this first pass —
-//     behavioral categories have no subskill-level vocabulary yet (that's
-//     explicitly out of scope here), so coverageRatio/leastValidatedSubskill
-//     on the returned hypothesis objects are not meaningful for these
-//     categories and are not consumed anywhere. Flagged, not hidden.
-//
-// Output of this function is NOT wired into composePrompt, scoring,
-// Coverage Engine, or selectNextCompetency — see the log-only call site
-// inside buildInterviewSnapshot below.
-function buildBehavioralEvidenceSnapshot(qaPairs) {
-  const compDataByCategory = {};
-  BEHAVIORAL_CATEGORIES.forEach((category) => {
-    compDataByCategory[category] = { scores: [], observedSubskills: new Set() };
-  });
-
-  (Array.isArray(qaPairs) ? qaPairs : []).forEach((qa) => {
-    if (!qa || !qa.answer) return;
-    const detected = detectBehavioralCategories(qa.answer);
-    BEHAVIORAL_CATEGORIES.forEach((category) => {
-      if (detected[category] && qa.score !== null && qa.score !== undefined && !qa.wasSkipped) {
-        compDataByCategory[category].scores.push(Number(qa.score));
-      }
-    });
-  });
-
-  const behavioralHypothesisMap = {};
-  const behavioralInstanceCounts = {};
-  BEHAVIORAL_CATEGORIES.forEach((category) => {
-    behavioralHypothesisMap[category] = runHypothesisEngine(category, compDataByCategory[category]);
-    // Real instance count, straight from the tally above — NOT derived
-    // from avgScore or any other runHypothesisEngine field, which would
-    // be a meaningless substitute for an actual count.
-    behavioralInstanceCounts[category] = compDataByCategory[category].scores.length;
-  });
-  return { behavioralHypothesisMap, behavioralInstanceCounts };
 }
 
 // ── C. The Cognitive Strategy Engine ──
@@ -497,20 +433,6 @@ function buildInterviewSnapshot({ roleTitle, qaPairs, questionCount }) {
   const hypothesisMap = {};
   priority.forEach(c => { hypothesisMap[c] = runHypothesisEngine(c, memoryMap[c]); });
   const globalMaturityTiers = priority.map(c => hypothesisMap[c]);
-
-  // Phase 2B, log-only (founder-approved scope, 2026-07-25): computed
-  // alongside the existing snapshot, not merged into its return value —
-  // this is deliberate, not an oversight. Nothing downstream (composePrompt,
-  // scoreAnswer, selectNextCompetency, Coverage Engine) reads this snapshot
-  // object for a "behavioral" field, so simply not adding one is the actual
-  // safety mechanism: there is nothing to accidentally wire in later by
-  // touching this return statement. Logged here, once per turn, same
-  // convention as other diagnostic-only console output in this file.
-  const { behavioralHypothesisMap, behavioralInstanceCounts } = buildBehavioralEvidenceSnapshot(qaPairs);
-  const behavioralSummary = BEHAVIORAL_CATEGORIES
-    .map((c) => `${c}=${behavioralHypothesisMap[c].evidenceTier.label} (count=${behavioralInstanceCounts[c]})`)
-    .join(', ');
-  console.log(`[BEHAVIORAL-EVIDENCE] turn=${currentTurn} ${behavioralSummary}`);
 
   return { roleKey, priority, currentTurn, memoryMap, hypothesisMap, globalMaturityTiers };
 }
