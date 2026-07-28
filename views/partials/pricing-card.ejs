@@ -1,0 +1,52 @@
+<!-- views/partials/pricing-card.ejs
+     One reusable card template. Rendered once per plan by pricing-section.ejs.
+     Locals: plan (object from config/pricing.js), currencySymbols, defaultCurrency -->
+<div class="mh-pricing-card mh-card-<%= plan.id %> reveal reveal-item">
+
+  <div class="mh-card-badge mh-badge-<%= plan.colorKey %>">
+    <% if (plan.badge.icon) { %><svg class="svg-icon" width="12" height="12" viewBox="0 0 24 24"><%- plan.badge.icon %></svg> <% } %><%= plan.badge.text %>
+  </div>
+
+  <div class="mh-card-header">
+    <div class="mh-card-icon mh-icon-<%= plan.colorKey %>">
+      <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24"><%- plan.icon %></svg>
+    </div>
+    <div class="mh-card-title-wrap">
+      <div class="mh-pricing-tier"><%= plan.title %></div>
+      <div class="mh-pricing-tagline mh-tagline-<%= plan.colorKey %>"><%= plan.tagline %></div>
+      <% if (plan.description) { %><div class="mh-pricing-desc"><%= plan.description %></div><% } %>
+    </div>
+  </div>
+
+  <div class="mh-pricing-price-wrap">
+    <div class="mh-pricing-price">
+      <span class="mh-price-sym"><%- currencySymbols[defaultCurrency] %></span><span class="mh-price-val" data-plan-id="<%= plan.id %>"><%= plan.price[defaultCurrency].toLocaleString(defaultCurrency === 'INR' ? 'en-IN' : 'en-US') %></span>
+    </div>
+    <div class="mh-price-subtext"><%= plan.priceSubtext %></div>
+  </div>
+
+  <div class="mh-features-label"><%= plan.featuresLabel %></div>
+  <ul class="mh-pricing-features">
+    <% plan.featureGroups.forEach(function(group) { %>
+      <% if (group.header) { %>
+        <div class="mh-feature-group-header mh-fg-<%= plan.colorKey %>">
+          <svg class="svg-icon" viewBox="0 0 24 24"><%- group.header.icon %></svg> <%= group.header.text %>
+        </div>
+      <% } %>
+      <% group.items.forEach(function(item) { %>
+        <li><svg class="svg-icon mh-check-<%= plan.colorKey %>" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> <% if (item.bold) { %><span class="mh-feature-bold"><%= item.text %></span><% } else { %><%= item.text %><% } %></li>
+      <% }); %>
+    <% }); %>
+  </ul>
+
+  <div class="mh-info-box mh-info-<%= plan.colorKey %>">
+    <svg class="svg-icon" viewBox="0 0 24 24"><%- plan.infoBox.icon %></svg>
+    <div>
+      <div class="mh-info-title"><%= plan.infoBox.title %></div>
+      <div class="mh-info-desc"><%= plan.infoBox.desc %></div>
+    </div>
+  </div>
+
+  <a href="<%= plan.cta.href %>" class="mh-pricing-cta mh-cta-<%= plan.colorKey %>"><%= plan.cta.text %></a>
+  <div class="mh-card-footer"><%= plan.footer %></div>
+</div>
