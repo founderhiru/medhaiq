@@ -613,7 +613,7 @@ app.get('/dashboard/history', requireAuthPage, async (req, res) => {
       return h > 0 ? `${h}h ${m}m` : `${m}m`;
     })();
     const readinessScore = trendAvg !== null ? Math.round(trendAvg) : null;
-    const readinessDeltaVsFirst = (trend.length > 1) ? Math.round(trend[trend.length - 1] - trend[0]) : null;
+    const readinessDeltaVsPrevious = (trend.length > 1) ? Math.round(trend[trend.length - 1] - trend[trend.length - 2]) : null;
     const interruptedSession = history.find(s => s.status === 'in_progress') || null;
 
     // ---- Relative-time labels for the overview cards ("Last interview
@@ -672,7 +672,7 @@ app.get('/dashboard/history', requireAuthPage, async (req, res) => {
       shellUser: user,
       history, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY, trendLatest, trendAvg,
       interviewsCompletedCount, reportsGeneratedCount, practiceTimeLabel,
-      readinessScore, readinessDeltaVsFirst, interruptedSession, aggregateScores,
+      readinessScore, readinessDeltaVsPrevious, interruptedSession, aggregateScores,
       lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
       resumeIntelActive, resumeIntelSubLabel,
       bestCompetencyLabel, focusNextLabel,
