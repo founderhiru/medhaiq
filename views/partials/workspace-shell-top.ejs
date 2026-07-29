@@ -42,6 +42,32 @@ const _extraStylesheets = typeof extraStylesheets !== 'undefined' ? extraStylesh
     <div class="shell-profile">
       <div class="shell-profile-avatar"><%- include('user-avatar', { user: _shellUser, glyphSize: 24 }) %></div>
       <div class="shell-profile-name"><%= _shellUser.name || 'Your account' %></div>
+      <%
+      /* Package pill — Step 2 (Architecture v1.5, ADR-013). Sourced
+         entirely from the unified Capability Engine's resolved package
+         (capabilities.package.id, attached globally by
+         middleware/capabilities.js) — never from users.subscription_plan,
+         which is legacy and no longer read for this purpose anywhere in
+         the app. capabilities is already available here automatically
+         (same as every other page using this shell), so no route or
+         include() call needed to change for this to work.
+         Colors reuse this dashboard's own existing tokens rather than new
+         ones: --bright is the same blue already used two lines below for
+         the "Preparing For" badge; the Leadership tint matches the
+         existing .icon-sq.violet color already used elsewhere on the
+         Dashboard page; Explorer reuses --muted, the theme's standard
+         quiet/secondary color. */
+      const _pkgMeta = {
+        explorer:   { label: 'Explorer',   dot: '⚪', cls: 'pill-explorer' },
+        growth:     { label: 'Growth',     dot: '🔵', cls: 'pill-growth' },
+        leadership: { label: 'Leadership', dot: '🟣', cls: 'pill-leadership' },
+      };
+      const _pkgId = (typeof capabilities !== 'undefined' && capabilities && capabilities.package && capabilities.package.id) || 'explorer';
+      const _pkg = _pkgMeta[_pkgId] || _pkgMeta.explorer;
+      %>
+      <% if (typeof capabilities !== 'undefined' && capabilities && capabilities.isAuthenticated) { %>
+      <div class="shell-package-pill <%= _pkg.cls %>"><%= _pkg.dot %> <%= _pkg.label %></div>
+      <% } %>
     </div>
     <% if (typeof preparingForRole !== 'undefined' && preparingForRole) { %>
     <div class="shell-preparing">

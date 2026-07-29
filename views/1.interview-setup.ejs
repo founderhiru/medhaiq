@@ -564,92 +564,49 @@
     </div>
 
     <div class="step-label">3. Select Interviewer Persona</div>
-    <%
-    // Persona entitlement enforcement (traced gap, closed here + in
-    // controllers/sessionController.js). capabilities.personas is the
-    // Capability Engine's resolved, entitled persona-ID list for this
-    // user's active package (config/persona-entitlements.js). Locked
-    // personas are not rendered at all below — never a CSS-hidden card
-    // still present in the DOM — per the explicit "do not rely on CSS
-    // hiding" requirement.
-    //
-    // Preview mode is the one deliberate exception: it's unauthenticated
-    // marketing content (clicking "begin" always redirects to signup
-    // regardless of persona chosen, see IS_PREVIEW below), not a real
-    // entitlement-gated flow, so it continues to show all personas.
-    const _isPreviewPersonas = typeof previewMode !== 'undefined' && previewMode;
-    const _entitledPersonas = (typeof capabilities !== 'undefined' && capabilities && Array.isArray(capabilities.personas))
-      ? capabilities.personas
-      : [];
-    function _personaVisible(personaId) {
-      return _isPreviewPersonas || _entitledPersonas.indexOf(personaId) !== -1;
-    }
-    %>
     <div class="persona-grid">
 
-      <% if (!_isPreviewPersonas && _entitledPersonas.length === 0) { %>
-      <!-- Defensive empty state: should not normally be reachable (every
-           package config includes at least one persona), but a real user
-           seeing a silently empty grid with no explanation would be a
-           much worse failure than a clear message pointing at pricing. -->
-      <div style="grid-column:1/-1; padding:20px; text-align:center; color:var(--muted); font-size:13.5px;">
-        No interview personas are available on your current package. <a href="/#pricing" style="color:var(--blue-hi);">View Plans &amp; Pricing</a>
-      </div>
-      <% } %>
-
-      <% if (_personaVisible('alex_chen')) { %>
       <div class="sel-card persona-card" data-persona="alex_chen" data-voice="voice-alex" data-diff="Hard (Rigorous)">
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar">AC</div><div><div class="p-name">Alex Chen <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Senior Principal Engineer · AWS</div></div></div>
         <span class="p-style royal-blue">Technical Excellence</span>
         <ul class="p-traits"><li>System Design</li><li>Scalability</li><li>Technical Judgment</li><li>Ownership</li></ul>
       </div>
-      <% } %>
 
-      <% if (_personaVisible('priya_ramesh')) { %>
       <div class="sel-card persona-card" data-persona="priya_ramesh" data-voice="voice-priya" data-diff="Elite (Rigorous)">
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar emerald">PR</div><div><div class="p-name">Priya Ramesh <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Partner · McKinsey Consulting</div></div></div>
         <span class="p-style emerald">Case-Led Strategy</span>
         <ul class="p-traits"><li>Case Structuring</li><li>Strategic Thinking</li><li>Executive Presence</li><li>Clear Communication</li></ul>
       </div>
-      <% } %>
 
-      <% if (_personaVisible('marcus_webb')) { %>
       <div class="sel-card persona-card" data-persona="marcus_webb" data-voice="voice-marcus" data-diff="Medium (Balanced)">
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar gold">MW</div><div><div class="p-name">Marcus Webb <span class="difficulty diff-medium">⚡ Medium</span></div><div class="p-title">VP Product · Series B SaaS</div></div></div>
         <span class="p-style gold">Product Leadership</span>
         <ul class="p-traits"><li>Product Strategy</li><li>Prioritization</li><li>Commercial Acumen</li><li>Customer Insight</li></ul>
       </div>
-      <% } %>
 
-      <% if (_personaVisible('sanjeev_nair')) { %>
       <div class="sel-card persona-card" data-persona="sanjeev_nair" data-voice="voice-sanjeev" data-diff="Hard (Rigorous)">
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar">SN</div><div><div class="p-name">Sanjeev Nair <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Engineering Director · Global Tech Firm</div></div></div>
         <span class="p-style royal-blue">Engineering Leadership</span>
         <ul class="p-traits"><li>Engineering Strategy</li><li>Organizational Leadership</li><li>Delivery Excellence</li><li>Technical Vision</li></ul>
       </div>
-      <% } %>
 
-      <% if (_personaVisible('sarah_kim')) { %>
       <div class="sel-card persona-card" data-persona="sarah_kim" data-voice="voice-sarah" data-diff="Hard (Rigorous)">
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar emerald">SK</div><div><div class="p-name">Sarah Kim <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">CEO · Pre-Series A Startup</div></div></div>
         <span class="p-style emerald">Founder Mindset</span>
         <ul class="p-traits"><li>First Principles</li><li>Speed of Execution</li><li>Resilience</li><li>Bias for Action</li></ul>
       </div>
-      <% } %>
 
-      <% if (_personaVisible('raj_mehta')) { %>
       <div class="sel-card persona-card" data-persona="raj_mehta" data-voice="voice-raj" data-diff="Elite (Rigorous)">
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar gold">RM</div><div><div class="p-name">Raj Mehta <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Global Director · GCC Enterprise Network</div></div></div>
         <span class="p-style gold">Executive Leadership</span>
         <ul class="p-traits"><li>Executive Presence</li><li>Strategic Judgment</li><li>Board Readiness</li><li>Stakeholder Influence</li></ul>
       </div>
-      <% } %>
 
     </div>
   </main>
@@ -742,10 +699,6 @@ function switchTab(tab) {
   // Same state machine and API payload as the previous version of this page —
   // { personaId, roleTitle, experienceLevel, vapiVoiceId } → POST /api/interview/sessions
   var IS_PREVIEW = <%- (typeof previewMode !== 'undefined' && previewMode) ? 'true' : 'false' %>;
-  // Drives the entitlement-exhausted modal's upgrade-path logic below —
-  // derived server-side from config/product-packages.js's own key order
-  // (server.js's /interview route), never hardcoded here.
-  var PACKAGE_ORDER = <%- JSON.stringify(typeof packageOrder !== 'undefined' && Array.isArray(packageOrder) ? packageOrder : ['explorer', 'growth', 'leadership']) %>;
   let state = { role: '', exp: null, persona: null, voice: null, org: null, jdText: '' };
   // Bridge for the Tailor-context script below (object shared by reference;
   // its writes to org/jdText are picked up by the POST payload above).
@@ -851,92 +804,6 @@ function switchTab(tab) {
     return mins + ' minutes ago';
   }
 
-  function capitalize(s) {
-    return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-  }
-
-  // ── Capability Modal — REUSABLE, not interview-specific ────────────────
-  // Any capability failure can call this: showCapabilityModal({ title,
-  // body, options, primaryCtaLabel, primaryCtaHref }). This function has
-  // zero knowledge of interviews, entitlements, or packages — all of
-  // that lives in the adapter functions that call it (showEntitlementModal
-  // below is one such adapter; a future "Resume Intelligence unavailable"
-  // or "Persona locked" modal would be another, calling this same
-  // function with different content, not a copy of this markup/logic).
-  //
-  // `options` are short, plain description rows — deliberately not a
-  // bullet-point feature breakdown and not individually-clickable CTAs.
-  // There is exactly ONE actionable button (primaryCtaLabel/Href), since
-  // showing several differently-labeled buttons that all currently point
-  // at the same non-functional-per-tier destination (no checkout exists
-  // yet) would be misleading, not premium.
-  function showCapabilityModal(config) {
-    document.getElementById('capabilityModalTitle').textContent = config.title || '';
-    document.getElementById('capabilityModalBody').textContent = config.body || '';
-
-    var optionsEl = document.getElementById('capabilityModalOptions');
-    optionsEl.innerHTML = '';
-    (config.options || []).forEach(function (optionText) {
-      var row = document.createElement('div');
-      row.textContent = optionText;
-      row.style.cssText = 'font-size:13px; color:var(--muted); line-height:1.4; padding:8px 0; border-top:1px solid var(--border);';
-      optionsEl.appendChild(row);
-    });
-
-    var cta = document.getElementById('capabilityModalPrimaryCta');
-    cta.textContent = config.primaryCtaLabel || '';
-    cta.href = config.primaryCtaHref || '#';
-
-    document.getElementById('capabilityModalOverlay').style.display = 'flex';
-  }
-
-  // ── Entitlement-exhausted adapter (INTERVIEW_ENTITLEMENT_EXHAUSTED, 403) ──
-  // Translates the structured error + resolved package into a
-  // showCapabilityModal() call. This is the ONLY place that knows about
-  // interview minutes/packages — the modal component itself doesn't.
-  function showEntitlementModal(errorData) {
-    var packageId = (errorData.package && errorData.package.id) || 'explorer';
-    var entitlement = errorData.entitlement || {};
-    var packageLabel = capitalize(packageId);
-
-    // Same phrasing convention as the Settings page's "Interview Minutes:
-    // X of Y remaining" line — one short sentence, not a paragraph.
-    var body = 'You\'ve used ' + (entitlement.minutesUsed != null ? Math.round(entitlement.minutesUsed) : '?')
-      + ' of ' + (entitlement.minutesIncluded != null ? entitlement.minutesIncluded : '?')
-      + ' minutes included with your ' + packageLabel + ' package.';
-
-    // Per-package option copy. NOT derived from PACKAGE_ORDER/config —
-    // deliberately hardcoded here, since this specific marketing phrasing
-    // ("Resume Intelligence, JD Intelligence & 3 AI Interviewers") isn't
-    // data that exists anywhere in config/product-packages.js today; that
-    // file stores permission KEYS and a minute count, not customer-facing
-    // prose. If this needs to change (new persona counts, a 4th package),
-    // it's a one-place edit here — small and explicit, not silently
-    // auto-generated from config in a way that could produce awkward text.
-    var options;
-    if (packageId === 'growth') {
-      options = ['Top Up Minutes', 'Upgrade to Leadership'];
-    } else if (packageId === 'leadership') {
-      options = ['Top Up Minutes'];
-    } else {
-      options = [
-        'Growth – 120 interview minutes, Resume Intelligence, JD Intelligence & 3 AI Interviewers.',
-        'Leadership – 300 interview minutes, Executive Intelligence & 6 AI Interviewers.',
-      ];
-    }
-
-    showCapabilityModal({
-      title: 'No Interview Minutes Remaining',
-      body: body,
-      options: options,
-      // Single primary CTA, per spec — until real checkout/top-up exists,
-      // every path leads to the pricing section (same destination the
-      // header's existing "Upgrade to Pro" CTA already uses).
-      primaryCtaLabel: 'View Plans & Pricing',
-      primaryCtaHref: '/#pricing',
-    });
-  }
-
   function showRecoveryModal(session) {
     var overlay = document.getElementById('recoveryModalOverlay');
     var body = document.getElementById('recoveryModalBody');
@@ -995,13 +862,6 @@ function switchTab(tab) {
     };
   }
 
-  var capabilityDismissBtn = document.getElementById('capabilityModalDismiss');
-  if (capabilityDismissBtn) {
-    capabilityDismissBtn.addEventListener('click', function () {
-      document.getElementById('capabilityModalOverlay').style.display = 'none';
-    });
-  }
-
   document.getElementById('beginBtn').addEventListener('click', async () => {
     const btn = document.getElementById('beginBtn');
     if (IS_PREVIEW) {
@@ -1041,38 +901,6 @@ function switchTab(tab) {
       // active elsewhere, most likely a real second tab. A real conflict.
       console.log('[Launch] genuinely active session exists elsewhere (id=' + result.data.activeSessionId + ') — not stale, real conflict');
       alert('You already have an interview in progress in another tab or window. Please finish or end that session before starting a new one.');
-      btn.textContent = 'Initialize Session →';
-      return;
-    }
-
-    // Structured entitlement error — show the branded modal instead of
-    // the generic alert, and instead of wasting 3 pointless retries on a
-    // failure that retrying can never fix. Logged to console for
-    // debugging (requirement: technical detail in console, friendly
-    // explanation in the UI), same as every other branch here.
-    if (result.status === 403 && result.data && result.data.reason === 'INTERVIEW_ENTITLEMENT_EXHAUSTED') {
-      console.log('[Launch] interview entitlement exhausted:', result.data);
-      showEntitlementModal(result.data);
-      btn.textContent = 'Initialize Session →';
-      return;
-    }
-
-    // Persona entitlement bypass attempt (UI shouldn't normally allow
-    // this — see the entitlement gating in this page's persona grid —
-    // but this endpoint is the real enforcement point, not the UI, so it
-    // must be handled here too, not just assumed unreachable). Reuses
-    // the same generic showCapabilityModal() as the entitlement-exhausted
-    // case above — exactly the kind of second caller this component was
-    // built for.
-    if (result.status === 403 && result.data && result.data.reason === 'PERSONA_NOT_ENTITLED') {
-      console.log('[Launch] persona not entitled on current package:', result.data);
-      showCapabilityModal({
-        title: 'Persona Not Available',
-        body: 'This interviewer isn\'t included in your current package.',
-        options: [],
-        primaryCtaLabel: 'View Plans & Pricing',
-        primaryCtaHref: '/#pricing',
-      });
       btn.textContent = 'Initialize Session →';
       return;
     }
@@ -1411,27 +1239,6 @@ function switchTab(tab) {
       <button id="recoveryResumeBtn" style="flex:1; padding:12px; border-radius:10px; border:none; background:var(--blue-hi); color:#fff; font-weight:600; font-size:14px; cursor:pointer;">Resume Interview</button>
       <button id="recoveryStartNewBtn" style="flex:1; padding:12px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--muted); font-weight:600; font-size:14px; cursor:pointer;">Start New</button>
     </div>
-  </div>
-</div>
-
-<!-- Capability Modal — a REUSABLE component, not interview-specific.
-     Any capability failure (entitlement exhausted, Resume Intelligence
-     locked, a locked Persona, JD Intelligence unavailable, report
-     generation unavailable, etc.) can show this same modal via
-     showCapabilityModal({ title, body, options, primaryCtaLabel,
-     primaryCtaHref }) — see the function definition in the script below.
-     This markup block has zero interview-specific knowledge; all of
-     that lives in the small adapter function (showEntitlementModal)
-     that calls this. Compact by design — one short body line, a few
-     plain option rows (no bullet lists), and exactly one primary CTA,
-     not an attempt to reproduce the pricing page in a modal. -->
-<div id="capabilityModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(2,6,16,0.75); z-index:9999; align-items:center; justify-content:center;">
-  <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; max-width:400px; width:90%; padding:24px; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-    <div id="capabilityModalTitle" style="font-size:17px; font-weight:700; color:var(--white); margin-bottom:8px;"></div>
-    <div id="capabilityModalBody" style="font-size:13.5px; color:var(--muted); line-height:1.5; margin-bottom:16px;"></div>
-    <div id="capabilityModalOptions" style="margin-bottom:16px;"></div>
-    <a id="capabilityModalPrimaryCta" href="#" style="display:block; text-align:center; padding:11px; border-radius:10px; font-weight:600; font-size:14px; text-decoration:none; background:var(--bright); color:#fff;"></a>
-    <button id="capabilityModalDismiss" style="width:100%; margin-top:8px; padding:8px; border-radius:10px; border:none; background:transparent; color:var(--muted); font-weight:600; font-size:12.5px; cursor:pointer;">Not now</button>
   </div>
 </div>
 

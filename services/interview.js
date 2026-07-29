@@ -355,6 +355,31 @@ const COMPETENCY_UNIVERSE = Object.keys(SUBSKILL_MATRIX).filter(k => k !== 'defa
 const createConversationMemory = require('./interview/conversation-memory');
 const { runCoverageAndMemoryEngine, textMentionsSubskill, qaBelongsToCompetency } = createConversationMemory(SUBSKILL_MATRIX);
 
+// ── Phase 2B — Behavioral Evidence (2026-07-25, founder-approved scope) ──
+// Detection lives in its own STAR-style module (services/behavioral/), kept
+// isolated from ConversationMemory/Coverage Engine on purpose — see
+// buildBehavioralEvidenceSnapshot below for how it's wired in: log-only
+// this phase, reuses runHypothesisEngine/EVIDENCE_TIERS completely
+// unchanged (defined further below in this file), no new persistence, no
+// change to composePrompt/scoring/Coverage Engine/selectNextCompetency.
+const { detectBehavioralCategories, detectBehavioralCategoriesWithMatches, BEHAVIORAL_CATEGORIES } = require('./behavioral/behavioral-evidence-engine');
+// ── Milestone 2A — Evidence Graph (2026-07-29, founder-approved scope) ──
+// Log-only, read-only aggregation layer — see buildInterviewSnapshot
+// below for the single call site. Consumes hypothesisMap and
+// behavioralHypothesisMap (both already computed here), plus qaPairs;
+// modifies neither. No downstream consumer this phase.
+const { buildEvidenceGraph } = require('./evidence-graph/evidence-graph-engine');
+// Observability hardening (2026-07-29) — human-readable labels for the
+// structured [BEHAVIORAL-*] logs only; does not affect detection, tiering,
+// or the BEHAVIORAL_CATEGORIES keys themselves anywhere else in the file.
+const BEHAVIORAL_LABELS = {
+  executive_influence: 'Executive Influence',
+  stakeholder_management: 'Stakeholder Management',
+  conflict_resolution: 'Conflict Resolution',
+  change_leadership: 'Change Leadership',
+  executive_communication: 'Executive Communication',
+};
+
 // ── B. The Hypothesis & Evidence Engine ──
 // Returns STRUCTURED DATA ONLY (per production-readiness audit item 2/7)
 // — no hard-coded English sentences here. The sentence that used to be
@@ -384,6 +409,61 @@ function runHypothesisEngine(comp, compData) {
   });
 
   return { evidenceTier, leastValidatedSubskill, coverageRatio, avgScore, needsVerification: evidenceTier.needsVerification };
+}
+
+// ── B.1 Behavioral Evidence Snapshot (Phase 2B, 2026-07-25) ──
+// Small, isolated helper — NOT inlined into buildInterviewSnapshot, per
+// explicit founder preference, so that function stays a pure orchestrator.
+// Reuses runHypothesisEngine (immediately above, completely unchanged —
+// not even a new parameter) for the tier/count math; the only new logic
+// here is tallying which behavioral categories each answer touches, via
+// the isolated detector in services/behavioral/behavioral-evidence-engine.js.
+//
+// compData shape fed into runHypothesisEngine mirrors exactly what
+// runCoverageAndMemoryEngine already produces for structural competencies
+// ({ scores: [], observedSubskills: Set }), so the reuse is genuinely
+// drop-in, not adapted:
+//   - scores: for each answer where this behavioral category was
+//     detected, its own overall weighted score (already present on the
+//     qaPair, already computed by scoreAnswer for an entirely different
+//     purpose) is reused as that instance's "strength" signal — no new
+//     AI judgment, no new LLM call, just reusing a number that already
+//     exists.
+//   - observedSubskills: always an empty Set in this first pass —
+//     behavioral categories have no subskill-level vocabulary yet (that's
+//     explicitly out of scope here), so coverageRatio/leastValidatedSubskill
+//     on the returned hypothesis objects are not meaningful for these
+//     categories and are not consumed anywhere. Flagged, not hidden.
+//
+// Output of this function is NOT wired into composePrompt, scoring,
+// Coverage Engine, or selectNextCompetency — see the log-only call site
+// inside buildInterviewSnapshot below.
+function buildBehavioralEvidenceSnapshot(qaPairs) {
+  const compDataByCategory = {};
+  BEHAVIORAL_CATEGORIES.forEach((category) => {
+    compDataByCategory[category] = { scores: [], observedSubskills: new Set() };
+  });
+
+  (Array.isArray(qaPairs) ? qaPairs : []).forEach((qa) => {
+    if (!qa || !qa.answer) return;
+    const detected = detectBehavioralCategories(qa.answer);
+    BEHAVIORAL_CATEGORIES.forEach((category) => {
+      if (detected[category] && qa.score !== null && qa.score !== undefined && !qa.wasSkipped) {
+        compDataByCategory[category].scores.push(Number(qa.score));
+      }
+    });
+  });
+
+  const behavioralHypothesisMap = {};
+  const behavioralInstanceCounts = {};
+  BEHAVIORAL_CATEGORIES.forEach((category) => {
+    behavioralHypothesisMap[category] = runHypothesisEngine(category, compDataByCategory[category]);
+    // Real instance count, straight from the tally above — NOT derived
+    // from avgScore or any other runHypothesisEngine field, which would
+    // be a meaningless substitute for an actual count.
+    behavioralInstanceCounts[category] = compDataByCategory[category].scores.length;
+  });
+  return { behavioralHypothesisMap, behavioralInstanceCounts };
 }
 
 // ── C. The Cognitive Strategy Engine ──
@@ -433,6 +513,106 @@ function buildInterviewSnapshot({ roleTitle, qaPairs, questionCount }) {
   const hypothesisMap = {};
   priority.forEach(c => { hypothesisMap[c] = runHypothesisEngine(c, memoryMap[c]); });
   const globalMaturityTiers = priority.map(c => hypothesisMap[c]);
+
+  // Phase 2B, log-only (founder-approved scope, 2026-07-25; observability
+  // hardening, 2026-07-29): computed alongside the existing snapshot, not
+  // merged into its return value — this is deliberate, not an oversight.
+  // Nothing downstream (composePrompt, scoreAnswer, selectNextCompetency,
+  // Coverage Engine) reads this snapshot object for a "behavioral" field,
+  // so simply not adding one is the actual safety mechanism: there is
+  // nothing to accidentally wire in later by touching this return
+  // statement.
+  //
+  // Observability hardening (2026-07-29): four structured log sections,
+  // replacing the previous single summary line. This is diagnostics only
+  // — detectBehavioralCategoriesWithMatches (services/behavioral/
+  // behavioral-evidence-engine.js) is a pure, additive sibling to the
+  // function actually used for detection (detectBehavioralCategories,
+  // called inside buildBehavioralEvidenceSnapshot below, completely
+  // unchanged); no vocabulary, threshold, or tier logic is touched here.
+  const { behavioralHypothesisMap, behavioralInstanceCounts } = buildBehavioralEvidenceSnapshot(qaPairs);
+
+  const latestQa = Array.isArray(qaPairs) && qaPairs.length ? qaPairs[qaPairs.length - 1] : null;
+  const latestAnswerText = (latestQa && latestQa.answer) ? String(latestQa.answer) : '';
+  const latestWordCount = latestAnswerText.trim() ? latestAnswerText.trim().split(/\s+/).length : 0;
+
+  console.log(`[BEHAVIORAL-INPUT] turn=${currentTurn}\nWord Count: ${latestWordCount}\nTranscript: ${JSON.stringify(latestAnswerText)}`);
+
+  const latestMatches = detectBehavioralCategoriesWithMatches(latestAnswerText);
+  const matchLines = BEHAVIORAL_CATEGORIES
+    .filter((c) => latestMatches[c])
+    .map((c) => `Matched: "${latestMatches[c]}" -> ${BEHAVIORAL_LABELS[c]}`);
+  console.log(`[BEHAVIORAL-MATCHES] turn=${currentTurn}\n${matchLines.length ? matchLines.join('\n') : 'No vocabulary matches.'}`);
+
+  const summaryLines = BEHAVIORAL_CATEGORIES
+    .map((c) => `${BEHAVIORAL_LABELS[c]}: Tier=${behavioralHypothesisMap[c].evidenceTier.label} Count=${behavioralInstanceCounts[c]}`);
+  console.log(`[BEHAVIORAL-SUMMARY] turn=${currentTurn}\n${summaryLines.join('\n')}`);
+
+  // Reason logging (2026-07-29): only for THIS turn's answer specifically
+  // — matches none of the categories at all. Reflects the real, existing
+  // conditions in buildBehavioralEvidenceSnapshot/detectBehavioralCategories
+  // as they already are; no new gate or threshold introduced here. There
+  // is currently no minimum-word floor in behavioral detection (unlike
+  // STAR's STAR_MIN_WORDS) — reported honestly as "no vocabulary matched"
+  // rather than inventing a threshold reason that doesn't actually exist
+  // in the heuristic yet.
+  if (!matchLines.length) {
+    let reason;
+    if (!latestQa) {
+      reason = 'No answer recorded yet this session.';
+    } else if (!latestAnswerText.trim()) {
+      reason = latestQa.wasSkipped ? 'Question was skipped — no answer text.' : 'Transcript empty.';
+    } else {
+      reason = 'No vocabulary matched.';
+    }
+    console.log(`[BEHAVIORAL-EVIDENCE] turn=${currentTurn} No Evidence this turn\nReason: ${reason}`);
+  }
+
+  // Milestone 2A — Evidence Graph (log-only, founder-approved scope,
+  // 2026-07-29): computed alongside the existing snapshot, exactly like
+  // Phase 2B's behavioral evidence before it — NOT merged into the return
+  // value below. Nothing downstream reads this snapshot object for a
+  // "graph" field, so simply not adding one is the actual safety
+  // mechanism, same discipline as Phase 2B's own first pass.
+  //
+  // Enhanced observability (Milestone 2B, 2026-07-29): rebuilt on the new
+  // query API rather than reaching into evidenceGraph.experiences/
+  // evidenceNodes directly — this log is now itself a real consumer of
+  // getExperienceCoverage()/getCoverageSummary(), proving the query
+  // surface is usable, not just tested in isolation.
+  const evidenceGraph = buildEvidenceGraph(qaPairs, hypothesisMap, behavioralHypothesisMap);
+
+  function humanizeKey(key) {
+    return String(key).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  const experienceLines = [];
+  let resumeStoryCount = 0;
+  let hypotheticalCount = 0;
+  evidenceGraph.getExperienceCoverage().forEach((exp) => {
+    if (!exp.keysCovered.length) return; // an experience with no evidence yet has nothing to show here
+    const label = exp.type === 'resume_story' ? `Resume Story #${++resumeStoryCount}` : `Hypothetical #${++hypotheticalCount}`;
+    experienceLines.push(`  ${label}`);
+    exp.keysCovered.forEach(({ key }) => experienceLines.push(`    ${humanizeKey(key)}`));
+    experienceLines.push('');
+  });
+
+  const coverageLines = [];
+  evidenceGraph.getCoverageSummary().forEach((s) => {
+    if (s.totalObservations === 0) return;
+    coverageLines.push(`${humanizeKey(s.key)}`);
+    coverageLines.push(`  Observations: ${s.totalObservations}`);
+    coverageLines.push(`  Experiences: ${s.distinctExperienceCount}`);
+    coverageLines.push(`  Tier: ${s.bestTierLabel}`);
+    coverageLines.push(`  STAR-complete: ${s.starCompleteCount}`);
+    coverageLines.push('');
+  });
+
+  console.log(
+    `[EVIDENCE-GRAPH] turn=${currentTurn}\n` +
+    `Experiences:\n${experienceLines.length ? experienceLines.join('\n') : '  (none yet)\n'}\n` +
+    `Coverage:\n${coverageLines.length ? coverageLines.join('\n') : '  (no evidence recorded yet)'}`
+  );
 
   return { roleKey, priority, currentTurn, memoryMap, hypothesisMap, globalMaturityTiers };
 }
@@ -626,6 +806,38 @@ function composePrompt({ competency, calibrationState, evidenceProfile, strategy
   // inside the model's own reasoning.
   const story = questionBlueprint && questionBlueprint.story;
 
+  // Story guardrails (bug fix, 2026-07-28): RELOCATED, not rewritten. These
+  // three instructions were previously computed only inside resumeStep,
+  // which is itself gated behind hasResumeContext — meaning ALL THREE were
+  // silently absent from the prompt whenever no résumé was on file,
+  // regardless of whether their own individual condition (no story
+  // selected / is a follow-up / is a JD-scenario turn) was true. Confirmed
+  // directly via an end-to-end prompt capture: neither the original
+  // "no story" instruction nor the newer anti-repetition addition reached
+  // the assembled runtime prompt in the no-résumé case. Each instruction's
+  // own condition is unchanged from before — only the outer gate
+  // (hasResumeContext) has been removed, so each is now controlled solely
+  // by its own logical condition, exactly as it always should have been:
+  //   - no-story instruction   -> controlled by !story (selectedStoryKey null)
+  //   - follow-up instruction  -> controlled by isFollowup + grounding_answer_excerpt
+  //   - JD-scenario instruction -> controlled by strategy_source === 'JDScenario'
+  // Referenced once inside resumeStep (unchanged position, for the
+  // with-résumé case — same ordering as before) and once outside it, only
+  // when !hasResumeContext, to avoid rendering it twice. See below.
+  const storyGuardrails = `${(!story && !(isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt) && !(questionBlueprint && questionBlueprint.strategy_source === 'JDScenario')) ? `
+CRITICAL — NO STORY WAS SELECTED FOR THIS TURN: the blueprint above deliberately chose not to use a resume story. This is a real decision, not an oversight, and it is not yours to override. Your question MUST NOT name, reference, or allude to ANY company, employer, customer, or project from the candidate's career history — not the one from a previous question, not one you might infer from context, none. Do not open with "At [company]...", "During your [X] work...", "While you were leading...", or any phrase that implies a specific past employer. Build entirely hypothetical, forward-looking, or general-scenario language instead (e.g. "Imagine you inherit an organisation where...", "If you were leading a team where..."). If you catch yourself about to type a real company name, stop and rewrite the sentence without it.
+${!isFollowup ? `CRITICAL — DO NOT RE-ANCHOR ON A PREVIOUSLY-DISCUSSED EXPERIENCE (bug fix, 2026-07-28): this is a PRIMARY question, not a follow-up — its job is to broaden the interview into new ground, not deepen what's already been covered. The Conversational History above (layer 8) exists so you understand what's already been asked and scored, NOT as a well of scenario material to keep drawing this new question from. If the candidate described a specific project, transformation, or situation in an earlier answer, do NOT build this new question around that same experience, even reframed as a hypothetical — introduce a genuinely different scenario, angle, or competency instead. Reusing the shape of an experience the candidate already walked through, turn after turn, is exactly the "mining one story" pattern this rule exists to prevent.
+Instead, prefer one of these — pick whichever best fits the competency above, don't force all of them: a hypothetical executive scenario, a board-level judgment question, a cross-functional leadership scenario, a crisis-management scenario not previously discussed, a people-leadership scenario, or a strategic trade-off question.` : `NOTE: this IS a follow-up with no résumé story behind it (nothing was ever planned for this thread) — deepen the candidate's immediately preceding answer specifically, using only what they actually said. Do not introduce a new scenario here; that restriction is for primaries only.`}` : ''}${(!story && isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt) ? `
+CRITICAL — GROUND THIS FOLLOW-UP IN WHAT THE CANDIDATE ACTUALLY SAID: a resume story was originally planned for this follow-up, but it does not match what the candidate described in their last answer, so it has been deliberately abandoned — do not use it, and do not invent a similar-sounding one. Build this follow-up ENTIRELY from the candidate's own words below. Do not introduce any company, technology, metric, or project that is not present in this quoted answer:
+"""
+${questionBlueprint.grounding_answer_excerpt}
+"""
+Ask ONE question that deepens something specific and concrete from the quoted answer above — a decision they made, a trade-off, a stakeholder reaction, or a result they mentioned. If nothing sufficiently concrete is present, ask them to elaborate on their overall approach in general terms — still without introducing any outside fact.` : ''}${(questionBlueprint && questionBlueprint.strategy_source === 'JDScenario') ? `
+CRITICAL — THIS TURN MUST BE DRIVEN BY THE JOB DESCRIPTION, NOT A GENERIC SCENARIO (bug fix, 2026-07-24): the Interview Strategy chose this position specifically to test the candidate against the target role's own stated responsibilities. A generic hypothetical ("imagine you inherit a team where...") is NOT acceptable here — that's what a story-less turn looks like when there's no JD to lean on; you have one. Build the scenario around SPECIFIC responsibilities, technologies, or challenges named in the job description block below — the more concretely it reflects language actually in the JD, the better this question is doing its job.${questionBlueprint.jd_objective ? `\nThe JD specifically emphasizes, in the context of ${competency.replace('_', ' ')}: "${questionBlueprint.jd_objective}" — build the scenario around this, not around the JD in the abstract.` : `\nNo single sentence in the JD was auto-highlighted for this competency, so read the full JD block above yourself and pick the most relevant real responsibility or challenge it describes for ${competency.replace('_', ' ')} — do not fall back to a generic scenario just because nothing was pre-extracted.`}
+Still do NOT reference the candidate's own résumé/employer history in this question — the scenario is about the TARGET role's world, not their past one.
+${!isFollowup ? `CRITICAL — DO NOT RE-ANCHOR ON A PREVIOUSLY-DISCUSSED EXPERIENCE (bug fix, 2026-07-28, mirrored into the JD-scenario branch 2026-07-29 — same policy, same wording, no new instruction invented): this is a PRIMARY question, not a follow-up — its job is to broaden the interview into new ground, not deepen what's already been covered. The Conversational History above (layer 8) exists so you understand what's already been asked and scored, NOT as a well of scenario material to keep drawing this new question from. If the candidate described a specific project, transformation, or situation in an earlier answer, do NOT build this new question around that same experience, even reframed as a hypothetical — introduce a genuinely different scenario, angle, or competency instead. Reusing the shape of an experience the candidate already walked through, turn after turn, is exactly the "mining one story" pattern this rule exists to prevent.
+Instead, prefer one of these — pick whichever best fits the competency above, don't force all of them: a hypothetical executive scenario, a board-level judgment question, a cross-functional leadership scenario, a crisis-management scenario not previously discussed, a people-leadership scenario, or a strategic trade-off question.` : ''}` : ''}`;
+
   const resumeStep = hasResumeContext ? `
 [TODAY'S STORY — pre-retrieved by orchestration, the ONLY story available for this turn]
 ${story ? renderBlueprintStory(story) : '(none — no resume story fit this competency this turn; see reason below)'}
@@ -652,17 +864,7 @@ Phrasing rules:
 - If a story was retrieved but has no hook, build the question FROM that story more generally — name the company/achievement naturally, then ask the competency-relevant question about it.
 - If no story was retrieved but a JD requirement is listed, frame a role-specific scenario around that requirement instead — no resume reference.
 - If neither is present, ask a general competency question.
-${(!story && !(isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt) && !(questionBlueprint && questionBlueprint.strategy_source === 'JDScenario')) ? `
-CRITICAL — NO STORY WAS SELECTED FOR THIS TURN: the blueprint above deliberately chose not to use a resume story. This is a real decision, not an oversight, and it is not yours to override. Your question MUST NOT name, reference, or allude to ANY company, employer, customer, or project from the candidate's career history — not the one from a previous question, not one you might infer from context, none. Do not open with "At [company]...", "During your [X] work...", "While you were leading...", or any phrase that implies a specific past employer. Build entirely hypothetical, forward-looking, or general-scenario language instead (e.g. "Imagine you inherit an organisation where...", "If you were leading a team where..."). If you catch yourself about to type a real company name, stop and rewrite the sentence without it.` : ''}
-${(!story && isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt) ? `
-CRITICAL — GROUND THIS FOLLOW-UP IN WHAT THE CANDIDATE ACTUALLY SAID: a resume story was originally planned for this follow-up, but it does not match what the candidate described in their last answer, so it has been deliberately abandoned — do not use it, and do not invent a similar-sounding one. Build this follow-up ENTIRELY from the candidate's own words below. Do not introduce any company, technology, metric, or project that is not present in this quoted answer:
-"""
-${questionBlueprint.grounding_answer_excerpt}
-"""
-Ask ONE question that deepens something specific and concrete from the quoted answer above — a decision they made, a trade-off, a stakeholder reaction, or a result they mentioned. If nothing sufficiently concrete is present, ask them to elaborate on their overall approach in general terms — still without introducing any outside fact.` : ''}
-${(questionBlueprint && questionBlueprint.strategy_source === 'JDScenario') ? `
-CRITICAL — THIS TURN MUST BE DRIVEN BY THE JOB DESCRIPTION, NOT A GENERIC SCENARIO (bug fix, 2026-07-24): the Interview Strategy chose this position specifically to test the candidate against the target role's own stated responsibilities. A generic hypothetical ("imagine you inherit a team where...") is NOT acceptable here — that's what a story-less turn looks like when there's no JD to lean on; you have one. Build the scenario around SPECIFIC responsibilities, technologies, or challenges named in the job description block below — the more concretely it reflects language actually in the JD, the better this question is doing its job.${questionBlueprint.jd_objective ? `\nThe JD specifically emphasizes, in the context of ${competency.replace('_', ' ')}: "${questionBlueprint.jd_objective}" — build the scenario around this, not around the JD in the abstract.` : `\nNo single sentence in the JD was auto-highlighted for this competency, so read the full JD block above yourself and pick the most relevant real responsibility or challenge it describes for ${competency.replace('_', ' ')} — do not fall back to a generic scenario just because nothing was pre-extracted.`}
-Still do NOT reference the candidate's own résumé/employer history in this question — the scenario is about the TARGET role's world, not their past one.` : ''}
+${storyGuardrails}
 ${isFollowup ? `- This is a FOLLOW-UP: deepen the candidate's last answer about this exact same story/topic — do not shift to a different one.` : `- This is a NEW ${questionBlueprint.question_type} question — the story above was already chosen to avoid repeating a story used earlier this session.`}
 
 One question = one objective (critical self-check before you finalize): a primary question must contain exactly ONE resume/story reference, ONE competency, ONE objective, and ONE ask — nothing else. If your draft mentions situation AND stakeholders AND constraints AND outcome all at once, cut it down to the single core ask before returning it. Then run the TWO FINAL CHECKS from the Executive Interviewer Voice contract above — the Personalization Test and the Executive Interview Test — and rewrite before returning if either fails.
@@ -713,7 +915,7 @@ Before generating the next question, you must step through this explicit reasoni
 4. Is there any material semantic contradiction or timeline friction across prior answers to investigate?
 5. What is the candidate's current career stage?
 6. What is the appropriate cognitive mode?
-${resumeStepFinal}${finalStepNum}. Generate exactly ONE concise question — phrased under the Executive Interviewer Voice contract above (single objective, situation-led, conversational opener) — that collects the highest-value missing evidence for [${evidenceProfile.leastValidatedSubskill}].${resumeGenerationClause}
+${resumeStepFinal}${!hasResumeContext ? storyGuardrails + '\n' : ''}${finalStepNum}. Generate exactly ONE concise question — phrased under the Executive Interviewer Voice contract above (single objective, situation-led, conversational opener) — that collects the highest-value missing evidence for [${evidenceProfile.leastValidatedSubskill}].${resumeGenerationClause}
 
 Do not append meta-commentary, introductory remarks, or structural summaries. The "question" value in your JSON output must contain ONLY the raw interview question text — nothing else.`;
 }
@@ -846,7 +1048,30 @@ function selectStoryForCompetency({ storyLibrary, competency, usedStoryKeys, jdT
   const used = usedStoryKeys instanceof Set ? usedStoryKeys : new Set(usedStoryKeys || []);
   const jdLower = (typeof jdText === 'string') ? jdText.toLowerCase() : '';
 
-  const scored = stories.map((s) => {
+  // Story Lifecycle / Retirement (feature, 2026-07-28, founder-approved):
+  // this function is only ever called to pick a story for a NEW PRIMARY
+  // question — follow-ups use a separately forced story_key and never
+  // reach this code at all. So "has this story_key already appeared in
+  // usedStoryKeys" already means exactly "was this story used for an
+  // earlier primary (and whatever follow-up did or didn't happen after
+  // it)" — i.e. it has already completed its Primary -> Optional
+  // Follow-up lifecycle. Previously this only cost a story a soft -100
+  // scoring penalty below, which could still let it be re-selected once
+  // every story in a small library had taken the same penalty. Retirement
+  // makes this a hard exclusion instead: a used story is removed from the
+  // candidate pool outright. The one explicit exception the founder asked
+  // for — "unless there are no alternative stories available" — is the
+  // fallback below: if excluding used stories would leave nothing to
+  // choose from, allow reuse rather than force a story-less turn. The
+  // -100 penalty further down is left in place, unchanged; it's now a
+  // no-op in both branches (never true in the unused pool, always true
+  // uniformly in the fallback pool), which is harmless and avoids
+  // touching the scoring internals beyond this one additive filter.
+  const unusedStories = stories.filter(s => !used.has(s.story_key));
+  const candidatePool = unusedStories.length ? unusedStories : stories;
+  const isRetirementFallback = !unusedStories.length; // every story already used — the founder's explicit exception
+
+  const scored = candidatePool.map((s) => {
     const hints = Array.isArray(s.competency_hints) ? s.competency_hints.map(h => String(h).toLowerCase()) : [];
     const businessContext = Array.isArray(s.business_context) ? s.business_context.map(h => String(h).toLowerCase()) : [];
     const jdAlignmentTags = Array.isArray(s.jd_alignment_tags) ? s.jd_alignment_tags.map(h => String(h).toLowerCase()) : [];
@@ -885,7 +1110,7 @@ function selectStoryForCompetency({ storyLibrary, competency, usedStoryKeys, jdT
     if (competency === 'leadership' && (s.leadership_scope || /(led |leading |managed |team of |direct reports)/.test(storyText))) {
       score += 3;                                                                     // leadership-level signal
     }
-    if (used.has(s.story_key)) score -= 100; // hard diversity penalty, not an outright ban — a candidate
+    if (!isRetirementFallback && used.has(s.story_key)) score -= 100; // hard diversity penalty, not an outright ban — a candidate
                                               // with only one relevant story can still reuse it eventually
     return { story_key: s.story_key, score };
   });

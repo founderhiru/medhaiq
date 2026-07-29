@@ -73,8 +73,14 @@ app.use('/api/debug/elevenlabs/voices', require('./routes/debug-elevenlabs-voice
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/', async (req, res) => {
   try {
-    const { getCapabilities } = require('./lib/capabilities');
-    const homeCapabilities = await getCapabilities(req);
+    // Previously this called getCapabilities(req) a second time here,
+    // pointed at a SEPARATE engine (lib/capabilities.js) from the one
+    // middleware/capabilities.js already computed globally for this same
+    // request. Now that both are unified (ADR-011), req.capabilities is
+    // already the exact same object — reusing it removes a redundant
+    // DB round-trip on every homepage visit, safe only because of the
+    // reconciliation.
+    const homeCapabilities = req.capabilities;
     res.render('layout', { ...buildLandingContext(), homeCapabilities });
   } catch (err) {
     console.error('[homepage] capabilities resolution failed, rendering as visitor:', err.message);
@@ -125,7 +131,13 @@ app.get('/login',       (_req, res) => res.redirect('/auth/login'));
 
 // Interview setup
 app.get('/interview', requireAuthPage, (req, res) => {
-  res.render('interview-setup');
+  // packageOrder drives the entitlement-exhausted modal's upgrade-path
+  // logic (interview-setup.ejs) — derived from config/product-packages.js's
+  // own key order (explorer, growth, leadership), so a future package
+  // added there automatically gets correct "Upgrade to X" / "Buy More
+  // Minutes" behavior with no template change needed.
+  const { PRODUCT_PACKAGES } = require('./config/product-packages');
+  res.render('interview-setup', { packageOrder: Object.keys(PRODUCT_PACKAGES) });
 });
 
 // Interview session
@@ -474,6 +486,7 @@ app.get('/founder', requireFounderPage, async (req, res) => {
     const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, getFounderAlerts } = require('./db/founder-stats');
     const { getFeedbackSummary, getRecentFeedback } = require('./db/founder-feedback');
     const { listUsers } = require('./db/founder-users');
+    const { PRODUCT_PACKAGES } = require('./config/product-packages');
 
     // All six sections' data depend only on shared, already-committed
     // database state, not on each other's results — fetched in parallel.
@@ -495,6 +508,11 @@ app.get('/founder', requireFounderPage, async (req, res) => {
       feedbackSummary,
       recentFeedback,
       users,
+      // "Manage Package" dropdown source — Object.keys() preserves
+      // config/product-packages.js's own definition order (explorer,
+      // growth, leadership), so adding a future package there is the
+      // ONLY change needed for it to appear here too. Never hardcoded.
+      packageOptions: Object.keys(PRODUCT_PACKAGES),
       footerInfo: {
         lastRefreshed: new Date().toISOString(),
         environment: process.env.NODE_ENV === 'production' ? 'Production' : 'Staging',

@@ -10,6 +10,8 @@ const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, get
 const { getFeedbackSummary, getRecentFeedback } = require('../db/founder-feedback');
 const { getPendingWaitlistEntries } = require('../db/founder-waitlist');
 const { listUsers } = require('../db/founder-users');
+const { reassignPackage } = require('../db/package-acquisitions');
+const { PRODUCT_PACKAGES } = require('../config/product-packages');
 const { createInvitation } = require('../db/invitations');
 
 // Same shape as requireAuth in routes/dashboard.js, plus a founder check.
@@ -58,6 +60,37 @@ router.get('/users', requireFounder, async (req, res) => {
   } catch (err) {
     console.error('[founder] users error:', err);
     return res.status(500).json({ error: 'Failed to load users' });
+  }
+});
+
+// PATCH /api/founder/users/:id/package — User Package Management (MVP).
+// Persists through package_acquisitions ONLY (Architecture v1.5, ADR-013)
+// — never touches users.subscription_plan, never introduces a
+// subscription_tier column. Ends the user's current active acquisition
+// and creates a new one in a single transaction (db/package-acquisitions.js
+// :: reassignPackage), preserving full history rather than overwriting
+// anything. Because every capability-dependent surface (Dashboard pill,
+// Settings, route guards) already resolves the active package fresh on
+// every request with no caching layer, the change is visible everywhere
+// the instant this commits — nothing else needs to be told about it.
+router.patch('/users/:id/package', requireFounder, async (req, res) => {
+  try {
+    const targetUserId = parseInt(req.params.id, 10);
+    const packageId = req.body && req.body.packageId;
+    if (!targetUserId || !PRODUCT_PACKAGES[packageId]) {
+      return res.status(400).json({ error: 'A valid user and package are required' });
+    }
+    const includedMinutes = PRODUCT_PACKAGES[packageId].entitlements.includedMinutes;
+    const acquisition = await reassignPackage({
+      userId: targetUserId,
+      packageId,
+      grantedBy: req.user.id,
+      initialMinutes: includedMinutes,
+    });
+    return res.json({ success: true, package: { id: acquisition.package_id } });
+  } catch (err) {
+    console.error('[founder] package reassignment error:', err);
+    return res.status(500).json({ error: 'Failed to update package' });
   }
 });
 

@@ -1,8 +1,11 @@
 // middleware/guards.js
 //
-// Route Guards. Every guard here is a thin consumer of the Capability
-// Engine (lib/capabilities.js) — none of them re-derive access logic of
-// their own. This replaces:
+// Route Guards. Every guard here is a thin consumer of the unified
+// Capability Engine (lib/capability-engine.js — see ADR-011). Prior to
+// this revision, this file required lib/capabilities.js, a SEPARATE
+// engine from the one middleware/capabilities.js attaches globally on
+// every request. That split is now reconciled: both paths read from the
+// same lib/capability-engine.js. This replaces:
 //   - the near-identical requireAuth() copy-pasted in routes/dashboard.js,
 //     routes/feedback.js, routes/interview.js, routes/resume.js
 //   - the inline `if (!req.cookies?.user_id) return res.redirect(...)`
@@ -22,7 +25,7 @@
 // so downstream handlers/templates never need to call getCapabilities()
 // again themselves.
 
-const { getCapabilities } = require('../lib/capabilities');
+const { getCapabilities } = require('../lib/capability-engine');
 // Server-owned session lifecycle management (bug fix, 2026-07-24;
 // three-tier recovery design, 2026-07-24 follow-up) — see
 // requireInterviewEntitlement below.
@@ -91,8 +94,9 @@ async function requireInterviewEntitlement(req, res, next) {
         if (!refreshed.actions.canStartInterview) {
           return res.status(403).json({
             error: 'Interview entitlement exhausted',
-            reason: 'ENTITLEMENT_EXHAUSTED',
+            reason: 'INTERVIEW_ENTITLEMENT_EXHAUSTED',
             entitlement: refreshed.interviewEntitlement,
+            package: refreshed.package,
           });
         }
         req.user = refreshed.user;
@@ -142,8 +146,9 @@ async function requireInterviewEntitlement(req, res, next) {
   if (!capabilities.actions.canStartInterview) {
     return res.status(403).json({
       error: 'Interview entitlement exhausted',
-      reason: 'ENTITLEMENT_EXHAUSTED',
+      reason: 'INTERVIEW_ENTITLEMENT_EXHAUSTED',
       entitlement: capabilities.interviewEntitlement,
+      package: capabilities.package,
     });
   }
 

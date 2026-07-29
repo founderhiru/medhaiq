@@ -190,7 +190,7 @@ async function runGuardTests() {
     const originalRequire = Module.prototype.require;
     let capabilitiesCallCount = 0;
     Module.prototype.require = function (id) {
-      if (id === '../lib/capabilities') {
+      if (id === '../lib/capability-engine') {
         return {
           getCapabilities: async () => {
             capabilitiesCallCount++;

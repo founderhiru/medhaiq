@@ -5,6 +5,8 @@
 // services/activity-logger.js. Approved explicitly: don't duplicate data
 // the activity log already tracks (see conversation history).
 const { pool } = require('./index');
+const { getActivePackageAcquisitionsForUsers } = require('./package-acquisitions');
+const { DEFAULT_PACKAGE_ID } = require('../config/product-packages');
 
 const LOGIN_ACTIONS = ['login_google', 'login_password', 'login_magic_link_verified'];
 
@@ -24,7 +26,16 @@ async function listUsers({ search = '', limit = 25, offset = 0 } = {}) {
      LIMIT $4 OFFSET $5`,
     [search.trim(), searchTerm, LOGIN_ACTIONS, limit, offset]
   );
-  return res.rows;
+  const rows = res.rows;
+
+  // Package (Architecture v1.5, ADR-013) — resolved from package_acquisitions,
+  // NEVER from u.subscription_plan/subscription_status above (those two
+  // columns are only still selected here for the Founder Dashboard's own
+  // historical reference /the pre-existing "Status" column display, not
+  // for anything package-related). One batched query for the whole page
+  // of users, not one query per row.
+  const packageMap = await getActivePackageAcquisitionsForUsers(rows.map(r => r.id));
+  return rows.map(r => ({ ...r, package_id: packageMap[r.id] || DEFAULT_PACKAGE_ID }));
 }
 
 module.exports = { listUsers };
