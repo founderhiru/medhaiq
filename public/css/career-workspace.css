@@ -36,16 +36,16 @@
   border-radius: var(--radius);
 }
 .overview-stat {
-  padding: 20px 24px;
+  padding: 13px 24px;
   display: flex; gap: 14px; align-items: flex-start;
   border-right: 1px solid rgba(255,255,255,0.10);
 }
 .overview-stat:last-child { border-right: none; }
 .overview-stat .num { font-size: 22px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--white); }
-.overview-stat .label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.overview-stat .label { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; }
 .overview-stat .sublabel { font-size: 11px; color: var(--dim); margin-top: 6px; }
 
-.overview-stat .num.resume-intel-status { display: flex; align-items: center; gap: 8px; font-size: 18px; }
+.overview-stat .num.resume-intel-status { display: flex; align-items: center; gap: 8px; font-size: 22px; }
 .resume-intel-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 .resume-intel-dot.is-active {
   background: #34D399;
@@ -57,15 +57,15 @@
   70% { box-shadow: 0 0 0 6px rgba(52,211,153,0); }
   100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
 }
-.resume-intel-cta { color: var(--bright); text-decoration: none; font-weight: 600; display: inline-block; }
-.resume-intel-cta:hover { color: var(--white); }
+.resume-intel-cta { color: var(--bright); text-decoration: none; font-weight: 700; font-size: 12px; display: inline-block; }
+.resume-intel-cta:hover { color: var(--white); text-decoration: underline; }
 
 .page-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 6px; }
 .new-interview-btn {
   display: inline-flex; align-items: center; gap: 7px;
   background: var(--bright); color: var(--white);
-  padding: 10px 16px; border-radius: 10px;
-  font-size: 13px; font-weight: 700; text-decoration: none;
+  padding: 7px 14px; border-radius: 10px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
   white-space: nowrap;
 }
 .new-interview-btn:hover { background: var(--royal); }
@@ -97,8 +97,6 @@
 .db-profile-menu-header { padding: 14px 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .db-profile-menu-name { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
 
-/* Interview Readiness — plain score summary (no ring, matches T.png) +
-   a real analytics chart with Y-axis labels, gridlines, and an axis line. */
 .readiness-row { display: flex; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
 .readiness-summary-col { flex-shrink: 0; min-width: 130px; }
 .readiness-score { display: flex; align-items: baseline; gap: 6px; margin-bottom: 2px; }
@@ -145,19 +143,18 @@
 .competency-stat-value.good { color: #6EE7B7; }
 .competency-stat-value.focus { color: #FCD34D; }
 
-/* AI Interview Minutes card */
 .minutes-panel h3 { display: flex; align-items: center; gap: 6px; }
 .minutes-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 .minutes-ring-wrap { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
 .minutes-ring-wrap svg { transform: rotate(-90deg); }
-.minutes-ring-track { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 12; }
-.minutes-ring-fill { fill: none; stroke: url(#minutesRingGrad); stroke-width: 12; stroke-linecap: round; }
+.minutes-ring-track { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 11; }
+.minutes-ring-fill { fill: none; stroke: url(#minutesRingGrad); stroke-width: 11; stroke-linecap: round; }
 .minutes-ring-center {
   position: absolute; inset: 0; display: flex; flex-direction: column;
   align-items: center; justify-content: center; text-align: center;
 }
 .minutes-ring-center .num { font-size: 24px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: #ffffff; }
-.minutes-ring-center .of100 { font-size: 10.5px; font-weight: 400; color: var(--dim); }
+.minutes-ring-center .of100 { font-size: 10.5px; font-weight: 400; color: #ffffff; }
 .minutes-stats-col { flex: 1; min-width: 160px; display: flex; flex-direction: column; gap: 8px; }
 .minutes-remaining-label { font-size: 13px; font-weight: 600; color: #ffffff; }
 .minutes-progress-track {
