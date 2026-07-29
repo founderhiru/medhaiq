@@ -564,49 +564,92 @@
     </div>
 
     <div class="step-label">3. Select Interviewer Persona</div>
+    <%
+    // Persona entitlement enforcement (traced gap, closed here + in
+    // controllers/sessionController.js). capabilities.personas is the
+    // Capability Engine's resolved, entitled persona-ID list for this
+    // user's active package (config/persona-entitlements.js). Locked
+    // personas are not rendered at all below — never a CSS-hidden card
+    // still present in the DOM — per the explicit "do not rely on CSS
+    // hiding" requirement.
+    //
+    // Preview mode is the one deliberate exception: it's unauthenticated
+    // marketing content (clicking "begin" always redirects to signup
+    // regardless of persona chosen, see IS_PREVIEW below), not a real
+    // entitlement-gated flow, so it continues to show all personas.
+    const _isPreviewPersonas = typeof previewMode !== 'undefined' && previewMode;
+    const _entitledPersonas = (typeof capabilities !== 'undefined' && capabilities && Array.isArray(capabilities.personas))
+      ? capabilities.personas
+      : [];
+    function _personaVisible(personaId) {
+      return _isPreviewPersonas || _entitledPersonas.indexOf(personaId) !== -1;
+    }
+    %>
     <div class="persona-grid">
 
+      <% if (!_isPreviewPersonas && _entitledPersonas.length === 0) { %>
+      <!-- Defensive empty state: should not normally be reachable (every
+           package config includes at least one persona), but a real user
+           seeing a silently empty grid with no explanation would be a
+           much worse failure than a clear message pointing at pricing. -->
+      <div style="grid-column:1/-1; padding:20px; text-align:center; color:var(--muted); font-size:13.5px;">
+        No interview personas are available on your current package. <a href="/#pricing" style="color:var(--blue-hi);">View Plans &amp; Pricing</a>
+      </div>
+      <% } %>
+
+      <% if (_personaVisible('alex_chen')) { %>
       <div class="sel-card persona-card" data-persona="alex_chen" data-voice="voice-alex" data-diff="Hard (Rigorous)">
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar">AC</div><div><div class="p-name">Alex Chen <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Senior Principal Engineer · AWS</div></div></div>
         <span class="p-style royal-blue">Technical Excellence</span>
         <ul class="p-traits"><li>System Design</li><li>Scalability</li><li>Technical Judgment</li><li>Ownership</li></ul>
       </div>
+      <% } %>
 
+      <% if (_personaVisible('priya_ramesh')) { %>
       <div class="sel-card persona-card" data-persona="priya_ramesh" data-voice="voice-priya" data-diff="Elite (Rigorous)">
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar emerald">PR</div><div><div class="p-name">Priya Ramesh <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Partner · McKinsey Consulting</div></div></div>
         <span class="p-style emerald">Case-Led Strategy</span>
         <ul class="p-traits"><li>Case Structuring</li><li>Strategic Thinking</li><li>Executive Presence</li><li>Clear Communication</li></ul>
       </div>
+      <% } %>
 
+      <% if (_personaVisible('marcus_webb')) { %>
       <div class="sel-card persona-card" data-persona="marcus_webb" data-voice="voice-marcus" data-diff="Medium (Balanced)">
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar gold">MW</div><div><div class="p-name">Marcus Webb <span class="difficulty diff-medium">⚡ Medium</span></div><div class="p-title">VP Product · Series B SaaS</div></div></div>
         <span class="p-style gold">Product Leadership</span>
         <ul class="p-traits"><li>Product Strategy</li><li>Prioritization</li><li>Commercial Acumen</li><li>Customer Insight</li></ul>
       </div>
+      <% } %>
 
+      <% if (_personaVisible('sanjeev_nair')) { %>
       <div class="sel-card persona-card" data-persona="sanjeev_nair" data-voice="voice-sanjeev" data-diff="Hard (Rigorous)">
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar">SN</div><div><div class="p-name">Sanjeev Nair <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Engineering Director · Global Tech Firm</div></div></div>
         <span class="p-style royal-blue">Engineering Leadership</span>
         <ul class="p-traits"><li>Engineering Strategy</li><li>Organizational Leadership</li><li>Delivery Excellence</li><li>Technical Vision</li></ul>
       </div>
+      <% } %>
 
+      <% if (_personaVisible('sarah_kim')) { %>
       <div class="sel-card persona-card" data-persona="sarah_kim" data-voice="voice-sarah" data-diff="Hard (Rigorous)">
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar emerald">SK</div><div><div class="p-name">Sarah Kim <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">CEO · Pre-Series A Startup</div></div></div>
         <span class="p-style emerald">Founder Mindset</span>
         <ul class="p-traits"><li>First Principles</li><li>Speed of Execution</li><li>Resilience</li><li>Bias for Action</li></ul>
       </div>
+      <% } %>
 
+      <% if (_personaVisible('raj_mehta')) { %>
       <div class="sel-card persona-card" data-persona="raj_mehta" data-voice="voice-raj" data-diff="Elite (Rigorous)">
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar gold">RM</div><div><div class="p-name">Raj Mehta <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Global Director · GCC Enterprise Network</div></div></div>
         <span class="p-style gold">Executive Leadership</span>
         <ul class="p-traits"><li>Executive Presence</li><li>Strategic Judgment</li><li>Board Readiness</li><li>Stakeholder Influence</li></ul>
       </div>
+      <% } %>
 
     </div>
   </main>
@@ -1010,6 +1053,26 @@ function switchTab(tab) {
     if (result.status === 403 && result.data && result.data.reason === 'INTERVIEW_ENTITLEMENT_EXHAUSTED') {
       console.log('[Launch] interview entitlement exhausted:', result.data);
       showEntitlementModal(result.data);
+      btn.textContent = 'Initialize Session →';
+      return;
+    }
+
+    // Persona entitlement bypass attempt (UI shouldn't normally allow
+    // this — see the entitlement gating in this page's persona grid —
+    // but this endpoint is the real enforcement point, not the UI, so it
+    // must be handled here too, not just assumed unreachable). Reuses
+    // the same generic showCapabilityModal() as the entitlement-exhausted
+    // case above — exactly the kind of second caller this component was
+    // built for.
+    if (result.status === 403 && result.data && result.data.reason === 'PERSONA_NOT_ENTITLED') {
+      console.log('[Launch] persona not entitled on current package:', result.data);
+      showCapabilityModal({
+        title: 'Persona Not Available',
+        body: 'This interviewer isn\'t included in your current package.',
+        options: [],
+        primaryCtaLabel: 'View Plans & Pricing',
+        primaryCtaHref: '/#pricing',
+      });
       btn.textContent = 'Initialize Session →';
       return;
     }

@@ -13,12 +13,17 @@
 // in different files, on purpose.
 
 const PERSONA_ENTITLEMENTS = {
-  explorer: [],
-  // Explorer's persona list is deliberately empty pending a product
-  // decision (Architecture v1.5, §12.4 — still open): does Explorer get
-  // one default/sample persona, or genuinely none? Leaving this empty
-  // for now means Explorer users simply see no persona-selection choice
-  // until that's decided — not a bug, a placeholder for a real decision.
+  // FIXED as part of enforcement work: this was previously an empty array
+  // pending an open product question (Architecture v1.5 §12.4 — does
+  // Explorer get a default/sample persona, or genuinely none?). Enforcing
+  // entitlement in the UI/backend (see views/interview-setup.ejs,
+  // controllers/sessionController.js) surfaced the real consequence of
+  // leaving this empty: an Explorer user would see zero persona options
+  // and be unable to start ANY interview — the free tier would be
+  // completely non-functional, not just limited. Defaulting to one
+  // persona here keeps Explorer usable. This is a pragmatic default, not
+  // a confirmed business decision — revisit if the real answer differs.
+  explorer: ['alex_chen'],
   growth: [
     'alex_chen',
     'priya_ramesh',

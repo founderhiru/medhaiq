@@ -32,6 +32,24 @@ async function initializeSession(req, res) {
     if (!personaId || !PERSONAS[personaId]) {
       return res.status(400).json({ error: 'Valid persona required' });
     }
+    // Persona ENTITLEMENT check — distinct from the existence check
+    // above. A persona can be real (exists in PERSONAS) but not
+    // available on the requester's package. This is the enforcement
+    // point that actually matters: views/interview-setup.ejs only
+    // renders entitled personas, but that alone can be bypassed by
+    // anyone calling this endpoint directly — this check is what makes
+    // enforcement real rather than cosmetic. req.capabilities.personas
+    // comes from the unified Capability Engine via requireAuth/
+    // requireInterviewEntitlement (middleware/guards.js), already run
+    // before this controller.
+    const entitledPersonas = (req.capabilities && Array.isArray(req.capabilities.personas)) ? req.capabilities.personas : [];
+    if (!entitledPersonas.includes(personaId)) {
+      return res.status(403).json({
+        error: 'This persona is not available on your current package',
+        reason: 'PERSONA_NOT_ENTITLED',
+        package: req.capabilities && req.capabilities.package,
+      });
+    }
     if (!roleTitle || typeof roleTitle !== 'string' || !roleTitle.trim()) {
       return res.status(400).json({ error: 'Role title required' });
     }
