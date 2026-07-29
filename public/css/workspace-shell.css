@@ -77,6 +77,14 @@
    Gold/amber, distinct from Explorer/Growth/Leadership's palette. */
 .pill-founder    { color: #F2C94C; background: rgba(242,201,76,0.14); border-color: rgba(242,201,76,0.3); }
 
+/* AI Minutes badge -- sits directly under the package pill, centered by
+   the same .shell-profile text-align:center. Plain text (not a pill) so
+   it doesn't visually compete with the package badge above it. */
+.shell-minutes-badge {
+  margin-top: 6px;
+  font-size: 11.5px; font-weight: 500; color: var(--dim);
+}
+
 .shell-preparing {
   padding: 0 8px 20px;
   margin-bottom: 12px;
