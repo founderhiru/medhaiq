@@ -80,6 +80,15 @@ const _extraStylesheets = typeof extraStylesheets !== 'undefined' ? extraStylesh
       <% if (typeof capabilities !== 'undefined' && capabilities && capabilities.isAuthenticated) { %>
       <div class="shell-package-pill <%= _pkg.cls %>"><%= _pkg.dot %> <%= _pkg.label %></div>
       <% } %>
+      <%
+      /* AI Minutes badge — real data, same interviewEntitlement object
+         already powering Settings' "X of Y minutes remaining" line and
+         the exhaustion modal. No new query, no fabricated number. */
+      const _entitlement = (typeof capabilities !== 'undefined' && capabilities) ? capabilities.interviewEntitlement : null;
+      %>
+      <% if (typeof capabilities !== 'undefined' && capabilities && capabilities.isAuthenticated && _entitlement && !_entitlement.unlimited) { %>
+      <div class="shell-minutes-badge">⚡ <%= Math.round(_entitlement.minutesRemaining) %> AI Minutes Left</div>
+      <% } %>
     </div>
     <% if (typeof preparingForRole !== 'undefined' && preparingForRole) { %>
     <div class="shell-preparing">

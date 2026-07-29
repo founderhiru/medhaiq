@@ -63,8 +63,59 @@
     </div>
   </div>
 
-  <!-- Interview Readiness + Interview Insights, paired -->
+  <!-- AI Interview Minutes + Interview Readiness, paired -->
+  <%
+    // Same interviewEntitlement object already powering Settings' "X of Y
+    // minutes remaining" line and the exhaustion modal (lib/capability-engine.js)
+    // — no new query, no fabricated numbers. package.expiresAt is the real
+    // credits renewal date from the active acquisition row.
+    const _ent = (typeof capabilities !== 'undefined' && capabilities) ? capabilities.interviewEntitlement : null;
+    const _pkgExpiry = (typeof capabilities !== 'undefined' && capabilities && capabilities.package) ? capabilities.package.expiresAt : null;
+  %>
   <div class="pair-row">
+    <div class="panel minutes-panel">
+      <h3>AI Interview Minutes</h3>
+      <% if (_ent && !_ent.unlimited) {
+        const minCircR = 46, minCircCircumference = 2 * Math.PI * minCircR;
+        const minPct = _ent.minutesIncluded > 0 ? Math.max(0, Math.min(1, _ent.minutesRemaining / _ent.minutesIncluded)) : 0;
+        const minCircOffset = minCircCircumference - minPct * minCircCircumference;
+      %>
+        <div class="minutes-row">
+          <div class="minutes-ring-wrap">
+            <svg viewBox="0 0 110 110" width="110" height="110">
+              <circle class="minutes-ring-track" cx="55" cy="55" r="<%= minCircR %>"/>
+              <circle class="minutes-ring-fill" cx="55" cy="55" r="<%= minCircR %>"
+                stroke-dasharray="<%= minCircCircumference %>" stroke-dashoffset="<%= minCircOffset %>"/>
+            </svg>
+            <div class="minutes-ring-center">
+              <div class="num"><%= Math.round(_ent.minutesRemaining) %></div>
+              <div class="of100">min left</div>
+            </div>
+          </div>
+          <div class="minutes-stats-col">
+            <div class="minutes-stat-row">
+              <span class="minutes-stat-label">Used</span>
+              <span class="minutes-stat-value"><%= Math.round(_ent.minutesUsed) %> min</span>
+            </div>
+            <div class="minutes-stat-row">
+              <span class="minutes-stat-label">Total Purchased</span>
+              <span class="minutes-stat-value"><%= _ent.minutesIncluded %> min</span>
+            </div>
+            <% if (_pkgExpiry) { %>
+            <div class="minutes-stat-row">
+              <span class="minutes-stat-label">Renews</span>
+              <span class="minutes-stat-value"><%= new Date(_pkgExpiry).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) %></span>
+            </div>
+            <% } %>
+          </div>
+        </div>
+        <div class="minutes-interviews-left">About <%= _ent.interviewsRemaining %> interview<%= _ent.interviewsRemaining === 1 ? '' : 's' %> left</div>
+        <a href="/#pricing" class="minutes-cta">Buy More Minutes</a>
+      <% } else { %>
+        <p style="color:var(--dim); font-size:12.5px;">Unlimited AI Interview Minutes on your plan.</p>
+      <% } %>
+    </div>
+
     <div class="panel readiness-panel">
       <h3>Interview Readiness</h3>
       <% if (trend && trend.length > 1) {
@@ -119,59 +170,7 @@
           </div>
         </div>
       <% } %>
-    </div>
-
-    <div class="panel insights-panel" id="insights">
-      <h3>Interview Insights</h3>
-      <!-- Labels here are the SAME ones already shown on the per-session
-           Report page (interview-report.ejs) — Structure / Domain Expertise /
-           Strategic Thinking / Communication / Leadership & Execution —
-           just averaged across all sessions instead of one. Not renamed to
-           "STAR Structure / Leadership & Influence / Business Thinking /
-           Executive Presence" pending confirmation, since that would
-           relabel real measured data with different terminology than the
-           Report page already shows for the same numbers. -->
-      <% if (aggregateScores && (aggregateScores.starAvg !== null)) {
-        // Real scores are 0-100 (see services/interview.js scoreboard).
-        // Converted to a 0-5 star scale for display only — same numbers,
-        // just a different presentation, matching the star-rating format.
-        const metrics = [
-          { key: 'star', label: 'Structure', val: aggregateScores.starAvg, icon: 'sparkle', color: 'violet' },
-          { key: 'technical', label: 'Domain Expertise', val: aggregateScores.technicalAvg, icon: 'users', color: 'blue' },
-          { key: 'strategic', label: 'Strategic Thinking', val: aggregateScores.executiveAvg, icon: 'chat', color: 'green' },
-          { key: 'comms', label: 'Communication', val: aggregateScores.frictionAvg, icon: 'target', color: 'orange' },
-          { key: 'leadership', label: 'Leadership & Execution', val: aggregateScores.gccAvg, icon: 'person', color: 'gold' },
-        ];
-      %>
-      <div class="score-bars">
-        <% metrics.forEach(function(m) { %>
-          <% const stars5 = m.val !== null ? Math.max(0, Math.min(5, m.val / 20)) : 0; %>
-          <% const full = Math.floor(stars5); const half = (stars5 - full) >= 0.5 ? 1 : 0; const empty = 5 - full - half; %>
-          <div class="star-row">
-            <div class="star-row-main">
-              <div class="star-row-label-wrap"><div class="icon-sq sm <%= m.color %>"><%- include('partials/icon', { name: m.icon, svgSize: 13 }) %></div><div class="star-row-label"><%= m.label %></div></div>
-              <div class="star-icons">
-                <% for (let i = 0; i < full; i++) { %><span class="filled">★</span><% } %>
-                <% if (half) { %><span class="filled">⯨</span><% } %>
-                <% for (let i = 0; i < empty; i++) { %><span class="empty">★</span><% } %>
-              </div>
-              <div class="star-val"><span class="star-val-num"><%= m.val !== null ? stars5.toFixed(1) : '—' %></span><span class="star-val-denom"> / 5</span></div>
-            </div>
-            <!-- No backend field stores per-metric coaching text yet, so
-                 this is an honest "coming soon" placeholder — not a
-                 fabricated tip — reserving the row structure/column as
-                 requested. -->
-            <div class="ai-tip-col">
-              <span class="ai-tip-label">AI Tip</span>
-              <span class="ai-tip-text">Coming soon</span>
-            </div>
-          </div>
-        <% }); %>
-      </div>
-      <% } else { %>
-        <p style="color:var(--dim); font-size:12.5px;">Insights appear once your first interview is scored.</p>
-      <% } %>
-    </div>
+  </div>
   </div>
 
   <!-- Recent Activity + Quick Actions, paired (9:3 — Activity is the
@@ -247,17 +246,5 @@
   </div>
 
 <% } %>
-
-<script>
-  // If arrived via the "Interview Insights" nav link (?focus=insights),
-  // scroll that panel into view. Purely presentational, no other behavior
-  // on this page is affected.
-  (function() {
-    if (new URLSearchParams(window.location.search).get('focus') === 'insights') {
-      var el = document.getElementById('insights');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  })();
-</script>
 
 <%- include('partials/workspace-shell-bottom') %>
