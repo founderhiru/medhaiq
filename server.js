@@ -131,7 +131,13 @@ app.get('/login',       (_req, res) => res.redirect('/auth/login'));
 
 // Interview setup
 app.get('/interview', requireAuthPage, (req, res) => {
-  res.render('interview-setup');
+  // packageOrder drives the entitlement-exhausted modal's upgrade-path
+  // logic (interview-setup.ejs) — derived from config/product-packages.js's
+  // own key order (explorer, growth, leadership), so a future package
+  // added there automatically gets correct "Upgrade to X" / "Buy More
+  // Minutes" behavior with no template change needed.
+  const { PRODUCT_PACKAGES } = require('./config/product-packages');
+  res.render('interview-setup', { packageOrder: Object.keys(PRODUCT_PACKAGES) });
 });
 
 // Interview session

@@ -94,8 +94,9 @@ async function requireInterviewEntitlement(req, res, next) {
         if (!refreshed.actions.canStartInterview) {
           return res.status(403).json({
             error: 'Interview entitlement exhausted',
-            reason: 'ENTITLEMENT_EXHAUSTED',
+            reason: 'INTERVIEW_ENTITLEMENT_EXHAUSTED',
             entitlement: refreshed.interviewEntitlement,
+            package: refreshed.package,
           });
         }
         req.user = refreshed.user;
@@ -145,8 +146,9 @@ async function requireInterviewEntitlement(req, res, next) {
   if (!capabilities.actions.canStartInterview) {
     return res.status(403).json({
       error: 'Interview entitlement exhausted',
-      reason: 'ENTITLEMENT_EXHAUSTED',
+      reason: 'INTERVIEW_ENTITLEMENT_EXHAUSTED',
       entitlement: capabilities.interviewEntitlement,
+      package: capabilities.package,
     });
   }
 
