@@ -73,8 +73,14 @@ app.use('/api/debug/elevenlabs/voices', require('./routes/debug-elevenlabs-voice
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/', async (req, res) => {
   try {
-    const { getCapabilities } = require('./lib/capabilities');
-    const homeCapabilities = await getCapabilities(req);
+    // Previously this called getCapabilities(req) a second time here,
+    // pointed at a SEPARATE engine (lib/capabilities.js) from the one
+    // middleware/capabilities.js already computed globally for this same
+    // request. Now that both are unified (ADR-011), req.capabilities is
+    // already the exact same object — reusing it removes a redundant
+    // DB round-trip on every homepage visit, safe only because of the
+    // reconciliation.
+    const homeCapabilities = req.capabilities;
     res.render('layout', { ...buildLandingContext(), homeCapabilities });
   } catch (err) {
     console.error('[homepage] capabilities resolution failed, rendering as visitor:', err.message);
