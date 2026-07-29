@@ -57,9 +57,9 @@ const _extraStylesheets = typeof extraStylesheets !== 'undefined' ? extraStylesh
          existing .icon-sq.violet color already used elsewhere on the
          Dashboard page; Explorer reuses --muted, the theme's standard
          quiet/secondary color. */
-      const _pkgMeta = {
+        const _pkgMeta = {
         explorer:   { label: 'Explorer',   dot: '⚪', cls: 'pill-explorer' },
-        growth:     { label: 'Growth',     dot: '🔵', cls: 'pill-growth' },
+        growth:     { label: 'Growth',     dot: '🟢', cls: 'pill-growth' },
         leadership: { label: 'Leadership', dot: '🟣', cls: 'pill-leadership' },
       };
       const _pkgId = (typeof capabilities !== 'undefined' && capabilities && capabilities.package && capabilities.package.id) || 'explorer';
@@ -80,6 +80,16 @@ const _extraStylesheets = typeof extraStylesheets !== 'undefined' ? extraStylesh
       <% if (typeof capabilities !== 'undefined' && capabilities && capabilities.isAuthenticated) { %>
       <div class="shell-package-pill <%= _pkg.cls %>"><%= _pkg.dot %> <%= _pkg.label %></div>
       <% } %>
+      <%
+      /* AI Minutes badge — real data, same interviewEntitlement object
+         already powering Settings' "X of Y minutes remaining" line and
+         the exhaustion modal. No new query, no fabricated number. */
+      const _entitlement = (typeof capabilities !== 'undefined' && capabilities) ? capabilities.interviewEntitlement : null;
+      %>
+      <% if (typeof capabilities !== 'undefined' && capabilities && capabilities.isAuthenticated && _entitlement && !_entitlement.unlimited) { %>
+      <div class="shell-minutes-badge">⚡ <%= Math.round(_entitlement.minutesRemaining) %> AI Minutes Left</div>
+      <% } %>
+    </div>
       <%
       /* AI Minutes badge — real data, same interviewEntitlement object
          already powering Settings' "X of Y minutes remaining" line and

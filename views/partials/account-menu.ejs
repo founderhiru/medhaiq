@@ -3,13 +3,28 @@
    Renders a list of { label, href } rows, then a divider, then Logout
    (always last, always present). This is deliberately just the row
    list — the trigger button, avatar, chevron, and open/close positioning
-   live in header.ejs since they're tied to that specific avatar markup.
+   live in the calling page (header.ejs / dashboard-history.ejs) since
+   they're tied to that page's specific avatar markup.
 
    To add a menu item later (Settings sub-sections, a dedicated Billing
    page, etc.), add one more { label, href } object to the menuItems
    array wherever this partial is included — no changes needed here or
    to the surrounding dropdown structure.
+
+   Optional params (all default to the original hardcoded behavior, so
+   header.ejs's existing call — which passes none of these — renders
+   byte-identical to before):
+   - logoutLabel:     string, default 'Logout'
+   - showLogoutIcon:  boolean, default false — prepends partials/icon 'exit'
+   - showDivider:     boolean, default true — set false when the caller
+                       already has its own visual divider above this
+                       (e.g. a header block with a border-bottom), to
+                       avoid a redundant second line.
 */
 const _menuItems = typeof menuItems !== 'undefined' && Array.isArray(menuItems) ? menuItems : [];
 const _rowStyle = 'display:block;padding:11px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:500;';
-%><% _menuItems.forEach(function(item) { %><a href="<%= item.href %>" role="menuitem" style="<%= _rowStyle %>"><%= item.label %></a><% }); %><div style="height:1px;background:rgba(255,255,255,0.08);margin:2px 0;"></div><a href="/auth/logout" role="menuitem" style="<%= _rowStyle %>">Logout</a>
+const _logoutLabel = typeof logoutLabel !== 'undefined' ? logoutLabel : 'Logout';
+const _showLogoutIcon = typeof showLogoutIcon !== 'undefined' ? showLogoutIcon : false;
+const _showDivider = typeof showDivider !== 'undefined' ? showDivider : true;
+const _logoutRowStyle = _showLogoutIcon ? (_rowStyle + 'display:flex;align-items:center;gap:8px;') : _rowStyle;
+%><% _menuItems.forEach(function(item) { %><a href="<%= item.href %>" role="menuitem" style="<%= _rowStyle %>"><%= item.label %></a><% }); %><% if (_showDivider) { %><div style="height:1px;background:rgba(255,255,255,0.08);margin:2px 0;"></div><% } %><a href="/auth/logout" role="menuitem" style="<%= _logoutRowStyle %>"><% if (_showLogoutIcon) { %><%- include('icon', { name: 'exit', svgSize: 14 }) %><% } %><%= _logoutLabel %></a>

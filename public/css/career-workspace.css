@@ -80,6 +80,35 @@
 }
 .new-interview-btn:hover { background: var(--royal); }
 
+/* Page header actions cluster: New Interview CTA + notifications + account.
+   Dashboard-page-only per current scope — not part of the shared shell. */
+.page-header-actions { display: flex; align-items: center; gap: 14px; }
+.db-bell-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
+  color: var(--muted); cursor: pointer; flex-shrink: 0;
+}
+.db-bell-btn:hover { background: rgba(255,255,255,0.10); color: var(--white); }
+.db-profile-wrap { position: relative; flex-shrink: 0; }
+.db-profile-trigger {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: none; border: none; cursor: pointer; padding: 0;
+}
+.db-profile-avatar {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #1E2A45; color: var(--white); font-weight: 700; font-size: 14px;
+  flex-shrink: 0;
+}
+.db-profile-menu {
+  display: none; position: absolute; top: calc(100% + 10px); right: 0;
+  min-width: 200px; background: #12172a; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.45); overflow: hidden; z-index: 60;
+}
+.db-profile-menu-header { padding: 14px 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.db-profile-menu-name { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+
 /* Readiness ring + line chart, side by side */
 .readiness-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 .readiness-ring-wrap { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
@@ -92,11 +121,27 @@
 }
 .readiness-ring-center .num { font-size: 24px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; color: #ffffff; }
 .readiness-ring-center .of100 { font-size: 11px; font-weight: 400; color: var(--dim); }
+.readiness-progress-label { font-size: 10.5px; font-weight: 600; margin-top: 3px; }
+.readiness-progress-label.good { color: #34D399; }
+.readiness-progress-label.mid  { color: #FCD34D; }
+.readiness-progress-label.low  { color: #FCA5A5; }
 .readiness-chart-col { flex: 1; min-width: 180px; }
 .readiness-chart-col .score-trend-svg {
   height: 52px; /* was 80px (set in interview.css); overridden here only,
                     so Interview Setup / Live Interview / Reports are
                     untouched — this page loads career-workspace.css last. */
+}
+/* Green trend styling + highlighted latest marker, scoped to this card
+   only — interview.css's shared .trend-line/.trend-dot/.trend-fill (blue,
+   uniform dot size) stay untouched for any other page that might reuse
+   that shared component. */
+.readiness-chart-col .trend-line { stroke: var(--emerald); }
+.readiness-chart-col .trend-dot { fill: var(--emerald); }
+.readiness-chart-col .trend-fill { fill: url(#trendGrad); }
+.readiness-chart-col .trend-dot-latest { fill: #34D399; stroke: rgba(52,211,153,0.35); stroke-width: 4; }
+.trend-x-labels {
+  display: flex; justify-content: space-between;
+  font-size: 9.5px; color: var(--dim); margin-top: 2px;
 }
 
 /* Best Competency / Focus Next — the small intelligence row added below

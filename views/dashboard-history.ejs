@@ -5,7 +5,48 @@
     <h1>Career Workspace</h1>
     <p class="subtitle">Track your interview progress, review feedback, and continue preparing for your next opportunity.</p>
   </div>
-  <a href="/interview" class="new-interview-btn">＋ New Interview</a>
+  <div class="page-header-actions">
+    <a href="/interview" class="new-interview-btn">＋ New Interview</a>
+    <!-- Notifications -- icon only, no backend notification system exists
+         yet, so no unread dot is shown (would be fabricated status). -->
+    <button type="button" class="db-bell-btn" aria-label="Notifications" title="Notifications">
+      <%- include('partials/icon', { name: 'bell', svgSize: 19 }) %>
+    </button>
+    <%
+    /* Same package resolution as partials/workspace-shell-top.ejs, used
+       here only for the dropdown's plan badge. Duplicated (not shared)
+       because EJS include() locals don't cross back out of that partial's
+       own scope -- see workspace-shell-top.ejs's own comment on this same
+       resolution for the source of truth. Keep both in sync if the
+       package tiers ever change. */
+    const _dbPkgMeta = {
+      explorer:   { label: 'Explorer',   dot: '⚪', cls: 'pill-explorer' },
+      growth:     { label: 'Growth',     dot: '🟢', cls: 'pill-growth' },
+      leadership: { label: 'Leadership', dot: '🟣', cls: 'pill-leadership' },
+    };
+    const _dbPkgId = (typeof capabilities !== 'undefined' && capabilities && capabilities.package && capabilities.package.id) || 'explorer';
+    const _dbIsFounder = typeof capabilities !== 'undefined' && capabilities && capabilities.isFounderAccount;
+    const _dbPkg = _dbIsFounder ? { label: 'Founder', dot: '👑', cls: 'pill-founder' } : (_dbPkgMeta[_dbPkgId] || _dbPkgMeta.explorer);
+    %>
+    <div class="db-profile-wrap" id="db-profile-wrap">
+      <button type="button" id="db-profile-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account menu for <%= (shellUser && shellUser.name) || 'your account' %>" class="db-profile-trigger">
+        <span class="db-profile-avatar"><%- include('partials/user-avatar', { user: shellUser, glyphSize: 17 }) %></span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div id="db-profile-menu" role="menu" class="db-profile-menu">
+        <div class="db-profile-menu-header">
+          <div class="db-profile-menu-name"><%= (shellUser && shellUser.name) || 'Your account' %></div>
+          <div class="shell-package-pill <%= _dbPkg.cls %>"><%= _dbPkg.dot %> <%= _dbPkg.label %></div>
+        </div>
+        <%- include('partials/account-menu', {
+          menuItems: [{ label: 'My Profile', href: '/settings' }],
+          logoutLabel: 'Sign Out',
+          showLogoutIcon: true,
+          showDivider: false,
+        }) %>
+      </div>
+    </div>
+  </div>
 </div>
 
 <% if (!history || history.length === 0) { %>

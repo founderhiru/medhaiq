@@ -63,9 +63,11 @@
 }
 /* Explorer: reuses --muted, this theme's standard quiet/secondary color. */
 .pill-explorer   { color: var(--muted); background: rgba(148,163,184,0.12); border-color: rgba(148,163,184,0.25); }
-/* Growth: reuses --bright, the exact same blue already used a few lines
-   below for the "Preparing For" badge -- intentionally the same accent. */
-.pill-growth     { color: var(--bright); background: rgba(59,130,246,0.14); border-color: rgba(59,130,246,0.3); }
+/* Growth: success-style badge, reusing the same green already used for
+   Quick Actions' .qa-card.green and the "high score" tier elsewhere on
+   this dashboard (career-workspace.css .score-bar-fill.high / var(--emerald))
+   -- not a new color, same success state as the rest of the app. */
+.pill-growth     { color: #34D399; background: rgba(5,150,105,0.16); border-color: rgba(16,185,129,0.35); }
 /* Leadership: matches career-workspace.css's existing .icon-sq.violet
    (#6D28D9), already used elsewhere on this same Dashboard page for
    premium-flavored content -- lightened here for text-on-dark contrast,
@@ -76,6 +78,14 @@
    commercial package — see lib/capability-engine.js's isFounderAccount).
    Gold/amber, distinct from Explorer/Growth/Leadership's palette. */
 .pill-founder    { color: #F2C94C; background: rgba(242,201,76,0.14); border-color: rgba(242,201,76,0.3); }
+
+/* AI Minutes badge -- sits directly under the package pill, centered by
+   the same .shell-profile text-align:center. Plain text (not a pill) so
+   it doesn't visually compete with the package badge above it. */
+.shell-minutes-badge {
+  margin-top: 6px;
+  font-size: 11.5px; font-weight: 500; color: var(--dim);
+}
 
 /* AI Minutes badge -- sits directly under the package pill, centered by
    the same .shell-profile text-align:center. Plain text (not a pill) so
