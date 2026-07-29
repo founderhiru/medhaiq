@@ -19,6 +19,12 @@ const _signInMethod = hasPassword ? 'Email & Password' : 'Passwordless (Magic Li
 // never silently shows something invented.
 const _packageId = (typeof capabilities !== 'undefined' && capabilities && capabilities.package && capabilities.package.id) || 'explorer';
 const _planLabel = _packageId.charAt(0).toUpperCase() + _packageId.slice(1);
+// Founder display (Task 1, presentation-only) — a Founder account's
+// resolved package is untouched and still shown below as "Current
+// Package" (typically Explorer, since Founders don't purchase anything).
+// "Role" is a SEPARATE fact shown alongside it, never a replacement for
+// it — Founder is not a commercial package.
+const _isFounderAccount = typeof capabilities !== 'undefined' && capabilities && capabilities.isFounderAccount;
 %>
 <%- include('partials/workspace-shell-top', { pageTitle: 'Account Settings — MedhaIQ', activeNav: 'settings', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'] }) %>
 
@@ -64,7 +70,10 @@ const _planLabel = _packageId.charAt(0).toUpperCase() + _packageId.slice(1);
     <div class="panel-header-row">
       <h3>Subscription</h3>
     </div>
-    <p style="font-size:14px;margin-bottom:6px;"><strong>Current Plan:</strong> <%= _planLabel %></p>
+    <% if (_isFounderAccount) { %>
+    <p style="font-size:14px;margin-bottom:6px;"><strong>Role:</strong> Founder</p>
+    <% } %>
+    <p style="font-size:14px;margin-bottom:6px;"><strong>Current Package:</strong> <%= _planLabel %></p>
     <!-- Step 2: no more subscription "status" concept under the credit-pack
          model (Architecture v1.5, ADR-012) -- if the Capability Engine
          resolved a package at all (including Explorer, which never

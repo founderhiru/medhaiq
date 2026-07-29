@@ -71,6 +71,11 @@
    premium-flavored content -- lightened here for text-on-dark contrast,
    same treatment badge-blue/badge-emerald already use elsewhere. */
 .pill-leadership { color: #A78BFA; background: rgba(109,40,217,0.18); border-color: rgba(109,40,217,0.35); }
+/* Founder: deliberately not one of the three package colors above (this
+   is a display-only override for internal/owner accounts, never a
+   commercial package — see lib/capability-engine.js's isFounderAccount).
+   Gold/amber, distinct from Explorer/Growth/Leadership's palette. */
+.pill-founder    { color: #F2C94C; background: rgba(242,201,76,0.14); border-color: rgba(242,201,76,0.3); }
 
 .shell-preparing {
   padding: 0 8px 20px;

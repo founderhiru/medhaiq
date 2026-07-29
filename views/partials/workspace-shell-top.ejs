@@ -63,7 +63,19 @@ const _extraStylesheets = typeof extraStylesheets !== 'undefined' ? extraStylesh
         leadership: { label: 'Leadership', dot: '🟣', cls: 'pill-leadership' },
       };
       const _pkgId = (typeof capabilities !== 'undefined' && capabilities && capabilities.package && capabilities.package.id) || 'explorer';
-      const _pkg = _pkgMeta[_pkgId] || _pkgMeta.explorer;
+      const _isFounderAccount = typeof capabilities !== 'undefined' && capabilities && capabilities.isFounderAccount;
+      // Founder display override — presentation only. The platform owner
+      // shouldn't appear as "Explorer" just because Founder accounts have
+      // no commercial package assigned. This does NOT change what
+      // _pkgId resolves to underneath (Settings still shows the real
+      // resolved package alongside "Role: Founder") — it only swaps what
+      // this one compact pill shows, since a single badge can't show two
+      // facts at once. Authorization is untouched: this reads
+      // capabilities.isFounderAccount, itself sourced from the unmodified
+      // founder_access check in lib/capability-engine.js.
+      const _pkg = _isFounderAccount
+        ? { label: 'Founder', dot: '👑', cls: 'pill-founder' }
+        : (_pkgMeta[_pkgId] || _pkgMeta.explorer);
       %>
       <% if (typeof capabilities !== 'undefined' && capabilities && capabilities.isAuthenticated) { %>
       <div class="shell-package-pill <%= _pkg.cls %>"><%= _pkg.dot %> <%= _pkg.label %></div>
