@@ -5,7 +5,48 @@
     <h1>Career Workspace</h1>
     <p class="subtitle">Track your interview progress, review feedback, and continue preparing for your next opportunity.</p>
   </div>
-  <a href="/interview" class="new-interview-btn">＋ New Interview</a>
+  <div class="page-header-actions">
+    <a href="/interview" class="new-interview-btn">＋ New Interview</a>
+    <!-- Notifications -- icon only, no backend notification system exists
+         yet, so no unread dot is shown (would be fabricated status). -->
+    <button type="button" class="db-bell-btn" aria-label="Notifications" title="Notifications">
+      <%- include('partials/icon', { name: 'bell', svgSize: 19 }) %>
+    </button>
+    <%
+    /* Same package resolution as partials/workspace-shell-top.ejs, used
+       here only for the dropdown's plan badge. Duplicated (not shared)
+       because EJS include() locals don't cross back out of that partial's
+       own scope -- see workspace-shell-top.ejs's own comment on this same
+       resolution for the source of truth. Keep both in sync if the
+       package tiers ever change. */
+    const _dbPkgMeta = {
+      explorer:   { label: 'Explorer',   dot: '⚪', cls: 'pill-explorer' },
+      growth:     { label: 'Growth',     dot: '🟢', cls: 'pill-growth' },
+      leadership: { label: 'Leadership', dot: '🟣', cls: 'pill-leadership' },
+    };
+    const _dbPkgId = (typeof capabilities !== 'undefined' && capabilities && capabilities.package && capabilities.package.id) || 'explorer';
+    const _dbIsFounder = typeof capabilities !== 'undefined' && capabilities && capabilities.isFounderAccount;
+    const _dbPkg = _dbIsFounder ? { label: 'Founder', dot: '👑', cls: 'pill-founder' } : (_dbPkgMeta[_dbPkgId] || _dbPkgMeta.explorer);
+    %>
+    <div class="db-profile-wrap" id="db-profile-wrap">
+      <button type="button" id="db-profile-trigger" aria-haspopup="true" aria-expanded="false" aria-label="Account menu for <%= (shellUser && shellUser.name) || 'your account' %>" class="db-profile-trigger">
+        <span class="db-profile-avatar"><%- include('partials/user-avatar', { user: shellUser, glyphSize: 17 }) %></span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div id="db-profile-menu" role="menu" class="db-profile-menu">
+        <div class="db-profile-menu-header">
+          <div class="db-profile-menu-name"><%= (shellUser && shellUser.name) || 'Your account' %></div>
+          <div class="shell-package-pill <%= _dbPkg.cls %>"><%= _dbPkg.dot %> <%= _dbPkg.label %></div>
+        </div>
+        <%- include('partials/account-menu', {
+          menuItems: [{ label: 'My Profile', href: '/settings' }],
+          logoutLabel: 'Sign Out',
+          showLogoutIcon: true,
+          showDivider: false,
+        }) %>
+      </div>
+    </div>
+  </div>
 </div>
 
 <% if (!history || history.length === 0) { %>
@@ -71,6 +112,14 @@
     // credits renewal date from the active acquisition row.
     const _ent = (typeof capabilities !== 'undefined' && capabilities) ? capabilities.interviewEntitlement : null;
     const _pkgExpiry = (typeof capabilities !== 'undefined' && capabilities && capabilities.package) ? capabilities.package.expiresAt : null;
+    // Qualitative tier label for the Readiness score — thresholds are a
+    // simple, documented display convention, not a new scoring model
+    // (the underlying number is still the real trend average untouched).
+    const _readinessTier = (readinessScore === null) ? null
+      : readinessScore >= 80 ? { label: 'Excellent Progress', cls: 'good' }
+      : readinessScore >= 60 ? { label: 'Good Progress', cls: 'good' }
+      : readinessScore >= 40 ? { label: 'Building Progress', cls: 'mid' }
+      : { label: 'Needs Focus', cls: 'low' };
   %>
   <div class="pair-row">
     <div class="panel minutes-panel">
@@ -92,24 +141,29 @@
               <div class="of100">min left</div>
             </div>
           </div>
+          <!-- User-first order: Used, then Interviews Left, then the
+               secondary Total Purchased / Renews details. -->
           <div class="minutes-stats-col">
             <div class="minutes-stat-row">
               <span class="minutes-stat-label">Used</span>
               <span class="minutes-stat-value"><%= Math.round(_ent.minutesUsed) %> min</span>
             </div>
             <div class="minutes-stat-row">
+              <span class="minutes-stat-label">Interviews Left</span>
+              <span class="minutes-stat-value">About <%= _ent.interviewsRemaining %> interview<%= _ent.interviewsRemaining === 1 ? '' : 's' %></span>
+            </div>
+            <div class="minutes-stat-row minutes-stat-row-secondary">
               <span class="minutes-stat-label">Total Purchased</span>
               <span class="minutes-stat-value"><%= _ent.minutesIncluded %> min</span>
             </div>
             <% if (_pkgExpiry) { %>
-            <div class="minutes-stat-row">
+            <div class="minutes-stat-row minutes-stat-row-secondary">
               <span class="minutes-stat-label">Renews</span>
               <span class="minutes-stat-value"><%= new Date(_pkgExpiry).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) %></span>
             </div>
             <% } %>
           </div>
         </div>
-        <div class="minutes-interviews-left">About <%= _ent.interviewsRemaining %> interview<%= _ent.interviewsRemaining === 1 ? '' : 's' %> left</div>
         <a href="/#pricing" class="minutes-cta">Buy More Minutes</a>
       <% } else { %>
         <p style="color:var(--dim); font-size:12.5px;">Unlimited AI Interview Minutes on your plan.</p>
@@ -122,8 +176,8 @@
         const circR = 46, circCircumference = 2 * Math.PI * circR;
         const circOffset = circCircumference - ((readinessScore || 0) / 100) * circCircumference;
       %>
-        <% if (readinessDeltaVsFirst !== null) { %>
-          <div class="readiness-delta"><%= readinessDeltaVsFirst >= 0 ? '↑' : '↓' %> <%= Math.abs(readinessDeltaVsFirst) %> pts since your first interview</div>
+        <% if (readinessDeltaVsPrevious !== null) { %>
+          <div class="readiness-delta"><%= readinessDeltaVsPrevious >= 0 ? '↑' : '↓' %> <%= Math.abs(readinessDeltaVsPrevious) %> pts since your last interview</div>
         <% } %>
         <div class="readiness-row">
           <div class="readiness-ring-wrap">
@@ -135,28 +189,34 @@
             <div class="readiness-ring-center">
               <div class="num"><%= readinessScore %></div>
               <div class="of100">/100</div>
+              <% if (_readinessTier) { %><div class="readiness-progress-label <%= _readinessTier.cls %>"><%= _readinessTier.label %></div><% } %>
             </div>
           </div>
           <div class="readiness-chart-col">
             <svg class="score-trend-svg" viewBox="0 0 <%= trendWidth %> 80" preserveAspectRatio="none" id="trendSvg">
               <defs>
                 <linearGradient id="trendGrad" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stop-color="rgba(59,130,246,0.25)"/>
-                  <stop offset="100%" stop-color="rgba(59,130,246,0)"/>
+                  <stop offset="0%" stop-color="rgba(16,185,129,0.28)"/>
+                  <stop offset="100%" stop-color="rgba(16,185,129,0)"/>
                 </linearGradient>
               </defs>
               <polygon class="trend-fill" points="<%= trendPointsFill %>"/>
               <polyline class="trend-line" points="<%= trendPoints %>"/>
-              <% trend.forEach(function(score, i) { %>
-                <% const x = trendX(i); const y = trendY(score); %>
-                <circle class="trend-dot" cx="<%= x %>" cy="<%= y %>" r="4"/>
+              <% trend.forEach(function(score, i) {
+                const isLatest = i === trend.length - 1;
+                const x = trendX(i); const y = trendY(score);
+              %>
+                <circle class="trend-dot<%= isLatest ? ' trend-dot-latest' : '' %>" cx="<%= x %>" cy="<%= y %>" r="<%= isLatest ? 6 : 3.5 %>"/>
               <% }); %>
             </svg>
+            <div class="trend-x-labels">
+              <% trend.forEach(function(score, i) { %><span><%= i === 0 ? 'Interview 1' : (i + 1) %></span><% }); %>
+            </div>
           </div>
         </div>
         <p style="font-size:11px;color:var(--dim);margin-top:6px;">Calculated from your last <%= trend.length %> completed interviews.</p>
       <% } else { %>
-        <p style="color:var(--dim); font-size:12.5px;">Complete one more interview to unlock your readiness trend.</p>
+        <p style="color:var(--dim); font-size:12.5px;">Complete another interview to track progress.</p>
       <% } %>
       <% if (bestCompetencyLabel || focusNextLabel) { %>
         <div class="readiness-competency-row">
@@ -170,7 +230,7 @@
           </div>
         </div>
       <% } %>
-  </div>
+    </div>
   </div>
 
   <!-- Recent Activity + Quick Actions, paired (9:3 — Activity is the
@@ -246,5 +306,30 @@
   </div>
 
 <% } %>
+
+<script>
+  // Account dropdown — same click/Escape/outside-click pattern already
+  // used by the homepage header's profile menu (partials/header.ejs).
+  (function() {
+    var wrap = document.getElementById('db-profile-wrap');
+    if (!wrap) return;
+    var trigger = document.getElementById('db-profile-trigger');
+    var menu = document.getElementById('db-profile-menu');
+
+    function openMenu() { menu.style.display = 'block'; trigger.setAttribute('aria-expanded', 'true'); }
+    function closeMenu() { menu.style.display = 'none'; trigger.setAttribute('aria-expanded', 'false'); }
+
+    trigger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (menu.style.display === 'block') { closeMenu(); } else { openMenu(); }
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && menu.style.display === 'block') { closeMenu(); trigger.focus(); }
+    });
+    document.addEventListener('click', function(e) {
+      if (menu.style.display === 'block' && !wrap.contains(e.target)) { closeMenu(); }
+    });
+  })();
+</script>
 
 <%- include('partials/workspace-shell-bottom') %>
