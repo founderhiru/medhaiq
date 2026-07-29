@@ -71,23 +71,27 @@ const _isFounderAccount = typeof capabilities !== 'undefined' && capabilities &&
       <h3>Subscription</h3>
     </div>
     <% if (_isFounderAccount) { %>
-    <p style="font-size:14px;margin-bottom:6px;"><strong>Role:</strong> Founder</p>
+    <p style="font-size:14px;margin-bottom:14px;"><strong style="display:inline-block;width:140px;color:var(--dim);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:0.02em;">Role</strong> Founder</p>
     <% } %>
-    <p style="font-size:14px;margin-bottom:6px;"><strong>Current Package:</strong> <%= _planLabel %></p>
-    <!-- Step 2: no more subscription "status" concept under the credit-pack
-         model (Architecture v1.5, ADR-012) -- if the Capability Engine
-         resolved a package at all (including Explorer, which never
-         expires), it is by definition currently active. Not derived from
-         the legacy subscription_status column. -->
-    <p style="font-size:14px;color:var(--muted);margin-bottom:14px;"><strong style="color:var(--white);">Status:</strong> Active</p>
-    <p style="font-size:14px;color:var(--muted);margin-bottom:18px;">
-      <strong style="color:var(--white);">Interview Minutes:</strong>
-      <% if (interviewEntitlement.unlimited) { %>
-        Unlimited
-      <% } else { %>
-        <%= Math.round(interviewEntitlement.minutesRemaining) %> of <%= interviewEntitlement.minutesIncluded %> minutes remaining
-      <% } %>
+    <p style="font-size:14px;margin-bottom:14px;"><strong style="display:inline-block;width:140px;color:var(--dim);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:0.02em;">Package</strong> <%= _planLabel %></p>
+    <p style="font-size:14px;margin-bottom:14px;">
+      <strong style="display:inline-block;width:140px;color:var(--dim);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:0.02em;vertical-align:top;">Interview Credits</strong>
+      <% if (interviewEntitlement.unlimited) { %>Unlimited<% } else { %><%= Math.round(interviewEntitlement.minutesRemaining) %> of <%= interviewEntitlement.minutesIncluded %> minutes remaining<% } %>
     </p>
+    <%
+    // Expires — sourced from the active package_acquisitions row's real
+    // expires_at (lib/capability-engine.js). No acquisition at all
+    // (Explorer, or a Founder whose package resolves to Explorer by
+    // default) and an open-ended admin/Founder-granted acquisition both
+    // correctly show "Never expires" — this isn't a placeholder, it's
+    // the accurate current state for every account today, since no real
+    // checkout with a fixed term exists yet (Architecture v1.5 §2.3).
+    const _expiresAt = (typeof capabilities !== 'undefined' && capabilities && capabilities.package && capabilities.package.expiresAt) || null;
+    const _expiresLabel = _expiresAt
+      ? new Date(_expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : 'Never expires';
+    %>
+    <p style="font-size:14px;margin-bottom:18px;"><strong style="display:inline-block;width:140px;color:var(--dim);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:0.02em;">Expires</strong> <%= _expiresLabel %></p>
     <a href="/#pricing" class="cta-btn primary" style="display:inline-block;">Upgrade Plan</a>
   </div>
 </div>
