@@ -62,10 +62,10 @@
 
 .page-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 6px; }
 .new-interview-btn {
-  display: inline-flex; align-items: center; gap: 7px;
+  display: inline-flex; align-items: center; gap: 6px;
   background: var(--bright); color: var(--white);
-  padding: 7px 14px; border-radius: 10px;
-  font-size: 15px; font-weight: 600; text-decoration: none;
+  padding: 6px 12px; border-radius: 10px;
+  font-size: 13px; font-weight: 600; text-decoration: none;
   white-space: nowrap;
 }
 .new-interview-btn:hover { background: var(--royal); }
@@ -144,6 +144,7 @@
 .competency-stat-value.focus { color: #FCD34D; }
 
 .minutes-panel h3 { display: flex; align-items: center; gap: 6px; }
+.minutes-panel h3 svg { color: #FBBF24; flex-shrink: 0; }
 .minutes-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 .minutes-ring-wrap { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
 .minutes-ring-wrap svg { transform: rotate(-90deg); }

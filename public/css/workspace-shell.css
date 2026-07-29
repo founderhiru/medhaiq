@@ -49,10 +49,17 @@
 .pill-leadership { color: #A78BFA; background: rgba(109,40,217,0.18); border-color: rgba(109,40,217,0.35); }
 .pill-founder    { color: #F2C94C; background: rgba(242,201,76,0.14); border-color: rgba(242,201,76,0.3); }
 
+/* AI Minutes badge -- sits directly under the package pill, centered by
+   the same .shell-profile text-align:center. Plain text (not a pill) so
+   it doesn't visually compete with the package badge above it. Icon
+   color (#FBBF24) matches the bolt icon on the AI Interview Minutes card
+   exactly -- same SVG icon, same amber, just used in two places. */
 .shell-minutes-badge {
+  display: inline-flex; align-items: center; gap: 4px;
   margin-top: 6px;
   font-size: 11.5px; font-weight: 500; color: var(--dim);
 }
+.shell-minutes-badge-icon { display: inline-flex; color: #FBBF24; flex-shrink: 0; }
 
 .shell-preparing {
   padding: 0 8px 20px;
@@ -90,7 +97,7 @@
   border-top: 1px solid rgba(255,255,255,0.06);
   padding-top: 16px;
 }
-.shell-logout { font-size: 12px; color: var(--dim); text-decoration: none; }
+.shell-logout { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--dim); text-decoration: none; }
 .shell-logout:hover { color: var(--muted); }
 
 .workspace-content {
