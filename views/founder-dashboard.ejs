@@ -14,6 +14,19 @@ const kpiConfig = [
 const _stats = typeof stats !== 'undefined' && stats ? stats : {};
 const _activity = typeof activity !== 'undefined' && activity ? activity : [];
 const _users = typeof users !== 'undefined' && users ? users : [];
+const _packageOptions = Array.isArray(packageOptions) && packageOptions.length ? packageOptions : ['explorer', 'growth', 'leadership'];
+// Same emoji/label convention as the Dashboard sidebar pill and Settings
+// page (Architecture v1.5) — kept consistent across every surface that
+// displays a package, not a new convention invented for this table.
+const _packageMeta = {
+  explorer:   { label: 'Explorer',   dot: '⚪' },
+  growth:     { label: 'Growth',     dot: '🔵' },
+  leadership: { label: 'Leadership', dot: '🟣' },
+};
+function _pkgBadge(packageId) {
+  const meta = _packageMeta[packageId] || _packageMeta.explorer;
+  return meta.dot + ' ' + meta.label;
+}
 const _footer = typeof footerInfo !== 'undefined' && footerInfo ? footerInfo : {};
 const _betaOverview = typeof betaOverview !== 'undefined' && betaOverview ? betaOverview : {};
 const _beta = _betaOverview.beta || {};
@@ -240,7 +253,7 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
   <div class="fdash-activity-card">
     <table class="fdash-activity-table" id="fdash-users-table">
       <thead>
-        <tr><th>Name</th><th>Email</th><th>Plan</th><th>Status</th><th>Last Login</th><th>Actions</th></tr>
+        <tr><th>Name</th><th>Email</th><th>Package</th><th>Status</th><th>Last Login</th><th>Actions</th></tr>
       </thead>
       <tbody id="fdash-users-body">
         <% if (_users.length === 0) { %>
@@ -250,18 +263,51 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
         <tr>
           <td class="fdash-user"><%= u.name || '—' %></td>
           <td><%= u.email %></td>
-          <td><%= u.subscription_plan || 'Free' %></td>
+          <td><span class="shell-package-pill pill-<%= u.package_id %>"><%= _pkgBadge(u.package_id) %></span></td>
           <td><%= u.subscription_status === 'active' ? 'Active Subscriber' : 'Free / Trial' %></td>
           <td class="fdash-ts" data-iso="<%= toISO(u.last_login) %>" data-empty-text="Never logged in"></td>
           <td class="fdash-actions-cell">
+            <button type="button" class="fdash-action-btn fdash-manage-package-btn"
+              data-user-id="<%= u.id %>"
+              data-user-name="<%= (u.name || u.email).replace(/"/g, '&quot;') %>"
+              data-current-package="<%= u.package_id %>">Manage Package</button>
             <span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Suspend</span>
-            <span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Activate</span>
           </td>
         </tr>
         <% }); %>
         <% } %>
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- Manage Package modal — lightweight, Founder-only, MVP per spec.
+     Persists through package_acquisitions only; never touches
+     users.subscription_plan; never introduces a subscription_tier column. -->
+<div id="fdash-package-modal" class="fdash-modal-overlay" style="display:none;">
+  <div class="fdash-modal">
+    <div class="fdash-modal-header">
+      <div class="fdash-modal-title">User Package Management</div>
+      <button type="button" class="fdash-modal-close" id="fdash-modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="fdash-modal-sub">Assign or change a user's active package for testing, beta access, and customer support.</div>
+    <div class="fdash-modal-field">
+      <label class="fdash-modal-label">User</label>
+      <div class="fdash-modal-user" id="fdash-modal-user-name">—</div>
+    </div>
+    <div class="fdash-modal-field">
+      <label class="fdash-modal-label" for="fdash-package-select">Package</label>
+      <select id="fdash-package-select" class="fdash-modal-select">
+        <% _packageOptions.forEach(function(pkgId) { %>
+        <option value="<%= pkgId %>"><%= _pkgBadge(pkgId) %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="fdash-modal-msg" id="fdash-modal-msg"></div>
+    <div class="fdash-modal-actions">
+      <button type="button" class="fdash-action-btn" id="fdash-modal-cancel">Cancel</button>
+      <button type="button" class="fdash-action-btn fdash-modal-save" id="fdash-modal-save">Save Package</button>
+    </div>
   </div>
 </div>
 
@@ -286,6 +332,22 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
     function fmtDT(iso) {
       if (!iso) return null;
       return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+    // Same emoji/label convention as the Dashboard sidebar pill and
+    // Settings page — kept consistent across every surface that displays
+    // a package. Mirrors the EJS-side _pkgBadge() helper above; duplicated
+    // because EJS and this client-side script are two different languages,
+    // same pattern already used elsewhere in this file (e.g. the plan/
+    // status logic was already duplicated between server-render and this
+    // script before this change).
+    const PKG_META = {
+      explorer:   { label: 'Explorer',   dot: '⚪' },
+      growth:     { label: 'Growth',     dot: '🔵' },
+      leadership: { label: 'Leadership', dot: '🟣' },
+    };
+    function pkgBadge(packageId) {
+      const meta = PKG_META[packageId] || PKG_META.explorer;
+      return meta.dot + ' ' + meta.label;
     }
 
     // Formats every server-rendered timestamp using the browser's own local
@@ -346,11 +408,15 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
         tbody.innerHTML = data.users.map(function (u) {
           const name = escapeHtml(u.name || '—');
           const email = escapeHtml(u.email);
-          const plan = escapeHtml(u.subscription_plan || 'Free');
+          const packageId = u.package_id || 'explorer';
+          const packageBadge = escapeHtml(pkgBadge(packageId));
           const status = u.subscription_status === 'active' ? 'Active Subscriber' : 'Free / Trial';
           const lastLogin = escapeHtml(fmtDT(u.last_login) || 'Never logged in');
-          return '<tr><td class="fdash-user">' + name + '</td><td>' + email + '</td><td>' + plan + '</td><td>' + status + '</td><td>' + lastLogin + '</td>' +
-            '<td class="fdash-actions-cell"><span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Suspend</span> <span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Activate</span></td></tr>';
+          const userNameAttr = escapeHtml(u.name || u.email);
+          return '<tr><td class="fdash-user">' + name + '</td><td>' + email + '</td>' +
+            '<td><span class="shell-package-pill pill-' + packageId + '">' + packageBadge + '</span></td>' +
+            '<td>' + status + '</td><td>' + lastLogin + '</td>' +
+            '<td class="fdash-actions-cell"><button type="button" class="fdash-action-btn fdash-manage-package-btn" data-user-id="' + u.id + '" data-user-name="' + userNameAttr + '" data-current-package="' + packageId + '">Manage Package</button> <span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Suspend</span></td></tr>';
         }).join('');
       } catch (e) { /* silent */ }
     }
@@ -391,6 +457,87 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
         } catch (err) {
           msg.textContent = 'Failed to approve email';
           msg.className = 'fdash-qa-invite-msg error';
+        }
+      });
+    }
+
+    // ── Manage Package modal ──────────────────────────────────────────────
+    // Event delegation on the table body (not the buttons directly) since
+    // searchUsers() replaces tbody.innerHTML wholesale on every search —
+    // a direct listener on a button would be destroyed along with it.
+    const packageModal = document.getElementById('fdash-package-modal');
+    const packageSelect = document.getElementById('fdash-package-select');
+    const packageModalUserName = document.getElementById('fdash-modal-user-name');
+    const packageModalMsg = document.getElementById('fdash-modal-msg');
+    let packageModalUserId = null;
+    let packageModalPreviousPackage = null;
+
+    function openPackageModal(userId, userName, currentPackage) {
+      packageModalUserId = userId;
+      packageModalPreviousPackage = currentPackage;
+      packageModalUserName.textContent = userName;
+      packageSelect.value = currentPackage;
+      packageModalMsg.textContent = '';
+      packageModalMsg.className = 'fdash-modal-msg';
+      packageModal.style.display = 'flex';
+    }
+    function closePackageModal() {
+      packageModal.style.display = 'none';
+      packageModalUserId = null;
+    }
+
+    const usersBody = document.getElementById('fdash-users-body');
+    if (usersBody) {
+      usersBody.addEventListener('click', function (e) {
+        const btn = e.target.closest('.fdash-manage-package-btn');
+        if (!btn) return;
+        openPackageModal(btn.dataset.userId, btn.dataset.userName, btn.dataset.currentPackage);
+      });
+    }
+
+    const modalCloseBtn = document.getElementById('fdash-modal-close');
+    const modalCancelBtn = document.getElementById('fdash-modal-cancel');
+    if (modalCloseBtn) modalCloseBtn.addEventListener('click', closePackageModal);
+    if (modalCancelBtn) modalCancelBtn.addEventListener('click', closePackageModal);
+    if (packageModal) {
+      packageModal.addEventListener('click', function (e) {
+        if (e.target === packageModal) closePackageModal(); // click on the dimmed backdrop
+      });
+    }
+
+    const modalSaveBtn = document.getElementById('fdash-modal-save');
+    if (modalSaveBtn) {
+      modalSaveBtn.addEventListener('click', async function () {
+        const newPackage = packageSelect.value;
+        if (!packageModalUserId) return;
+        modalSaveBtn.disabled = true;
+        packageModalMsg.textContent = 'Saving…';
+        packageModalMsg.className = 'fdash-modal-msg';
+        try {
+          const res = await fetch('/api/founder/users/' + packageModalUserId + '/package', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ packageId: newPackage }),
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            const oldLabel = pkgBadge(packageModalPreviousPackage).replace(/^\S+\s/, '');
+            const newLabel = pkgBadge(newPackage).replace(/^\S+\s/, '');
+            packageModalMsg.textContent = '✅ Package updated successfully — ' + oldLabel + ' → ' + newLabel;
+            packageModalMsg.className = 'fdash-modal-msg success';
+            // Refresh the table — same function already used for search,
+            // reused here rather than writing a second table-render path.
+            await searchUsers(searchInput ? searchInput.value : '');
+            setTimeout(closePackageModal, 1400);
+          } else {
+            packageModalMsg.textContent = data.error || 'Failed to update package';
+            packageModalMsg.className = 'fdash-modal-msg error';
+          }
+        } catch (err) {
+          packageModalMsg.textContent = 'Failed to update package';
+          packageModalMsg.className = 'fdash-modal-msg error';
+        } finally {
+          modalSaveBtn.disabled = false;
         }
       });
     }

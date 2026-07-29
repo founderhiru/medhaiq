@@ -287,3 +287,46 @@ a.fdash-qa-link:hover { background: var(--card-hover); }
 .fdash-footer-title { font-size: 12.5px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
 .fdash-footer-row { display: flex; flex-wrap: wrap; gap: 18px; font-size: 12px; color: var(--dim); }
 .fdash-footer-ok { color: var(--emerald); font-weight: 600; }
+
+/* Manage Package modal (User Package Management MVP) — small, self-
+   contained, reuses this page's existing dark-theme tokens rather than
+   introducing new colors. */
+.fdash-manage-package-btn { cursor: pointer; border: none; background: rgba(255,255,255,0.04); }
+.fdash-manage-package-btn:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+
+.fdash-modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(10,15,30,0.72);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.fdash-modal {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius);
+  width: 100%; max-width: 380px;
+  padding: 20px;
+}
+.fdash-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.fdash-modal-title { font-size: 15px; font-weight: 700; color: var(--white); }
+.fdash-modal-close {
+  background: none; border: none; color: var(--muted); font-size: 20px; line-height: 1;
+  cursor: pointer; padding: 2px 6px;
+}
+.fdash-modal-close:hover { color: var(--white); }
+.fdash-modal-sub { font-size: 12.5px; color: var(--dim); margin-bottom: 16px; line-height: 1.5; }
+.fdash-modal-field { margin-bottom: 14px; }
+.fdash-modal-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.fdash-modal-user { font-size: 13.5px; color: var(--white); font-weight: 600; }
+.fdash-modal-select {
+  width: 100%; padding: 8px 10px; font-size: 13.5px;
+  background: var(--card-hover); color: var(--white);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+}
+.fdash-modal-msg { font-size: 12.5px; min-height: 18px; margin-bottom: 10px; }
+.fdash-modal-msg.success { color: var(--emerald); }
+.fdash-modal-msg.error { color: var(--danger); }
+.fdash-modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.fdash-modal-save { background: var(--bright); color: var(--white); font-weight: 600; cursor: pointer; border: none; }
+.fdash-modal-save:hover { background: var(--royal); }
+.fdash-modal-save:disabled { opacity: 0.6; cursor: not-allowed; }

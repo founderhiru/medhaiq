@@ -78,4 +78,84 @@ async function createPackageAcquisition({ userId, packageId, expiresAt, source, 
   }
 }
 
-module.exports = { getActivePackageAcquisition, getCreditedMinutes, createPackageAcquisition };
+/**
+ * Bulk version of getActivePackageAcquisition, for listing many users at
+ * once (Founder Dashboard → User Management table) without an N+1 query
+ * per row. Same "most recent unexpired wins" rule as the single-user
+ * function — DISTINCT ON here is just that same rule applied across a
+ * batch in one round trip, not a different rule.
+ *
+ * @param {number[]} userIds
+ * @returns {Promise<Object<number,string>>} map of user_id -> package_id.
+ *   A user_id absent from the map has no active acquisition (Explorer,
+ *   by the resolution convention used everywhere else in this codebase).
+ */
+async function getActivePackageAcquisitionsForUsers(userIds) {
+  if (!userIds || userIds.length === 0) return {};
+  const result = await pool.query(
+    `SELECT DISTINCT ON (user_id) user_id, package_id
+     FROM package_acquisitions
+     WHERE user_id = ANY($1::int[]) AND (expires_at IS NULL OR expires_at > NOW())
+     ORDER BY user_id, acquired_at DESC`,
+    [userIds]
+  );
+  const map = {};
+  for (const row of result.rows) map[row.user_id] = row.package_id;
+  return map;
+}
+
+/**
+ * Founder-driven package reassignment (Founder Dashboard → "Manage
+ * Package"). Atomically:
+ *   1. Ends the user's current active acquisition, if any, by setting
+ *      its expires_at to NOW() — an explicit, honest "this was ended by
+ *      an admin action on this date," not a silent supersede-by-ordering
+ *      (which is how a *second purchase* is allowed to behave, but an
+ *      admin reassignment should read clearly in the history).
+ *   2. Creates the new acquisition (source: 'admin_grant', open-ended —
+ *      no expiry — since this is for testing/beta/support, not a timed
+ *      purchase) with a starting credit grant matching that package's
+ *      configured included minutes.
+ * Both steps happen in one transaction — never leaves a user with either
+ * zero active packages or two simultaneously "current" ones.
+ */
+async function reassignPackage({ userId, packageId, grantedBy, initialMinutes }) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(
+      `UPDATE package_acquisitions
+       SET expires_at = NOW()
+       WHERE user_id = $1 AND (expires_at IS NULL OR expires_at > NOW())`,
+      [userId]
+    );
+    const inserted = await client.query(
+      `INSERT INTO package_acquisitions (user_id, package_id, expires_at, source, granted_by)
+       VALUES ($1, $2, NULL, 'admin_grant', $3) RETURNING *`,
+      [userId, packageId, grantedBy || null]
+    );
+    const acquisitionRow = inserted.rows[0];
+    if (initialMinutes) {
+      await client.query(
+        `INSERT INTO credit_ledger (user_id, package_acquisition_id, minutes, reason, granted_by)
+         VALUES ($1, $2, $3, 'admin_grant', $4)`,
+        [userId, acquisitionRow.id, initialMinutes, grantedBy || null]
+      );
+    }
+    await client.query('COMMIT');
+    return acquisitionRow;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = {
+  getActivePackageAcquisition,
+  getCreditedMinutes,
+  createPackageAcquisition,
+  getActivePackageAcquisitionsForUsers,
+  reassignPackage,
+};

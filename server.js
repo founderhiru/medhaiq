@@ -480,6 +480,7 @@ app.get('/founder', requireFounderPage, async (req, res) => {
     const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, getFounderAlerts } = require('./db/founder-stats');
     const { getFeedbackSummary, getRecentFeedback } = require('./db/founder-feedback');
     const { listUsers } = require('./db/founder-users');
+    const { PRODUCT_PACKAGES } = require('./config/product-packages');
 
     // All six sections' data depend only on shared, already-committed
     // database state, not on each other's results — fetched in parallel.
@@ -501,6 +502,11 @@ app.get('/founder', requireFounderPage, async (req, res) => {
       feedbackSummary,
       recentFeedback,
       users,
+      // "Manage Package" dropdown source — Object.keys() preserves
+      // config/product-packages.js's own definition order (explorer,
+      // growth, leadership), so adding a future package there is the
+      // ONLY change needed for it to appear here too. Never hardcoded.
+      packageOptions: Object.keys(PRODUCT_PACKAGES),
       footerInfo: {
         lastRefreshed: new Date().toISOString(),
         environment: process.env.NODE_ENV === 'production' ? 'Production' : 'Staging',
