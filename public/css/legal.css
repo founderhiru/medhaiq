@@ -1,7 +1,5 @@
 /* ============================================
-   LEGAL PAGES — PRECISION STYLING FIXES & CSS
-   Restores original link anchor row layout & dot separators,
-   fixes line wrapping, alignment, and spacing density.
+   LEGAL PAGES — shared reading-page presentation layer
    ============================================ */
 
 #mh-legal-page {
@@ -15,7 +13,7 @@
   margin: 0 auto;
 }
 
-/* ---------- Header block & Anchor Row (Restored original style) ---------- */
+/* ---------- Header block & Anchor Row ---------- */
 
 .mh-legal-header {
   text-align: center;
@@ -30,8 +28,8 @@
 
 .mh-legal-title {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 44px;
+  font-weight: 800;
+  font-size: 46px;
   line-height: 1.1;
   color: var(--white);
   letter-spacing: var(--hero-h1-tracking);
@@ -50,7 +48,7 @@
 
 .mh-legal-meta-dot { color: var(--text-faint); opacity: 0.6; }
 
-/* Restored original inline anchor row layout with bullet/dot separators */
+/* Inline anchor row layout with dot separators */
 .mh-legal-anchor-row {
   display: flex;
   flex-wrap: wrap;
@@ -87,13 +85,30 @@
   user-select: none;
 }
 
-/* ---------- Lead Paragraph ---------- */
+/* ---------- At a Glance Card & Muted Label ---------- */
 
-.mh-legal-lead {
+.mh-legal-tldr {
+  background: var(--navy-card);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  margin-bottom: 40px;
+}
+
+.mh-legal-tldr-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue-bright);
+  margin-bottom: 8px;
+}
+
+.mh-legal-tldr p {
   font-size: 15px;
   line-height: 1.7;
   color: var(--text-muted);
-  margin-bottom: 0;
 }
 
 /* ---------- Article Body & Section Rhythm ---------- */
@@ -105,7 +120,6 @@
   scroll-margin-top: 100px;
 }
 
-/* First section starts immediately */
 .mh-legal-article > .mh-legal-section:first-child {
   border-top: none;
   margin-top: 0;
@@ -148,7 +162,6 @@
 
 .mh-legal-section li {
   position: relative;
-  /* Use standard block/inline flow with padding-left for clean multi-line wrapping under text */
   padding-left: 16px;
   font-size: 15px;
   line-height: 1.7;
@@ -156,7 +169,6 @@
   margin-bottom: 6px;
 }
 
-/* Bullet positioned correctly at top-left, allowing wrapped lines to align flush with text */
 .mh-legal-section li::before {
   content: "•";
   position: absolute;
@@ -168,7 +180,6 @@
 
 .mh-legal-section li:last-child { margin-bottom: 0; }
 
-/* Bold key terms */
 .mh-legal-section strong { color: var(--white); font-weight: 600; }
 
 .mh-legal-section a {
