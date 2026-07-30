@@ -2,20 +2,21 @@
   SHARED LEGAL PAGE LAYOUT
   Used by /privacy, /terms, /responsible-ai (and any future legal page).
   Each page only supplies content — this partial owns the page shell,
-  typography, meta row, intro paragraph, and section rhythm so every
-  legal page stays visually consistent.
+  typography, meta row, inline nav, "At a Glance" card, and section
+  rhythm so every legal page stays visually consistent.
 
   Structure (top to bottom): LEGAL label -> Title -> Last Updated ->
-  Introduction paragraph -> inline section nav -> numbered sections.
+  inline section nav -> "At a Glance" card -> numbered sections.
 
   Expected locals:
     title          - string, e.g. "Privacy Policy"           (required)
     description    - string, <meta name="description">        (required)
     lastUpdated    - string, e.g. "July 29, 2026"              (optional)
-    introText      - string, the document's own lede           (optional)
-                     paragraph, rendered plain (no card/label)
+    introText      - string, the document's own summary        (optional)
+                     paragraph, rendered inside the "At a
+                     Glance" card
     toc            - array of { href, label } for the slim      (optional)
-                     inline anchor row before the article
+                     inline anchor row beneath the meta row
     contentPartial - string, path (relative to this file's own
                      directory) to the page's content partial,
                      e.g. "legal/privacy-content"               (required)
@@ -52,16 +53,19 @@
         <div class="mh-legal-meta"><span>Last Updated: <%= lastUpdated %></span></div>
         <% } %>
 
-        <% if (typeof introText !== 'undefined' && introText) { %>
-        <p class="mh-legal-intro"><%- introText %></p>
-        <% } %>
-
         <% if (typeof toc !== 'undefined' && toc && toc.length) { %>
         <nav class="mh-legal-anchor-row" aria-label="Jump to a section">
           <% toc.forEach(function(item, i) { %><a href="<%= item.href %>"><%= item.label %></a><% if (i < toc.length - 1) { %><span class="mh-legal-anchor-dot" aria-hidden="true">&middot;</span><% } %><% }); %>
         </nav>
         <% } %>
       </header>
+
+      <% if (typeof introText !== 'undefined' && introText) { %>
+      <div class="mh-legal-tldr">
+        <div class="mh-legal-tldr-label">At a Glance</div>
+        <p><%- introText %></p>
+      </div>
+      <% } %>
 
       <article class="mh-legal-article">
         <%- include(contentPartial, locals) %>
@@ -73,4 +77,5 @@
   <%- include('footer') %>
 </body>
 </html>
+
 
