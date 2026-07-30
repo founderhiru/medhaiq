@@ -61,7 +61,7 @@ const _extraStylesheets = typeof extraStylesheets !== 'undefined' ? extraStylesh
       const _entitlement = (typeof capabilities !== 'undefined' && capabilities) ? capabilities.interviewEntitlement : null;
       %>
       <% if (typeof capabilities !== 'undefined' && capabilities && capabilities.isAuthenticated && _entitlement && !_entitlement.unlimited) { %>
-      <div class="shell-minutes-badge">⚡ <%= Math.round(_entitlement.minutesRemaining) %> AI Minutes Left</div>
+      <div class="shell-minutes-badge"><span class="shell-minutes-badge-icon"><%- include('icon', { name: 'bolt', svgSize: 11 }) %></span> <%= Math.round(_entitlement.minutesRemaining) %> AI Minutes Left</div>
       <% } %>
     </div>
     <% if (typeof preparingForRole !== 'undefined' && preparingForRole) { %>
@@ -80,8 +80,8 @@ const _extraStylesheets = typeof extraStylesheets !== 'undefined' ? extraStylesh
       <a href="/founder" class="shell-link <%= _activeNav === 'founder' ? 'active' : '' %>"><span class="dot"></span> Founder Dashboard</a>
       <% } %>
     </div>
-    <div class="shell-footer">
-      <a href="/auth/logout" class="shell-logout">Log out</a>
+   <div class="shell-footer">
+      <a href="/auth/logout" class="shell-logout"><%- include('icon', { name: 'exit', svgSize: 13 }) %> Log out</a>
     </div>
   </nav>
   <main class="workspace-content">
