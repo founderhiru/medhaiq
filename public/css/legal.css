@@ -4,9 +4,10 @@
    views/partials/legal-layout.ejs. Scoped under #mh-legal-page.
    Reuses the platform's existing design tokens only — same card
    recipe as .mh-int-card / .mh-audience-card (navy-card + navy-border
-   + radius-lg), same divider hairline as .mh-footer-bottom
-   (white-border), same prose rhythm as .mh-why-body (font-body,
-   1.7 line-height, text-muted), same heading scale as
+   + radius-lg) for the contact block, same centered-lede pattern as
+   .mh-section-sub for the intro paragraph, same divider hairline as
+   .mh-footer-bottom (white-border), same prose rhythm as .mh-why-body
+   (font-body, 1.7 line-height, text-muted), same heading scale as
    .mh-section-title (h2-size, h2-tracking). No new colors, no new
    fonts, no Privacy-specific typography.
    ============================================ */
@@ -65,7 +66,7 @@
   justify-content: center;
   align-items: center;
   gap: 4px 4px;
-  margin-top: 14px;
+  margin-top: 20px;
   padding: 0 12px;
 }
 
@@ -93,29 +94,17 @@
   margin: 0 6px;
 }
 
-/* ---------- At a Glance card — refined, subtle, no shadow/glow ---------- */
+/* ---------- Intro paragraph — same centered-lede pattern as
+   .mh-section-sub used platform-wide under section titles.
+   No card: the finalized content has no callout/label here. ---------- */
 
-.mh-legal-tldr {
-  background: var(--navy-card);
-  border: 1px solid var(--navy-border);
-  border-radius: var(--radius-lg);
-  padding: 24px 28px;
-  margin-bottom: 40px;
-}
-
-.mh-legal-tldr-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--blue-bright);
-  margin-bottom: 8px;
-}
-
-.mh-legal-tldr p {
-  font-size: 15px;
-  line-height: 1.7;
+.mh-legal-intro {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--text-muted);
+  max-width: 620px;
+  margin: 6px auto 0;
 }
 
 /* ---------- Article body ---------- */
@@ -131,6 +120,15 @@
   border-top: none;
   margin-top: 0;
   padding-top: 0;
+}
+
+.mh-legal-section-number {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  margin-bottom: 10px;
 }
 
 .mh-legal-section h2 {

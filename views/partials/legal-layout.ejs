@@ -2,19 +2,20 @@
   SHARED LEGAL PAGE LAYOUT
   Used by /privacy, /terms, /responsible-ai (and any future legal page).
   Each page only supplies content — this partial owns the page shell,
-  typography, meta row, "At a Glance" card, and section rhythm so every
+  typography, meta row, intro paragraph, and section rhythm so every
   legal page stays visually consistent.
+
+  Structure (top to bottom): LEGAL label -> Title -> Last Updated ->
+  Introduction paragraph -> inline section nav -> numbered sections.
 
   Expected locals:
     title          - string, e.g. "Privacy Policy"           (required)
     description    - string, <meta name="description">        (required)
-    effectiveDate  - string, e.g. "July 29, 2026"              (optional)
     lastUpdated    - string, e.g. "July 29, 2026"              (optional)
-    version        - string, e.g. "1.0"                        (optional)
-    tldrLabel      - string, default "At a Glance"             (optional)
-    tldrText       - string, raw HTML allowed for a single para (optional)
+    introText      - string, the document's own lede           (optional)
+                     paragraph, rendered plain (no card/label)
     toc            - array of { href, label } for the slim      (optional)
-                     inline anchor row beneath the meta row
+                     inline anchor row before the article
     contentPartial - string, path (relative to this file's own
                      directory) to the page's content partial,
                      e.g. "legal/privacy-content"               (required)
@@ -47,16 +48,12 @@
         <div class="mh-eyebrow">Legal</div>
         <h1 class="mh-legal-title"><%= title %></h1>
 
-        <%
-          var _metaParts = [];
-          if (typeof effectiveDate !== 'undefined' && effectiveDate) _metaParts.push('Effective Date: ' + effectiveDate);
-          if (typeof lastUpdated !== 'undefined' && lastUpdated) _metaParts.push('Last Updated: ' + lastUpdated);
-          if (typeof version !== 'undefined' && version) _metaParts.push('Version: ' + version);
-        %>
-        <% if (_metaParts.length) { %>
-        <div class="mh-legal-meta">
-          <% _metaParts.forEach(function(part, i) { %><span><%= part %></span><% if (i < _metaParts.length - 1) { %><span class="mh-legal-meta-dot" aria-hidden="true">&middot;</span><% } %><% }); %>
-        </div>
+        <% if (typeof lastUpdated !== 'undefined' && lastUpdated) { %>
+        <div class="mh-legal-meta"><span>Last Updated: <%= lastUpdated %></span></div>
+        <% } %>
+
+        <% if (typeof introText !== 'undefined' && introText) { %>
+        <p class="mh-legal-intro"><%- introText %></p>
         <% } %>
 
         <% if (typeof toc !== 'undefined' && toc && toc.length) { %>
@@ -65,13 +62,6 @@
         </nav>
         <% } %>
       </header>
-
-      <% if (typeof tldrText !== 'undefined' && tldrText) { %>
-      <div class="mh-legal-tldr">
-        <div class="mh-legal-tldr-label"><%= (typeof tldrLabel !== 'undefined' && tldrLabel) ? tldrLabel : 'At a Glance' %></div>
-        <p><%- tldrText %></p>
-      </div>
-      <% } %>
 
       <article class="mh-legal-article">
         <%- include(contentPartial, locals) %>
@@ -83,3 +73,4 @@
   <%- include('footer') %>
 </body>
 </html>
+
