@@ -14,7 +14,7 @@
 
 #mh-legal-page {
   background: var(--navy-deep);
-  padding: 128px var(--section-pad-x) var(--section-pad-y);
+  padding: 128px var(--section-pad-x) 56px;
 }
 
 /* Single centered reading column — 860px, not full browser width */
@@ -27,7 +27,7 @@
 
 .mh-legal-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 /* Subtler category label — a tag, not a focal point */
@@ -66,7 +66,7 @@
   justify-content: center;
   align-items: center;
   gap: 4px 4px;
-  margin-top: 14px;
+  margin-top: 12px;
   padding: 0 12px;
 }
 
@@ -101,8 +101,8 @@
   background: var(--navy-card);
   border: 1px solid var(--navy-border);
   border-radius: var(--radius-lg);
-  padding: 24px 28px;
-  margin-bottom: 40px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
 }
 
 .mh-legal-tldr-label {
@@ -134,8 +134,8 @@
 /* ---------- Article body ---------- */
 
 .mh-legal-section {
-  padding-top: 48px;
-  margin-top: 48px;
+  padding-top: 38px;
+  margin-top: 38px;
   border-top: 1px solid var(--white-border);
   scroll-margin-top: 100px;
 }
@@ -154,34 +154,52 @@
   line-height: 1.15;
   color: var(--white);
   letter-spacing: var(--h2-tracking);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .mh-legal-section h3 {
   font-weight: 600;
   font-size: 15px;
   color: var(--white);
-  margin: 22px 0 8px;
+  margin: 18px 0 8px;
 }
 
 .mh-legal-section p {
   font-size: 15px;
   line-height: 1.7;
   color: var(--text-muted);
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
+.mh-legal-section p:last-child { margin-bottom: 0; }
+
 .mh-legal-section ul {
-  margin: 0 0 18px;
-  padding-left: 24px;
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
 }
 
 .mh-legal-section li {
+  position: relative;
+  padding-left: 18px;
   font-size: 15px;
   line-height: 1.7;
   color: var(--text-muted);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
+
+.mh-legal-section li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.72em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.mh-legal-section li:last-child { margin-bottom: 0; }
 
 /* Bold only the key term at the start of a bullet — never whole paragraphs */
 .mh-legal-section strong { color: var(--white); font-weight: 600; }
@@ -218,7 +236,7 @@
 
 /* Mobile — single column, comfortable padding */
 @media (max-width: 768px) {
-  #mh-legal-page { padding: 112px 24px 88px; }
+  #mh-legal-page { padding: 112px 24px 64px; }
   .mh-legal-inner { max-width: 100%; }
   .mh-legal-title { font-size: 32px; }
 }
