@@ -30,8 +30,8 @@
 
 .mh-legal-title {
   font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 46px;
+  font-weight: 700;
+  font-size: 44px;
   line-height: 1.1;
   color: var(--white);
   letter-spacing: var(--hero-h1-tracking);
