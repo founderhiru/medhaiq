@@ -47,11 +47,15 @@
         <div class="mh-eyebrow">Legal</div>
         <h1 class="mh-legal-title"><%= title %></h1>
 
-        <% if ((typeof effectiveDate !== 'undefined' && effectiveDate) || (typeof lastUpdated !== 'undefined' && lastUpdated) || (typeof version !== 'undefined' && version)) { %>
+        <%
+          var _metaParts = [];
+          if (typeof effectiveDate !== 'undefined' && effectiveDate) _metaParts.push('Effective Date: ' + effectiveDate);
+          if (typeof lastUpdated !== 'undefined' && lastUpdated) _metaParts.push('Last Updated: ' + lastUpdated);
+          if (typeof version !== 'undefined' && version) _metaParts.push('Version: ' + version);
+        %>
+        <% if (_metaParts.length) { %>
         <div class="mh-legal-meta">
-          <% if (typeof effectiveDate !== 'undefined' && effectiveDate) { %><span>Effective Date: <%= effectiveDate %></span><% } %>
-          <% if (typeof lastUpdated !== 'undefined' && lastUpdated) { %><span class="mh-legal-meta-dot">&middot;</span><span>Last Updated: <%= lastUpdated %></span><% } %>
-          <% if (typeof version !== 'undefined' && version) { %><span class="mh-legal-meta-dot">&middot;</span><span>Version: <%= version %></span><% } %>
+          <% _metaParts.forEach(function(part, i) { %><span><%= part %></span><% if (i < _metaParts.length - 1) { %><span class="mh-legal-meta-dot" aria-hidden="true">&middot;</span><% } %><% }); %>
         </div>
         <% } %>
 
