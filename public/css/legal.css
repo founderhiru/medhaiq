@@ -126,6 +126,7 @@
   padding-top: 48px;
   margin-top: 48px;
   border-top: 1px solid var(--white-border);
+  scroll-margin-top: 100px;
 }
 
 /* First section starts immediately — no divider, no lead-in gap */
@@ -143,7 +144,6 @@
   color: var(--white);
   letter-spacing: var(--h2-tracking);
   margin-bottom: 16px;
-  scroll-margin-top: 100px;
 }
 
 .mh-legal-section h3 {
