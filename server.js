@@ -87,8 +87,12 @@ app.get('/', async (req, res) => {
     res.render('layout', buildLandingContext());
   }
 });
-app.get('/privacy', (_req, res) => res.redirect('/'));
+app.get('/privacy', (_req, res) => res.render('privacy'));
 app.get('/terms',   (_req, res) => res.redirect('/'));
+// TEMPORARY placeholder for the Legal footer column's Responsible AI link —
+// swap for a real page/content when built. Not fabricated content, just a
+// safe stub so /responsible-ai doesn't 404.
+app.get('/responsible-ai', (_req, res) => res.redirect('/'));
 app.get('/architecture', (_req, res) => res.render('architecture'));
 app.get('/about',        (_req, res) => res.render('about'));
 app.get('/why',     (_req, res) => res.render('why'));
