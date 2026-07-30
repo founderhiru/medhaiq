@@ -4,11 +4,12 @@
    views/partials/legal-layout.ejs. Scoped under #mh-legal-page.
    Reuses the platform's existing design tokens only — same card
    recipe as .mh-int-card / .mh-audience-card (navy-card + navy-border
-   + radius-lg), same divider hairline as .mh-footer-bottom
-   (white-border), same prose rhythm as .mh-why-body (font-body,
-   1.7 line-height, text-muted), same heading scale as
-   .mh-section-title (h2-size, h2-tracking). No new colors, no new
-   fonts, no Privacy-specific typography.
+   + radius-lg) for both the "At a Glance" card and the contact block,
+   same divider hairline as .mh-footer-bottom (white-border), same
+   prose rhythm as .mh-why-body (font-body, 1.7 line-height,
+   text-muted), same heading scale as .mh-section-title (h2-size,
+   h2-tracking). No new colors, no new fonts, no Privacy-specific
+   typography.
    ============================================ */
 
 #mh-legal-page {
@@ -93,7 +94,8 @@
   margin: 0 6px;
 }
 
-/* ---------- At a Glance card — refined, subtle, no shadow/glow ---------- */
+/* ---------- At a Glance card — same card recipe as .mh-int-card /
+   .mh-audience-card (navy-card + navy-border + radius-lg). ---------- */
 
 .mh-legal-tldr {
   background: var(--navy-card);
@@ -124,6 +126,7 @@
   padding-top: 48px;
   margin-top: 48px;
   border-top: 1px solid var(--white-border);
+  scroll-margin-top: 100px;
 }
 
 /* First section starts immediately — no divider, no lead-in gap */
@@ -141,7 +144,6 @@
   color: var(--white);
   letter-spacing: var(--h2-tracking);
   margin-bottom: 16px;
-  scroll-margin-top: 100px;
 }
 
 .mh-legal-section h3 {
