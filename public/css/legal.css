@@ -120,6 +120,17 @@
   color: var(--text-muted);
 }
 
+/* ---------- Plain lead paragraph (used instead of the "At a Glance"
+   card on pages like Terms, where the source has no callout) — same
+   typography as body copy, left-aligned, full reading width. ---------- */
+
+.mh-legal-lead {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
 /* ---------- Article body ---------- */
 
 .mh-legal-section {
