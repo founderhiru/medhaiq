@@ -1,0 +1,81 @@
+<!--
+  SHARED LEGAL PAGE LAYOUT
+  Used by /privacy, /terms, /responsible-ai (and any future legal page).
+  Each page only supplies content — this partial owns the page shell,
+  typography, meta row, "At a Glance" card, and section rhythm so every
+  legal page stays visually consistent.
+
+  Expected locals:
+    title          - string, e.g. "Privacy Policy"           (required)
+    description    - string, <meta name="description">        (required)
+    effectiveDate  - string, e.g. "July 29, 2026"              (optional)
+    lastUpdated    - string, e.g. "July 29, 2026"              (optional)
+    version        - string, e.g. "1.0"                        (optional)
+    tldrLabel      - string, default "At a Glance"             (optional)
+    tldrText       - string, raw HTML allowed for a single para (optional)
+    toc            - array of { href, label } for the slim      (optional)
+                     inline anchor row beneath the meta row
+    contentPartial - string, path (relative to this file's own
+                     directory) to the page's content partial,
+                     e.g. "legal/privacy-content"               (required)
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | MedhaIQ.ai</title>
+  <meta name="description" content="<%= description %>">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0A0F1E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/medhaiq.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/hero-v2.css">
+  <link rel="stylesheet" href="/css/value-footer.css">
+  <link rel="stylesheet" href="/css/legal.css">
+</head>
+<body>
+  <%- include('header') %>
+
+  <main id="mh-legal-page">
+    <div class="mh-legal-inner">
+
+      <header class="mh-legal-header">
+        <div class="mh-eyebrow">Legal</div>
+        <h1 class="mh-legal-title"><%= title %></h1>
+
+        <% if ((typeof effectiveDate !== 'undefined' && effectiveDate) || (typeof lastUpdated !== 'undefined' && lastUpdated) || (typeof version !== 'undefined' && version)) { %>
+        <div class="mh-legal-meta">
+          <% if (typeof effectiveDate !== 'undefined' && effectiveDate) { %><span>Effective Date: <%= effectiveDate %></span><% } %>
+          <% if (typeof lastUpdated !== 'undefined' && lastUpdated) { %><span class="mh-legal-meta-dot">&middot;</span><span>Last Updated: <%= lastUpdated %></span><% } %>
+          <% if (typeof version !== 'undefined' && version) { %><span class="mh-legal-meta-dot">&middot;</span><span>Version: <%= version %></span><% } %>
+        </div>
+        <% } %>
+
+        <% if (typeof toc !== 'undefined' && toc && toc.length) { %>
+        <nav class="mh-legal-anchor-row" aria-label="Jump to a section">
+          <% toc.forEach(function(item, i) { %><a href="<%= item.href %>"><%= item.label %></a><% if (i < toc.length - 1) { %><span class="mh-legal-anchor-dot" aria-hidden="true">&middot;</span><% } %><% }); %>
+        </nav>
+        <% } %>
+      </header>
+
+      <% if (typeof tldrText !== 'undefined' && tldrText) { %>
+      <div class="mh-legal-tldr">
+        <div class="mh-legal-tldr-label"><%= (typeof tldrLabel !== 'undefined' && tldrLabel) ? tldrLabel : 'At a Glance' %></div>
+        <p><%- tldrText %></p>
+      </div>
+      <% } %>
+
+      <article class="mh-legal-article">
+        <%- include(contentPartial, locals) %>
+      </article>
+
+    </div>
+  </main>
+
+  <%- include('footer') %>
+</body>
+</html>
