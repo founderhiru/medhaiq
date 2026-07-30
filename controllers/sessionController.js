@@ -15,6 +15,12 @@ const {
 // place parsing happens). Absent/undefined is the normal, fully-supported
 // case for a candidate with no resume on file.
 const { getCareerProfile } = require('../db/career-profile');
+// Discovery Profile (Phase 2, additive) — decides ONLY whether Discovery or
+// the existing generateNextQuestion() supplies the opening question. Never
+// modifies, wraps, or duplicates generateNextQuestion() itself — see the
+// branch at step 6 below, where the existing call is preserved unchanged.
+const { selectDiscoveryProfile } = require('../services/discovery/discovery-router');
+const { decideOpeningTurn } = require('../services/discovery/opening-strategy');
 
 /**
  * POST /api/interview/sessions  (alias: POST /api/interview/session/initialize)
@@ -103,32 +109,58 @@ async function initializeSession(req, res) {
       storyLibrary,
     });
 
-    // ── 6. Opening question via the enterprise prompt layer ─────────────────
-    const openingResult = await generateNextQuestion({
-      sessionId: session.id,
-      personaId,
-      roleTitle,
-      experienceLevel,
-      orgPreset: orgPreset || null,
-      competencyMatrix: finalizedMatrix,
-      jdText,
-      qaPairs: [],
-      questionCount: 0,
-      resumeContext,
-      storyLibrary,
-      questionPosition: 1,
-    });
+    // ── 5b. Discovery Router / Opening Strategy (additive, stateless) ──────
+    // Recomputed fresh on this request only — no runtime object persists
+    // between requests, no new session/DB field. selectDiscoveryProfile()
+    // reads only experienceLevel/resumeContext/storyLibrary, already in
+    // scope above. For PROFESSIONAL/LEADERSHIP/EXECUTIVE (v1: usesDiscoveryOpening
+    // is false for all three per founder sign-off), decideOpeningTurn()
+    // always returns useDiscovery:false and step 6 below fires the exact
+    // same generateNextQuestion() call, with the exact same arguments, as
+    // it did before this feature existed.
+    const { profileKey: discoveryProfileKey, profile: discoveryProfile } =
+      selectDiscoveryProfile({ experienceLevel, resumeContext, storyLibrary });
+    const openingTurn = decideOpeningTurn(discoveryProfile);
+    console.log(`[discovery] session=${session.id} profile=${discoveryProfileKey} usesDiscoveryOpening=${openingTurn.useDiscovery}`);
+
+    // ── 6. Opening question — Discovery-authored OR the enterprise prompt
+    // layer, never both. This is a conditional CALL SITE choice: the
+    // generateNextQuestion() branch below is byte-for-byte identical to the
+    // call that existed before Discovery Profile was introduced. Discovery
+    // never wraps, modifies, or intercepts that function.
+    const openingResult = openingTurn.useDiscovery
+      ? {
+          text: openingTurn.questionText,
+          competency: null,
+          storyKey: null,
+          questionBlueprint: null,
+          audio_url: null,
+        }
+      : await generateNextQuestion({
+          sessionId: session.id,
+          personaId,
+          roleTitle,
+          experienceLevel,
+          orgPreset: orgPreset || null,
+          competencyMatrix: finalizedMatrix,
+          jdText,
+          qaPairs: [],
+          questionCount: 0,
+          resumeContext,
+          storyLibrary,
+          questionPosition: 1,
+        });
 
     const question = await addQuestion({
       sessionId: session.id,
       questionText: openingResult.text,
       personaId,
-      questionType: 'opening',
+      questionType: openingTurn.useDiscovery ? 'discovery_opening' : 'opening',
       questionOrder: 0,
       competency: openingResult.competency,
       storyKey: openingResult.storyKey,
       questionBlueprint: openingResult.questionBlueprint,
-      questionPosition: 1,
+      questionPosition: openingTurn.useDiscovery ? null : 1,
       strategySource: openingResult.questionBlueprint ? openingResult.questionBlueprint.strategy_source : null,
       strategyPurpose: openingResult.questionBlueprint ? openingResult.questionBlueprint.strategy_purpose : null,
     });

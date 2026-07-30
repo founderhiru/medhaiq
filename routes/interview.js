@@ -41,6 +41,17 @@ const sessionController = require('../controllers/sessionController');
 // requireAuth + requireInterviewEntitlement now live in middleware/guards.js
 // — single shared implementation built on the Capability Engine.
 const { requireAuth, requireInterviewEntitlement } = require('../middleware/guards');
+// Discovery Profile (Phase 2, additive) — decides ONLY whether Discovery or
+// the existing generateNextQuestion() supplies the next question on turn
+// 2+. Never modifies, wraps, or duplicates generateNextQuestion() itself.
+const { selectDiscoveryProfile } = require('../services/discovery/discovery-router');
+const { decideNextTurn } = require('../services/discovery/opening-strategy');
+// question_type values authored by Discovery — deliberately NOT added to
+// isPrimaryQuestionType() below, so discovery turns never count toward the
+// 5-primary session budget and never interfere with follow-up eligibility.
+function isDiscoveryQuestionType(questionType) {
+  return questionType === 'discovery_opening' || questionType === 'discovery_followup';
+}
 // Per the config-driven-business-rules directive: this was previously its
 // own local `const MAX_SESSION_MINUTES = 25`, defined independently of the
 // identical value in config/plans.js. Sourcing it from there means there is
@@ -199,7 +210,15 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   const allScores = await getSessionScores(session.id);
   const scoreByQuestionId = new Map(allScores.map(s => [s.question_id, Number(s.weighted_overall)]));
   const answeredQuestions = allQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined);
-  const qaPairs = answeredQuestions.map(q => ({
+  // Engine-facing view: excludes Discovery-authored rows. For any session
+  // with zero discovery rows (Professional/Leadership/Executive in v1, and
+  // any Early Career session post-handoff for turns after handoff), this is
+  // identical to `answeredQuestions` — provably zero behavior change. Used
+  // ONLY for qaPairs/questionCount below; `answeredQuestions` itself is left
+  // untouched everywhere else (questionOrder, primary/follow-up counting),
+  // so DB ordering and existing guards are unaffected.
+  const engineAnsweredQuestions = answeredQuestions.filter(q => !isDiscoveryQuestionType(q.question_type));
+  const qaPairs = engineAnsweredQuestions.map(q => ({
     question: q.question_text,
     answer: q.answer_text,
     // NOTE: score is a real Number here, not the raw Postgres NUMERIC
@@ -242,6 +261,68 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     try { storyLibrary = JSON.parse(storyLibrary); } catch (e) { storyLibrary = []; }
   }
 
+  // ── Discovery Router / Opening Strategy (additive, stateless gate) ──────
+  // Recomputed fresh on every turn from data already loaded above — the
+  // session's frozen experience_level/resume_context/story_library plus a
+  // count of already-persisted discovery rows. No runtime object survives
+  // between requests, no new session/DB field, nothing to reset. For any
+  // profile with usesDiscoveryOpening=false (Professional/Leadership/
+  // Executive in v1), decideNextTurn() always returns useDiscovery:false —
+  // a hard no-op — and generateNextQuestion() below is reached exactly as
+  // it was before this feature existed.
+  const { profile: discoveryProfile } = selectDiscoveryProfile({
+    experienceLevel: session.experience_level,
+    resumeContext,
+    storyLibrary,
+  });
+  const discoveryAnsweredCount = allQuestions.filter(q =>
+    isDiscoveryQuestionType(q.question_type) && q.answer_text !== null && q.answer_text !== undefined
+  ).length;
+  const discoveryTurn = decideNextTurn({ profile: discoveryProfile, discoveryAnsweredCount });
+
+  if (discoveryTurn.useDiscovery) {
+    // Discovery still owns this turn. generateNextQuestion() is NOT called
+    // — persisted via the same addQuestion() path everything else uses, so
+    // history/reports/analytics read this row exactly like any other.
+    const questionOrder = answeredQuestions.length; // same convention as below: keeps DB ordering monotonic across the whole session, discovery rows included
+    const savedDiscoveryQuestion = await addQuestion({
+      sessionId: session.id,
+      questionText: discoveryTurn.questionText,
+      personaId: session.persona_id,
+      questionType: discoveryTurn.discoveryQuestionType,
+      questionOrder,
+      competency: null,
+      storyKey: null,
+      parentQuestionId: null,
+      questionBlueprint: null,
+      questionPosition: null,
+    });
+    return {
+      done: false,
+      id: savedDiscoveryQuestion.id,
+      text: savedDiscoveryQuestion.question_text,
+      type: savedDiscoveryQuestion.question_type,
+      isFollowup: false,
+      order: savedDiscoveryQuestion.question_order,
+      competency: null,
+      audio_url: null,
+      question: {
+        id: savedDiscoveryQuestion.id,
+        text: savedDiscoveryQuestion.question_text,
+        type: savedDiscoveryQuestion.question_type,
+        isFollowup: false,
+        order: savedDiscoveryQuestion.question_order,
+        competency: null,
+      },
+    };
+  }
+  // ── Explicit one-way handoff ─────────────────────────────────────────────
+  // discoveryTurn.useDiscovery is false from here on for this session,
+  // forever: discoveryAnsweredCount only grows (a count of already-answered
+  // rows) and discoveryProfile is a fixed function of immutable session
+  // fields, so this branch can never be re-entered. Nothing below this line
+  // is new — this is the pre-existing code path, completely unmodified.
+
   // Executive Interview Strategy — additive only. Simply "which primary
   // number is this" (1-5); undefined for follow-ups, since the strategy
   // layer is explicitly scoped to primaries only and follow-up logic
@@ -258,7 +339,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     competencyMatrix: competencyMatrix || [],
     jdText: session.jd_text || '',
     qaPairs,
-    questionCount: answeredQuestions.length,
+    questionCount: engineAnsweredQuestions.length,
     resumeContext,
     storyLibrary: storyLibrary || [],
     isFollowup: isFollowupTurn,
@@ -434,48 +515,70 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     };
   }
 
-  // 2. Score the validated answer
-  let scores;
+  // ── Discovery Scoring Gate (additive, orchestration-level only) ─────────
+  // Discovery-authored questions (services/discovery/*) are contextual
+  // onboarding, not an evaluated interview turn. This decides ONLY whether
+  // scoreAnswer()/addScore() are invoked for THIS answer — it does not
+  // modify either function, and every non-Discovery question type below
+  // reaches them exactly as before this gate existed.
+  const answeredQuestionRow = allQuestions.find(q => String(q.id) === String(questionId));
+  const isDiscoveryQuestion = isDiscoveryQuestionType(answeredQuestionRow && answeredQuestionRow.question_type);
+
+  // 2. Score the validated answer — skipped entirely for Discovery turns.
+  // No placeholder/zero-value score is fabricated: `scores` stays null, no
+  // interview_scores row is written, and the response fields below are
+  // null rather than a synthetic object. The frontend already treats both
+  // as optional (`if (data.intelligence_scores)` / `if (data.star_progress)`
+  // in views/interview-session.ejs), so this degrades gracefully — the
+  // metrics dashboard simply doesn't update for this turn, which is
+  // correct: there is nothing to score.
+  let scores = null;
+  let starProgress = null;
+  let intelligenceScores = null;
   _timing.beforeScoring = process.hrtime.bigint();
-  if (!effectiveSkip && answerText && answerText.trim()) {
-    scores = await scoreAnswer(answerText, session.persona_id, {
-      roleTitle: session.role_title,
-      experienceLevel: session.experience_level,
-      orgPreset: session.org_preset,
-    });
-  } else {
-    scores = { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 };
+  if (!isDiscoveryQuestion) {
+    if (!effectiveSkip && answerText && answerText.trim()) {
+      scores = await scoreAnswer(answerText, session.persona_id, {
+        roleTitle: session.role_title,
+        experienceLevel: session.experience_level,
+        orgPreset: session.org_preset,
+      });
+    } else {
+      scores = { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 };
+    }
   }
   _timing.afterScoring = process.hrtime.bigint();
-  _timing.scoringWasSkipped = effectiveSkip || !answerText || !answerText.trim(); // for the diagnostic log below — a skip legitimately has ~0ms here, not a fast scoreAnswer() call
+  _timing.scoringWasSkipped = isDiscoveryQuestion || effectiveSkip || !answerText || !answerText.trim(); // for the diagnostic log below — a skip/Discovery turn legitimately has ~0ms here, not a fast scoreAnswer() call
 
   _timing.beforeDbScore = process.hrtime.bigint();
-  await addScore({
-    sessionId,
-    questionId,
-    star: scores.star,
-    technical: scores.technical,
-    executive: scores.executive,
-    gcc: scores.gcc,
-    friction: scores.friction,
-    weighted: scores.weighted,
-  });
+  if (!isDiscoveryQuestion) {
+    await addScore({
+      sessionId,
+      questionId,
+      star: scores.star,
+      technical: scores.technical,
+      executive: scores.executive,
+      gcc: scores.gcc,
+      friction: scores.friction,
+      weighted: scores.weighted,
+    });
+
+    starProgress = effectiveSkip
+      ? { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 }
+      : computeStarProgress(answerText);
+
+    intelligenceScores = {
+      overallScore: scores.weighted,
+      vectors: {
+        structure: scores.star,
+        technicalDepth: scores.technical,
+        executivePresence: scores.executive,
+        gccReadiness: scores.gcc,
+        communicationClarity: scores.friction,
+      },
+    };
+  }
   _timing.afterDbScore = process.hrtime.bigint();
-
-  const starProgress = effectiveSkip
-    ? { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 }
-    : computeStarProgress(answerText);
-
-  const intelligenceScores = {
-    overallScore: scores.weighted,
-    vectors: {
-      structure: scores.star,
-      technicalDepth: scores.technical,
-      executivePresence: scores.executive,
-      gccReadiness: scores.gcc,
-      communicationClarity: scores.friction,
-    },
-  };
 
   // 3. Recalculate answered counts safely — PRIMARY questions only.
   // Follow-ups are real Q&A exchanges (still scored, still in the report
@@ -848,3 +951,7 @@ router.post('/tts', async (req, res) => {
 module.exports = router;
 module.exports.isPrimaryQuestionType = isPrimaryQuestionType;
 module.exports.processInterviewAnswer = processInterviewAnswer;
+// Test-only export (Discovery Profile Phase 2 characterization suite,
+// tests/discovery-professional-regression.js) — same pattern as the two
+// exports above, no behavior change.
+module.exports.pickAndPersistNextQuestion = pickAndPersistNextQuestion;
