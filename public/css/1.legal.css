@@ -2,18 +2,15 @@
    LEGAL PAGES — shared reading-page presentation layer
    Used by /privacy, /terms, /responsible-ai via
    views/partials/legal-layout.ejs. Scoped under #mh-legal-page.
-   Reuses the platform's existing design tokens only — same card
-   recipe as .mh-int-card / .mh-audience-card (navy-card + navy-border
-   + radius-lg), same divider hairline as .mh-footer-bottom
-   (white-border), same prose rhythm as .mh-why-body (font-body,
-   1.7 line-height, text-muted), same heading scale as
-   .mh-section-title (h2-size, h2-tracking). No new colors, no new
-   fonts, no Privacy-specific typography.
+   Reuses global tokens only (--navy-deep, --navy-card, --white-border,
+   --white-soft, --text-muted, --text-faint, --blue-bright, --white,
+   --font-display, --font-body, --radius, --radius-lg, --hero-h1-size,
+   --hero-h1-tracking, --section-pad-x) — no new colors, no new fonts.
    ============================================ */
 
 #mh-legal-page {
   background: var(--navy-deep);
-  padding: 128px var(--section-pad-x) var(--section-pad-y);
+  padding: 128px var(--section-pad-x) 120px;
 }
 
 /* Single centered reading column — 860px, not full browser width */
@@ -96,10 +93,10 @@
 /* ---------- At a Glance card — refined, subtle, no shadow/glow ---------- */
 
 .mh-legal-tldr {
-  background: var(--navy-card);
-  border: 1px solid var(--navy-border);
-  border-radius: var(--radius-lg);
-  padding: 24px 28px;
+  background: var(--white-soft);
+  border: 1px solid var(--white-border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
   margin-bottom: 40px;
 }
 
@@ -113,12 +110,17 @@
 }
 
 .mh-legal-tldr p {
+  font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.7;
   color: var(--text-muted);
 }
 
 /* ---------- Article body ---------- */
+
+.mh-legal-article {
+  margin-top: 0;
+}
 
 .mh-legal-section {
   padding-top: 48px;
@@ -145,6 +147,7 @@
 }
 
 .mh-legal-section h3 {
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 15px;
   color: var(--white);
@@ -152,6 +155,7 @@
 }
 
 .mh-legal-section p {
+  font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.7;
   color: var(--text-muted);
@@ -164,6 +168,7 @@
 }
 
 .mh-legal-section li {
+  font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.7;
   color: var(--text-muted);
@@ -185,10 +190,10 @@
 }
 
 .mh-legal-contact-card {
-  background: var(--navy-card);
-  border: 1px solid var(--navy-border);
-  border-radius: var(--radius-lg);
-  padding: 20px 24px;
+  background: var(--white-soft);
+  border: 1px solid var(--white-border);
+  border-radius: var(--radius);
+  padding: 18px 22px;
   margin-top: 6px;
 }
 
