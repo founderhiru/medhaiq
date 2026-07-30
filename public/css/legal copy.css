@@ -1,25 +1,36 @@
 /* ============================================
    LEGAL PAGES — shared reading-page presentation layer
+   Used by /privacy, /terms, /responsible-ai via
+   views/partials/legal-layout.ejs. Scoped under #mh-legal-page.
+   Reuses the platform's existing design tokens only — same card
+   recipe as .mh-int-card / .mh-audience-card (navy-card + navy-border
+   + radius-lg) for both the "At a Glance" card and the contact block,
+   same divider hairline as .mh-footer-bottom (white-border), same
+   prose rhythm as .mh-why-body (font-body, 1.7 line-height,
+   text-muted), same heading scale as .mh-section-title (h2-size,
+   h2-tracking). No new colors, no new fonts, no Privacy-specific
+   typography.
    ============================================ */
 
 #mh-legal-page {
   background: var(--navy-deep);
-  padding: 120px var(--section-pad-x) 56px;
+  padding: 128px var(--section-pad-x) 56px;
 }
 
-/* Single centered reading column — 860px */
+/* Single centered reading column — 860px, not full browser width */
 .mh-legal-inner {
   max-width: 860px;
   margin: 0 auto;
 }
 
-/* ---------- Header block & Anchor Row ---------- */
+/* ---------- Header block: title, meta row, slim anchor row ---------- */
 
 .mh-legal-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
+/* Subtler category label — a tag, not a focal point */
 .mh-legal-header .mh-eyebrow {
   font-size: 12px;
   font-weight: 500;
@@ -43,21 +54,20 @@
   gap: 4px 10px;
   font-size: 13px;
   color: var(--text-faint);
-  margin-bottom: 16px;
 }
 
 .mh-legal-meta-dot { color: var(--text-faint); opacity: 0.6; }
 
-/* Inline anchor row layout with dot separators */
+/* Slim inline anchor row — no box, no background, no border.
+   Wraps naturally; reads as secondary navigation, not a focal element. */
 .mh-legal-anchor-row {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 2px 4px;
-  margin-top: 14px;
+  gap: 4px 4px;
+  margin-top: 12px;
   padding: 0 12px;
-  line-height: 1.6;
 }
 
 .mh-legal-anchor-row a {
@@ -82,21 +92,20 @@
   color: var(--text-faint);
   opacity: 0.45;
   margin: 0 6px;
-  user-select: none;
 }
 
-/* ---------- Summary Section / At a Glance Card & Muted Label ---------- */
+/* ---------- At a Glance card — same card recipe as .mh-int-card /
+   .mh-audience-card (navy-card + navy-border + radius-lg). ---------- */
 
 .mh-legal-tldr {
   background: var(--navy-card);
   border: 1px solid var(--navy-border);
   border-radius: var(--radius-lg);
-  padding: 24px 28px;
-  margin-bottom: 40px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
 }
 
 .mh-legal-tldr-label {
-  font-family: var(--font-body);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -109,18 +118,29 @@
   font-size: 15px;
   line-height: 1.7;
   color: var(--text-muted);
+}
+
+/* ---------- Plain lead paragraph (used instead of the "At a Glance"
+   card on pages like Terms, where the source has no callout) — same
+   typography as body copy, left-aligned, full reading width. ---------- */
+
+.mh-legal-lead {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-muted);
   margin-bottom: 0;
 }
 
-/* ---------- Article Body & Section Rhythm ---------- */
+/* ---------- Article body ---------- */
 
 .mh-legal-section {
-  padding-top: 32px;
-  margin-top: 32px;
+  padding-top: 38px;
+  margin-top: 38px;
   border-top: 1px solid var(--white-border);
   scroll-margin-top: 100px;
 }
 
+/* First section starts immediately — no divider, no lead-in gap */
 .mh-legal-article > .mh-legal-section:first-child {
   border-top: none;
   margin-top: 0;
@@ -134,53 +154,54 @@
   line-height: 1.15;
   color: var(--white);
   letter-spacing: var(--h2-tracking);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .mh-legal-section h3 {
   font-weight: 600;
   font-size: 15px;
   color: var(--white);
-  margin: 16px 0 6px;
+  margin: 18px 0 8px;
 }
 
 .mh-legal-section p {
   font-size: 15px;
   line-height: 1.7;
   color: var(--text-muted);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .mh-legal-section p:last-child { margin-bottom: 0; }
 
-/* ---------- Semantic Lists & Correct Line Wrapping ---------- */
-
 .mh-legal-section ul {
   list-style: none;
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   padding: 0;
 }
 
 .mh-legal-section li {
   position: relative;
-  padding-left: 16px;
+  padding-left: 18px;
   font-size: 15px;
   line-height: 1.7;
   color: var(--text-muted);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .mh-legal-section li::before {
-  content: "•";
+  content: "";
   position: absolute;
-  left: 0;
-  top: 0;
-  color: var(--text-faint);
-  font-weight: 700;
+  left: 2px;
+  top: 0.72em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-faint);
 }
 
 .mh-legal-section li:last-child { margin-bottom: 0; }
 
+/* Bold only the key term at the start of a bullet — never whole paragraphs */
 .mh-legal-section strong { color: var(--white); font-weight: 600; }
 
 .mh-legal-section a {
@@ -198,8 +219,8 @@
   background: var(--navy-card);
   border: 1px solid var(--navy-border);
   border-radius: var(--radius-lg);
-  padding: 18px 22px;
-  margin-top: 12px;
+  padding: 20px 24px;
+  margin-top: 6px;
 }
 
 .mh-legal-contact-card p { font-size: 15px; margin-bottom: 4px; }
@@ -207,13 +228,15 @@
 
 /* ---------- Responsive ---------- */
 
+/* Tablet — natural reduction of the reading column */
 @media (max-width: 960px) {
   .mh-legal-inner { max-width: 680px; }
   .mh-legal-title { font-size: 40px; }
 }
 
+/* Mobile — single column, comfortable padding */
 @media (max-width: 768px) {
-  #mh-legal-page { padding: 104px 20px 56px; }
+  #mh-legal-page { padding: 112px 24px 64px; }
   .mh-legal-inner { max-width: 100%; }
   .mh-legal-title { font-size: 32px; }
 }
