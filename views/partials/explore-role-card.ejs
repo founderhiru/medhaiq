@@ -1,7 +1,12 @@
 <%
-/* Role Card — expects `role` in locals: { id, slug, title, category, competencies[] } */
+/* Role Card — expects `role` in locals: { id, slug, title, category, competencies[] }
+   href resolution: link straight to the real guide if one exists yet
+   (currently software-engineer, product-manager); otherwise fall back to
+   the Role Library landing page rather than a dead role-specific URL. */
+const _hasRealGuide = ['software-engineer', 'product-manager', 'solutions-architect', 'technical-program-manager', 'management-consultant', 'engineering-manager'].includes(role.slug);
+const _href = _hasRealGuide ? `/explore/role-library/${role.slug}` : '/explore/role-library';
 %>
-<a href="/explore/roles/<%= role.slug %>" class="mh-explore-card-btn" role="listitem" aria-label="<%= role.title %>">
+<a href="<%= _href %>" class="mh-explore-card-btn" role="listitem" aria-label="<%= role.title %>">
   <div class="mh-explore-card mh-explore-role-card">
     <div class="mh-explore-role-category"><%= role.category %></div>
     <div class="mh-explore-role-title"><%= role.title %></div>
