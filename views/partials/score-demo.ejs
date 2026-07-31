@@ -105,34 +105,25 @@
 
        <div class="mh-preview-card" id="mh-score-card">
           <div class="mh-preview-section">
-            <div class="mh-cip-right-top" style="padding-top: 12px;">
+            <div class="mh-cip-right-top">
               <div>
-                <!-- The single, calm product badge -->
-                <div class="mh-preview-eyebrow" style="margin-bottom: 12px;">
+                <div class="mh-preview-eyebrow">
                   Career Intelligence Preview
+                  <span class="mh-preview-sample-badge" id="mh-preview-sample-badge">Example Preview</span>
                 </div>
-
-                <!-- The Example Preview flag and core score -->
-                <div id="mh-sample-headline-flag" style="margin-top: 6px;">
-                  <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; letter-spacing: 0.05em; margin-bottom: 2px;">Example Preview</span>
-                  <div class="mh-preview-band" id="mh-preview-band" style="line-height: 1.1;">Strong</div>
-                </div>
-
-                <!-- Calm sub-caption detailing value of live interview -->
-                <div class="mh-preview-caption" style="margin-top: 6px; font-size: 12.5px; color: var(--text-muted); letter-spacing: 0.01em;">
-                  Estimated from Resume · <span style="color: var(--text-faint);">Verified through Live AI Interview</span>
-                </div>
+                <div class="mh-preview-band" id="mh-preview-band"></div>
+                <div class="mh-preview-caption">Estimated from Resume · Confidence: <span id="mh-preview-confidence"></span></div>
+                <div class="mh-preview-helper">Your Verified Career Intelligence is generated after a Live AI Interview.</div>
               </div>
 
-              <!-- Unmixed Percentile Gauge Element Group -->
               <div class="mh-cip-gauge">
                 <svg width="88" height="52" viewBox="0 0 88 52">
                   <path d="M6 46 A38 38 0 0 1 82 46" fill="none" stroke="var(--navy-border)" stroke-width="7" stroke-linecap="round"/>
                   <path d="M6 46 A38 38 0 0 1 82 46" fill="none" stroke="var(--emerald)" stroke-width="7" stroke-linecap="round"
                     stroke-dasharray="119" stroke-dashoffset="119" id="mh-preview-gauge-arc" style="transition: stroke-dashoffset 1s ease"/>
                 </svg>
-                <div class="mh-cip-gauge-label" id="mh-preview-gauge-label" style="margin-top: -34px;">Top 20%</div>
-                <div class="mh-cip-gauge-sub" style="font-size: 8.5px; line-height: 1.2; padding: 0 2px;">Executive Positioning</div>
+                <div class="mh-cip-gauge-label" id="mh-preview-gauge-label"></div>
+                <div class="mh-cip-gauge-sub">Overall Rating</div>
               </div>
             </div>
           </div>
@@ -217,8 +208,9 @@
   var SAMPLE_COLOR = 'var(--blue-bright)';
 
   function renderPreview(preview, isSample) {
+    var bandText = isSample ? 'Strong' : preview.metrics.overall.band;
     var bandEl = document.getElementById('mh-preview-band');
-    bandEl.textContent = isSample ? 'Strong' : preview.metrics.overall.band;
+    bandEl.textContent = bandText;
     bandEl.style.color = isSample ? SAMPLE_COLOR : (BAND_COLORS[preview.metrics.overall.band] || 'var(--emerald)');
 
     var confEl = document.getElementById('mh-preview-confidence');
@@ -227,8 +219,12 @@
     var arc = document.getElementById('mh-preview-gauge-arc');
     var offset = CONFIDENCE_GAUGE_OFFSET[preview.metrics.overall.confidence];
     arc.style.strokeDashoffset = (offset !== undefined ? offset : 89);
-    
-    document.getElementById('mh-preview-gauge-label').textContent = isSample ? 'Top 20%' : preview.metrics.overall.confidence;
+
+    // Gauge label mirrors the SAME band word shown in the headline — one
+    // consistent scoring language throughout, instead of a separate
+    // percentile ("Top 20%") that the backend has no real data to support.
+    document.getElementById('mh-preview-gauge-label').textContent = bandText;
+
     // Snapshot bars — visual-only, no numeric label (direction, not false
     // precision). A bucket that didn't clear the reliability threshold
     // (numeric: false) renders as a "Limited Signal" chip instead of a bar.
@@ -263,11 +259,10 @@
       ? opportunities.map(function (o) { return '<li>' + o + '</li>'; }).join('')
       : '<li class="mh-preview-muted-item">No notable gaps detected — resume evidence is strong across the board.</li>';
 
-    var sampleFlag = document.getElementById('mh-sample-headline-flag');
-  if (sampleFlag) {
-  var flagSpan = sampleFlag.querySelector('span');
-  if (flagSpan) flagSpan.style.display = isSample ? 'block' : 'none';
-}
+    var sampleBadge = document.getElementById('mh-preview-sample-badge');
+    var uploadHint = document.getElementById('mh-preview-upload-hint');
+    if (sampleBadge) sampleBadge.style.display = isSample ? '' : 'none';
+    if (uploadHint) uploadHint.style.display = isSample ? '' : 'none';
   }
 
   function renderError(message) {
