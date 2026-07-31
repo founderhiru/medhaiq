@@ -60,9 +60,9 @@
       <h1 class="mh-section-title"><%= company.hero.headline %></h1>
       <p class="mh-section-sub"><%= company.hero.description %></p>
       <div class="mh-explore-cta-actions" style="margin-top: 28px;">
-        <a href="/login" class="mh-btn-primary">Start <%= company.name %> Interview</a>
-        <a href="#sample-report" class="mh-btn-outline">View Sample Report</a>
+        <a href="/login" class="mh-btn-primary">Practice <%= company.name %> Interview</a>
       </div>
+      <p style="margin-top: 16px;"><a href="#sample-report" class="mh-explore-card-link" style="justify-content: center;">View Sample Report</a></p>
     </div>
   </section>
 
@@ -179,8 +179,8 @@
   <!-- How MedhaIQ Helps -->
   <section class="mh-explore-section reveal" aria-labelledby="mh-colib-helps-title">
     <div class="mh-explore-section-inner mh-colib-prose-wrap">
-      <div class="mh-eyebrow">How MedhaIQ Helps</div>
-      <h2 id="mh-colib-helps-title" class="mh-section-title">Practice built for <%= company.name %> specifically</h2>
+      <div class="mh-eyebrow">Next Step</div>
+      <h2 id="mh-colib-helps-title" class="mh-section-title">Put your preparation into practice</h2>
       <ul class="mh-colib-helps-list">
         <% company.howMedhaiqHelps.forEach(function(point) { %>
           <li><%= point %></li>
@@ -257,15 +257,15 @@
     </div>
   </section>
 
-  <!-- Final CTA -->
+ <!-- Final CTA -->
   <section class="mh-explore-cta reveal">
     <div class="mh-explore-cta-inner">
       <h2 class="mh-section-title">Ready to practice?</h2>
       <p class="mh-explore-cta-sub">Launch a personalized <%= company.name %> interview based on your resume and target role.</p>
       <div class="mh-explore-cta-actions">
-        <a href="/login" class="mh-btn-primary">Start <%= company.name %> Interview</a>
-        <a href="/explore/company-library" class="mh-btn-outline">Back to Library</a>
+        <a href="/login" class="mh-btn-primary">Practice <%= company.name %> Interview</a>
       </div>
+      <p style="margin-top: 16px;"><a href="/explore/company-library" class="mh-explore-card-link" style="justify-content: center;">Back to Library</a></p>
     </div>
   </section>
 
