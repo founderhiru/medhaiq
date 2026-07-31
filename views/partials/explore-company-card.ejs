@@ -6,7 +6,7 @@
 const _tag = company.comingSoon ? 'button' : 'a';
 const _attrs = company.comingSoon
   ? `type="button" class="mh-explore-card-btn mh-explore-comingsoon-trigger" data-company="${company.name}"`
-  : `href="/explore/companies/${company.slug}" class="mh-explore-card-btn"`;
+: `href="/explore/company-library/${company.slug}" class="mh-explore-card-btn"`;
 %>
 <<%= _tag %> <%- _attrs %> role="listitem" aria-label="<%= company.name %><%= company.comingSoon ? ' — coming soon' : '' %>">
   <div class="mh-explore-card mh-explore-company-card">

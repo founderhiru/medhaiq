@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= company.seo.title %></title>
+  <meta name="description" content="<%= company.seo.description %>">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0A0F1E">
+  <link rel="canonical" href="https://www.medhaiq.ai/explore/company-library/<%= company.slug %>">
+  <meta property="og:title" content="<%= company.seo.title %>">
+  <meta property="og:description" content="<%= company.seo.description %>">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.medhaiq.ai/explore/company-library/<%= company.slug %>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/medhaiq.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/hero-v2.css">
+  <link rel="stylesheet" href="/css/value-footer.css">
+  <link rel="stylesheet" href="/css/explore.css">
+  <link rel="stylesheet" href="/css/company-library.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <!-- Breadcrumb + reading time. Reading time is computed from this
+       company's actual content length (not a fixed/fabricated number),
+       so it stays accurate if content is edited later. -->
+  <%
+    const _wordSource = [
+      company.overview.join(' '),
+      company.interviewProcess.map(function(s) { return s.stage + ' ' + s.desc; }).join(' '),
+      company.competencies.map(function(c) { return c.name + ' ' + c.desc; }).join(' '),
+      company.questions.join(' '),
+      company.tips.map(function(t) { return t.title + ' ' + t.desc; }).join(' '),
+      company.howMedhaiqHelps.join(' '),
+    ].join(' ');
+    const _wordCount = _wordSource.split(/\s+/).filter(Boolean).length;
+    const _readingMinutes = Math.max(1, Math.round(_wordCount / 200));
+  %>
+  <nav class="mh-colib-breadcrumb" aria-label="Breadcrumb">
+    <div class="mh-explore-section-inner mh-colib-breadcrumb-row">
+      <div>
+        <a href="/explore">Explore MedhaIQ</a>
+        <span aria-hidden="true">/</span>
+        <a href="/explore/company-library">Company Interview Library</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page"><%= company.name %></span>
+      </div>
+      <span class="mh-colib-reading-time"><%= _readingMinutes %> min read</span>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="mh-why-hero reveal">
+    <div class="mh-why-hero-inner mh-section-center">
+      <div class="mh-eyebrow"><%= company.category %></div>
+      <h1 class="mh-section-title"><%= company.hero.headline %></h1>
+      <p class="mh-section-sub"><%= company.hero.description %></p>
+      <div class="mh-explore-cta-actions" style="margin-top: 28px;">
+        <a href="/login" class="mh-btn-primary">Start <%= company.name %> Interview</a>
+        <a href="#sample-report" class="mh-btn-outline">View Sample Report</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Company Snapshot -->
+  <section class="mh-explore-section reveal" aria-labelledby="mh-colib-snapshot-title">
+    <div class="mh-explore-section-inner">
+      <h2 id="mh-colib-snapshot-title" class="mh-colib-visually-hidden">Company Snapshot</h2>
+      <div class="mh-colib-snapshot-grid">
+        <div class="mh-colib-snapshot-card">
+          <div class="mh-colib-snapshot-label">Industry</div>
+          <div class="mh-colib-snapshot-value"><%= company.snapshot.industry %></div>
+        </div>
+        <div class="mh-colib-snapshot-card">
+          <div class="mh-colib-snapshot-label">Headquarters</div>
+          <div class="mh-colib-snapshot-value"><%= company.snapshot.headquarters %></div>
+        </div>
+        <div class="mh-colib-snapshot-card">
+          <div class="mh-colib-snapshot-label">Global Presence</div>
+          <div class="mh-colib-snapshot-value"><%= company.snapshot.globalPresence %></div>
+        </div>
+        <div class="mh-colib-snapshot-card">
+          <div class="mh-colib-snapshot-label">Popular Functions</div>
+          <div class="mh-colib-snapshot-value"><%= company.snapshot.popularFunctions.join(', ') %></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Company Overview & Hiring Philosophy -->
+  <section class="mh-explore-section mh-explore-section-alt reveal" aria-labelledby="mh-colib-overview-title">
+    <div class="mh-explore-section-inner mh-colib-prose-wrap">
+      <div class="mh-eyebrow">Overview & Hiring Philosophy</div>
+      <h2 id="mh-colib-overview-title" class="mh-section-title">What it's like to interview at <%= company.name %></h2>
+      <% company.overview.forEach(function(paragraph) { %>
+        <p class="mh-colib-prose"><%= paragraph %></p>
+      <% }); %>
+    </div>
+  </section>
+
+  <!-- Interview Journey -->
+  <section class="mh-explore-section reveal" aria-labelledby="mh-colib-journey-title">
+    <div class="mh-explore-section-inner">
+      <div class="mh-section-center">
+        <div class="mh-eyebrow">Interview Journey</div>
+        <h2 id="mh-colib-journey-title" class="mh-section-title">The stages, end to end</h2>
+      </div>
+      <ol class="mh-colib-timeline">
+        <% company.interviewProcess.forEach(function(stage, i) { %>
+          <li class="mh-colib-timeline-item">
+            <div class="mh-colib-timeline-num"><%= i + 1 %></div>
+            <div class="mh-colib-timeline-body">
+              <div class="mh-colib-timeline-stage"><%= stage.stage %></div>
+              <div class="mh-colib-timeline-desc"><%= stage.desc %></div>
+            </div>
+          </li>
+        <% }); %>
+      </ol>
+      <p class="mh-explore-search-meta" style="text-align:center; margin-top: 24px;">Stages and emphasis can vary by team, region, and level — this reflects the commonly reported structure.</p>
+    </div>
+  </section>
+
+  <!-- Core Competencies -->
+  <section class="mh-explore-section mh-explore-section-alt reveal" aria-labelledby="mh-colib-competencies-title">
+    <div class="mh-explore-section-inner">
+      <div class="mh-section-center">
+        <div class="mh-eyebrow">Core Competencies</div>
+        <h2 id="mh-colib-competencies-title" class="mh-section-title">What interviewers are evaluating</h2>
+      </div>
+      <div class="mh-explore-grid" role="list">
+        <% company.competencies.forEach(function(comp) { %>
+          <div class="mh-explore-card mh-colib-competency-card" role="listitem">
+            <div class="mh-colib-competency-name"><%= comp.name %></div>
+            <div class="mh-colib-competency-desc"><%= comp.desc %></div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+
+  <!-- Representative Interview Questions -->
+  <section class="mh-explore-section reveal" aria-labelledby="mh-colib-questions-title">
+    <div class="mh-explore-section-inner mh-colib-prose-wrap">
+      <div class="mh-section-center">
+        <div class="mh-eyebrow">Representative Questions</div>
+        <h2 id="mh-colib-questions-title" class="mh-section-title">Questions in <%= company.name %>'s style</h2>
+        <p class="mh-section-sub">Illustrative of the company's known interview style — not official or leaked questions.</p>
+      </div>
+      <ol class="mh-colib-question-list">
+        <% company.questions.forEach(function(q) { %>
+          <li class="mh-colib-question-item"><%= q %></li>
+        <% }); %>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Interview Preparation Tips -->
+  <section class="mh-explore-section mh-explore-section-alt reveal" aria-labelledby="mh-colib-tips-title">
+    <div class="mh-explore-section-inner">
+      <div class="mh-section-center">
+        <div class="mh-eyebrow">Preparation Tips</div>
+        <h2 id="mh-colib-tips-title" class="mh-section-title">How to actually prepare</h2>
+      </div>
+      <div class="mh-explore-grid" role="list">
+        <% company.tips.forEach(function(tip) { %>
+          <div class="mh-explore-card mh-colib-competency-card" role="listitem">
+            <div class="mh-colib-competency-name"><%= tip.title %></div>
+            <div class="mh-colib-competency-desc"><%= tip.desc %></div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+
+  <!-- How MedhaIQ Helps -->
+  <section class="mh-explore-section reveal" aria-labelledby="mh-colib-helps-title">
+    <div class="mh-explore-section-inner mh-colib-prose-wrap">
+      <div class="mh-eyebrow">How MedhaIQ Helps</div>
+      <h2 id="mh-colib-helps-title" class="mh-section-title">Practice built for <%= company.name %> specifically</h2>
+      <ul class="mh-colib-helps-list">
+        <% company.howMedhaiqHelps.forEach(function(point) { %>
+          <li><%= point %></li>
+        <% }); %>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Related Roles -->
+  <section class="mh-explore-section mh-explore-section-alt reveal" aria-labelledby="mh-colib-roles-title">
+    <div class="mh-explore-section-inner">
+      <div class="mh-section-center">
+        <div class="mh-eyebrow">Related Roles</div>
+        <h2 id="mh-colib-roles-title" class="mh-section-title">Prepare for a specific role at <%= company.name %></h2>
+      </div>
+      <div class="mh-colib-role-chip-row">
+        <% company.relatedRoles.forEach(function(role) { %>
+          <span class="mh-explore-chip mh-colib-role-chip"><%= role %></span>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+
+  <!-- Related Resources — the first card is personalized per company
+       (which guide is most relevant and why); it links to the real
+       guides section on /explore since individual guide pages don't have
+       their own routes yet (flagged separately, not fixed here — out of
+       this task's scope). Sample Report/Scorecard/Pricing stay generic
+       since those are genuinely the same for every company today —
+       relabeling them as company-specific would overstate what exists. -->
+  <%
+    const _recommendedGuide = {
+      amazon:     { title: 'STAR Method Guide', reason: "Amazon's behavioral rounds run almost entirely on STAR-structured stories." },
+      microsoft:  { title: 'Tell Me About Yourself', reason: 'A strong opening pitch sets up the growth-mindset narrative Microsoft interviewers listen for.' },
+      google:     { title: 'STAR Method Guide', reason: "Google's behavioral rounds still expect clearly structured, evidence-based answers." },
+      salesforce: { title: 'Tell Me About Yourself', reason: 'A values-forward introduction lines up well with how Salesforce frames its interviews.' },
+      deloitte:   { title: 'Preparing for GCC Interviews', reason: "Useful context on how process can vary across Deloitte's global member firms." },
+    }[company.slug] || { title: 'Interview Guides', reason: 'Practical frameworks to round out your preparation.' };
+  %>
+  <section class="mh-explore-section reveal" aria-labelledby="mh-colib-resources-title" id="sample-report">
+    <div class="mh-explore-section-inner">
+      <div class="mh-section-center">
+        <div class="mh-eyebrow">Related Resources</div>
+        <h2 id="mh-colib-resources-title" class="mh-section-title">Go deeper</h2>
+        <p class="mh-section-sub">Resources especially relevant to preparing for <%= company.name %>.</p>
+      </div>
+      <div class="mh-explore-grid" role="list">
+        <a href="/explore#mh-explore-guides-title" class="mh-explore-card-btn" role="listitem">
+          <div class="mh-explore-card mh-colib-resource-card">
+            <div class="mh-explore-company-name"><%= _recommendedGuide.title %></div>
+            <div class="mh-colib-competency-desc"><%= _recommendedGuide.reason %></div>
+            <span class="mh-explore-card-link">Read guide <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+          </div>
+        </a>
+        <a href="/explore#mh-explore-samples-title" class="mh-explore-card-btn" role="listitem">
+          <div class="mh-explore-card mh-colib-resource-card">
+            <div class="mh-explore-company-name">Sample Report</div>
+            <span class="mh-explore-card-link">View sample <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+          </div>
+        </a>
+        <a href="/explore#mh-explore-samples-title" class="mh-explore-card-btn" role="listitem">
+          <div class="mh-explore-card mh-colib-resource-card">
+            <div class="mh-explore-company-name">Sample Scorecard</div>
+            <span class="mh-explore-card-link">View sample <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+          </div>
+        </a>
+        <a href="/#pricing" class="mh-explore-card-btn" role="listitem">
+          <div class="mh-explore-card mh-colib-resource-card">
+            <div class="mh-explore-company-name">Pricing</div>
+            <span class="mh-explore-card-link">View plans <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="mh-explore-cta reveal">
+    <div class="mh-explore-cta-inner">
+      <h2 class="mh-section-title">Ready to practice?</h2>
+      <p class="mh-explore-cta-sub">Launch a personalized <%= company.name %> interview based on your resume and target role.</p>
+      <div class="mh-explore-cta-actions">
+        <a href="/login" class="mh-btn-primary">Start <%= company.name %> Interview</a>
+        <a href="/explore/company-library" class="mh-btn-outline">Back to Library</a>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script>
+  (function() {
+    var reveals = document.querySelectorAll('.reveal');
+    if (reveals.length) {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+      reveals.forEach(function(el) { observer.observe(el); });
+    }
+  })();
+  </script>
+</body>
+</html>

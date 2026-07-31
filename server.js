@@ -97,9 +97,19 @@ app.get('/architecture', (_req, res) => res.render('architecture'));
 app.get('/about',        (_req, res) => res.render('about'));
 app.get('/why',     (_req, res) => res.render('why'));
 // Explore MedhaIQ — UI-shell-only sprint. Placeholder data lives in
-// data/explore-data.js; no DB/Supabase yet (see data file header comment).
+// data/explore-data.js; no DB/Supabase yet (see data file header comment)
 app.get('/explore', (_req, res) => res.render('explore', require('./data/explore-data')));
-app.get('/experience', (_req, res) => res.render('experience'));
+// Company Interview Library — Level 2 landing + Level 3 reusable guide
+// template. Both render entirely from data/company-library-data.js; adding
+// company #6 means adding one object there, never touching these routes
+// or their views.
+app.get('/explore/company-library', (_req, res) => res.render('company-library', require('./data/company-library-data')));
+app.get('/explore/company-library/:slug', (req, res) => {
+  const { companyLibrary } = require('./data/company-library-data');
+  const company = companyLibrary.find(c => c.slug === req.params.slug);
+  if (!company) return res.status(404).send('Company guide not found');
+  res.render('company-guide', { company });
+});
 app.get('/professional-horizons', (_req, res) => res.render('professional-horizons'));
 app.get('/career-architecture', (_req, res) => res.redirect(301, '/architecture#career-architecture'));
 app.get('/technical-blueprint', (_req, res) => res.redirect(301, '/architecture#technical-blueprint'));

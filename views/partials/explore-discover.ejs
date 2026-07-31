@@ -19,8 +19,15 @@ const _discoverItems = [
     <div class="mh-section-center">
       <h2 id="mh-explore-discover-title" class="mh-section-title">What You'll Discover</h2>
     </div>
-    <div class="mh-explore-discover-grid" role="list">
-      <% _discoverItems.forEach(function(item) { %>
+   <div class="mh-explore-discover-grid" role="list">
+      <a href="/explore/company-library" class="mh-explore-card-btn" role="listitem" aria-label="Company Interview Libraries">
+        <div class="mh-explore-card mh-explore-discover-card">
+          <div class="mh-explore-discover-icon" aria-hidden="true">🏢</div>
+          <div class="mh-explore-discover-title">Company Interview Libraries</div>
+          <div class="mh-explore-discover-desc">Explore company-specific interview patterns.</div>
+        </div>
+      </a>
+      <% _discoverItems.slice(1).forEach(function(item) { %>
         <div class="mh-explore-card mh-explore-discover-card" role="listitem">
           <div class="mh-explore-discover-icon" aria-hidden="true"><%= item.icon %></div>
           <div class="mh-explore-discover-title"><%= item.title %></div>
