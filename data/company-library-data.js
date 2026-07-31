@@ -82,6 +82,13 @@ const companyLibrary = [
       'Receive an executive-style report scoring your readiness across the principles most relevant to your target role.',
     ],
     relatedRoles: ['Software Engineer', 'Product Manager', 'Program Manager', 'Business Analyst'],
+    // Verified real, current URLs (checked via web search, not memory) —
+    // official company pages only, max 3, per the Official Resources spec.
+    officialResources: [
+      { title: 'Amazon Careers', url: 'https://www.amazon.jobs/' },
+      { title: 'Amazon Leadership Principles', url: 'https://www.amazon.jobs/en/principles' },
+      { title: 'Amazon Culture', url: 'https://www.aboutamazon.com/amazons-workplace-culture' },
+    ],
   },
 
   // ─────────────────────────────────────────────────────────────────
@@ -152,6 +159,10 @@ const companyLibrary = [
       'Receive a report scoring collaboration and communication alongside technical depth.',
     ],
     relatedRoles: ['Software Engineer', 'Program Manager', 'Cloud Engineer', 'Data Scientist'],
+    officialResources: [
+      { title: 'Microsoft Careers', url: 'https://careers.microsoft.com/' },
+      { title: 'Microsoft Culture', url: 'https://careers.microsoft.com/v2/global/en/culture' },
+    ],
   },
 
   // ─────────────────────────────────────────────────────────────────
@@ -222,6 +233,10 @@ const companyLibrary = [
       'Receive a report scoring problem-solving process alongside communication and role-related depth.',
     ],
     relatedRoles: ['Software Engineer', 'Product Manager', 'Data Scientist', 'UX Designer'],
+    officialResources: [
+      { title: 'Google Careers', url: 'https://www.google.com/about/careers/applications/' },
+      { title: 'How Google Hires', url: 'https://www.google.com/about/careers/applications/how-we-hire' },
+    ],
   },
 
   // ─────────────────────────────────────────────────────────────────
@@ -292,6 +307,10 @@ const companyLibrary = [
       'Receive a report scoring customer-focus and collaboration alongside role-specific competence.',
     ],
     relatedRoles: ['Sales Engineer', 'Software Engineer', 'Product Manager', 'Customer Success Manager'],
+    officialResources: [
+      { title: 'Salesforce Careers', url: 'https://careers.salesforce.com/en/' },
+      { title: 'Salesforce Core Values', url: 'https://trailhead.salesforce.com/content/learn/modules/salesforce-culture-and-values/explore-salesforce-culture-and-values' },
+    ],
   },
 
   // ─────────────────────────────────────────────────────────────────
@@ -362,6 +381,10 @@ const companyLibrary = [
       'Receive a report scoring structured reasoning and executive presence alongside behavioral competence.',
     ],
     relatedRoles: ['Strategy Consultant', 'Technology Consultant', 'Business Analyst', 'Risk Advisory Associate'],
+    officialResources: [
+      { title: 'Deloitte Careers', url: 'https://www.deloitte.com/us/en/careers/careers.html' },
+      { title: 'Life at Deloitte', url: 'https://www.deloitte.com/us/en/careers/life-at-deloitte.html' },
+    ],
   },
 ];
 

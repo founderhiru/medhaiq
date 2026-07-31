@@ -204,13 +204,14 @@
     </div>
   </section>
 
-  <!-- Related Resources — the first card is personalized per company
-       (which guide is most relevant and why); it links to the real
+  <!-- Preparation Resources (MedhaIQ) — the first card is personalized per
+       company (which guide is most relevant and why); it links to the real
        guides section on /explore since individual guide pages don't have
        their own routes yet (flagged separately, not fixed here — out of
-       this task's scope). Sample Report/Scorecard/Pricing stay generic
-       since those are genuinely the same for every company today —
-       relabeling them as company-specific would overstate what exists. -->
+       this task's scope). Sample Report/Scorecard stay generic since those
+       are genuinely the same for every company today. Pricing removed per
+       editorial-first policy — this section is preparation-only, not a
+       navigation path to commercial pages. -->
   <%
     const _recommendedGuide = {
       amazon:     { title: 'STAR Method Guide', reason: "Amazon's behavioral rounds run almost entirely on STAR-structured stories." },
@@ -223,7 +224,7 @@
   <section class="mh-explore-section reveal" aria-labelledby="mh-colib-resources-title" id="sample-report">
     <div class="mh-explore-section-inner">
       <div class="mh-section-center">
-        <div class="mh-eyebrow">Related Resources</div>
+        <div class="mh-eyebrow">Preparation Resources</div>
         <h2 id="mh-colib-resources-title" class="mh-section-title">Go deeper</h2>
         <p class="mh-section-sub">Resources especially relevant to preparing for <%= company.name %>.</p>
       </div>
@@ -247,21 +248,33 @@
             <span class="mh-explore-card-link">View sample <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
           </div>
         </a>
-        <a href="/#pricing" class="mh-explore-card-btn" role="listitem">
-          <div class="mh-explore-card mh-colib-resource-card">
-            <div class="mh-explore-company-name">Pricing</div>
-            <span class="mh-explore-card-link">View plans <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
-          </div>
-        </a>
       </div>
     </div>
   </section>
 
- <!-- Final CTA -->
-  <section class="mh-explore-cta reveal">
+  <!-- Official Resources — compact editorial reference block, NOT another
+       card section. Deliberately lightweight: no cards, smaller type,
+       max 3 links, opens in new tab. Real, verified company URLs from
+       data/company-library-data.js's officialResources field. -->
+  <% if (company.officialResources && company.officialResources.length) { %>
+  <section class="mh-explore-section mh-explore-section-alt reveal" aria-labelledby="mh-colib-official-title">
+    <div class="mh-explore-section-inner mh-colib-prose-wrap mh-section-center">
+      <div class="mh-eyebrow" style="justify-content:center; display:flex;">Official Resources</div>
+      <h2 id="mh-colib-official-title" class="mh-colib-official-title">Continue your preparation with these official resources from <%= company.name %></h2>
+      <ul class="mh-colib-official-list">
+        <% company.officialResources.forEach(function(res) { %>
+          <li><a href="<%= res.url %>" target="_blank" rel="noopener noreferrer"><%= res.title %> <span aria-hidden="true">↗</span></a></li>
+        <% }); %>
+      </ul>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- Final CTA -->
+  <section class="mh-explore-cta mh-colib-final-cta reveal">
     <div class="mh-explore-cta-inner">
-      <h2 class="mh-section-title">Ready to practice?</h2>
-      <p class="mh-explore-cta-sub">Launch a personalized <%= company.name %> interview based on your resume and target role.</p>
+      <h2 class="mh-section-title">Your preparation starts here.</h2>
+      <p class="mh-explore-cta-sub">You've explored how <%= company.name %> evaluates candidates, reviewed representative interview questions, and seen what a MedhaIQ assessment looks like. Now experience a personalized interview tailored to your resume and target role.</p>
       <div class="mh-explore-cta-actions">
         <a href="/login" class="mh-btn-primary">Practice <%= company.name %> Interview</a>
       </div>
