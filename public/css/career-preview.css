@@ -25,18 +25,18 @@
   border-radius: var(--radius-xl);
   overflow: hidden;
 }
-.mh-cip-left, .mh-preview-output { padding: 32px; }
+.mh-cip-left, .mh-preview-output { padding: 26px; }
 .mh-cip-left { border-right: 1px solid rgba(255, 255, 255, 0.1); background: var(--navy-card); display: flex; flex-direction: column; }
 
-.mh-cip-step { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.mh-cip-step:not(:first-child) { margin-top: 30px; }
+.mh-cip-step { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
+.mh-cip-step:not(:first-child) { margin-top: 22px; }
 .mh-cip-step-num {
-  width: 24px; height: 24px; border-radius: 50%;
+  width: 22px; height: 22px; border-radius: 50%;
   border: 1.5px solid var(--blue-bright); color: var(--blue-bright);
-  font-family: var(--font-display); font-size: 12px; font-weight: 700;
+  font-family: var(--font-display); font-size: 11.5px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.mh-cip-step-label { font-family: var(--font-display); font-size: 14.5px; font-weight: 700; color: var(--white); }
+.mh-cip-step-label { font-family: var(--font-display); font-size: 13.5px; font-weight: 700; color: var(--white); }
 
 /* Dropzone — IDs/state classes unchanged; visual container restyled only. */
 .mh-cip-left .mh-drop-zone {
@@ -45,40 +45,33 @@
   background: var(--navy-deep);
   border: 1.5px dashed var(--navy-border);
   border-radius: var(--radius-lg);
-  padding: 24px 20px;
-  gap: 8px;
+  padding: 18px 20px;
+  gap: 6px;
 }
 .mh-cip-left .mh-drop-zone:hover { border-color: var(--blue-bright); background: rgba(59,130,246,0.04); box-shadow: none; }
 .mh-cip-left .mh-drop-icon { background: none; color: var(--blue-bright); width: auto; height: auto; margin: 0 auto; }
-.mh-cip-left .mh-drop-label { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--white); }
+.mh-cip-left .mh-drop-label { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--white); }
 .mh-cip-left .mh-upload-hint { color: var(--text-faint); }
 .mh-cip-left .mh-upload-filename {
   background: var(--navy-deep); border: 1px solid var(--navy-border);
-  border-radius: var(--radius); padding: 8px 14px; margin-top: 4px;
+  border-radius: var(--radius); padding: 7px 14px; margin-top: 4px;
 }
 
 /* Role/org-scale rows — row layout (icon left, select right) */
 .mh-cip-left .mh-drop-zone:not(.mh-upload-zone) {
   flex-direction: row; align-items: center; text-align: left; background: transparent;
-  border-style: solid; padding: 14px 16px; gap: 14px;
+  border-style: solid; padding: 12px 16px; gap: 14px;
 }
 .mh-cip-left .mh-drop-zone:not(.mh-upload-zone) .mh-drop-icon {
-  width: 36px; height: 36px; border-radius: 10px; background: var(--navy-deep);
+  width: 34px; height: 34px; border-radius: 10px; background: var(--navy-deep);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 
-/* FIX: previous pass used the `background` SHORTHAND here, which silently
-   resets background-repeat/background-position to their defaults, breaking
-   the dropdown arrow's position and, on some renders, its visibility
-   entirely. Using background-color (not the shorthand) preserves every
-   other background sub-property already set by the base .mh-drop-select
-   rule in medhaiq.css, so the arrow position/no-repeat behavior survives
-   untouched. This was the actual root cause of the "broken dropdown" bug. */
 .mh-cip-left .mh-drop-select {
   background-color: var(--navy-deep);
   border: 1px solid var(--navy-border);
   color: var(--white);
-  height: 44px;
+  height: 42px;
   line-height: 1.2;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
@@ -87,13 +80,9 @@
   outline: none; border-color: var(--blue-bright);
   box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
 }
-/* Improves native option-list contrast on browsers/platforms that respect
-   it (Chrome/Firefox on Windows, Linux, Android); macOS/iOS Safari always
-   renders native <option> lists with system chrome regardless of CSS —
-   a platform limitation, not something fixable from here. */
 .mh-cip-left .mh-drop-select option { background: var(--navy-deep); color: var(--white); }
 
-.mh-cip-left .mh-score-cta-wrap { margin-top: auto; padding-top: 30px; }
+.mh-cip-left .mh-score-cta-wrap { margin-top: auto; padding-top: 22px; }
 .mh-cip-left .mh-score-run-btn { border-radius: 999px; }
 .mh-cip-left .mh-score-run-btn.is-complete {
   background: linear-gradient(90deg, #047857, var(--emerald));
@@ -101,7 +90,7 @@
 }
 .mh-cip-btn-sub { display: block; font-family: var(--font-body); font-weight: 400; font-size: 11.5px; opacity: 0.85; margin-top: 2px; }
 
-.mh-cip-trust { text-align: center; font-size: 11.5px; color: var(--text-faint); margin-top: 14px; }
+.mh-cip-trust { text-align: center; font-size: 11px; color: var(--text-faint); margin-top: 10px; }
 
 /* ── Right panel ─────────────────────────────────────────────────────── */
 .mh-preview-output { position: relative; }
@@ -116,15 +105,15 @@
 .mh-preview-card { display: none; }
 .mh-preview-card.mh-score-visible { display: block !important; }
 
-.mh-cip-right-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.mh-cip-right-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .mh-preview-eyebrow {
-  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  font-family: var(--font-display); font-size: 10.5px; font-weight: 700;
   letter-spacing: 0.06em; color: var(--blue-bright); text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
 }
 .mh-preview-sample-badge {
-  font-family: var(--font-body); font-size: 9.5px; font-weight: 600;
+  font-family: var(--font-body); font-size: 9px; font-weight: 600;
   letter-spacing: 0.05em; text-transform: uppercase;
   color: var(--text-faint);
   border: 1px solid var(--navy-border);
@@ -132,99 +121,96 @@
   padding: 2px 8px;
 }
 .mh-preview-upload-hint {
-  font-size: 11.5px; color: var(--text-faint); text-align: center;
-  margin-bottom: 14px;
+  font-size: 11px; color: var(--text-faint); text-align: center;
+  margin-bottom: 12px;
 }
 
-/* Fade transition — sample → loading → real result. Subtle opacity only,
-   no scale/motion, per the "premium SaaS, no dramatic animation" brief. */
 .mh-preview-card { transition: opacity 0.3s ease; opacity: 1; }
 .mh-preview-card.mh-preview-fade-out { opacity: 0; }
 .mh-preview-band { font-family: var(--font-display); font-size: clamp(28px, 3vw, 34px); font-weight: 800; color: var(--emerald); line-height: 1; }
-.mh-preview-caption { font-size: 12.5px; color: var(--text-muted); margin-top: 8px; }
+.mh-preview-caption { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
 .mh-preview-caption span { color: var(--white); font-weight: 600; }
-.mh-preview-helper { font-size: 11.5px; color: var(--text-faint); margin-top: 8px; max-width: 340px; line-height: 1.5; }
+.mh-preview-helper { font-size: 11px; color: var(--text-faint); margin-top: 6px; max-width: 340px; line-height: 1.5; }
 
-.mh-cip-gauge { width: 92px; flex-shrink: 0; text-align: center; }
+/* Gauge — redesigned to guarantee no overlap. Label/sub now sit in normal
+   document flow BELOW the arc with real (positive) spacing, instead of the
+   previous negative-margin trick that pulled them up into the arc itself. */
+.mh-cip-gauge { width: 96px; flex-shrink: 0; text-align: center; padding: 2px 4px 0; }
 .mh-cip-gauge svg { display: block; margin: 0 auto; }
-.mh-cip-gauge-label { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--white); margin-top: -34px; }
-.mh-cip-gauge-sub { font-size: 9.5px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+.mh-cip-gauge-label { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--white); margin-top: 6px; }
+.mh-cip-gauge-sub { font-size: 9px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
 
-/* Consistent vertical rhythm — every section gets the SAME top margin
-   (except the first), regardless of whether it also has a divider below
-   it. Only 2 dividers total in the whole card (per the design review),
-   everything else separated by whitespace alone. */
-.mh-preview-section { margin-top: 28px; }
+.mh-preview-section { margin-top: 22px; }
 .mh-preview-section:first-child { margin-top: 0; }
-.mh-preview-section--divided { padding-bottom: 28px; border-bottom: 1px solid var(--navy-border); }
-.mh-preview-section--last { margin-top: 32px; }
+.mh-preview-section--divided { padding-bottom: 22px; border-bottom: 1px solid var(--navy-border); }
+.mh-preview-section--last { margin-top: 24px; }
 
-.mh-preview-section-title { font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--white); margin-bottom: 16px; }
+.mh-preview-section-title { font-family: var(--font-display); font-size: 11px; font-weight: 700; color: var(--white); margin-bottom: 12px; }
 
-.mh-score-bars { display: flex; flex-direction: column; gap: 14px; }
+.mh-score-bars { display: flex; flex-direction: column; gap: 11px; }
 .mh-score-bar-row { display: flex; align-items: center; gap: 12px; }
-.mh-score-bar-label { font-size: 12.5px; color: var(--text-muted); width: 160px; flex-shrink: 0; }
-.mh-score-bar-track { flex: 1; height: 7px; background: var(--navy-deep); border-radius: 4px; overflow: hidden; }
+.mh-score-bar-label { font-size: 12px; color: var(--text-muted); width: 155px; flex-shrink: 0; }
+.mh-score-bar-track { flex: 1; height: 6px; background: var(--navy-deep); border-radius: 4px; overflow: hidden; }
 .mh-score-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--blue-bright), var(--emerald)); width: 0; transition: width 1s ease; }
 .mh-score-bar-fill.gold-fill { background: linear-gradient(90deg, var(--gold), #fbbf24); }
 .mh-preview-limited-row { opacity: 0.75; }
 .mh-preview-limited-chip {
-  font-size: 10.5px; font-weight: 600; color: var(--text-faint);
+  font-size: 10px; font-weight: 600; color: var(--text-faint);
   border: 1px solid var(--navy-border); border-radius: 999px; padding: 2px 10px; flex-shrink: 0;
 }
 
-.mh-cip-split { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
-.mh-preview-signal-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.mh-cip-split { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.mh-preview-signal-list { display: flex; flex-wrap: wrap; gap: 7px; list-style: none; margin: 0; padding: 0; }
 .mh-preview-signal-list li {
   display: inline-flex; align-items: center; gap: 6px;
   background: var(--emerald-soft); color: #6EE7B7;
   border: 1px solid rgba(5,150,105,0.3); border-radius: 999px;
-  padding: 6px 12px; font-size: 11.5px; font-weight: 600;
+  padding: 5px 11px; font-size: 11px; font-weight: 600;
 }
 .mh-preview-muted-item {
   background: transparent !important; border-color: var(--navy-border) !important;
   color: var(--text-faint) !important; font-style: italic; font-weight: 400 !important;
 }
-.mh-preview-note { font-size: 11px; color: var(--text-faint); margin-top: 12px; font-style: italic; }
+.mh-preview-note { font-size: 10.5px; color: var(--text-faint); margin-top: 10px; font-style: italic; }
 
-.mh-preview-recruiter-text { font-size: 12.5px; color: var(--text-muted); line-height: 1.65; margin: 0; }
+.mh-preview-recruiter-text { font-size: 12px; color: var(--text-muted); line-height: 1.6; margin: 0; }
 
-.mh-preview-opportunity-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
-.mh-preview-opportunity-list li { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; }
+.mh-preview-opportunity-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.mh-preview-opportunity-list li { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
 .mh-preview-cta {
-  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
   background: linear-gradient(90deg, rgba(30,64,175,0.15), rgba(5,150,105,0.1));
   border: 1px solid var(--navy-border); border-radius: var(--radius-lg);
-  padding: 20px 22px;
+  padding: 16px 20px;
 }
 .mh-preview-cta-icon {
-  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
   background: var(--navy-deep); border: 1px solid var(--navy-border);
-  display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 16px;
+  display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 14px;
 }
-.mh-preview-cta-text { flex: 1; min-width: 220px; font-size: 12.5px; color: var(--text-muted); line-height: 1.55; margin: 0; }
+.mh-preview-cta-text { flex: 1; min-width: 220px; font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; }
 .mh-preview-cta-text b { color: var(--white); }
 .mh-preview-cta-btn {
   background: linear-gradient(90deg, var(--emerald), #10B981) !important;
   width: auto !important; white-space: nowrap;
-  padding: 12px 22px !important; border-radius: 999px !important;
+  padding: 11px 20px !important; border-radius: 999px !important;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .mh-cip-shell { grid-template-columns: 1fr; }
   .mh-cip-left { border-right: none; border-bottom: 1px solid var(--navy-border); }
-  .mh-cip-split { grid-template-columns: 1fr; gap: 20px; }
+  .mh-cip-split { grid-template-columns: 1fr; gap: 18px; }
 }
 @media (max-width: 520px) {
-  .mh-cip-left, .mh-preview-output { padding: 22px; }
+  .mh-cip-left, .mh-preview-output { padding: 20px; }
   .mh-cip-stats { gap: 8px; }
   .mh-cip-stats .sep { display: none; }
   .mh-cip-stats span { width: 100%; justify-content: center; }
-  .mh-cip-right-top { flex-direction: column; }
+  .mh-cip-right-top { flex-direction: column; align-items: flex-start; }
   .mh-cip-gauge { align-self: flex-start; }
   .mh-preview-cta { flex-direction: column; align-items: flex-start; }
   .mh-preview-cta-btn { width: 100% !important; justify-content: center; }
-  .mh-score-bar-label { width: 120px; font-size: 11.5px; }
+  .mh-score-bar-label { width: 115px; font-size: 11px; }
 }
