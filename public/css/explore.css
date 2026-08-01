@@ -150,3 +150,159 @@
 @media (max-width: 640px) {
   .mh-explore-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================
+   CONTENT SURFACE
+   ============================================ */
+.mh-explore-light {
+  --el-bg: #FAFBFD;
+  --el-bg-alt: #F6F8FA;
+  --el-card: #FFFFFF;
+  --el-text: #1A1F2B;
+  --el-muted: #5B6472;
+  --el-faint: #8B93A1;
+  --el-border: rgba(15, 23, 42, 0.08);
+  background: var(--el-bg);
+  color: var(--el-text);
+}
+.mh-explore-light .mh-eyebrow { color: var(--blue-bright); }
+.mh-explore-light .mh-section-title { color: var(--el-text); }
+.mh-explore-light .mh-section-sub { color: var(--el-muted); }
+.mh-explore-light-alt { background: var(--el-bg-alt); }
+.mh-colib-visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ---- 4 Primary Navigation Cards ---- */
+.mh-explore-begin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; margin-top: 32px; }
+.mh-explore-begin-card {
+  background: var(--el-card); border: 1px solid var(--el-border); border-radius: var(--radius-lg);
+  padding: 24px 22px; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: flex; flex-direction: column; height: 100%;
+}
+.mh-explore-begin-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06); border-color: rgba(15,23,42,0.14); }
+.mh-explore-begin-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.mh-explore-begin-icon-blue { background: rgba(59, 130, 246, 0.12); color: #2563EB; }
+.mh-explore-begin-icon-purple { background: rgba(147, 51, 234, 0.12); color: #9333EA; }
+.mh-explore-begin-icon-green { background: rgba(5, 150, 105, 0.12); color: #059669; }
+.mh-explore-begin-icon-orange { background: rgba(217, 119, 6, 0.12); color: #D97706; }
+.mh-explore-begin-title { font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--el-text); margin-bottom: 7px; }
+.mh-explore-begin-desc { font-size: 13px; color: var(--el-muted); line-height: 1.5; margin-bottom: 14px; }
+.mh-explore-begin-link { margin-top: auto; font-size: 13px; font-weight: 700; color: #2563EB; display: inline-flex; align-items: center; gap: 6px; }
+.mh-explore-begin-link svg { transition: transform 0.2s ease; }
+.mh-explore-begin-card:hover .mh-explore-begin-link svg { transform: translateX(3px); }
+
+/* ---- Recent Additions ---- */
+.mh-explore-recent-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.mh-explore-recent-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--el-text); }
+.mh-explore-recent-viewall { font-size: 13px; font-weight: 600; color: #2563EB; }
+.mh-explore-recent-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.mh-explore-recent-pill {
+  display: inline-flex; align-items: center; gap: 8px; background: var(--el-card); border: 1px solid var(--el-border);
+  border-radius: 30px; padding: 9px 16px; font-size: 13px; font-weight: 600; color: var(--el-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.mh-explore-recent-pill:hover { border-color: rgba(15,23,42,0.16); box-shadow: 0 4px 14px rgba(15,23,42,0.05); }
+.mh-explore-recent-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+/* ---- Why Explore MedhaIQ — restored (per reference image structure:
+   icon + title + description, 4 columns), but tightened considerably:
+   smaller icons, no card backgrounds/borders/shadows, minimal padding.
+   A quiet credibility strip, not a feature showcase. ---- */
+.mh-explore-why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+.mh-explore-why-col { display: flex; flex-direction: column; gap: 4px; }
+.mh-explore-why-icon { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+.mh-explore-why-label { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--el-text); }
+.mh-explore-why-desc { font-size: 11px; color: var(--el-faint); line-height: 1.45; }
+
+/* ---- Bottom CTA — dark navy card ---- */
+.mh-explore-cta-card-dark {
+  background: var(--navy-deep); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-xl); padding: 34px 38px; display: flex; align-items: center; justify-content: space-between;
+  gap: 32px; flex-wrap: wrap;
+}
+.mh-explore-cta-card-icon {
+  width: 44px; height: 44px; border-radius: 13px;
+  background: linear-gradient(135deg, #3B82F6, #7C3AED); color: #fff;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.mh-explore-cta-card-dark-title { font-family: var(--font-display); font-weight: 700; font-size: 19px; color: #fff; margin-bottom: 4px; }
+.mh-explore-cta-card-dark-sub { font-size: 13px; color: var(--text-muted); max-width: 440px; line-height: 1.6; }
+.mh-explore-cta-card-action { text-align: center; flex-shrink: 0; }
+.mh-explore-cta-card-dark-note { font-size: 12px; color: var(--text-faint); margin-top: 8px; }
+@media (max-width: 760px) {
+  .mh-explore-cta-card-dark { flex-direction: column; text-align: center; }
+}
+
+/* ============================================
+   HERO
+   ============================================ */
+.mh-why-hero.mh-explore-hero-split { text-align: left; }
+.mh-explore-hero-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; max-width: 1080px; }
+.mh-explore-hero-text .mh-section-title,
+.mh-explore-hero-text .mh-section-sub { text-align: left; margin-left: 0; }
+.mh-explore-hero-h1 { font-size: clamp(28px, 3.6vw, 40px); line-height: 1.2; margin-bottom: 16px; }
+.mh-explore-hero-h1-accent {
+  background: linear-gradient(90deg, #3B82F6, #9333EA);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* ---- Intelligence illustration — STATIC elliptical rings, now ~35%
+   more visible: higher border opacity, thicker stroke, added glow layer.
+   No rotation anywhere; only the 4 node icons float gently. ---- */
+.mh-explore-hero-viz { position: relative; width: 340px; height: 340px; margin: 0 auto; }
+.mh-explore-hero-viz-ring {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  border-radius: 50%; border: 1.5px solid rgba(59, 130, 246, 0.32);
+  box-shadow: 0 0 22px rgba(59, 130, 246, 0.16), inset 0 0 22px rgba(59, 130, 246, 0.05);
+}
+.mh-explore-hero-viz-ring-1 { width: 340px; height: 246px; }
+.mh-explore-hero-viz-ring-2 { width: 272px; height: 198px; border-color: rgba(147, 51, 234, 0.28); box-shadow: 0 0 20px rgba(147, 51, 234, 0.14); }
+.mh-explore-hero-viz-ring-3 { width: 204px; height: 150px; border-color: rgba(255, 255, 255, 0.16); box-shadow: 0 0 16px rgba(255, 255, 255, 0.06); }
+
+.mh-explore-hero-viz-center {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 78px; height: 78px; border-radius: 50%; background: var(--navy-card);
+  border: 1px solid var(--navy-border); display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+  z-index: 3;
+}
+.mh-explore-hero-viz-logo { width: 38px; height: 38px; object-fit: contain; }
+
+.mh-explore-hero-viz-node-pos { position: absolute; width: 0; height: 0; z-index: 2; }
+.mh-explore-hero-viz-pos-nw { top: 16%; left: 12%; }
+.mh-explore-hero-viz-pos-ne { top: 16%; left: 88%; }
+.mh-explore-hero-viz-pos-sw { top: 84%; left: 12%; }
+.mh-explore-hero-viz-pos-se { top: 84%; left: 88%; }
+.mh-explore-hero-viz-node {
+  position: absolute; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  animation: mh-viz-float 5s ease-in-out infinite;
+  width: 92px;
+}
+.mh-explore-hero-viz-node-icon {
+  width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+.mh-explore-hero-viz-node-label { font-size: 12px; font-weight: 600; color: #fff; text-align: center; line-height: 1.35; }
+.mh-explore-hero-viz-node-label-accent { color: #D97706; }
+
+@keyframes mh-viz-float {
+  0%, 100% { margin-top: 0; }
+  50% { margin-top: -6px; }
+}
+
+@media (max-width: 1024px) {
+  .mh-explore-hero-grid { grid-template-columns: 1fr; max-width: 100%; }
+  .mh-explore-hero-viz { display: none; }
+  .mh-why-hero.mh-explore-hero-split { text-align: center; }
+  .mh-explore-hero-text .mh-section-title,
+  .mh-explore-hero-text .mh-section-sub { text-align: center; }
+  .mh-explore-hero-text .mh-explore-search-wrap,
+  .mh-explore-hero-text #mh-explore-search-meta,
+  .mh-explore-hero-text .mh-explore-trust-line { text-align: center !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mh-explore-hero-viz-node { animation: none; }
+}

@@ -1,0 +1,35 @@
+/* ============================================
+   ROLE-LIBRARY.CSS — scoped to /explore/role-library and its per-role
+   pages. Reuses .mh-explore-*/.mh-colib-* classes from explore.css and
+   company-library.css (breadcrumb, snapshot cards, question list, helps
+   list, competency cards, modal) wherever they already fit. Only new,
+   role-specific rules live here.
+   ============================================ */
+
+/* ---- Category browse groups (landing page) ---- */
+.mh-role-category-group { margin-bottom: 56px; }
+.mh-role-category-group:last-child { margin-bottom: 0; }
+.mh-role-category-heading {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-faint); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--white-border);
+}
+.mh-role-browse-card { display: flex; flex-direction: column; min-height: 140px; }
+
+/* ---- Interview flow row (simple horizontal stage strip, no descriptions) ---- */
+.mh-role-flow-row {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 12px; margin-top: 40px; max-width: 900px; margin-left: auto; margin-right: auto;
+}
+.mh-role-flow-step {
+  background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: 20px;
+  padding: 12px 22px; font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--white);
+}
+.mh-role-flow-arrow { color: var(--text-faint); font-size: 16px; }
+
+/* ---- Difficulty stars ---- */
+.mh-role-stars { color: var(--gold); letter-spacing: 2px; font-size: 16px; }
+
+@media (max-width: 640px) {
+  .mh-role-flow-row { flex-direction: column; }
+  .mh-role-flow-arrow { transform: rotate(90deg); }
+}

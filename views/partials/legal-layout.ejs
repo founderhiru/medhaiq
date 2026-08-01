@@ -2,19 +2,21 @@
   SHARED LEGAL PAGE LAYOUT
   Used by /privacy, /terms, /responsible-ai (and any future legal page).
   Each page only supplies content — this partial owns the page shell,
-  typography, meta row, inline nav, "At a Glance" card, and section
-  rhythm so every legal page stays visually consistent.
+  typography, meta row, inline nav, and section rhythm so every legal
+  page stays visually consistent.
+
+  The intro/summary paragraph is NOT handled here — each content
+  partial supplies its own via <p class="mh-legal-lead">...</p> as
+  its first element, so it inherits ordinary body typography and
+  reading width with no separate card/box treatment.
 
   Structure (top to bottom): LEGAL label -> Title -> Last Updated ->
-  inline section nav -> "At a Glance" card -> numbered sections.
+  inline section nav -> content (lead paragraph + numbered sections).
 
   Expected locals:
     title          - string, e.g. "Privacy Policy"           (required)
     description    - string, <meta name="description">        (required)
     lastUpdated    - string, e.g. "July 29, 2026"              (optional)
-    introText      - string, the document's own summary        (optional)
-                     paragraph, rendered inside the "At a
-                     Glance" card
     toc            - array of { href, label } for the slim      (optional)
                      inline anchor row beneath the meta row
     contentPartial - string, path (relative to this file's own
@@ -60,13 +62,6 @@
         <% } %>
       </header>
 
-      <% if (typeof introText !== 'undefined' && introText) { %>
-      <div class="mh-legal-tldr">
-        <div class="mh-legal-tldr-label">At a Glance</div>
-        <p><%- introText %></p>
-      </div>
-      <% } %>
-
       <article class="mh-legal-article">
         <%- include(contentPartial, locals) %>
       </article>
@@ -77,5 +72,4 @@
   <%- include('footer') %>
 </body>
 </html>
-
 

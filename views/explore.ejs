@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Explore MedhaIQ | MedhaIQ.ai</title>
-  <meta name="description" content="Discover how professionals prepare, practice and grow with Continuous Career Intelligence — company guides, role libraries, sample reports and scorecards.">
+  <meta name="description" content="Your gateway to MedhaIQ's Company Library, Role Library, sample reports, and interview guides.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0A0F1E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,192 +19,234 @@
 <body>
   <%- include('partials/header') %>
 
-  <!-- SECTION 1: Hero + Global Search — reuses the same hero shell as
-       Why MedhaIQ / Architecture (mh-why-hero / mh-section-center /
-       mh-eyebrow / mh-section-title / mh-section-sub). No new typography
-       introduced; only the search field below is new. -->
-  <section class="mh-why-hero reveal">
-    <div class="mh-why-hero-inner mh-section-center">
-      <div class="mh-eyebrow">Explore MedhaIQ</div>
-      <h1 class="mh-section-title">Explore MedhaIQ</h1>
-      <p class="mh-section-sub">Discover how professionals prepare, practice and grow with Continuous Career Intelligence.</p>
+  <!-- HERO -->
+  <section class="mh-why-hero mh-explore-hero-split reveal">
+    <div class="mh-why-hero-inner mh-explore-hero-grid">
+      <div class="mh-explore-hero-text">
+        <div class="mh-eyebrow">Explore MedhaIQ</div>
+        <h1 class="mh-section-title mh-explore-hero-h1">Your career intelligence journey<br><span class="mh-explore-hero-h1-accent">starts here.</span></h1>
+        <p class="mh-section-sub" style="margin: 0 0 24px;">Discover how top companies hire, what great candidates demonstrate, and how AI-powered interview intelligence helps you prepare with confidence.</p>
 
-      <div class="mh-explore-search-wrap">
-        <svg class="mh-explore-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input id="mh-explore-search" class="mh-form-input" type="search" placeholder="Search companies, roles and guides..." aria-label="Search companies, roles and guides">
+        <div class="mh-explore-search-wrap" style="margin: 0;">
+          <svg class="mh-explore-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="mh-explore-search" class="mh-form-input" type="search" placeholder="Search companies, roles and guides..." aria-label="Search companies, roles and guides">
+        </div>
+        <div id="mh-explore-search-meta" class="mh-explore-search-meta" style="text-align:left;" aria-live="polite"></div>
+        <p class="mh-explore-trust-line" style="text-align:left; margin-top: 12px;">No login required. Explore freely.</p>
       </div>
-      <div id="mh-explore-search-meta" class="mh-explore-search-meta" aria-live="polite"></div>
-      <p class="mh-explore-trust-line">No login required. Explore first, upgrade when you're ready.</p>
+
+      <!-- Intelligence illustration — STATIC elliptical rings, now more
+           visible (thicker stroke + glow) per this round's request. Only
+           the 4 node icons animate (gentle float). -->
+      <div class="mh-explore-hero-viz" aria-hidden="true">
+        <div class="mh-explore-hero-viz-ring mh-explore-hero-viz-ring-1"></div>
+        <div class="mh-explore-hero-viz-ring mh-explore-hero-viz-ring-2"></div>
+        <div class="mh-explore-hero-viz-ring mh-explore-hero-viz-ring-3"></div>
+
+        <div class="mh-explore-hero-viz-center">
+          <img src="/assets/branding/medhaiq-icon.png" alt="" class="mh-explore-hero-viz-logo">
+        </div>
+
+        <div class="mh-explore-hero-viz-node-pos mh-explore-hero-viz-pos-nw">
+          <div class="mh-explore-hero-viz-node" style="animation-delay:0s;">
+            <span class="mh-explore-hero-viz-node-icon" style="background:#1E40AF;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 21h18M6 21V7l6-4 6 4v14M10 21v-6h4v6"/></svg>
+            </span>
+            <span class="mh-explore-hero-viz-node-label">Company<br>Library</span>
+          </div>
+        </div>
+        <div class="mh-explore-hero-viz-node-pos mh-explore-hero-viz-pos-ne">
+          <div class="mh-explore-hero-viz-node" style="animation-delay:1.1s;">
+            <span class="mh-explore-hero-viz-node-icon" style="background:#1E1B4B;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+            </span>
+            <span class="mh-explore-hero-viz-node-label">Role<br>Library</span>
+          </div>
+        </div>
+        <div class="mh-explore-hero-viz-node-pos mh-explore-hero-viz-pos-sw">
+          <div class="mh-explore-hero-viz-node" style="animation-delay:2.2s;">
+            <span class="mh-explore-hero-viz-node-icon" style="background:#0F3B36;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+            </span>
+            <span class="mh-explore-hero-viz-node-label">Sample<br>Reports</span>
+          </div>
+        </div>
+        <div class="mh-explore-hero-viz-node-pos mh-explore-hero-viz-pos-se">
+          <div class="mh-explore-hero-viz-node" style="animation-delay:3.3s;">
+            <span class="mh-explore-hero-viz-node-icon" style="background:#241B10;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </span>
+            <span class="mh-explore-hero-viz-node-label mh-explore-hero-viz-node-label-accent">Interview<br>Guides</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
- <!-- SECTION: What You'll Discover — inserted between Hero and Company Library -->
-  <%- include('partials/explore-discover') %>
+  <!-- ============ CONTENT SURFACE BEGINS ============ -->
 
-  <!-- SECTION 2: Company Library -->
-  <section class="mh-explore-section reveal" aria-labelledby="mh-explore-companies-title">
-    <div class="mh-explore-section-inner">
+  <section class="mh-explore-light reveal" aria-labelledby="mh-explore-begin-title">
+    <div class="mh-explore-section-inner" style="padding: 56px 40px 48px;">
       <div class="mh-section-center">
-        <div class="mh-eyebrow">Company Library</div>
-        <h2 id="mh-explore-companies-title" class="mh-section-title">Practice for the room you're walking into</h2>
-        <p class="mh-section-sub">Company-calibrated interview loops, built from real hiring patterns.</p>
+        <h2 id="mh-explore-begin-title" class="mh-section-title" style="font-size: 25px;">Choose where to begin</h2>
+        <p class="mh-section-sub" style="font-size: 14px;">Explore curated libraries designed to help you prepare, practice and grow.</p>
       </div>
-      <div id="mh-explore-companies-grid" class="mh-explore-grid" role="list">
-        <% companies.forEach(function(company) { %>
-          <%- include('partials/explore-company-card', { company: company }) %>
-        <% }); %>
-      </div>
-      <div id="mh-explore-companies-empty" class="mh-explore-empty">No companies match your search yet — try a different term.</div>
-    </div>
-  </section>
-
-  <!-- SECTION 3: Role Library -->
-  <section class="mh-explore-section mh-explore-section-alt reveal" aria-labelledby="mh-explore-roles-title">
-    <div class="mh-explore-section-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Role Library</div>
-        <h2 id="mh-explore-roles-title" class="mh-section-title">Every role, its own bar</h2>
-        <p class="mh-section-sub">Interview loops calibrated to the competencies each role is actually judged on.</p>
-      </div>
-      <div id="mh-explore-roles-grid" class="mh-explore-grid" role="list">
-        <% roles.forEach(function(role) { %>
-          <%- include('partials/explore-role-card', { role: role }) %>
-        <% }); %>
-      </div>
-      <div id="mh-explore-roles-empty" class="mh-explore-empty">No roles match your search yet — try a different term.</div>
-    </div>
-  </section>
-
-  <!-- SECTION 4 + 5: Sample AI Report + Sample Scorecard -->
-  <section class="mh-explore-section reveal" aria-labelledby="mh-explore-samples-title">
-    <div class="mh-explore-section-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">See The Output</div>
-        <h2 id="mh-explore-samples-title" class="mh-section-title">A preview of what you walk away with</h2>
-        <p class="mh-section-sub">Every mock interview ends with a report and a scorecard like these.</p>
-      </div>
-      <div class="mh-explore-preview-grid">
-        <%- include('partials/explore-report-card') %>
-        <%- include('partials/explore-scorecard-card') %>
+      <div class="mh-explore-begin-grid">
+        <a href="/explore/company-library" class="mh-explore-begin-card" style="text-decoration:none;">
+          <div class="mh-explore-begin-icon mh-explore-begin-icon-blue" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M6 21V7l6-4 6 4v14M10 21v-6h4v6"/></svg>
+          </div>
+          <div class="mh-explore-begin-title">Company Library</div>
+          <div class="mh-explore-begin-desc">Learn how leading companies interview and what they look for in candidates.</div>
+          <span class="mh-explore-begin-link">Explore Company Library <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+        </a>
+        <a href="/explore/role-library" class="mh-explore-begin-card" style="text-decoration:none;">
+          <div class="mh-explore-begin-icon mh-explore-begin-icon-purple" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+          </div>
+          <div class="mh-explore-begin-title">Role Library</div>
+          <div class="mh-explore-begin-desc">Master interviews for every role and every stage of your career.</div>
+          <span class="mh-explore-begin-link">Explore Role Library <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+        </a>
+        <button type="button" class="mh-explore-begin-card mh-explore-comingsoon-trigger" style="text-decoration:none; text-align:left; cursor:pointer; width:100%; font-family:inherit;">
+          <div class="mh-explore-begin-icon mh-explore-begin-icon-green" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+          </div>
+          <div class="mh-explore-begin-title">Sample Reports</div>
+          <div class="mh-explore-begin-desc">See real report and scorecard examples to understand your interview outcomes.</div>
+          <span class="mh-explore-begin-link">Explore Sample Reports <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+        </button>
+        <button type="button" class="mh-explore-begin-card mh-explore-comingsoon-trigger" style="text-decoration:none; text-align:left; cursor:pointer; width:100%; font-family:inherit;">
+          <div class="mh-explore-begin-icon mh-explore-begin-icon-orange" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <div class="mh-explore-begin-title">Interview Guides</div>
+          <div class="mh-explore-begin-desc">Practical frameworks, tips, and strategies to ace your interviews.</div>
+          <span class="mh-explore-begin-link">Explore Interview Guides <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+        </button>
       </div>
     </div>
   </section>
 
-  <!-- SECTION 6: Career Guides -->
-  <section class="mh-explore-section mh-explore-section-alt reveal" aria-labelledby="mh-explore-guides-title">
-    <div class="mh-explore-section-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Interview Guides</div>
-        <h2 id="mh-explore-guides-title" class="mh-section-title">Short reads, real edge</h2>
-        <p class="mh-section-sub">Practical frameworks you can use in your next interview.</p>
+  <section class="mh-explore-light reveal">
+    <div class="mh-explore-section-inner" style="padding: 32px 40px 48px;">
+      <div class="mh-explore-recent-header">
+        <div class="mh-explore-recent-title">Recent additions</div>
+        <a href="/explore/company-library" class="mh-explore-recent-viewall">View all →</a>
       </div>
-      <div id="mh-explore-guides-grid" class="mh-explore-grid" role="list">
-        <% articles.forEach(function(article) { %>
-          <%- include('partials/explore-article-card', { article: article }) %>
-        <% }); %>
+      <div class="mh-explore-recent-row">
+        <a href="/explore/company-library/amazon" class="mh-explore-recent-pill"><span class="mh-explore-recent-dot" style="background:#2563EB;"></span>Amazon – Interview Guide</a>
+        <a href="/explore/role-library/product-manager" class="mh-explore-recent-pill"><span class="mh-explore-recent-dot" style="background:#9333EA;"></span>Product Manager – Interview Guide</a>
+        <button type="button" class="mh-explore-recent-pill mh-explore-comingsoon-trigger" style="border:1px solid var(--el-border,rgba(15,23,42,0.08)); cursor:pointer; font-family:inherit;"><span class="mh-explore-recent-dot" style="background:#059669;"></span>Sample AI Report</button>
+        <button type="button" class="mh-explore-recent-pill mh-explore-comingsoon-trigger" style="border:1px solid var(--el-border,rgba(15,23,42,0.08)); cursor:pointer; font-family:inherit;"><span class="mh-explore-recent-dot" style="background:#D97706;"></span>STAR Method Guide</button>
       </div>
-      <div id="mh-explore-guides-empty" class="mh-explore-empty">No guides match your search yet — try a different term.</div>
     </div>
   </section>
 
-  <!-- SECTION 7: Bottom CTA -->
-  <%- include('partials/explore-cta') %>
+  <!-- Why Explore MedhaIQ — restored as a compact icon+title+description
+       strip (per the reference image's structure), but tightened
+       significantly: smaller icons, less padding, no card borders/shadow —
+       a "quiet credibility strip," not the earlier full-height section. -->
+  <section class="mh-explore-light mh-explore-light-alt reveal">
+    <div class="mh-explore-section-inner" style="padding: 32px 40px;">
+      <div class="mh-section-center" style="margin-bottom: 24px;">
+        <h2 class="mh-section-title" style="font-size: 19px; margin-bottom: 0;">Why explore MedhaIQ?</h2>
+      </div>
+      <div class="mh-explore-why-grid">
+        <div class="mh-explore-why-col">
+          <div class="mh-explore-why-icon" style="background:rgba(59,130,246,0.1);color:#2563EB;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+          </div>
+          <div class="mh-explore-why-label">Company-calibrated insights</div>
+          <div class="mh-explore-why-desc">Understand how top companies interview.</div>
+        </div>
+        <div class="mh-explore-why-col">
+          <div class="mh-explore-why-icon" style="background:rgba(147,51,234,0.1);color:#9333EA;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+          </div>
+          <div class="mh-explore-why-label">Role-specific preparation</div>
+          <div class="mh-explore-why-desc">Practice with frameworks built for your target role.</div>
+        </div>
+        <div class="mh-explore-why-col">
+          <div class="mh-explore-why-icon" style="background:rgba(5,150,105,0.1);color:#059669;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20V10M9 20V4M15 20v-8M21 20V8"/></svg>
+          </div>
+          <div class="mh-explore-why-label">AI-powered feedback</div>
+          <div class="mh-explore-why-desc">Get actionable insights that help you improve faster.</div>
+        </div>
+        <div class="mh-explore-why-col">
+          <div class="mh-explore-why-icon" style="background:rgba(217,119,6,0.1);color:#D97706;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>
+          </div>
+          <div class="mh-explore-why-label">Continuous career intelligence</div>
+          <div class="mh-explore-why-desc">Track, learn, and grow with every interview.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA — unchanged: dark navy card, same copy, same size. -->
+  <section class="mh-explore-light reveal">
+    <div class="mh-explore-section-inner" style="padding: 40px 40px 56px;">
+      <div class="mh-explore-cta-card-dark">
+        <div style="display:flex; align-items:center; gap:20px;">
+          <div class="mh-explore-cta-card-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.4 7.2L12 16.4 5.6 20.8 8 13.6 2 9.2h7.6z"/></svg>
+          </div>
+          <div>
+            <div class="mh-explore-cta-card-dark-title">Ready to experience MedhaIQ?</div>
+            <div class="mh-explore-cta-card-dark-sub">Practice AI interviews, receive personalized feedback, and build confidence before your real interview.</div>
+          </div>
+        </div>
+        <div class="mh-explore-cta-card-action">
+          <a href="/login" class="mh-btn-primary">Get Started</a>
+          <div class="mh-explore-cta-card-dark-note">No credit card required</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <%- include('partials/footer') %>
 
-  <!-- Coming-soon modal — reuses the exact .mh-modal-overlay/.mh-modal markup
-       and open/close JS pattern already live in partials/pricing-section.ejs,
-       instead of introducing a new modal system. -->
   <div class="mh-modal-overlay" id="mh-explore-comingsoon-modal" style="display:none">
     <div class="mh-modal" role="dialog" aria-modal="true" aria-labelledby="mh-explore-comingsoon-title">
       <button class="mh-modal-close" id="mh-explore-comingsoon-close" aria-label="Close">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
       <div class="mh-modal-title" id="mh-explore-comingsoon-title">This one's being prepared</div>
-      <div class="mh-modal-sub" id="mh-explore-comingsoon-sub">This company guide is currently being prepared. More company intelligence is being added every week.</div>
+      <div class="mh-modal-sub">This page is currently being built as its own dedicated destination. Check back soon.</div>
     </div>
   </div>
 
   <script>
   (function() {
-    // Scroll reveal — identical IntersectionObserver pattern used on every
-    // other marketing page (architecture.ejs, why.ejs, layout.ejs).
     var reveals = document.querySelectorAll('.reveal');
     if (reveals.length) {
       var observer = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            var items = entry.target.querySelectorAll('.reveal-item');
-            items.forEach(function(item, i) {
-              setTimeout(function() { item.classList.add('visible'); }, i * 100);
-            });
-          }
-        });
+        entries.forEach(function(entry) { if (entry.isIntersecting) entry.target.classList.add('visible'); });
       }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
       reveals.forEach(function(el) { observer.observe(el); });
     }
   })();
-
   (function() {
-    // Live search — simple substring filter across companies/roles/guides.
-    // No fuzzy matching, no backend call, per this sprint's scope.
     var searchInput = document.getElementById('mh-explore-search');
     var searchMeta = document.getElementById('mh-explore-search-meta');
     if (!searchInput) return;
-
-    var sections = [
-      { grid: document.getElementById('mh-explore-companies-grid'), empty: document.getElementById('mh-explore-companies-empty') },
-      { grid: document.getElementById('mh-explore-roles-grid'), empty: document.getElementById('mh-explore-roles-empty') },
-      { grid: document.getElementById('mh-explore-guides-grid'), empty: document.getElementById('mh-explore-guides-empty') }
-    ];
-
     searchInput.addEventListener('input', function(e) {
-      var q = e.target.value.trim().toLowerCase();
-      var totalVisible = 0;
-
-      sections.forEach(function(section) {
-        if (!section.grid) return;
-        var cards = section.grid.querySelectorAll('[role="listitem"]');
-        var visibleCount = 0;
-        cards.forEach(function(card) {
-          var matches = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
-          card.style.display = matches ? '' : 'none';
-          if (matches) visibleCount++;
-        });
-        totalVisible += visibleCount;
-        if (section.empty) section.empty.classList.toggle('is-visible', q.length > 0 && visibleCount === 0);
-      });
-
-      searchMeta.textContent = q ? (totalVisible + ' result' + (totalVisible === 1 ? '' : 's') + ' for "' + e.target.value.trim() + '"') : '';
+      var q = e.target.value.trim();
+      searchMeta.textContent = q ? 'Search is coming soon — try the Company Library or Role Library directly for now.' : '';
     });
   })();
-
   (function() {
-    // Coming-soon modal — same open/close pattern as partials/pricing-section.ejs's
-    // existing email-capture modal (inline style.display, click-outside-to-close).
     var modal = document.getElementById('mh-explore-comingsoon-modal');
     var closeBtn = document.getElementById('mh-explore-comingsoon-close');
     if (!modal) return;
-
     document.querySelectorAll('.mh-explore-comingsoon-trigger').forEach(function(trigger) {
-      trigger.addEventListener('click', function(e) {
-        e.preventDefault();
-        modal.style.display = 'flex';
-      });
+      trigger.addEventListener('click', function(e) { e.preventDefault(); modal.style.display = 'flex'; });
     });
     if (closeBtn) closeBtn.addEventListener('click', function() { modal.style.display = 'none'; });
     modal.addEventListener('click', function(e) { if (e.target === modal) modal.style.display = 'none'; });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') modal.style.display = 'none'; });
-  })();
-
-  (function() {
-    // Animate scorecard bars once on load.
-    requestAnimationFrame(function() {
-      document.querySelectorAll('.mh-explore-score-bar-fill').forEach(function(el) {
-        el.style.width = el.getAttribute('data-target') + '%';
-      });
-    });
   })();
   </script>
 </body>

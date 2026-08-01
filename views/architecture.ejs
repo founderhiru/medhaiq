@@ -19,16 +19,13 @@
 <body>
   <%- include('partials/header') %>
 
-  <!-- Hero — reuses the exact same hero component/classes as the Why MedhaIQ
-       page (mh-why-hero / mh-why-hero-inner / mh-section-center / mh-eyebrow /
-       mh-section-title / mh-section-sub). No new typography style introduced. -->
-  <section class="mh-why-hero reveal">
-    <div class="mh-why-hero-inner mh-section-center">
-      <div class="mh-eyebrow">Architecture</div>
-      <h1 class="mh-section-title">How MedhaIQ Is Built</h1>
-      <p class="mh-section-sub">Explore the technical foundation powering MedhaIQ—from AI orchestration and career intelligence to enterprise-grade trust, governance, and security.</p>
-    </div>
-  </section>
+  <!-- Hero — shared PageHero partial (was hand-duplicated from Why MedhaIQ's
+       markup; now both pages actually consume the same component). -->
+  <%- include('partials/page-hero', {
+    eyebrow: 'Architecture',
+    title: 'How MedhaIQ Is Built',
+    sub: 'Explore the technical foundation powering MedhaIQ—from AI orchestration and career intelligence to enterprise-grade trust, governance, and security.'
+  }) %>
 
   <!-- Sticky left-nav + right-content hub. Per your latest correction:
        - "Career Architecture" → #journey (partials/timeline.ejs — real

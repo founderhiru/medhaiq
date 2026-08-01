@@ -1,0 +1,29 @@
+<%
+/* Role Browse Card — expects `role` in locals: { slug, title, comingSoon }.
+   Same interactive pattern as explore-company-card.ejs's coming-soon
+   handling: real roles are a link, coming-soon roles are a button that
+   opens the shared #mh-role-comingsoon-modal, fully interactive either way. */
+const _tag = role.comingSoon ? 'button' : 'a';
+const _attrs = role.comingSoon
+  ? `type="button" class="mh-explore-card-btn mh-role-comingsoon-trigger"`
+  : `href="/explore/role-library/${role.slug}" class="mh-explore-card-btn"`;
+%>
+<<%= _tag %> <%- _attrs %> role="listitem" aria-label="<%= role.title %><%= role.comingSoon ? ' — coming soon' : '' %>">
+  <div class="mh-explore-card mh-role-browse-card">
+    <% if (role.comingSoon) { %>
+      <span class="mh-explore-pill mh-explore-pill-gold" style="align-self:flex-start; margin-bottom: 12px;">Coming Soon</span>
+    <% } %>
+    <div class="mh-explore-company-name"><%= role.title %></div>
+    <% if (role.tags && role.tags.length) { %>
+      <div class="mh-explore-chip-row" style="margin: 10px 0 auto;">
+        <% role.tags.forEach(function(tag) { %>
+          <span class="mh-explore-chip"><%= tag %></span>
+        <% }); %>
+      </div>
+    <% } %>
+    <span class="mh-explore-card-link" style="margin-top: <%= (role.tags && role.tags.length) ? '16px' : 'auto' %>;">
+      <%= role.comingSoon ? 'Notify me' : 'Explore' %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+    </span>
+  </div>
+</<%= _tag %>>

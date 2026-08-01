@@ -3314,11 +3314,7 @@ button { cursor: pointer; }
 .mh-pricing-inner { max-width: var(--max-w); margin: 0 auto; }
 .mh-pricing .mh-section-title { color: var(--navy-rich); }
 .mh-pricing .mh-section-sub { color: #64748b; }
-/* No .mh-pricing .mh-eyebrow color override — inherits the shared
-   .mh-eyebrow's --blue-bright directly, same as every other page.
-   (Previously this was var(--royal-blue), a darker indigo that only
-   this section used — that's what was still causing the mismatch
-   after the pricing-section.ejs local override was removed.) */
+.mh-pricing .mh-eyebrow { color: var(--royal-blue); }
 
 /* ============================================
    EMAIL CAPTURE MODAL

@@ -1,0 +1,217 @@
+/* ============================================
+   COMPANY-LIBRARY.CSS — scoped to /explore/company-library and its
+   per-company pages. Reuses .mh-explore-section/-card/-pill/-chip/-grid
+   from explore.css, and .mh-btn-primary/.mh-btn-outline/.mh-section-title/
+   .mh-eyebrow/.mh-why-hero/.mh-form-input from medhaiq.css. Only new,
+   library-specific rules live here.
+   ============================================ */
+
+/* ============================================
+   EDITORIAL DESIGN SYSTEM — unified across Company Library + Role
+   Library (both landing and guide pages, via role-library.css also
+   loading after this file). Design principle: reading experiences are
+   light, product experiences are dark. Hero and CTA stay dark; every
+   content section in between becomes a white card on a soft editorial
+   background — matching Explore's own dark-hero/light-content/dark-CTA
+   structure so the whole ecosystem feels consistent.
+   ============================================ */
+.mh-editorial-surface {
+  --ed-bg: #FAFBFD;
+  --ed-bg-alt: #F5F7FA;
+  --ed-card: #FFFFFF;
+  --ed-text: #1A1F2B;
+  --ed-muted: #5B6472;
+  --ed-faint: #8B93A1;
+  --ed-border: rgba(15, 23, 42, 0.07);
+  background: var(--ed-bg);
+  padding: 64px 40px;
+}
+.mh-editorial-surface-alt { background: var(--ed-bg-alt); }
+.mh-editorial-inner { max-width: var(--max-w); margin: 0 auto; }
+.mh-editorial-surface .mh-eyebrow { color: var(--blue-bright); }
+.mh-editorial-surface .mh-section-title { color: var(--ed-text); font-size: 32px; }
+.mh-editorial-surface .mh-section-sub { color: var(--ed-muted); }
+
+/* Reusable white card — the base unit every content section renders as */
+.mh-editorial-card {
+  background: var(--ed-card);
+  border: 1px solid var(--ed-border);
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+  padding: 40px 44px;
+}
+.mh-editorial-card + .mh-editorial-card { margin-top: 28px; }
+.mh-editorial-card-title { font-family: var(--font-display); font-weight: 700; font-size: 21px; color: var(--ed-text); margin-bottom: 8px; }
+.mh-editorial-card .mh-eyebrow { margin-bottom: 12px; }
+.mh-editorial-body { font-size: 16px; color: var(--ed-muted); line-height: 1.75; }
+.mh-editorial-muted { font-size: 15px; color: var(--ed-faint); }
+
+/* Hero titles get their own larger scale (48-56px) — distinct from
+   section titles (30-34px, handled by .mh-editorial-surface .mh-section-title
+   above) and from the smaller default .mh-section-title (29px max) used
+   on non-editorial pages like Why MedhaIQ / Architecture. Scoped to this
+   modifier class so those other pages are completely unaffected. */
+.mh-colib-hero-title { font-size: clamp(32px, 4.5vw, 52px) !important; line-height: 1.12 !important; }
+
+/* Official Resources — deliberately NOT a card (per spec: "not another
+   card section"), just lightweight text sitting directly on the surface. */
+.mh-colib-official-block { text-align: center; padding: 8px 0 32px; }
+.mh-colib-official-title { font-size: 15px; color: var(--ed-muted); line-height: 1.6; max-width: 560px; margin: 0 auto 20px; }
+.mh-colib-official-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 28px; justify-content: center; }
+.mh-colib-official-list a { font-size: 13px; font-weight: 600; color: var(--blue-bright); }
+.mh-colib-official-list a:hover { text-decoration: underline; }
+
+/* Dark CTA — returns to the product-dark tone per the color system */
+.mh-colib-dark-cta { background: #0E1322; text-align: center; padding: 72px 40px; }
+.mh-colib-dark-cta .mh-section-title { color: #fff; }
+.mh-colib-dark-cta .mh-explore-cta-sub { color: var(--text-muted); }
+
+/* ---- Breadcrumb ---- */
+.mh-colib-breadcrumb {
+  padding: 88px 40px 0;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+.mh-colib-breadcrumb a { color: var(--text-muted); }
+.mh-colib-breadcrumb a:hover { color: var(--blue-bright); }
+.mh-colib-breadcrumb span[aria-current] { color: var(--text-muted); }
+.mh-colib-breadcrumb-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.mh-colib-reading-time {
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-faint);
+  background: var(--white-soft); padding: 4px 10px; border-radius: 20px; white-space: nowrap;
+}
+
+/* Utility: visible to screen readers only (used for a section landmark
+   heading that would otherwise duplicate the visual snapshot cards) */
+.mh-colib-visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ---- Company Snapshot ---- */
+.mh-colib-snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.mh-colib-snapshot-card {
+  background: var(--navy-card);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+}
+.mh-colib-snapshot-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-faint); margin-bottom: 6px;
+}
+.mh-colib-snapshot-value { font-size: 14px; color: var(--white); font-weight: 500; line-height: 1.5; }
+
+/* ---- Overview / prose sections ---- */
+.mh-colib-prose-wrap { max-width: 760px; }
+.mh-colib-prose { font-size: 15px; color: var(--text-muted); line-height: 1.8; margin-top: 16px; }
+.mh-colib-why-body { max-width: 760px; text-align: left; margin-top: 20px; font-size: 15px; line-height: 1.8; }
+
+/* ---- Interview Journey timeline ---- */
+.mh-colib-timeline {
+  list-style: none; margin: 48px auto 0; padding: 0; max-width: 640px;
+  display: flex; flex-direction: column; gap: 0;
+}
+.mh-colib-timeline-item {
+  display: flex; gap: 20px; position: relative; padding-bottom: 32px;
+}
+.mh-colib-timeline-item:last-child { padding-bottom: 0; }
+.mh-colib-timeline-item::before {
+  content: ''; position: absolute; left: 17px; top: 36px; bottom: 0; width: 1px;
+  background: var(--navy-border);
+}
+.mh-colib-timeline-item:last-child::before { display: none; }
+.mh-colib-timeline-num {
+  flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--navy-card); border: 1px solid var(--navy-border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--blue-bright);
+  z-index: 1;
+}
+.mh-colib-timeline-stage { font-family: var(--font-display); font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.mh-colib-timeline-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+/* ---- Competency / tip cards (reuse .mh-explore-card as base) ---- */
+.mh-colib-competency-card { padding: 22px; }
+.mh-colib-competency-name { font-family: var(--font-display); font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+.mh-colib-competency-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+/* ---- Representative questions ---- */
+.mh-colib-question-list {
+  list-style: none; counter-reset: q; margin: 40px 0 0; padding: 0;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.mh-colib-question-item {
+  counter-increment: q;
+  background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: var(--radius);
+  padding: 16px 18px 16px 52px; font-size: 14px; color: var(--white); line-height: 1.6; position: relative;
+}
+.mh-colib-question-item::before {
+  content: counter(q); position: absolute; left: 16px; top: 16px;
+  width: 22px; height: 22px; border-radius: 50%; background: var(--blue-glow); color: var(--blue-bright);
+  font-family: var(--font-display); font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ---- How MedhaIQ Helps ---- */
+.mh-colib-helps-list { list-style: none; margin: 24px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.mh-colib-helps-list li {
+  font-size: 14px; color: var(--text-muted); line-height: 1.7; padding-left: 26px; position: relative;
+}
+.mh-colib-helps-list li::before {
+  content: ''; position: absolute; left: 0; top: 7px; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--blue-bright);
+}
+
+/* ---- Related roles chips ---- */
+.mh-colib-role-chip-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 32px; }
+.mh-colib-role-chip { font-size: 13px; padding: 8px 16px; }
+
+/* ---- Related resources cards ---- */
+.mh-colib-resource-card { align-items: center; text-align: center; gap: 14px; }
+
+/* ---- Coming Soon strip ---- */
+.mh-colib-comingsoon-strip { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 32px; }
+
+/* ---- How to use this library — 3 numbered steps ---- */
+.mh-colib-howto-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 32px; margin-top: 48px; max-width: 900px; margin-left: auto; margin-right: auto;
+}
+.mh-colib-howto-step { text-align: center; }
+.mh-colib-howto-num {
+  width: 40px; height: 40px; border-radius: 50%; margin: 0 auto 16px;
+  background: var(--navy-card); border: 1px solid var(--navy-border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--blue-bright);
+}
+.mh-colib-howto-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+.mh-colib-howto-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+/* ---- Browse by category ---- */
+.mh-colib-category-list { max-width: 640px; margin: 48px auto 0; display: flex; flex-direction: column; gap: 24px; }
+.mh-colib-category-group { display: flex; flex-direction: column; gap: 12px; }
+.mh-colib-category-group:not(:last-child) { padding-bottom: 24px; border-bottom: 1px dashed var(--navy-border); }
+.mh-colib-category-label { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--white); }
+.mh-colib-category-companies { display: flex; flex-wrap: wrap; gap: 10px; }
+.mh-colib-category-pill { font-size: 13px; padding: 8px 16px; transition: background 0.15s ease, color 0.15s ease; }
+.mh-colib-category-pill:hover { background: var(--blue-bright); color: var(--navy-deep); }
+
+/* ---- Official Resources — compact editorial reference, not a card
+   section. Deliberately smaller type than everything else on the page. ---- */
+.mh-colib-official-title { font-family: var(--font-body); font-weight: 600; font-size: 15px; color: var(--text-muted); line-height: 1.6; max-width: 560px; margin: 0 auto 20px; }
+.mh-colib-official-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 28px; justify-content: center; }
+.mh-colib-official-list a { font-size: 13px; font-weight: 600; color: var(--blue-bright); }
+.mh-colib-official-list a:hover { text-decoration: underline; }
+
+/* ---- De-emphasized final CTA (Company Guide only) — scoped to
+   .mh-colib-final-cta specifically so the shared .mh-explore-cta used on
+   /explore's own hub CTA is NOT affected by this sizing change. ---- */
+.mh-colib-final-cta.mh-explore-cta { padding: 56px var(--section-pad-x); } /* default --section-pad-y is 76px — this is the actual reduction */
+.mh-colib-final-cta .mh-section-title { font-size: 25px; margin-bottom: 8px; } /* real .mh-section-title maxes at 29px (clamp(22px,4.5vw,29px)), not 40px — this is ~12% below that actual value */
+.mh-colib-final-cta .mh-explore-cta-sub { font-size: 14px; max-width: 560px; margin: 0 auto 6px; } /* default margin-bottom is 8px — this tightens it slightly */
+.mh-colib-final-cta .mh-explore-cta-actions { margin-top: 4px; }

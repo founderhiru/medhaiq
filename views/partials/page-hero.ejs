@@ -1,0 +1,20 @@
+<!-- views/partials/page-hero.ejs
+     Shared hero used by every centered, text-only page hero on the site.
+     Extracted verbatim from the Why MedhaIQ / Architecture hero markup —
+     those two pages already matched each other exactly, so this is a pure
+     extraction, not a redesign. No new classes, no new typography.
+
+     Locals:
+       eyebrow (string, required)
+       title   (string, required) — rendered as-is, so pass pre-escaped HTML
+                (e.g. a <br>) only if you trust the source; plain pages
+                should pass plain text.
+       sub     (string, required) — same note as title.
+-->
+<section class="mh-why-hero reveal">
+  <div class="mh-why-hero-inner mh-section-center">
+    <div class="mh-eyebrow"><%= eyebrow %></div>
+    <h1 class="mh-section-title"><%- title %></h1>
+    <p class="mh-section-sub"><%- sub %></p>
+  </div>
+</section>
