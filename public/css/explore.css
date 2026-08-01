@@ -150,3 +150,97 @@
 @media (max-width: 640px) {
   .mh-explore-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================
+   LIGHT EDITORIAL SURFACE — everything on /explore below the dark hero.
+   Scoped entirely under .mh-explore-light so it cannot leak onto any
+   other page (Why/Architecture/Company Library/Role Library all stay
+   fully dark, unaffected). This is a deliberate, page-specific departure
+   from the site's all-dark theme, per explicit design direction.
+   ============================================ */
+.mh-explore-light {
+  --el-bg: #F7F8FA;
+  --el-bg-alt: #F0F2F5;
+  --el-card: #FFFFFF;
+  --el-text: #1A1F2B;
+  --el-muted: #5B6472;
+  --el-faint: #8B93A1;
+  --el-border: rgba(15, 23, 42, 0.08);
+  background: var(--el-bg);
+  color: var(--el-text);
+}
+.mh-explore-light .mh-eyebrow { color: var(--blue-bright); }
+.mh-explore-light .mh-section-title { color: var(--el-text); }
+.mh-explore-light .mh-section-sub { color: var(--el-muted); }
+.mh-explore-light-alt { background: var(--el-bg-alt); }
+
+/* Thin, editorial hero label — replaces the old bright pill badge */
+.mh-explore-hero-label {
+  display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono);
+  font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-faint); margin-bottom: 18px; padding: 0; background: none; border: none;
+}
+.mh-explore-hero-label::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--blue-bright); }
+
+/* ---- Choose Where to Begin ---- */
+.mh-explore-begin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-top: 48px; }
+.mh-explore-begin-card {
+  background: var(--el-card); border: 1px solid var(--el-border); border-radius: var(--radius-xl);
+  padding: 36px 32px; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: flex; flex-direction: column; height: 100%;
+}
+.mh-explore-begin-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08); border-color: rgba(15,23,42,0.14); }
+.mh-explore-begin-icon {
+  width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  margin-bottom: 22px;
+}
+.mh-explore-begin-icon-blue { background: rgba(59, 130, 246, 0.12); color: #2563EB; }
+.mh-explore-begin-icon-purple { background: rgba(147, 51, 234, 0.12); color: #9333EA; }
+.mh-explore-begin-icon-green { background: rgba(5, 150, 105, 0.12); color: #059669; }
+.mh-explore-begin-icon-orange { background: rgba(217, 119, 6, 0.12); color: #D97706; }
+.mh-explore-begin-title { font-family: var(--font-display); font-weight: 700; font-size: 19px; color: var(--el-text); margin-bottom: 10px; }
+.mh-explore-begin-desc { font-size: 14px; color: var(--el-muted); line-height: 1.6; margin-bottom: 22px; }
+.mh-explore-begin-link { margin-top: auto; font-size: 14px; font-weight: 700; color: #2563EB; display: inline-flex; align-items: center; gap: 6px; }
+.mh-explore-begin-link svg { transition: transform 0.2s ease; }
+.mh-explore-begin-card:hover .mh-explore-begin-link svg { transform: translateX(3px); }
+
+/* ---- Recent Additions — lightweight pills, not another large section ---- */
+.mh-explore-recent-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.mh-explore-recent-title { font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--el-text); }
+.mh-explore-recent-viewall { font-size: 13px; font-weight: 600; color: #2563EB; }
+.mh-explore-recent-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.mh-explore-recent-pill {
+  display: inline-flex; align-items: center; gap: 8px; background: var(--el-card); border: 1px solid var(--el-border);
+  border-radius: 30px; padding: 10px 18px; font-size: 13px; font-weight: 600; color: var(--el-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.mh-explore-recent-pill:hover { border-color: rgba(15,23,42,0.18); box-shadow: 0 4px 16px rgba(15,23,42,0.06); }
+.mh-explore-recent-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+/* ---- Why Explore MedhaIQ — thin 4-item value strip ---- */
+.mh-explore-why-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 28px; margin-top: 32px; }
+.mh-explore-why-item { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+.mh-explore-why-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+.mh-explore-why-label { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--el-text); }
+.mh-explore-why-desc { font-size: 12px; color: var(--el-faint); line-height: 1.5; }
+
+/* ---- Bottom CTA card — light, not the dark radial-glow treatment used
+   on Company/Role guide pages. This page has exactly one conversion
+   moment and it should read as an invitation, not a banner. ---- */
+.mh-explore-cta-card {
+  background: linear-gradient(135deg, #EFF4FF 0%, #F7F8FA 100%); border: 1px solid var(--el-border);
+  border-radius: var(--radius-xl); padding: 44px 48px; display: flex; align-items: center; justify-content: space-between;
+  gap: 32px; flex-wrap: wrap;
+}
+.mh-explore-cta-card-icon {
+  width: 48px; height: 48px; border-radius: 14px; background: #2563EB; color: #fff;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.mh-explore-cta-card-title { font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--el-text); margin-bottom: 6px; }
+.mh-explore-cta-card-sub { font-size: 14px; color: var(--el-muted); }
+.mh-explore-cta-card-action { text-align: center; flex-shrink: 0; }
+.mh-explore-cta-card-note { font-size: 12px; color: var(--el-faint); margin-top: 10px; }
+
+@media (max-width: 760px) {
+  .mh-explore-cta-card { flex-direction: column; text-align: center; }
+}
