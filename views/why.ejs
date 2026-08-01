@@ -21,15 +21,11 @@
   <!-- ============================================
        01 — HERO
        ============================================ -->
-  <section class="mh-why-hero reveal">
-    <div class="mh-why-hero-inner mh-section-center">
-      <div class="mh-eyebrow">Why MedhaIQ</div>
-      <h1 class="mh-section-title">Why MedhaIQ Exists</h1>
-      <p class="mh-section-sub">
-        Interview preparation shouldn't be a one-time event. It should be Continuous Career Intelligence.
-      </p>
-    </div>
-  </section>
+  <%- include('partials/page-hero', {
+    eyebrow: 'Why MedhaIQ',
+    title: 'Why MedhaIQ Exists',
+    sub: "Interview preparation shouldn't be a one-time event. It should be Continuous Career Intelligence."
+  }) %>
 
   <!-- ============================================
        02 — THE PROBLEM: THE TRANSACTIONAL TRAP

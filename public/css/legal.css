@@ -15,7 +15,7 @@
 
 #mh-legal-page {
   background: var(--navy-deep);
-  padding: 128px var(--section-pad-x) 48px;
+  padding: 104px var(--section-pad-x) 48px;
 }
 
 /* Single centered reading column — 860px, not full browser width */
@@ -31,18 +31,15 @@
   margin-bottom: 22px;
 }
 
-/* Subtler category label — a tag, not a focal point */
-.mh-legal-header .mh-eyebrow {
-  font-size: 12px;
-  font-weight: 500;
-  margin-bottom: 6px;
-}
+/* Eyebrow: no local override — inherits the shared .mh-eyebrow token
+   (same font-size/weight/tracking/margin as every other page) so it
+   can't drift again. */
 
 .mh-legal-title {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 46px;
-  line-height: 1.1;
+  font-size: 38px; /* was 46px — reduced ~17% so the hero doesn't dominate the body content below */
+  line-height: 1.15;
   color: var(--white);
   letter-spacing: var(--hero-h1-tracking);
   margin: 4px 0 10px;

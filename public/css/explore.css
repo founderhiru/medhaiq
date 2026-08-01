@@ -247,10 +247,6 @@
   background: linear-gradient(90deg, #3B82F6, #9333EA);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-.mh-explore-hero-label {
-  font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--blue-bright); margin-bottom: 14px;
-}
 
 /* ---- Intelligence illustration — STATIC elliptical rings, now ~35%
    more visible: higher border opacity, thicker stroke, added glow layer.

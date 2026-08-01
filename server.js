@@ -96,6 +96,7 @@ app.get('/responsible-ai', (_req, res) => res.render('responsible-ai'));
 app.get('/architecture', (_req, res) => res.render('architecture'));
 app.get('/about',        (_req, res) => res.render('about'));
 app.get('/why',     (_req, res) => res.render('why'));
+app.get('/experience', (_req, res) => res.render('experience'));
 // Explore MedhaIQ — UI-shell-only sprint. Placeholder data lives in
 // data/explore-data.js; no DB/Supabase yet (see data file header comment)
 // Explore MedhaIQ — now a pure navigation gateway (4 cards + Recently
