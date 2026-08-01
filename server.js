@@ -92,7 +92,7 @@ app.get('/terms',   (_req, res) => res.render('terms'));
 // TEMPORARY placeholder for the Legal footer column's Responsible AI link —
 // swap for a real page/content when built. Not fabricated content, just a
 // safe stub so /responsible-ai doesn't 404.
-app.get('/responsible-ai', (_req, res) => res.redirect('/'));
+app.get('/responsible-ai', (_req, res) => res.render('responsible-ai'));
 app.get('/architecture', (_req, res) => res.render('architecture'));
 app.get('/about',        (_req, res) => res.render('about'));
 app.get('/why',     (_req, res) => res.render('why'));
