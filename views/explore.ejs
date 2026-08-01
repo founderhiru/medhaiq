@@ -24,7 +24,7 @@
     <div class="mh-why-hero-inner mh-explore-hero-grid">
       <div class="mh-explore-hero-text">
         <div class="mh-explore-hero-label">Explore MedhaIQ</div>
-        <h1 class="mh-section-title mh-explore-hero-h1">Your Journey<br><span class="mh-explore-hero-h1-accent">starts here.</span></h1>
+        <h1 class="mh-section-title mh-explore-hero-h1">Your career intelligence journey<br><span class="mh-explore-hero-h1-accent">starts here.</span></h1>
         <p class="mh-section-sub" style="margin: 0 0 24px;">Discover how top companies hire, what great candidates demonstrate, and how AI-powered interview intelligence helps you prepare with confidence.</p>
 
         <div class="mh-explore-search-wrap" style="margin: 0;">
@@ -35,9 +35,9 @@
         <p class="mh-explore-trust-line" style="text-align:left; margin-top: 12px;">No login required. Explore freely.</p>
       </div>
 
-      <!-- Intelligence illustration — STATIC elliptical rings (no rotation),
-           soft glow only. The ONLY motion anywhere in this graphic is a
-           very gentle float on the 4 node icons — nothing else animates. -->
+      <!-- Intelligence illustration — STATIC elliptical rings, now more
+           visible (thicker stroke + glow) per this round's request. Only
+           the 4 node icons animate (gentle float). -->
       <div class="mh-explore-hero-viz" aria-hidden="true">
         <div class="mh-explore-hero-viz-ring mh-explore-hero-viz-ring-1"></div>
         <div class="mh-explore-hero-viz-ring mh-explore-hero-viz-ring-2"></div>
@@ -85,7 +85,6 @@
 
   <!-- ============ CONTENT SURFACE BEGINS ============ -->
 
-  <!-- 4 Primary Navigation Cards -->
   <section class="mh-explore-light reveal" aria-labelledby="mh-explore-begin-title">
     <div class="mh-explore-section-inner" style="padding: 56px 40px 48px;">
       <div class="mh-section-center">
@@ -129,7 +128,6 @@
     </div>
   </section>
 
-  <!-- Recent Additions -->
   <section class="mh-explore-light reveal">
     <div class="mh-explore-section-inner" style="padding: 32px 40px 48px;">
       <div class="mh-explore-recent-header">
@@ -145,39 +143,49 @@
     </div>
   </section>
 
-  <!-- Why Explore MedhaIQ — thin credibility strip, ~35% thinner than the
-       previous pass, very light neutral background, one row, no heading. -->
+  <!-- Why Explore MedhaIQ — restored as a compact icon+title+description
+       strip (per the reference image's structure), but tightened
+       significantly: smaller icons, less padding, no card borders/shadow —
+       a "quiet credibility strip," not the earlier full-height section. -->
   <section class="mh-explore-light mh-explore-light-alt reveal">
-    <div class="mh-explore-section-inner mh-explore-why-thin-strip">
-      <div class="mh-explore-why-thin-col">
-        <span class="mh-explore-why-thin-icon" style="color:#2563EB;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
-        </span>
-        <span class="mh-explore-why-thin-text">Company-calibrated insights</span>
+    <div class="mh-explore-section-inner" style="padding: 32px 40px;">
+      <div class="mh-section-center" style="margin-bottom: 24px;">
+        <h2 class="mh-section-title" style="font-size: 19px; margin-bottom: 0;">Why explore MedhaIQ?</h2>
       </div>
-      <div class="mh-explore-why-thin-col">
-        <span class="mh-explore-why-thin-icon" style="color:#9333EA;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
-        </span>
-        <span class="mh-explore-why-thin-text">Role-specific preparation</span>
-      </div>
-      <div class="mh-explore-why-thin-col">
-        <span class="mh-explore-why-thin-icon" style="color:#059669;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20V10M9 20V4M15 20v-8M21 20V8"/></svg>
-        </span>
-        <span class="mh-explore-why-thin-text">AI-powered feedback</span>
-      </div>
-      <div class="mh-explore-why-thin-col">
-        <span class="mh-explore-why-thin-icon" style="color:#D97706;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>
-        </span>
-        <span class="mh-explore-why-thin-text">Continuous career intelligence</span>
+      <div class="mh-explore-why-grid">
+        <div class="mh-explore-why-col">
+          <div class="mh-explore-why-icon" style="background:rgba(59,130,246,0.1);color:#2563EB;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+          </div>
+          <div class="mh-explore-why-label">Company-calibrated insights</div>
+          <div class="mh-explore-why-desc">Understand how top companies interview.</div>
+        </div>
+        <div class="mh-explore-why-col">
+          <div class="mh-explore-why-icon" style="background:rgba(147,51,234,0.1);color:#9333EA;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+          </div>
+          <div class="mh-explore-why-label">Role-specific preparation</div>
+          <div class="mh-explore-why-desc">Practice with frameworks built for your target role.</div>
+        </div>
+        <div class="mh-explore-why-col">
+          <div class="mh-explore-why-icon" style="background:rgba(5,150,105,0.1);color:#059669;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20V10M9 20V4M15 20v-8M21 20V8"/></svg>
+          </div>
+          <div class="mh-explore-why-label">AI-powered feedback</div>
+          <div class="mh-explore-why-desc">Get actionable insights that help you improve faster.</div>
+        </div>
+        <div class="mh-explore-why-col">
+          <div class="mh-explore-why-icon" style="background:rgba(217,119,6,0.1);color:#D97706;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>
+          </div>
+          <div class="mh-explore-why-label">Continuous career intelligence</div>
+          <div class="mh-explore-why-desc">Track, learn, and grow with every interview.</div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Bottom CTA — unchanged from last round, per "do not enlarge, do not
-       make louder" instruction. Same dark navy card, same copy, same size. -->
+  <!-- Bottom CTA — unchanged: dark navy card, same copy, same size. -->
   <section class="mh-explore-light reveal">
     <div class="mh-explore-section-inner" style="padding: 40px 40px 56px;">
       <div class="mh-explore-cta-card-dark">
@@ -200,7 +208,6 @@
 
   <%- include('partials/footer') %>
 
-  <!-- Coming-soon modal -->
   <div class="mh-modal-overlay" id="mh-explore-comingsoon-modal" style="display:none">
     <div class="mh-modal" role="dialog" aria-modal="true" aria-labelledby="mh-explore-comingsoon-title">
       <button class="mh-modal-close" id="mh-explore-comingsoon-close" aria-label="Close">
