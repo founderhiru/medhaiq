@@ -152,12 +152,11 @@
 }
 
 /* ============================================
-   CONTENT SURFACE — soft white / light grey rhythm per reference image.
-   Scoped under .mh-explore-light so no other page is affected.
+   CONTENT SURFACE
    ============================================ */
 .mh-explore-light {
   --el-bg: #FAFBFD;
-  --el-bg-alt: #F5F7FA;
+  --el-bg-alt: #F6F8FA;
   --el-card: #FFFFFF;
   --el-text: #1A1F2B;
   --el-muted: #5B6472;
@@ -176,48 +175,55 @@
 }
 
 /* ---- 4 Primary Navigation Cards ---- */
-.mh-explore-begin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; margin-top: 36px; }
+.mh-explore-begin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; margin-top: 32px; }
 .mh-explore-begin-card {
   background: var(--el-card); border: 1px solid var(--el-border); border-radius: var(--radius-lg);
-  padding: 26px 24px; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  padding: 24px 22px; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   display: flex; flex-direction: column; height: 100%;
 }
-.mh-explore-begin-card:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07); border-color: rgba(15,23,42,0.14); }
-.mh-explore-begin-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+.mh-explore-begin-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06); border-color: rgba(15,23,42,0.14); }
+.mh-explore-begin-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
 .mh-explore-begin-icon-blue { background: rgba(59, 130, 246, 0.12); color: #2563EB; }
 .mh-explore-begin-icon-purple { background: rgba(147, 51, 234, 0.12); color: #9333EA; }
 .mh-explore-begin-icon-green { background: rgba(5, 150, 105, 0.12); color: #059669; }
 .mh-explore-begin-icon-orange { background: rgba(217, 119, 6, 0.12); color: #D97706; }
-.mh-explore-begin-title { font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--el-text); margin-bottom: 8px; }
-.mh-explore-begin-desc { font-size: 13px; color: var(--el-muted); line-height: 1.55; margin-bottom: 16px; }
+.mh-explore-begin-title { font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--el-text); margin-bottom: 7px; }
+.mh-explore-begin-desc { font-size: 13px; color: var(--el-muted); line-height: 1.5; margin-bottom: 14px; }
 .mh-explore-begin-link { margin-top: auto; font-size: 13px; font-weight: 700; color: #2563EB; display: inline-flex; align-items: center; gap: 6px; }
 .mh-explore-begin-link svg { transition: transform 0.2s ease; }
 .mh-explore-begin-card:hover .mh-explore-begin-link svg { transform: translateX(3px); }
 
 /* ---- Recent Additions ---- */
-.mh-explore-recent-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-.mh-explore-recent-title { font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--el-text); }
+.mh-explore-recent-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.mh-explore-recent-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--el-text); }
 .mh-explore-recent-viewall { font-size: 13px; font-weight: 600; color: #2563EB; }
-.mh-explore-recent-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.mh-explore-recent-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .mh-explore-recent-pill {
   display: inline-flex; align-items: center; gap: 8px; background: var(--el-card); border: 1px solid var(--el-border);
-  border-radius: 30px; padding: 10px 18px; font-size: 13px; font-weight: 600; color: var(--el-text);
+  border-radius: 30px; padding: 9px 16px; font-size: 13px; font-weight: 600; color: var(--el-text);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .mh-explore-recent-pill:hover { border-color: rgba(15,23,42,0.16); box-shadow: 0 4px 14px rgba(15,23,42,0.05); }
 .mh-explore-recent-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
-/* ---- Why Explore MedhaIQ — no heading, pure 4-column icon strip ---- */
-.mh-explore-why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px; }
-.mh-explore-why-col { display: flex; flex-direction: column; gap: 5px; }
-.mh-explore-why-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
-.mh-explore-why-label { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--el-text); }
-.mh-explore-why-desc { font-size: 12px; color: var(--el-faint); line-height: 1.5; }
+/* ---- Why Explore MedhaIQ — thin one-row credibility strip. ~35%
+   shorter than a previous pass that used a 4-column card grid: tiny
+   inline icon + text pairs in a single centered row, nothing else. ---- */
+.mh-explore-why-thin-strip {
+  padding: 20px 40px; display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 28px;
+}
+.mh-explore-why-thin-col { display: inline-flex; align-items: center; gap: 8px; }
+.mh-explore-why-thin-icon { display: inline-flex; opacity: 0.85; }
+.mh-explore-why-thin-text { font-size: 13px; font-weight: 500; color: var(--el-muted); }
+@media (max-width: 760px) {
+  .mh-explore-why-thin-strip { gap: 16px; padding: 18px 24px; }
+}
 
-/* ---- Bottom CTA — dark navy card, per reference image ---- */
+/* ---- Bottom CTA — dark navy card, unchanged size/prominence ---- */
 .mh-explore-cta-card-dark {
   background: var(--navy-deep); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: var(--radius-xl); padding: 36px 40px; display: flex; align-items: center; justify-content: space-between;
+  border-radius: var(--radius-xl); padding: 34px 38px; display: flex; align-items: center; justify-content: space-between;
   gap: 32px; flex-wrap: wrap;
 }
 .mh-explore-cta-card-icon {
@@ -234,9 +240,8 @@
 }
 
 /* ============================================
-   HERO — 2-column split + enhanced 3-ring visualization.
-   .mh-explore-hero-split is additive on .mh-why-hero — other pages using
-   that shared class alone are completely unaffected.
+   HERO — 2-column split. .mh-explore-hero-split is additive on
+   .mh-why-hero — other pages using that class alone are unaffected.
    ============================================ */
 .mh-why-hero.mh-explore-hero-split { text-align: left; }
 .mh-explore-hero-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; max-width: 1080px; }
@@ -252,60 +257,49 @@
   text-transform: uppercase; color: var(--blue-bright); margin-bottom: 14px;
 }
 
+/* ---- Intelligence illustration — STATIC elliptical rings, no rotation
+   anywhere. Only the 4 node icons move (gentle float). Flattened via
+   height < width on each ring, not perfect circles. ---- */
 .mh-explore-hero-viz { position: relative; width: 340px; height: 340px; margin: 0 auto; }
-.mh-explore-hero-viz-ring { position: absolute; border-radius: 50%; border: 1px dashed rgba(59, 130, 246, 0.2); }
-.mh-explore-hero-viz-ring-outer { inset: 0; animation: mh-viz-rotate 34s linear infinite; }
-.mh-explore-hero-viz-ring-mid { inset: 34px; border-color: rgba(147, 51, 234, 0.16); animation: mh-viz-rotate-rev 26s linear infinite; }
-.mh-explore-hero-viz-ring-inner { inset: 68px; border-style: solid; border-color: rgba(255, 255, 255, 0.07); animation: mh-viz-rotate 20s linear infinite; }
-
-.mh-explore-hero-viz-dot {
-  position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #3B82F6;
-  box-shadow: 0 0 8px 2px rgba(59,130,246,0.5);
-  animation: mh-viz-dot-pulse 3s ease-in-out infinite;
+.mh-explore-hero-viz-ring {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  border-radius: 50%; border: 1px solid rgba(59, 130, 246, 0.16);
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.06);
 }
-.mh-explore-hero-viz-dot-green { background: #10B981; box-shadow: 0 0 8px 2px rgba(16,185,129,0.5); }
+.mh-explore-hero-viz-ring-1 { width: 340px; height: 246px; }
+.mh-explore-hero-viz-ring-2 { width: 272px; height: 198px; border-color: rgba(147, 51, 234, 0.14); }
+.mh-explore-hero-viz-ring-3 { width: 204px; height: 150px; border-color: rgba(255, 255, 255, 0.08); }
 
 .mh-explore-hero-viz-center {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  width: 80px; height: 80px; border-radius: 50%; background: var(--navy-card);
+  width: 78px; height: 78px; border-radius: 50%; background: var(--navy-card);
   border: 1px solid var(--navy-border); display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 36px rgba(59, 130, 246, 0.35);
-  animation: mh-viz-pulse 3.5s ease-in-out infinite;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.28);
   z-index: 3;
 }
-.mh-explore-hero-viz-logo { width: 40px; height: 40px; object-fit: contain; }
+.mh-explore-hero-viz-logo { width: 38px; height: 38px; object-fit: contain; }
 
 .mh-explore-hero-viz-node-pos { position: absolute; width: 0; height: 0; z-index: 2; }
-.mh-explore-hero-viz-pos-nw { top: 16%; left: 14%; }
-.mh-explore-hero-viz-pos-ne { top: 16%; left: 86%; }
-.mh-explore-hero-viz-pos-sw { top: 84%; left: 14%; }
-.mh-explore-hero-viz-pos-se { top: 84%; left: 86%; }
+.mh-explore-hero-viz-pos-nw { top: 16%; left: 12%; }
+.mh-explore-hero-viz-pos-ne { top: 16%; left: 88%; }
+.mh-explore-hero-viz-pos-sw { top: 84%; left: 12%; }
+.mh-explore-hero-viz-pos-se { top: 84%; left: 88%; }
 .mh-explore-hero-viz-node {
   position: absolute; transform: translate(-50%, -50%);
   display: flex; flex-direction: column; align-items: center; gap: 8px;
-  animation: mh-viz-float 4.5s ease-in-out infinite;
-  width: 96px;
+  animation: mh-viz-float 5s ease-in-out infinite;
+  width: 92px;
 }
 .mh-explore-hero-viz-node-icon {
-  width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
 }
 .mh-explore-hero-viz-node-label { font-size: 12px; font-weight: 600; color: #fff; text-align: center; line-height: 1.35; }
 .mh-explore-hero-viz-node-label-accent { color: #D97706; }
 
-@keyframes mh-viz-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes mh-viz-rotate-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
-@keyframes mh-viz-pulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 36px rgba(59, 130, 246, 0.35); }
-  50% { transform: translate(-50%, -50%) scale(1.06); box-shadow: 0 0 50px rgba(59, 130, 246, 0.55); }
-}
 @keyframes mh-viz-float {
   0%, 100% { margin-top: 0; }
-  50% { margin-top: -8px; }
-}
-@keyframes mh-viz-dot-pulse {
-  0%, 100% { opacity: 0.35; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.4); }
+  50% { margin-top: -6px; }
 }
 
 @media (max-width: 1024px) {
@@ -319,5 +313,5 @@
   .mh-explore-hero-text .mh-explore-trust-line { text-align: center !important; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .mh-explore-hero-viz-ring, .mh-explore-hero-viz-center, .mh-explore-hero-viz-node, .mh-explore-hero-viz-dot { animation: none; }
+  .mh-explore-hero-viz-node { animation: none; }
 }
