@@ -5,12 +5,7 @@
   /* System-Locked Pricing Section Overrides */
  #pricing {
   background-color: #FAFBFC;
-  /* Top padding matches .mh-why-hero's 104px exactly (the Architecture/Why/
-     Explore hero token) instead of the generic --section-pad-y (76px), so
-     the eyebrow starts at the same distance from the sticky nav on every
-     page. Bottom padding keeps --section-pad-y since cards follow here,
-     unlike a short hero blurb. */
-  padding: 104px var(--section-pad-x) var(--section-pad-y);
+  padding: var(--section-pad-y) var(--section-pad-x);
   font-family: inherit;
   border-top: none;
   box-shadow: none;
@@ -28,15 +23,14 @@
     margin: 0 auto 24px auto;
   }
 
-  /* Eyebrow: no local override — inherits the shared .mh-eyebrow token
-     (same font-family/size/weight/tracking/color/margin as every other
-     page hero: Architecture, Why, Explore, Legal). Two stray custom
-     properties (--eyebrow-color, --eyebrow-margin-bottom) were being
-     referenced here but never defined anywhere, so they were silently
-     falling back to slightly-off hardcoded values (#2563EB instead of
-     the real --blue-bright #3B82F6, and 6px instead of the real 14px
-     margin) — removed for the same reason the legal-page override was
-     removed last round. */
+ #pricing .mh-eyebrow {
+  color: var(--eyebrow-color, #2563EB);
+  font-size: var(--eyebrow-size);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--eyebrow-tracking);
+  margin-bottom: var(--eyebrow-margin-bottom, 6px);
+}
 
   #pricing .mh-section-title {
     color: #0F172A;
