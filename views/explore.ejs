@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Explore MedhaIQ | MedhaIQ.ai</title>
-  <meta name="description" content="Your gateway to MedhaIQ's Company Library, Role Library, sample reports, and interview guides.">
+  <meta name="description" content="Your gateway to MedhaIQ's Company Library, Role Library, sample reports, and interview guides — discover, learn, and practice with confidence.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0A0F1E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,34 +19,40 @@
 <body>
   <%- include('partials/header') %>
 
-  <!-- HERO — simplified per direction: just a title, one short line, and
-       search. No marketing headline, no repeated copy from the homepage
-       or the guide pages' closing CTA. -->
+  <!-- HERO — kept dark, per direction. Eyebrow softened from a bright
+       promotional pill into a thin editorial label (dot + small caps
+       text). Search stays live and functional (still filters Interview
+       Guides below — see the search-scope note in the script block for
+       why it no longer also filters companies/roles). -->
   <section class="mh-why-hero reveal">
     <div class="mh-why-hero-inner mh-section-center">
-      <h1 class="mh-section-title">Explore MedhaIQ</h1>
-      <p class="mh-section-sub">Discover companies, roles, sample reports, and interview guides — all in one place.</p>
+      <div class="mh-explore-hero-label">Explore MedhaIQ</div>
+      <h1 class="mh-section-title">Your career intelligence journey starts here.</h1>
+      <p class="mh-section-sub">Discover how top companies hire, what great candidates demonstrate, and how AI-powered interview intelligence helps you prepare with confidence.</p>
 
       <div class="mh-explore-search-wrap">
         <svg class="mh-explore-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input id="mh-explore-search" class="mh-form-input" type="search" placeholder="Search companies, roles and guides..." aria-label="Search companies, roles and guides">
       </div>
       <div id="mh-explore-search-meta" class="mh-explore-search-meta" aria-live="polite"></div>
+      <p class="mh-explore-trust-line">No login required. Explore freely.</p>
     </div>
   </section>
 
   <!-- ============ LIGHT EDITORIAL SURFACE BEGINS ============ -->
 
-  <!-- 4 Primary Navigation Cards — the entire content of this page's main
-       section. No previews inside these cards; each library owns its own
-       content now. Company/Role Library link to their real, built pages.
-       Sample Reports / Interview Guides don't have dedicated pages yet
-       (out of this round's scope — flagged in chat), so they open the
-       same "coming soon" pattern already established elsewhere, rather
-       than a dead link or a fake destination. -->
+  <!-- Choose Where to Begin — the page's primary navigation, replacing the
+       old inline Company/Role card grids (now duplicative with the
+       dedicated libraries below). Sample Reports / Interview Guides link
+       to anchors further down this same page — they don't have their own
+       routes, per "do not rebuild routing." -->
   <section class="mh-explore-light reveal" aria-labelledby="mh-explore-begin-title">
-    <div class="mh-explore-section-inner" style="padding: 88px 40px 96px;">
-      <h2 id="mh-explore-begin-title" class="mh-colib-visually-hidden">Where would you like to begin?</h2>
+    <div class="mh-explore-section-inner" style="padding: 88px 40px 80px;">
+      <div class="mh-section-center">
+        <div class="mh-eyebrow">Choose Where To Begin</div>
+        <h2 id="mh-explore-begin-title" class="mh-section-title">Choose where to begin</h2>
+        <p class="mh-section-sub">Explore curated libraries designed to help you prepare, practice, and grow.</p>
+      </div>
       <div class="mh-explore-begin-grid">
         <a href="/explore/company-library" class="mh-explore-begin-card" style="text-decoration:none;">
           <div class="mh-explore-begin-icon mh-explore-begin-icon-blue" aria-hidden="true">
@@ -54,7 +60,7 @@
           </div>
           <div class="mh-explore-begin-title">Company Library</div>
           <div class="mh-explore-begin-desc">Learn how leading companies interview and what they look for in candidates.</div>
-          <span class="mh-explore-begin-link">Explore <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+          <span class="mh-explore-begin-link">Explore Company Library <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
         </a>
         <a href="/explore/role-library" class="mh-explore-begin-card" style="text-decoration:none;">
           <div class="mh-explore-begin-icon mh-explore-begin-icon-purple" aria-hidden="true">
@@ -62,110 +68,201 @@
           </div>
           <div class="mh-explore-begin-title">Role Library</div>
           <div class="mh-explore-begin-desc">Master interviews for every role and every stage of your career.</div>
-          <span class="mh-explore-begin-link">Explore <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+          <span class="mh-explore-begin-link">Explore Role Library <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
         </a>
-        <button type="button" class="mh-explore-begin-card mh-explore-comingsoon-trigger" style="text-decoration:none; text-align:left; cursor:pointer; width:100%; font-family:inherit;">
+        <a href="#mh-explore-samples-title" class="mh-explore-begin-card" style="text-decoration:none;">
           <div class="mh-explore-begin-icon mh-explore-begin-icon-green" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
           </div>
           <div class="mh-explore-begin-title">Sample Reports</div>
           <div class="mh-explore-begin-desc">See real report and scorecard examples to understand your interview outcomes.</div>
-          <span class="mh-explore-begin-link">Explore <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
-        </button>
-        <button type="button" class="mh-explore-begin-card mh-explore-comingsoon-trigger" style="text-decoration:none; text-align:left; cursor:pointer; width:100%; font-family:inherit;">
+          <span class="mh-explore-begin-link">Explore Sample Reports <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+        </a>
+        <a href="#mh-explore-guides-title" class="mh-explore-begin-card" style="text-decoration:none;">
           <div class="mh-explore-begin-icon mh-explore-begin-icon-orange" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
           </div>
           <div class="mh-explore-begin-title">Interview Guides</div>
           <div class="mh-explore-begin-desc">Practical frameworks, tips, and strategies to ace your interviews.</div>
-          <span class="mh-explore-begin-link">Explore <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
-        </button>
+          <span class="mh-explore-begin-link">Explore Interview Guides <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- Recently Added — lightweight pills only, no previews. Real internal
-       links where a real page exists; "coming soon" trigger where it
-       doesn't (STAR Method, Sample AI Report — no dedicated pages yet). -->
+  <!-- Sample AI Report + Sample Scorecard — content unchanged, reused as-is
+       (per "do not rebuild"). These preview cards keep their existing dark
+       styling intentionally — a self-contained "product preview" island
+       sitting on the light page, the same way many docs sites show a dark
+       product screenshot on an otherwise light page. -->
+  <section class="mh-explore-light mh-explore-light-alt reveal" aria-labelledby="mh-explore-samples-title">
+    <div class="mh-explore-section-inner" style="padding: 80px 40px;">
+      <div class="mh-section-center">
+        <div class="mh-eyebrow">See The Output</div>
+        <h2 id="mh-explore-samples-title" class="mh-section-title">A preview of what you walk away with</h2>
+        <p class="mh-section-sub">Every mock interview ends with a report and a scorecard like these.</p>
+      </div>
+      <div class="mh-explore-preview-grid">
+        <%- include('partials/explore-report-card') %>
+        <%- include('partials/explore-scorecard-card') %>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interview Guides — content unchanged, reused as-is. Cards keep their
+       existing dark styling for the same reason as the preview cards above. -->
+  <section class="mh-explore-light reveal" aria-labelledby="mh-explore-guides-title">
+    <div class="mh-explore-section-inner" style="padding: 80px 40px;">
+      <div class="mh-section-center">
+        <div class="mh-eyebrow">Interview Guides</div>
+        <h2 id="mh-explore-guides-title" class="mh-section-title">Short reads, real edge</h2>
+        <p class="mh-section-sub">Practical frameworks you can use in your next interview.</p>
+      </div>
+      <div id="mh-explore-guides-grid" class="mh-explore-grid" role="list">
+        <% articles.forEach(function(article) { %>
+          <%- include('partials/explore-article-card', { article: article }) %>
+        <% }); %>
+      </div>
+      <div id="mh-explore-guides-empty" class="mh-explore-empty">No guides match your search yet — try a different term.</div>
+    </div>
+  </section>
+
+  <!-- Recent Additions — lightweight pills, not another large section.
+       Each points to real, existing content (no fabricated specificity —
+       e.g. no per-company sample reports that don't actually exist). -->
   <section class="mh-explore-light mh-explore-light-alt reveal">
-    <div class="mh-explore-section-inner" style="padding: 56px 40px;">
+    <div class="mh-explore-section-inner" style="padding: 64px 40px;">
       <div class="mh-explore-recent-header">
-        <div class="mh-explore-recent-title">Recently Added</div>
+        <div class="mh-explore-recent-title">Recent Additions</div>
+        <a href="/explore/company-library" class="mh-explore-recent-viewall">View all →</a>
       </div>
       <div class="mh-explore-recent-row">
         <a href="/explore/company-library/amazon" class="mh-explore-recent-pill"><span class="mh-explore-recent-dot" style="background:#2563EB;"></span>Amazon Interview Guide</a>
-        <a href="/explore/company-library/microsoft" class="mh-explore-recent-pill"><span class="mh-explore-recent-dot" style="background:#2563EB;"></span>Microsoft Interview Guide</a>
-        <a href="/explore/role-library/product-manager" class="mh-explore-recent-pill"><span class="mh-explore-recent-dot" style="background:#9333EA;"></span>Product Manager Role Guide</a>
-        <button type="button" class="mh-explore-recent-pill mh-explore-comingsoon-trigger" style="border:1px solid var(--el-border,rgba(15,23,42,0.08)); cursor:pointer; font-family:inherit;"><span class="mh-explore-recent-dot" style="background:#D97706;"></span>STAR Method Guide</button>
-        <button type="button" class="mh-explore-recent-pill mh-explore-comingsoon-trigger" style="border:1px solid var(--el-border,rgba(15,23,42,0.08)); cursor:pointer; font-family:inherit;"><span class="mh-explore-recent-dot" style="background:#059669;"></span>Sample AI Report</button>
+        <a href="/explore/role-library/product-manager" class="mh-explore-recent-pill"><span class="mh-explore-recent-dot" style="background:#9333EA;"></span>Product Manager Guide</a>
+        <a href="#mh-explore-samples-title" class="mh-explore-recent-pill"><span class="mh-explore-recent-dot" style="background:#059669;"></span>Sample AI Report</a>
+        <a href="#mh-explore-guides-title" class="mh-explore-recent-pill"><span class="mh-explore-recent-dot" style="background:#D97706;"></span>STAR Method Guide</a>
       </div>
     </div>
   </section>
 
-  <!-- Why Explore MedhaIQ — reduced to a thin separator strip, not a
-       section with its own visual weight. No icons, no sub-heading, just
-       four short labels in one row. -->
+  <!-- Why Explore MedhaIQ — thinned to a 4-item value strip, per direction. -->
   <section class="mh-explore-light reveal">
-    <div class="mh-explore-section-inner mh-explore-why-thin">
-      <span class="mh-explore-why-thin-item">Company-calibrated insights</span>
-      <span class="mh-explore-why-thin-sep" aria-hidden="true">•</span>
-      <span class="mh-explore-why-thin-item">Role-specific preparation</span>
-      <span class="mh-explore-why-thin-sep" aria-hidden="true">•</span>
-      <span class="mh-explore-why-thin-item">AI-powered feedback</span>
-      <span class="mh-explore-why-thin-sep" aria-hidden="true">•</span>
-      <span class="mh-explore-why-thin-item">Continuous career intelligence</span>
+    <div class="mh-explore-section-inner" style="padding: 64px 40px;">
+      <div class="mh-section-center">
+        <div class="mh-eyebrow">Why Explore MedhaIQ</div>
+        <h2 class="mh-section-title" style="font-size: 24px;">Built for how you actually prepare</h2>
+      </div>
+      <div class="mh-explore-why-strip">
+        <div class="mh-explore-why-item">
+          <div class="mh-explore-why-icon" style="background:rgba(59,130,246,0.12);color:#2563EB;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M6 21V7l6-4 6 4v14"/></svg>
+          </div>
+          <div class="mh-explore-why-label">Company-calibrated insights</div>
+          <div class="mh-explore-why-desc">Understand how top companies interview.</div>
+        </div>
+        <div class="mh-explore-why-item">
+          <div class="mh-explore-why-icon" style="background:rgba(147,51,234,0.12);color:#9333EA;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+          </div>
+          <div class="mh-explore-why-label">Role-specific preparation</div>
+          <div class="mh-explore-why-desc">Practice with frameworks built for your target role.</div>
+        </div>
+        <div class="mh-explore-why-item">
+          <div class="mh-explore-why-icon" style="background:rgba(5,150,105,0.12);color:#059669;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+          </div>
+          <div class="mh-explore-why-label">AI-powered feedback</div>
+          <div class="mh-explore-why-desc">Get actionable insights that help you improve faster.</div>
+        </div>
+        <div class="mh-explore-why-item">
+          <div class="mh-explore-why-icon" style="background:rgba(217,119,6,0.12);color:#D97706;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>
+          </div>
+          <div class="mh-explore-why-label">Continuous career intelligence</div>
+          <div class="mh-explore-why-desc">Track, learn, and grow with every interview.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA — exactly one, light card treatment (not the dark
+       radial-glow style used on Company/Role guide pages), matching the
+       "invitation, not banner" direction for this gateway page. -->
+  <section class="mh-explore-light mh-explore-light-alt reveal">
+    <div class="mh-explore-section-inner" style="padding: 64px 40px 96px;">
+      <div class="mh-explore-cta-card">
+        <div style="display:flex; align-items:center; gap:20px;">
+          <div class="mh-explore-cta-card-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.4 7.2L12 16.4 5.6 20.8 8 13.6 2 9.2h7.6z"/></svg>
+          </div>
+          <div>
+            <div class="mh-explore-cta-card-title">Your preparation starts here.</div>
+            <div class="mh-explore-cta-card-sub">Practice interviews, get AI feedback, and build real confidence.</div>
+          </div>
+        </div>
+        <div class="mh-explore-cta-card-action">
+          <a href="/login" class="mh-btn-primary">Get Started</a>
+          <div class="mh-explore-cta-card-note">No credit card required</div>
+        </div>
+      </div>
     </div>
   </section>
 
   <%- include('partials/footer') %>
 
-  <!-- Coming-soon modal — now covers Sample Reports, Interview Guides (as
-       destinations), and the two Recently Added items without their own
-       page yet. Generic copy since it's no longer company-specific. -->
-  <div class="mh-modal-overlay" id="mh-explore-comingsoon-modal" style="display:none">
-    <div class="mh-modal" role="dialog" aria-modal="true" aria-labelledby="mh-explore-comingsoon-title">
-      <button class="mh-modal-close" id="mh-explore-comingsoon-close" aria-label="Close">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-      <div class="mh-modal-title" id="mh-explore-comingsoon-title">This one's being prepared</div>
-      <div class="mh-modal-sub">This page is currently being built as its own dedicated destination. Check back soon.</div>
-    </div>
-  </div>
-
   <script>
   (function() {
+    // Scroll reveal — identical IntersectionObserver pattern used on every
+    // other marketing page (architecture.ejs, why.ejs, layout.ejs).
     var reveals = document.querySelectorAll('.reveal');
     if (reveals.length) {
       var observer = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
       }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
       reveals.forEach(function(el) { observer.observe(el); });
     }
   })();
 
   (function() {
-    // Search now has nothing on-page left to filter (no more card grids —
-    // see chat for why). It's kept visually per "keep: search bar," but
-    // real cross-library search is a separate feature, not built here.
+    // Live search — NOTE ON SCOPE: this now only filters the Interview
+    // Guides grid. Company and Role card grids no longer live on this
+    // page (they're in their own dedicated libraries), so there's nothing
+    // left here for those parts of a search to filter. True cross-library
+    // search (searching companies/roles from this page and jumping to
+    // results) would be a real new feature, not a refinement — flagged
+    // separately rather than built silently as a partial/broken version.
     var searchInput = document.getElementById('mh-explore-search');
     var searchMeta = document.getElementById('mh-explore-search-meta');
     if (!searchInput) return;
+
+    var guidesGrid = document.getElementById('mh-explore-guides-grid');
+    var guidesEmpty = document.getElementById('mh-explore-guides-empty');
+
     searchInput.addEventListener('input', function(e) {
-      var q = e.target.value.trim();
-      searchMeta.textContent = q ? 'Search is coming soon — try the Company Library or Role Library directly for now.' : '';
+      var q = e.target.value.trim().toLowerCase();
+      var visibleCount = 0;
+      if (guidesGrid) {
+        var cards = guidesGrid.querySelectorAll('[role="listitem"]');
+        cards.forEach(function(card) {
+          var matches = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+          card.style.display = matches ? '' : 'none';
+          if (matches) visibleCount++;
+        });
+        if (guidesEmpty) guidesEmpty.classList.toggle('is-visible', q.length > 0 && visibleCount === 0);
+      }
+      searchMeta.textContent = q ? (visibleCount + ' guide' + (visibleCount === 1 ? '' : 's') + ' match "' + e.target.value.trim() + '"') : '';
     });
   })();
 
   (function() {
-    var modal = document.getElementById('mh-explore-comingsoon-modal');
-    var closeBtn = document.getElementById('mh-explore-comingsoon-close');
-    if (!modal) return;
-    document.querySelectorAll('.mh-explore-comingsoon-trigger').forEach(function(trigger) {
-      trigger.addEventListener('click', function(e) { e.preventDefault(); modal.style.display = 'flex'; });
+    // Animate scorecard bars once on load.
+    requestAnimationFrame(function() {
+      document.querySelectorAll('.mh-explore-score-bar-fill').forEach(function(el) {
+        el.style.width = el.getAttribute('data-target') + '%';
+      });
     });
-    if (closeBtn) closeBtn.addEventListener('click', function() { modal.style.display = 'none'; });
-    modal.addEventListener('click', function(e) { if (e.target === modal) modal.style.display = 'none'; });
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') modal.style.display = 'none'; });
   })();
   </script>
 </body>
