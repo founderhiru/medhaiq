@@ -25,33 +25,11 @@
 <body>
   <%- include('partials/header') %>
 
-  <%
-    const _wordSource = [
-      role.competencies.map(function(c) { return c.name + ' ' + c.desc; }).join(' '),
-      role.questions.join(' '),
-      role.tips.join(' '),
-      role.practiceHelps.join(' '),
-    ].join(' ');
-    const _readingMinutes = Math.max(1, Math.round(_wordSource.split(/\s+/).filter(Boolean).length / 200));
-  %>
-  <nav class="mh-colib-breadcrumb" aria-label="Breadcrumb">
-    <div class="mh-explore-section-inner mh-colib-breadcrumb-row">
-      <div>
-        <a href="/explore">Explore MedhaIQ</a>
-        <span aria-hidden="true">/</span>
-        <a href="/explore/role-library">Role Library</a>
-        <span aria-hidden="true">/</span>
-        <span aria-current="page"><%= role.title %></span>
-      </div>
-      <span class="mh-colib-reading-time"><%= _readingMinutes %> min read</span>
-    </div>
-  </nav>
-
-  <!-- Hero — one primary CTA, "View Sample Report" as a plain link -->
+  <!-- Hero — dark -->
   <section class="mh-why-hero reveal">
     <div class="mh-why-hero-inner mh-section-center">
       <div class="mh-eyebrow"><%= role.hero.subheadline %></div>
-      <h1 class="mh-section-title"><%= role.title %> Interview Guide</h1>
+      <h1 class="mh-section-title mh-colib-hero-title"><%= role.title %> Interview Guide</h1>
       <div class="mh-explore-cta-actions" style="margin-top: 28px;">
         <a href="/login" class="mh-btn-primary">Practice <%= role.title %> Interview</a>
       </div>
@@ -59,124 +37,144 @@
     </div>
   </section>
 
-  <!-- Section 1: Role at a Glance -->
-  <section class="mh-explore-section reveal">
-    <div class="mh-explore-section-inner">
-      <h2 class="mh-colib-visually-hidden">Role at a Glance</h2>
-      <div class="mh-colib-snapshot-grid">
-        <div class="mh-colib-snapshot-card">
-          <div class="mh-colib-snapshot-label">Role Focus</div>
-          <div class="mh-colib-snapshot-value"><%= role.atAGlance.roleFocus %></div>
-        </div>
-        <div class="mh-colib-snapshot-card">
-          <div class="mh-colib-snapshot-label">Interview Style</div>
-          <div class="mh-colib-snapshot-value"><%= role.atAGlance.interviewStyle %></div>
-        </div>
-        <div class="mh-colib-snapshot-card">
-          <div class="mh-colib-snapshot-label">Typical Experience</div>
-          <div class="mh-colib-snapshot-value"><%= role.atAGlance.typicalExperience %></div>
-        </div>
-        <div class="mh-colib-snapshot-card">
-          <div class="mh-colib-snapshot-label">Difficulty</div>
-          <div class="mh-colib-snapshot-value mh-role-stars"><%- '★'.repeat(role.atAGlance.difficulty) + '☆'.repeat(5 - role.atAGlance.difficulty) %></div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- ============ LIGHT EDITORIAL READING SURFACE ============ -->
+  <div class="mh-editorial-surface">
+    <div class="mh-editorial-inner">
 
-  <!-- Section 2: What Hiring Managers Evaluate -->
-  <section class="mh-explore-section mh-explore-section-alt reveal" aria-labelledby="mh-role-competencies-title">
-    <div class="mh-explore-section-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">What Hiring Managers Evaluate</div>
-        <h2 id="mh-role-competencies-title" class="mh-section-title">Core competencies</h2>
-      </div>
-      <div class="mh-explore-grid" role="list">
-        <% role.competencies.forEach(function(comp) { %>
-          <div class="mh-explore-card mh-colib-competency-card" role="listitem">
-            <div class="mh-colib-competency-name"><%= comp.name %></div>
-            <div class="mh-colib-competency-desc"><%= comp.desc %></div>
+      <%
+        const _wordSource = [
+          role.competencies.map(function(c) { return c.name + ' ' + c.desc; }).join(' '),
+          role.questions.join(' '),
+          role.tips.join(' '),
+          role.practiceHelps.join(' '),
+        ].join(' ');
+        const _readingMinutes = Math.max(1, Math.round(_wordSource.split(/\s+/).filter(Boolean).length / 200));
+      %>
+      <nav class="mh-colib-breadcrumb-row" aria-label="Breadcrumb" style="padding: 0 0 32px;">
+        <div>
+          <a href="/explore" style="color: var(--ed-muted);">Explore MedhaIQ</a>
+          <span aria-hidden="true" style="color: var(--ed-faint);">/</span>
+          <a href="/explore/role-library" style="color: var(--ed-muted);">Role Library</a>
+          <span aria-hidden="true" style="color: var(--ed-faint);">/</span>
+          <span style="color: var(--ed-text); font-weight: 600;"><%= role.title %></span>
+        </div>
+        <span class="mh-colib-reading-time" style="background: rgba(15,23,42,0.05); color: var(--ed-faint);"><%= _readingMinutes %> min read</span>
+      </nav>
+
+      <!-- Role at a Glance -->
+      <div class="mh-editorial-card">
+        <h2 class="mh-colib-visually-hidden">Role at a Glance</h2>
+        <div class="mh-colib-snapshot-grid">
+          <div class="mh-colib-snapshot-card">
+            <div class="mh-colib-snapshot-label">Role Focus</div>
+            <div class="mh-colib-snapshot-value"><%= role.atAGlance.roleFocus %></div>
           </div>
-        <% }); %>
+          <div class="mh-colib-snapshot-card">
+            <div class="mh-colib-snapshot-label">Interview Style</div>
+            <div class="mh-colib-snapshot-value"><%= role.atAGlance.interviewStyle %></div>
+          </div>
+          <div class="mh-colib-snapshot-card">
+            <div class="mh-colib-snapshot-label">Typical Experience</div>
+            <div class="mh-colib-snapshot-value"><%= role.atAGlance.typicalExperience %></div>
+          </div>
+          <div class="mh-colib-snapshot-card">
+            <div class="mh-colib-snapshot-label">Difficulty</div>
+            <div class="mh-colib-snapshot-value mh-role-stars"><%- '★'.repeat(role.atAGlance.difficulty) + '☆'.repeat(5 - role.atAGlance.difficulty) %></div>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Section 3: Typical Interview Flow — stage names only, no long explanations -->
-  <section class="mh-explore-section reveal" aria-labelledby="mh-role-flow-title">
-    <div class="mh-explore-section-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Typical Interview Flow</div>
-        <h2 id="mh-role-flow-title" class="mh-section-title">What to expect</h2>
+      <!-- What Hiring Managers Evaluate -->
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">What Hiring Managers Evaluate</div>
+          <h2 class="mh-editorial-card-title">Core competencies</h2>
+        </div>
+        <div class="mh-explore-grid" role="list" style="margin-top: 24px;">
+          <% role.competencies.forEach(function(comp) { %>
+            <div class="mh-colib-competency-card" style="background:#FBFCFD; border:1px solid var(--ed-border,rgba(15,23,42,0.07)); border-radius:14px;" role="listitem">
+              <div class="mh-colib-competency-name"><%= comp.name %></div>
+              <div class="mh-colib-competency-desc"><%= comp.desc %></div>
+            </div>
+          <% }); %>
+        </div>
       </div>
-      <div class="mh-role-flow-row">
-        <% role.interviewFlow.forEach(function(stage, i) { %>
-          <div class="mh-role-flow-step"><%= stage %></div>
-          <% if (i < role.interviewFlow.length - 1) { %><div class="mh-role-flow-arrow">→</div><% } %>
-        <% }); %>
-      </div>
-    </div>
-  </section>
 
-  <!-- Section 4: Representative Questions -->
-  <section class="mh-explore-section mh-explore-section-alt reveal" aria-labelledby="mh-role-questions-title">
-    <div class="mh-explore-section-inner mh-colib-prose-wrap">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Representative Questions</div>
-        <h2 id="mh-role-questions-title" class="mh-section-title">What's commonly asked</h2>
+      <!-- Typical Interview Flow -->
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Typical Interview Flow</div>
+          <h2 class="mh-editorial-card-title">What to expect</h2>
+        </div>
+        <div class="mh-role-flow-row" style="margin-top: 24px;">
+          <% role.interviewFlow.forEach(function(stage, i) { %>
+            <div class="mh-role-flow-step" style="background:#FBFCFD; border:1px solid var(--ed-border,rgba(15,23,42,0.07)); color: var(--ed-text,#1A1F2B);"><%= stage %></div>
+            <% if (i < role.interviewFlow.length - 1) { %><div class="mh-role-flow-arrow">→</div><% } %>
+          <% }); %>
+        </div>
       </div>
-      <ol class="mh-colib-question-list">
-        <% role.questions.forEach(function(q) { %>
-          <li class="mh-colib-question-item"><%= q %></li>
-        <% }); %>
-      </ol>
-    </div>
-  </section>
 
-  <!-- Section 5: Preparation Tips -->
-  <section class="mh-explore-section reveal" aria-labelledby="mh-role-tips-title">
-    <div class="mh-explore-section-inner mh-colib-prose-wrap">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Preparation Tips</div>
-        <h2 id="mh-role-tips-title" class="mh-section-title">How to prepare</h2>
+      <!-- Representative Questions -->
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Representative Questions</div>
+          <h2 class="mh-editorial-card-title">What's commonly asked</h2>
+        </div>
+        <ol class="mh-colib-question-list" style="margin-top: 24px;">
+          <% role.questions.forEach(function(q) { %>
+            <li class="mh-colib-question-item" style="background:#FBFCFD; border:1px solid var(--ed-border,rgba(15,23,42,0.07)); color: var(--ed-text,#1A1F2B);"><%= q %></li>
+          <% }); %>
+        </ol>
       </div>
-      <ul class="mh-colib-helps-list">
-        <% role.tips.forEach(function(tip) { %>
-          <li><%= tip %></li>
-        <% }); %>
-      </ul>
-    </div>
-  </section>
 
-  <!-- Section 6: Related Company Interviews — the key difference from the
-       Company Library: cross-links to real, existing company guide pages -->
-  <% if (role.relatedCompanies && role.relatedCompanies.length) { %>
-  <section class="mh-explore-section mh-explore-section-alt reveal" aria-labelledby="mh-role-companies-title">
-    <div class="mh-explore-section-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Related Company Interviews</div>
-        <h2 id="mh-role-companies-title" class="mh-section-title">Practice this role at</h2>
+      <!-- Preparation Tips -->
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Preparation Tips</div>
+          <h2 class="mh-editorial-card-title">How to prepare</h2>
+        </div>
+        <ul class="mh-colib-helps-list" style="margin-top: 16px;">
+          <% role.tips.forEach(function(tip) { %>
+            <li><%= tip %></li>
+          <% }); %>
+        </ul>
       </div>
-      <div class="mh-colib-role-chip-row">
-        <% relatedCompanyObjects.forEach(function(company) { %>
-          <a href="/explore/company-library/<%= company.slug %>" class="mh-explore-chip mh-colib-role-chip" style="cursor:pointer;"><%= company.name %></a>
-        <% }); %>
-      </div>
-    </div>
-  </section>
-  <% } %>
 
-  <!-- Section 7: Practice Interview -->
-  <section class="mh-explore-section reveal" aria-labelledby="mh-role-practice-title" id="sample-report">
-    <div class="mh-explore-section-inner mh-colib-prose-wrap">
-      <div class="mh-eyebrow">Ready To Practice?</div>
-      <h2 id="mh-role-practice-title" class="mh-section-title">Put your preparation into practice</h2>
-      <ul class="mh-colib-helps-list">
-        <% role.practiceHelps.forEach(function(point) { %>
-          <li><%= point %></li>
-        <% }); %>
-      </ul>
-      <div class="mh-explore-cta-actions" style="margin-top: 28px;">
+      <!-- Related Company Interviews -->
+      <% if (role.relatedCompanies && role.relatedCompanies.length) { %>
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Related Company Interviews</div>
+          <h2 class="mh-editorial-card-title">Practice this role at</h2>
+        </div>
+        <div class="mh-colib-role-chip-row" style="margin-top: 20px;">
+          <% relatedCompanyObjects.forEach(function(company) { %>
+            <a href="/explore/company-library/<%= company.slug %>" class="mh-colib-role-chip" style="background:rgba(37,99,235,0.08); color:#2563EB; cursor:pointer;"><%= company.name %></a>
+          <% }); %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Practice With MedhaIQ -->
+      <div class="mh-editorial-card">
+        <div class="mh-eyebrow">Ready To Practice?</div>
+        <h2 class="mh-editorial-card-title">Put your preparation into practice</h2>
+        <ul class="mh-colib-helps-list" style="margin-top: 16px;">
+          <% role.practiceHelps.forEach(function(point) { %>
+            <li><%= point %></li>
+          <% }); %>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Final CTA — dark, per color system -->
+  <section class="mh-colib-dark-cta reveal" id="sample-report">
+    <div class="mh-explore-cta-inner">
+      <h2 class="mh-section-title">Ready to practice?</h2>
+      <p class="mh-explore-cta-sub">Start a personalized <%= role.title %> interview based on your resume and target level.</p>
+      <div class="mh-explore-cta-actions">
         <a href="/login" class="mh-btn-primary">Practice <%= role.title %> Interview</a>
       </div>
     </div>

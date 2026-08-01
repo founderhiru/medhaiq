@@ -25,20 +25,11 @@
 <body>
   <%- include('partials/header') %>
 
-  <!-- Breadcrumb -->
-  <nav class="mh-colib-breadcrumb" aria-label="Breadcrumb">
-    <div class="mh-explore-section-inner">
-      <a href="/explore">Explore MedhaIQ</a>
-      <span aria-hidden="true">/</span>
-      <span aria-current="page">Role Library</span>
-    </div>
-  </nav>
-
-  <!-- Hero — one CTA only, per Explore's "no acquisition CTAs" policy -->
+  <!-- Hero — dark -->
   <section class="mh-why-hero reveal">
     <div class="mh-why-hero-inner mh-section-center">
       <div class="mh-eyebrow">Role Library</div>
-      <h1 class="mh-section-title">Master the interviews for the role you want.</h1>
+      <h1 class="mh-section-title mh-colib-hero-title">Master the interviews for the role you want.</h1>
       <p class="mh-section-sub">Understand what hiring managers evaluate, the competencies that matter most, and how to prepare with confidence before your interview.</p>
       <div class="mh-explore-cta-actions" style="margin-top: 28px;">
         <a href="#mh-role-browse-title" class="mh-btn-primary">Browse Roles</a>
@@ -52,35 +43,53 @@
     score would need a real algorithm against resume/interview history,
     which doesn't exist yet — so per the spec's own fallback rule ("if no
     profile exists, do not show this section"), nothing renders here.
-    Building the real matching logic is a separate, larger feature.
   -->
 
-  <!-- Browse by category — full guides and coming-soon roles mixed together,
-       coming-soon roles open the same modal pattern as Company Library's
-       TCS card (clickable, not disabled-looking) -->
-  <section class="mh-explore-section reveal" aria-labelledby="mh-role-browse-title">
-    <div class="mh-explore-section-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Browse By Category</div>
-        <h2 id="mh-role-browse-title" class="mh-section-title">Find your role</h2>
-      </div>
-      <% roleCategories.forEach(function(cat) { %>
-        <div class="mh-role-category-group">
-          <div class="mh-role-category-heading"><%= cat.name %></div>
-          <div class="mh-explore-grid" role="list">
-            <% cat.roles.forEach(function(role) { %>
-              <%- include('partials/role-browse-card', { role: role }) %>
-            <% }); %>
-          </div>
+  <!-- ============ LIGHT EDITORIAL READING SURFACE ============ -->
+  <div class="mh-editorial-surface">
+    <div class="mh-editorial-inner">
+
+      <nav aria-label="Breadcrumb" style="padding-bottom: 32px; font-size: 13px;">
+        <a href="/explore" style="color: var(--ed-muted);">Explore MedhaIQ</a>
+        <span aria-hidden="true" style="color: var(--ed-faint);">/</span>
+        <span aria-current="page" style="color: var(--ed-text); font-weight: 600;">Role Library</span>
+      </nav>
+
+      <!-- Browse by category -->
+      <div class="mh-editorial-card" aria-labelledby="mh-role-browse-title">
+        <div class="mh-section-center">
+          <div class="mh-eyebrow">Browse By Category</div>
+          <h2 id="mh-role-browse-title" class="mh-editorial-card-title">Find your role</h2>
         </div>
-      <% }); %>
+        <% roleCategories.forEach(function(cat) { %>
+          <div class="mh-role-category-group">
+            <div class="mh-role-category-heading"><%= cat.name %></div>
+            <div class="mh-explore-grid" role="list">
+              <% cat.roles.forEach(function(role) { %>
+                <%- include('partials/role-browse-card', { role: role }) %>
+              <% }); %>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CTA — restored per the unified structure (dark, #0E1322) -->
+  <section class="mh-colib-dark-cta reveal">
+    <div class="mh-explore-cta-inner">
+      <h2 class="mh-section-title">Ready to practice?</h2>
+      <p class="mh-explore-cta-sub">Start a personalized AI interview built around the role you're targeting.</p>
+      <div class="mh-explore-cta-actions">
+        <a href="/login" class="mh-btn-primary">Get Started</a>
+      </div>
     </div>
   </section>
 
   <%- include('partials/footer') %>
 
-  <!-- Coming-soon modal — same pattern as explore.ejs's company modal, a
-       separate instance scoped to this page -->
+  <!-- Coming-soon modal -->
   <div class="mh-modal-overlay" id="mh-role-comingsoon-modal" style="display:none">
     <div class="mh-modal" role="dialog" aria-modal="true" aria-labelledby="mh-role-comingsoon-title">
       <button class="mh-modal-close" id="mh-role-comingsoon-close" aria-label="Close">
@@ -95,9 +104,7 @@
   (function() {
     var reveals = document.querySelectorAll('.reveal');
     if (reveals.length) {
-      var observer = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) { if (entry.isIntersecting) entry.target.classList.add('visible'); });
-      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+      var observer = new IntersectionObserver(function(entries) { entries.forEach(function(entry) { if (entry.isIntersecting) entry.target.classList.add('visible'); }); }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
       reveals.forEach(function(el) { observer.observe(el); });
     }
   })();

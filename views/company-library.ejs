@@ -24,20 +24,11 @@
 <body>
   <%- include('partials/header') %>
 
-  <!-- Breadcrumb -->
-  <nav class="mh-colib-breadcrumb" aria-label="Breadcrumb">
-    <div class="mh-explore-section-inner">
-      <a href="/explore">Explore MedhaIQ</a>
-      <span aria-hidden="true">/</span>
-      <span aria-current="page">Company Interview Library</span>
-    </div>
-  </nav>
-
-  <!-- Hero + Search -->
+  <!-- Hero — dark, per color system -->
   <section class="mh-why-hero reveal">
     <div class="mh-why-hero-inner mh-section-center">
       <div class="mh-eyebrow">Company Interview Library</div>
-      <h1 class="mh-section-title">Company Interview Library</h1>
+      <h1 class="mh-section-title mh-colib-hero-title">Company Interview Library</h1>
       <p class="mh-section-sub">Prepare for interviews at the world's leading employers. Explore hiring philosophies, interview styles, competencies, representative questions, and preparation guidance — then practice with a personalized AI interview.</p>
       <div class="mh-explore-cta-actions" style="margin-top: 28px;">
         <a href="#mh-colib-featured-title" class="mh-btn-primary">Browse Companies</a>
@@ -51,55 +42,62 @@
     </div>
   </section>
 
-  <!-- Featured Companies — fixed order per launch spec, NOT alphabetical -->
-  <section class="mh-explore-section reveal" aria-labelledby="mh-colib-featured-title">
-    <div class="mh-explore-section-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Featured Companies</div>
-        <h2 id="mh-colib-featured-title" class="mh-section-title">Five guides, ready now</h2>
-      </div>
-      <div class="mh-explore-grid" role="list">
-        <% companyLibrary.forEach(function(company) { %>
-          <%- include('partials/company-featured-card', { company: company }) %>
-        <% }); %>
-      </div>
-    </div>
-  </section>
+  <!-- ============ LIGHT EDITORIAL READING SURFACE ============ -->
+  <div class="mh-editorial-surface">
+    <div class="mh-editorial-inner">
 
-  <!-- How to use this library -->
-  <section class="mh-explore-section reveal" aria-labelledby="mh-colib-howto-title">
-    <div class="mh-explore-section-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">How To Use This Library</div>
-        <h2 id="mh-colib-howto-title" class="mh-section-title">Three steps to a confident interview</h2>
-      </div>
-      <div class="mh-colib-howto-row">
-        <div class="mh-colib-howto-step">
-          <div class="mh-colib-howto-num">1</div>
-          <div class="mh-colib-howto-title">Choose a Company</div>
-          <div class="mh-colib-howto-desc">Pick the employer you're preparing for from the featured guides above.</div>
-        </div>
-        <div class="mh-colib-howto-step">
-          <div class="mh-colib-howto-num">2</div>
-          <div class="mh-colib-howto-title">Learn What Interviewers Evaluate</div>
-          <div class="mh-colib-howto-desc">Read the hiring philosophy, competencies, and representative questions specific to that company.</div>
-        </div>
-        <div class="mh-colib-howto-step">
-          <div class="mh-colib-howto-num">3</div>
-          <div class="mh-colib-howto-title">Practice with MedhaIQ</div>
-          <div class="mh-colib-howto-desc">Run a personalized AI interview calibrated to that company's actual interview style.</div>
-        </div>
-      </div>
-    </div>
-  </section>
+      <!-- Breadcrumb, now part of the light surface -->
+      <nav aria-label="Breadcrumb" style="padding-bottom: 32px; font-size: 13px;">
+        <a href="/explore" style="color: var(--ed-muted);">Explore MedhaIQ</a>
+        <span aria-hidden="true" style="color: var(--ed-faint);">/</span>
+        <span aria-current="page" style="color: var(--ed-text); font-weight: 600;">Company Interview Library</span>
+      </nav>
 
-  <!-- Why company-specific preparation matters -->
-  <section class="mh-explore-section mh-explore-section-alt reveal" aria-labelledby="mh-colib-why-title">
-    <div class="mh-explore-section-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Why It Matters</div>
-        <h2 id="mh-colib-why-title" class="mh-section-title">Why company-specific preparation matters</h2>
-        <p class="mh-section-sub mh-colib-why-body">
+      <!-- Featured Companies -->
+      <div class="mh-editorial-card" aria-labelledby="mh-colib-featured-title">
+        <div class="mh-section-center">
+          <div class="mh-eyebrow">Featured Companies</div>
+          <h2 id="mh-colib-featured-title" class="mh-editorial-card-title">Five guides, ready now</h2>
+        </div>
+        <div class="mh-explore-grid" role="list" style="margin-top: 24px;">
+          <% companyLibrary.forEach(function(company) { %>
+            <%- include('partials/company-featured-card', { company: company }) %>
+          <% }); %>
+        </div>
+      </div>
+
+      <!-- How to use this library -->
+      <div class="mh-editorial-card" aria-labelledby="mh-colib-howto-title">
+        <div class="mh-section-center">
+          <div class="mh-eyebrow">How To Use This Library</div>
+          <h2 id="mh-colib-howto-title" class="mh-editorial-card-title">Three steps to a confident interview</h2>
+        </div>
+        <div class="mh-colib-howto-row">
+          <div class="mh-colib-howto-step">
+            <div class="mh-colib-howto-num">1</div>
+            <div class="mh-colib-howto-title">Choose a Company</div>
+            <div class="mh-colib-howto-desc">Pick the employer you're preparing for from the featured guides above.</div>
+          </div>
+          <div class="mh-colib-howto-step">
+            <div class="mh-colib-howto-num">2</div>
+            <div class="mh-colib-howto-title">Learn What Interviewers Evaluate</div>
+            <div class="mh-colib-howto-desc">Read the hiring philosophy, competencies, and representative questions specific to that company.</div>
+          </div>
+          <div class="mh-colib-howto-step">
+            <div class="mh-colib-howto-num">3</div>
+            <div class="mh-colib-howto-title">Practice with MedhaIQ</div>
+            <div class="mh-colib-howto-desc">Run a personalized AI interview calibrated to that company's actual interview style.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Why company-specific preparation matters -->
+      <div class="mh-editorial-card" aria-labelledby="mh-colib-why-title">
+        <div class="mh-section-center">
+          <div class="mh-eyebrow">Why It Matters</div>
+          <h2 id="mh-colib-why-title" class="mh-editorial-card-title">Why company-specific preparation matters</h2>
+        </div>
+        <p class="mh-editorial-body" style="max-width: 760px; margin: 20px auto 0; text-align: left;">
           Generic interview advice tells you how to answer a question. It doesn't tell you what a specific
           company is actually listening for. Amazon evaluates candidates against a published set of
           Leadership Principles. Google weighs reasoning process as heavily as the final answer. Deloitte
@@ -109,94 +107,98 @@
           confident one.
         </p>
       </div>
-    </div>
-  </section>
 
-  <!-- What you'll find in each guide -->
-  <section class="mh-explore-section reveal" aria-labelledby="mh-colib-whatfind-title">
-    <div class="mh-explore-section-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Inside Every Guide</div>
-        <h2 id="mh-colib-whatfind-title" class="mh-section-title">What you'll find in each guide</h2>
-      </div>
-      <div class="mh-explore-discover-grid" role="list">
-        <div class="mh-explore-card mh-explore-discover-card" role="listitem">
-          <div class="mh-explore-discover-icon" aria-hidden="true">🏢</div>
-          <div class="mh-explore-discover-title">Company Overview & Hiring Philosophy</div>
-          <div class="mh-explore-discover-desc">What the company values and what candidates should genuinely expect.</div>
+      <!-- What you'll find in each guide -->
+      <div class="mh-editorial-card" aria-labelledby="mh-colib-whatfind-title">
+        <div class="mh-section-center">
+          <div class="mh-eyebrow">Inside Every Guide</div>
+          <h2 id="mh-colib-whatfind-title" class="mh-editorial-card-title">What you'll find in each guide</h2>
         </div>
-        <div class="mh-explore-card mh-explore-discover-card" role="listitem">
-          <div class="mh-explore-discover-icon" aria-hidden="true">🧭</div>
-          <div class="mh-explore-discover-title">Interview Journey</div>
-          <div class="mh-explore-discover-desc">A stage-by-stage walk through the process, from application to offer.</div>
-        </div>
-        <div class="mh-explore-card mh-explore-discover-card" role="listitem">
-          <div class="mh-explore-discover-icon" aria-hidden="true">⭐</div>
-          <div class="mh-explore-discover-title">Core Competencies</div>
-          <div class="mh-explore-discover-desc">The specific qualities interviewers are trained to evaluate — and why each matters.</div>
-        </div>
-        <div class="mh-explore-card mh-explore-discover-card" role="listitem">
-          <div class="mh-explore-discover-icon" aria-hidden="true">💬</div>
-          <div class="mh-explore-discover-title">Representative Questions</div>
-          <div class="mh-explore-discover-desc">A curated, realistic set — not an exhaustive dump of hundreds of questions.</div>
-        </div>
-        <div class="mh-explore-card mh-explore-discover-card" role="listitem">
-          <div class="mh-explore-discover-icon" aria-hidden="true">📚</div>
-          <div class="mh-explore-discover-title">Preparation Tips</div>
-          <div class="mh-explore-discover-desc">Practical, company-specific advice on structure, tone, and common mistakes.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Browse by category — grouped from each company's existing `category`
-       field (no new data added; Big Tech / Enterprise SaaS / Consulting
-       derived from the same strings already shown on the featured cards) -->
-  <%
-    const _categoryGroups = [];
-    companyLibrary.forEach(function(company) {
-      let label = company.category;
-      if (company.category.indexOf('Big Tech') !== -1) label = 'Big Tech';
-      else if (company.category.indexOf('Enterprise SaaS') !== -1) label = 'Enterprise SaaS';
-      else if (company.category.indexOf('Consulting') !== -1) label = 'Consulting';
-      let group = _categoryGroups.find(function(g) { return g.label === label; });
-      if (!group) { group = { label: label, companies: [] }; _categoryGroups.push(group); }
-      group.companies.push(company);
-    });
-  %>
-  <section class="mh-explore-section reveal" aria-labelledby="mh-colib-category-title">
-    <div class="mh-explore-section-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Browse By Category</div>
-        <h2 id="mh-colib-category-title" class="mh-section-title">Find your industry</h2>
-      </div>
-      <div class="mh-colib-category-list">
-        <% _categoryGroups.forEach(function(group) { %>
-          <div class="mh-colib-category-group">
-            <div class="mh-colib-category-label"><%= group.label %></div>
-            <div class="mh-colib-category-companies">
-              <% group.companies.forEach(function(company) { %>
-                <a href="/explore/company-library/<%= company.slug %>" class="mh-explore-pill mh-explore-pill-blue mh-colib-category-pill"><%= company.name %></a>
-              <% }); %>
-            </div>
+        <div class="mh-explore-discover-grid" role="list" style="margin-top: 24px;">
+          <div style="background:#FBFCFD; border:1px solid var(--ed-border); border-radius:14px; padding:22px;" role="listitem">
+            <div class="mh-explore-discover-icon" aria-hidden="true">🏢</div>
+            <div class="mh-explore-discover-title">Company Overview & Hiring Philosophy</div>
+            <div class="mh-explore-discover-desc">What the company values and what candidates should genuinely expect.</div>
           </div>
-        <% }); %>
+          <div style="background:#FBFCFD; border:1px solid var(--ed-border); border-radius:14px; padding:22px;" role="listitem">
+            <div class="mh-explore-discover-icon" aria-hidden="true">🧭</div>
+            <div class="mh-explore-discover-title">Interview Journey</div>
+            <div class="mh-explore-discover-desc">A stage-by-stage walk through the process, from application to offer.</div>
+          </div>
+          <div style="background:#FBFCFD; border:1px solid var(--ed-border); border-radius:14px; padding:22px;" role="listitem">
+            <div class="mh-explore-discover-icon" aria-hidden="true">⭐</div>
+            <div class="mh-explore-discover-title">Core Competencies</div>
+            <div class="mh-explore-discover-desc">The specific qualities interviewers are trained to evaluate — and why each matters.</div>
+          </div>
+          <div style="background:#FBFCFD; border:1px solid var(--ed-border); border-radius:14px; padding:22px;" role="listitem">
+            <div class="mh-explore-discover-icon" aria-hidden="true">💬</div>
+            <div class="mh-explore-discover-title">Representative Questions</div>
+            <div class="mh-explore-discover-desc">A curated, realistic set — not an exhaustive dump of hundreds of questions.</div>
+          </div>
+          <div style="background:#FBFCFD; border:1px solid var(--ed-border); border-radius:14px; padding:22px;" role="listitem">
+            <div class="mh-explore-discover-icon" aria-hidden="true">📚</div>
+            <div class="mh-explore-discover-title">Preparation Tips</div>
+            <div class="mh-explore-discover-desc">Practical, company-specific advice on structure, tone, and common mistakes.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Browse by category -->
+      <%
+        const _categoryGroups = [];
+        companyLibrary.forEach(function(company) {
+          let label = company.category;
+          if (company.category.indexOf('Big Tech') !== -1) label = 'Big Tech';
+          else if (company.category.indexOf('Enterprise SaaS') !== -1) label = 'Enterprise SaaS';
+          else if (company.category.indexOf('Consulting') !== -1) label = 'Consulting';
+          let group = _categoryGroups.find(function(g) { return g.label === label; });
+          if (!group) { group = { label: label, companies: [] }; _categoryGroups.push(group); }
+          group.companies.push(company);
+        });
+      %>
+      <div class="mh-editorial-card" aria-labelledby="mh-colib-category-title">
+        <div class="mh-section-center">
+          <div class="mh-eyebrow">Browse By Category</div>
+          <h2 id="mh-colib-category-title" class="mh-editorial-card-title">Find your industry</h2>
+        </div>
+        <div class="mh-colib-category-list">
+          <% _categoryGroups.forEach(function(group) { %>
+            <div class="mh-colib-category-group">
+              <div class="mh-colib-category-label"><%= group.label %></div>
+              <div class="mh-colib-category-companies">
+                <% group.companies.forEach(function(company) { %>
+                  <a href="/explore/company-library/<%= company.slug %>" class="mh-colib-category-pill" style="background:rgba(37,99,235,0.08); color:#2563EB;"><%= company.name %></a>
+                <% }); %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+
+      <!-- Coming Soon -->
+      <div class="mh-editorial-card mh-section-center" aria-labelledby="mh-colib-comingsoon-title">
+        <div class="mh-eyebrow">Always Expanding</div>
+        <h2 id="mh-colib-comingsoon-title" class="mh-editorial-card-title">More companies, coming soon</h2>
+        <div class="mh-colib-comingsoon-strip">
+          <% comingSoonCompanies.forEach(function(name) { %>
+            <span class="mh-explore-pill" style="background:rgba(217,119,6,0.1); color:#D97706;"><%= name %></span>
+          <% }); %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CTA — restored per the unified structure (dark, #0E1322) -->
+  <section class="mh-colib-dark-cta reveal">
+    <div class="mh-explore-cta-inner">
+      <h2 class="mh-section-title">Ready to practice?</h2>
+      <p class="mh-explore-cta-sub">Start a personalized AI interview built around the company you're targeting.</p>
+      <div class="mh-explore-cta-actions">
+        <a href="/login" class="mh-btn-primary">Get Started</a>
       </div>
     </div>
   </section>
-
-  <!-- Coming Soon strip -->
-  <section class="mh-explore-section mh-explore-section-alt reveal" aria-labelledby="mh-colib-comingsoon-title">
-    <div class="mh-explore-section-inner mh-section-center">
-      <div class="mh-eyebrow">Always Expanding</div>
-      <h2 id="mh-colib-comingsoon-title" class="mh-section-title">More companies, coming soon</h2>
-      <div class="mh-colib-comingsoon-strip">
-        <% comingSoonCompanies.forEach(function(name) { %>
-          <span class="mh-explore-pill mh-explore-pill-gold"><%= name %></span>
-        <% }); %>
-      </div>
-    </div>
-</section>
 
   <%- include('partials/footer') %>
 
