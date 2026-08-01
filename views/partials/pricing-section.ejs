@@ -3,24 +3,16 @@
      ============================================ -->
 <style>
   /* System-Locked Pricing Section Overrides */
- #pricing {
-  background-color: #FAFBFC;
-  /* Reverted to the standard homepage-section padding (--section-pad-y,
-     76px on top AND bottom) — same as every sibling section (Process,
-     Career Intelligence Preview, etc.). Last round I changed top padding
-     to 104px to match Architecture's page-hero, but that was the wrong
-     comparison: Architecture is a fresh page load, so its 104px hero
-     padding IS the entire visible gap. Pricing is an in-page scroll
-     target with scroll-margin-top: 100px already providing clearance
-     for the sticky nav (see #pricing in the scroll-margin-top rule
-     below) — stacking 104px of padding on top of that 100px clearance
-     is what doubled the visible gap. scroll-margin-top handles the
-     nav-click case; --section-pad-y keeps it consistent with the rest
-     of the homepage for natural scrolling. */
-  padding: var(--section-pad-y) var(--section-pad-x);
-  font-family: inherit;
-  border-top: none;
-  box-shadow: none;
+#pricing {
+  background-color: #FAFBFC; /* */
+  /* Top padding updated to match Architecture page hero (104px top) */
+  padding-top: 104px; 
+  padding-bottom: var(--section-pad-y);
+  padding-left: var(--section-pad-x);
+  padding-right: var(--section-pad-x);
+  font-family: inherit; /* */
+  border-top: none; /*[cite: 2] */
+  box-shadow: none; /*[cite: 2] */
 }
 
   .mh-pricing-inner {
