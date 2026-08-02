@@ -68,12 +68,18 @@
    so this wins over the !important rule above despite equal !important. */
 .mh-colib-hero-title.mh-colib-hero-title-compact { font-size: clamp(28px, 4vw, 46px) !important; }
 
-/* Real brand-mark logos (Google, Meta, Apple, Stripe — see the card
-   partial for why only these four) render muted/monochrome rather than
-   full brand color, so the grid stays calm and editorial rather than
+/* Real brand-mark logos (currently disabled — see the card partial's
+   USE_BRAND_ICONS flag) would render muted/monochrome rather than full
+   brand color, so the grid stays calm and editorial rather than
    reading as a partner showcase. */
 .mh-colib-brand-logo { color: rgba(255, 255, 255, 0.68); }
 .mh-colib-brand-logo svg { display: block; }
+/* Curated grid logo tile — scoped smaller than the shared 44px
+   .mh-explore-company-logo used elsewhere on the site (e.g. the main
+   Explore page's company cards), so this override doesn't affect
+   those. ~18-20px visual mark inside a slightly reduced tile, kept
+   subtly smaller than the company name so the name stays primary. */
+.mh-colib-curated-logo { width: 34px; height: 34px; font-size: 12px; border-radius: 8px; }
 
 /* Official Resources — deliberately NOT a card (per spec: "not another
    card section"), just lightweight text sitting directly on the surface. */
