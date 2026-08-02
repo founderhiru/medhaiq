@@ -127,18 +127,43 @@
         </ol>
       </div>
 
-      <!-- Preparation Tips -->
+      <!-- Preparation Checklist -->
       <div class="mh-editorial-card">
         <div class="mh-section-center" style="margin-bottom: 8px;">
-          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Preparation Tips</div>
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Preparation Checklist</div>
           <h2 class="mh-editorial-card-title">How to prepare</h2>
         </div>
-        <ul class="mh-colib-helps-list" style="margin-top: 16px;">
-          <% role.tips.forEach(function(tip) { %>
-            <li><%= tip %></li>
+        <ul class="mh-role-checklist" style="margin-top: 16px;">
+          <% role.tips.forEach(function(tip, i) { %>
+            <li class="mh-role-checklist-item">
+              <button type="button" class="mh-role-checklist-box" role="checkbox" aria-checked="false" aria-label="Mark done: <%= tip %>" data-checklist-item="<%= role.slug %>-<%= i %>">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+              <span class="mh-role-checklist-text"><%= tip %></span>
+            </li>
           <% }); %>
         </ul>
       </div>
+
+      <!-- Official Resources -->
+      <% if (role.resources && role.resources.length) { %>
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Official Resources</div>
+          <h2 class="mh-editorial-card-title">Go deeper</h2>
+        </div>
+        <ul class="mh-role-resource-list" style="margin-top: 20px;">
+          <% role.resources.forEach(function(res) { %>
+            <li class="mh-role-resource-item">
+              <a href="<%= res.url %>" target="_blank" rel="noopener noreferrer" class="mh-role-resource-link">
+                <%= res.name %>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+      <% } %>
 
       <!-- Related Company Interviews -->
       <% if (role.relatedCompanies && role.relatedCompanies.length) { %>
@@ -191,6 +216,17 @@
       }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
       reveals.forEach(function(el) { observer.observe(el); });
     }
+  })();
+  (function() {
+    // Preparation checklist — visual-only toggle, no persistence.
+    // Resets on reload by design; this is a working-through-it aid, not a tracker.
+    document.querySelectorAll('.mh-role-checklist-box').forEach(function(box) {
+      box.addEventListener('click', function() {
+        var checked = box.getAttribute('aria-checked') === 'true';
+        box.setAttribute('aria-checked', String(!checked));
+        box.closest('.mh-role-checklist-item').classList.toggle('mh-role-checklist-item-done', !checked);
+      });
+    });
   })();
   </script>
 </body>

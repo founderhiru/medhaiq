@@ -1,55 +1,8 @@
-// Role Library — structured data (Phase 2, mirrors company-library-data.js).
-// roleCategories drives the landing page's category browse grid (both full
-// guides AND coming-soon roles). roleLibrary holds the 6 full guide objects
-// only. Adding a 7th full guide later = moving one roleCategories entry
-// from comingSoon:true to a real object in roleLibrary — no template changes.
-
-const roleCategories = [
-  {
-    name: 'Product',
-    roles: [
-      { slug: 'product-manager', title: 'Product Manager', comingSoon: false },
-      { slug: null, title: 'Senior Product Manager', comingSoon: true },
-    ],
-  },
-  {
-    name: 'Engineering',
-    roles: [
-      { slug: 'software-engineer', title: 'Software Engineer', comingSoon: false },
-      { slug: null, title: 'Senior Software Engineer', comingSoon: true },
-      { slug: 'engineering-manager', title: 'Engineering Manager', comingSoon: false },
-    ],
-  },
-  {
-    name: 'Architecture',
-    roles: [
-      { slug: 'solutions-architect', title: 'Solutions Architect', comingSoon: false },
-      { slug: null, title: 'Enterprise Architect', comingSoon: true },
-    ],
-  },
-  {
-    name: 'Program & Delivery',
-    roles: [
-      { slug: 'technical-program-manager', title: 'Technical Program Manager', comingSoon: false },
-      { slug: null, title: 'Project Manager', comingSoon: true },
-    ],
-  },
-  {
-    name: 'Consulting',
-    roles: [
-      { slug: 'management-consultant', title: 'Management Consultant', comingSoon: false },
-      { slug: null, title: 'Business Analyst', comingSoon: true },
-    ],
-  },
-  {
-    name: 'Executive',
-    roles: [
-      { slug: null, title: 'Director', comingSoon: true },
-      { slug: null, title: 'VP Engineering', comingSoon: true },
-      { slug: null, title: 'CTO', comingSoon: true },
-    ],
-  },
-];
+// Role Library — structured data (mirrors company-library-data.js).
+// roleLibrary holds the 6 launch-ready role guides. The landing page
+// renders all of them as one flat, curated grid — no categories, no
+// coming-soon placeholders. Adding a 7th role later = adding one more
+// object to this array — no template changes required.
 
 const roleLibrary = [
   // ─────────────────────────────────────────────────────────────
@@ -61,6 +14,13 @@ const roleLibrary = [
     title: 'Product Manager',
     category: 'Product',
     tags: ['Product Strategy', 'Execution', 'Stakeholder Management'],
+    oneLiner: 'Drive product strategy, execution, and customer outcomes.',
+    resources: [
+      { name: 'Silicon Valley Product Group (SVPG)', url: 'https://www.svpg.com/articles/' },
+      { name: "Lenny's Newsletter", url: 'https://www.lennysnewsletter.com/' },
+      { name: 'Product School', url: 'https://productschool.com/blog' },
+      { name: 'Reforge', url: 'https://www.reforge.com/blog' },
+    ],
     seo: {
       title: 'Product Manager Interview Guide | MedhaIQ',
       description: 'What hiring managers evaluate for Product Manager interviews — competencies, interview flow, representative questions, and preparation tips.',
@@ -113,6 +73,13 @@ const roleLibrary = [
     title: 'Software Engineer',
     category: 'Engineering',
     tags: ['Coding', 'System Design', 'Debugging'],
+    oneLiner: 'Solve technical problems and design systems that scale.',
+    resources: [
+      { name: 'Microsoft Learn', url: 'https://learn.microsoft.com/' },
+      { name: 'AWS Architecture Center', url: 'https://aws.amazon.com/architecture/' },
+      { name: "Martin Fowler's Blog", url: 'https://martinfowler.com/' },
+      { name: 'Google Engineering Blog', url: 'https://developers.googleblog.com/' },
+    ],
     seo: {
       title: 'Software Engineer Interview Guide | MedhaIQ',
       description: 'What hiring managers evaluate for Software Engineer interviews — competencies, interview flow, representative questions, and preparation tips.',
@@ -165,6 +132,13 @@ const roleLibrary = [
     title: 'Solutions Architect',
     category: 'Architecture',
     tags: ['System Design', 'Client Communication', 'Technical Strategy'],
+    oneLiner: 'Design technical solutions that satisfy client and business constraints.',
+    resources: [
+      { name: 'AWS Architecture Center', url: 'https://aws.amazon.com/architecture/' },
+      { name: 'Microsoft Learn', url: 'https://learn.microsoft.com/' },
+      { name: "Martin Fowler's Blog", url: 'https://martinfowler.com/' },
+      { name: 'Google Cloud Architecture Center', url: 'https://cloud.google.com/architecture' },
+    ],
     seo: {
       title: 'Solutions Architect Interview Guide | MedhaIQ',
       description: 'What hiring managers evaluate for Solutions Architect interviews — competencies, interview flow, representative questions, and preparation tips.',
@@ -216,6 +190,12 @@ const roleLibrary = [
     title: 'Technical Program Manager',
     category: 'Program & Delivery',
     tags: ['Cross-Team Delivery', 'Risk Management', 'Technical Fluency'],
+    oneLiner: 'Coordinate cross-team delivery and manage program risk.',
+    resources: [
+      { name: 'Project Management Institute (PMI)', url: 'https://www.pmi.org/learning' },
+      { name: 'Google Project Management Certificate', url: 'https://grow.google/certificates/project-management/' },
+      { name: 'Atlassian Agile Coach', url: 'https://www.atlassian.com/agile' },
+    ],
     seo: {
       title: 'Technical Program Manager Interview Guide | MedhaIQ',
       description: 'What hiring managers evaluate for Technical Program Manager interviews — competencies, interview flow, representative questions, and preparation tips.',
@@ -268,6 +248,12 @@ const roleLibrary = [
     title: 'Management Consultant',
     category: 'Consulting',
     tags: ['Case Interviews', 'Client Impact', 'Executive Presence'],
+    oneLiner: 'Structure ambiguous business problems into clear client recommendations.',
+    resources: [
+      { name: 'Management Consulted', url: 'https://managementconsulted.com/' },
+      { name: 'Case Interview Prep (CaseInterview.com)', url: 'https://www.caseinterview.com/' },
+      { name: 'Harvard Business Review', url: 'https://hbr.org/' },
+    ],
     seo: {
       title: 'Management Consultant Interview Guide | MedhaIQ',
       description: 'What hiring managers evaluate for Management Consultant interviews — competencies, interview flow, representative questions, and preparation tips.',
@@ -320,6 +306,12 @@ const roleLibrary = [
     title: 'Engineering Manager',
     category: 'Engineering',
     tags: ['People Leadership', 'Technical Judgment', 'Delivery'],
+    oneLiner: 'Lead engineering teams while staying accountable for delivery.',
+    resources: [
+      { name: "Will Larson's Irrational Exuberance", url: 'https://lethain.com/' },
+      { name: "The Manager's Path (O'Reilly)", url: 'https://www.oreilly.com/library/view/the-managers-path/9781491973882/' },
+      { name: 'Google Engineering Blog', url: 'https://developers.googleblog.com/' },
+    ],
     seo: {
       title: 'Engineering Manager Interview Guide | MedhaIQ',
       description: 'What hiring managers evaluate for Engineering Manager interviews — competencies, interview flow, representative questions, and preparation tips.',
@@ -364,4 +356,4 @@ const roleLibrary = [
   },
 ];
 
-module.exports = { roleCategories, roleLibrary };
+module.exports = { roleLibrary };

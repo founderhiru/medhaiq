@@ -127,91 +127,20 @@ app.get('/explore/company-library/:slug', (req, res) => {
   if (!company) return res.status(404).send('Company guide not found');
   res.render('company-guide', { company });
 });
-// Role Library — Phase 2, mirrors the Company Library's architecture.
+// Role Library — flat launch grid, mirrors the Company Library's
+// architecture. roleLibrary holds the 6 launch-ready role guides; the
+// landing page renders all of them as one grid (no categories, no
+// coming-soon placeholders). Adding a 7th role later = adding one object
+// to roleLibrary in data/role-library-data.js — no template changes.
 app.get('/explore/role-library', (_req, res) => {
-  const { roleCategories, roleLibrary } = require('./data/role-library-data');
-  const enrichedCategories = roleCategories.map(cat => ({
-    name: cat.name,
-    roles: cat.roles.map(r => {
-      if (r.comingSoon) return r;
-      const full = roleLibrary.find(fr => fr.slug === r.slug);
-      return { ...r, tags: full ? full.tags : [] };
-    }),
-  }));
-  res.render('role-library', { roleCategories: enrichedCategories });
-});
-app.get('/explore/role-library/:slug', (req, res) => {
   const { roleLibrary } = require('./data/role-library-data');
-  const { companyLibrary } = require('./data/company-library-data');
-  const role = roleLibrary.find(r => r.slug === req.params.slug);
-  if (!role) return res.status(404).send('Role guide not found');
-  const relatedCompanyObjects = (role.relatedCompanies || [])
-    .map(slug => companyLibrary.find(c => c.slug === slug))
-    .filter(Boolean);
-  res.render('role-guide', { role, relatedCompanyObjects });
-});
-// Company Interview Library — Level 2 landing + Level 3 reusable guide
-// template. Both render entirely from data/company-library-data.js; adding
-// company #6 means adding one object there, never touching these routes
-// or their views.
-app.get('/explore/company-library', (_req, res) => res.render('company-library', require('./data/company-library-data')));
-app.get('/explore/company-library/:slug', (req, res) => {
-  const { companyLibrary } = require('./data/company-library-data');
-  const company = companyLibrary.find(c => c.slug === req.params.slug);
-  if (!company) return res.status(404).send('Company guide not found');
-  res.render('company-guide', { company });
-});
-// Role Library — Phase 2, mirrors the Company Library's architecture.
-app.get('/explore/role-library', (_req, res) => {
-  const { roleCategories, roleLibrary } = require('./data/role-library-data');
-  const enrichedCategories = roleCategories.map(cat => ({
-    name: cat.name,
-    roles: cat.roles.map(r => {
-      if (r.comingSoon) return r;
-      const full = roleLibrary.find(fr => fr.slug === r.slug);
-      return { ...r, tags: full ? full.tags : [] };
-    }),
+  const roles = roleLibrary.map(r => ({
+    slug: r.slug,
+    title: r.title,
+    oneLiner: r.oneLiner,
+    tags: r.tags,
   }));
-  res.render('role-library', { roleCategories: enrichedCategories });
-});
-app.get('/explore/role-library/:slug', (req, res) => {
-  const { roleLibrary } = require('./data/role-library-data');
-  const { companyLibrary } = require('./data/company-library-data');
-  const role = roleLibrary.find(r => r.slug === req.params.slug);
-  if (!role) return res.status(404).send('Role guide not found');
-  const relatedCompanyObjects = (role.relatedCompanies || [])
-    .map(slug => companyLibrary.find(c => c.slug === slug))
-    .filter(Boolean);
-  res.render('role-guide', { role, relatedCompanyObjects });
-});
-// Company Interview Library — Level 2 landing + Level 3 reusable guide
-// template. Both render entirely from data/company-library-data.js; adding
-// company #6 means adding one object there, never touching these routes
-// or their views.
-app.get('/explore/company-library', (_req, res) => res.render('company-library', require('./data/company-library-data')));
-app.get('/explore/company-library/:slug', (req, res) => {
-  const { companyLibrary } = require('./data/company-library-data');
-  const company = companyLibrary.find(c => c.slug === req.params.slug);
-  if (!company) return res.status(404).send('Company guide not found');
-  res.render('company-guide', { company });
-});
-// Role Library — Phase 2, mirrors the Company Library's architecture.
-// roleCategories drives the landing page's browse grid (full guides +
-// coming-soon roles together); roleLibrary holds the 6 full guide objects.
-app.get('/explore/role-library', (_req, res) => {
-  const { roleCategories, roleLibrary } = require('./data/role-library-data');
-  // Merge each full-guide role's competency tags into its roleCategories
-  // entry so the browse card can show them — keeps the tags defined once,
-  // in roleLibrary, rather than duplicated in roleCategories too.
-  const enrichedCategories = roleCategories.map(cat => ({
-    name: cat.name,
-    roles: cat.roles.map(r => {
-      if (r.comingSoon) return r;
-      const full = roleLibrary.find(fr => fr.slug === r.slug);
-      return { ...r, tags: full ? full.tags : [] };
-    }),
-  }));
-  res.render('role-library', { roleCategories: enrichedCategories });
+  res.render('role-library', { roles });
 });
 app.get('/explore/role-library/:slug', (req, res) => {
   const { roleLibrary } = require('./data/role-library-data');

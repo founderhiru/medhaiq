@@ -25,25 +25,27 @@
 <body>
   <%- include('partials/header') %>
 
-  <!-- Hero — dark -->
+  <!-- Hero — dark. Same base container (.mh-why-hero) as Company Library
+       and every other dark hero on the site, so spacing/proportions match
+       automatically. Title uses Explore's own .mh-explore-hero-h1 scale
+       (clamp(28px,3.6vw,40px)) rather than Company Library's larger
+       .mh-colib-hero-title — this was the actual typography mismatch the
+       spec called out. No orbit illustration: that stays unique to the
+       Explore landing page per instruction; role cards are the focal
+       point here instead. -->
   <section class="mh-why-hero reveal">
     <div class="mh-why-hero-inner mh-section-center">
-      <div class="mh-eyebrow">Role Library</div>
-      <h1 class="mh-section-title mh-colib-hero-title">Master the interviews for the role you want.</h1>
-      <p class="mh-section-sub">Understand what hiring managers evaluate, the competencies that matter most, and how to prepare with confidence before your interview.</p>
-      <div class="mh-explore-cta-actions" style="margin-top: 28px;">
-        <a href="#mh-role-browse-title" class="mh-btn-primary">Browse Roles</a>
+      <div class="mh-eyebrow">Explore</div>
+      <h1 class="mh-section-title mh-explore-hero-h1">Role Intelligence</h1>
+      <p class="mh-section-sub">Understand what top companies expect from each role and prepare with confidence.</p>
+
+      <div class="mh-explore-search-wrap">
+        <svg class="mh-explore-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="mh-role-search" class="mh-form-input" type="search" placeholder="Search roles..." aria-label="Search roles">
       </div>
+      <div id="mh-role-search-meta" class="mh-explore-search-meta" aria-live="polite"></div>
     </div>
   </section>
-
-  <!--
-    NOTE ON PERSONALIZATION: the spec calls for a "Recommended for You —
-    94% Match" strip when MedhaIQ knows the user's profile. That match
-    score would need a real algorithm against resume/interview history,
-    which doesn't exist yet — so per the spec's own fallback rule ("if no
-    profile exists, do not show this section"), nothing renders here.
-  -->
 
   <!-- ============ LIGHT EDITORIAL READING SURFACE ============ -->
   <div class="mh-editorial-surface">
@@ -55,22 +57,19 @@
         <span aria-current="page" style="color: var(--ed-text); font-weight: 600;">Role Library</span>
       </nav>
 
-      <!-- Browse by category -->
+      <!-- Flat, curated grid — the 6 launch-ready roles only. No
+           categories, no coming-soon cards: everything shown is real. -->
       <div class="mh-editorial-card" aria-labelledby="mh-role-browse-title">
         <div class="mh-section-center">
-          <div class="mh-eyebrow">Browse By Category</div>
+          <div class="mh-eyebrow">Featured Roles</div>
           <h2 id="mh-role-browse-title" class="mh-editorial-card-title">Find your role</h2>
         </div>
-        <% roleCategories.forEach(function(cat) { %>
-          <div class="mh-role-category-group">
-            <div class="mh-role-category-heading"><%= cat.name %></div>
-            <div class="mh-explore-grid" role="list">
-              <% cat.roles.forEach(function(role) { %>
-                <%- include('partials/role-browse-card', { role: role }) %>
-              <% }); %>
-            </div>
-          </div>
-        <% }); %>
+        <div class="mh-explore-grid" role="list" id="mh-role-grid">
+          <% roles.forEach(function(role) { %>
+            <%- include('partials/role-browse-card', { role: role }) %>
+          <% }); %>
+        </div>
+        <p id="mh-role-search-empty" class="mh-section-sub" style="display:none; text-align:center; margin-top: 24px;">No roles match your search.</p>
       </div>
 
     </div>
@@ -89,17 +88,6 @@
 
   <%- include('partials/footer') %>
 
-  <!-- Coming-soon modal -->
-  <div class="mh-modal-overlay" id="mh-role-comingsoon-modal" style="display:none">
-    <div class="mh-modal" role="dialog" aria-modal="true" aria-labelledby="mh-role-comingsoon-title">
-      <button class="mh-modal-close" id="mh-role-comingsoon-close" aria-label="Close">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-      <div class="mh-modal-title" id="mh-role-comingsoon-title">This one's being prepared</div>
-      <div class="mh-modal-sub">This role guide is currently being prepared. More roles are being added every week.</div>
-    </div>
-  </div>
-
   <script>
   (function() {
     var reveals = document.querySelectorAll('.reveal');
@@ -109,15 +97,25 @@
     }
   })();
   (function() {
-    var modal = document.getElementById('mh-role-comingsoon-modal');
-    var closeBtn = document.getElementById('mh-role-comingsoon-close');
-    if (!modal) return;
-    document.querySelectorAll('.mh-role-comingsoon-trigger').forEach(function(trigger) {
-      trigger.addEventListener('click', function(e) { e.preventDefault(); modal.style.display = 'flex'; });
+    // Live search over the 6 role cards — matches on role name or
+    // competency tags. Only 6 items, so a simple client-side filter is
+    // plenty; no server round-trip needed.
+    var input = document.getElementById('mh-role-search');
+    var meta = document.getElementById('mh-role-search-meta');
+    var empty = document.getElementById('mh-role-search-empty');
+    if (!input) return;
+    var cards = Array.prototype.slice.call(document.querySelectorAll('[data-role-card]'));
+    input.addEventListener('input', function() {
+      var q = input.value.trim().toLowerCase();
+      var visible = 0;
+      cards.forEach(function(card) {
+        var match = !q || card.getAttribute('data-role-name').indexOf(q) !== -1 || card.getAttribute('data-role-tags').indexOf(q) !== -1;
+        card.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+      meta.textContent = q ? (visible + (visible === 1 ? ' role found' : ' roles found')) : '';
+      empty.style.display = (q && visible === 0) ? 'block' : 'none';
     });
-    if (closeBtn) closeBtn.addEventListener('click', function() { modal.style.display = 'none'; });
-    modal.addEventListener('click', function(e) { if (e.target === modal) modal.style.display = 'none'; });
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') modal.style.display = 'none'; });
   })();
   </script>
 </body>
