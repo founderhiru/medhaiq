@@ -109,18 +109,6 @@ app.get('/explore', (_req, res) => res.render('explore'));
 // company #6 means adding one object there, never touching these routes
 // or their views.
 app.get('/explore/company-library', (_req, res) => res.render('company-library', require('./data/company-library-data')));
-// Must be registered BEFORE the /:slug route below — Express matches
-// routes in file order, and /:slug would otherwise swallow this literal
-// path (there's no company with slug "all"). Simple directory view for
-// the landing page's "View all companies" link: everyone with a real
-// guide today, plus a coming-soon list for what's next.
-app.get('/explore/company-library/all', (_req, res) => {
-  const { companyLibrary, curatedCompanies, comingSoonCompanies } = require('./data/company-library-data');
-  const available = companyLibrary.map(c => ({ slug: c.slug, name: c.name }));
-  const curatedNoGuideNames = curatedCompanies.filter(c => !c.hasGuide).map(c => c.name);
-  const comingSoon = [...curatedNoGuideNames, ...comingSoonCompanies];
-  res.render('company-library-all', { available, comingSoon });
-});
 app.get('/explore/company-library/:slug', (req, res) => {
   const { companyLibrary } = require('./data/company-library-data');
   const company = companyLibrary.find(c => c.slug === req.params.slug);

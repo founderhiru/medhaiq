@@ -149,6 +149,19 @@
 .mh-colib-competency-name { font-family: var(--font-display); font-weight: 700; font-size: 15px; margin-bottom: 8px; }
 .mh-colib-competency-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
 
+/* ---- Curated grid cards (simplified Company Library landing page) —
+   logo monogram + name + one short identifier line only. Deliberately
+   lean: no category pill, no description, no competency chips. ---- */
+.mh-colib-curated-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.mh-colib-curated-card { align-items: flex-start; gap: 10px; }
+.mh-colib-curated-identifier { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.mh-colib-curated-card-soon { opacity: 0.55; cursor: default; }
+.mh-colib-curated-soon-tag {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.03em;
+  color: var(--text-faint); margin-top: 2px;
+}
+.mh-colib-viewall-row { text-align: center; margin-top: 32px; }
+
 /* ---- Preparation Tip cards — a distinct, more editorial treatment than
    the plain competency cards: subtle off-white fill (vs. pure white),
    a slightly stronger border, and more breathing room. Scoped to

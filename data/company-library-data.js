@@ -381,4 +381,33 @@ const companyLibrary = [
 // for these yet, so this array intentionally has no slugs/links.
 const comingSoonCompanies = ['Accenture', 'NVIDIA', 'Oracle', 'ServiceNow', 'TCS', 'Infosys'];
 
-module.exports = { companyLibrary, comingSoonCompanies };
+// Curated Companies — drives the simplified /explore/company-library
+// landing page grid (recognition + selection only: name + one short
+// interview identifier, no descriptions). Deliberately decoupled from
+// companyLibrary above: adding a new company to this landing grid means
+// adding one object here, whether or not its full guide exists yet.
+// `hasGuide: false` renders the card in a muted, non-clickable "Guide
+// coming soon" state instead of linking to a page that doesn't exist —
+// this is how Meta, Apple, and Stripe are handled today. Once a full
+// guide is written for one of them (added to companyLibrary above with
+// a matching slug), flip its hasGuide to true and it becomes clickable.
+// The logo tile is rendered as the first two letters of `name` in the
+// view — no per-entry logo field needed, so adding NVIDIA or Netflix
+// later really is just one object, per the architecture goal.
+const curatedCompanies = [
+  { slug: 'amazon',    name: 'Amazon',    identifier: 'Leadership Principles', hasGuide: true },
+  { slug: 'microsoft', name: 'Microsoft', identifier: 'Growth Mindset',        hasGuide: true },
+  { slug: 'google',    name: 'Google',    identifier: 'Googleyness',          hasGuide: true },
+  { slug: 'salesforce',name: 'Salesforce',identifier: 'Ohana Culture',        hasGuide: true },
+  { slug: 'deloitte',  name: 'Deloitte',  identifier: 'Case + Behavioral',    hasGuide: true },
+  // Disabled "Coming Soon" cards per this round's direction — no guides
+  // written yet, kept visible so the library reads as actively growing.
+  // Identifiers picked to avoid reusing Amazon's own branded principle
+  // names (e.g. "Ownership", "Customer Obsession") verbatim on an
+  // unrelated company's card.
+  { slug: 'meta',      name: 'Meta',      identifier: 'Move Fast',            hasGuide: false },
+  { slug: 'apple',     name: 'Apple',     identifier: 'Craftsmanship',        hasGuide: false },
+  { slug: 'stripe',    name: 'Stripe',    identifier: 'High Standards',       hasGuide: false },
+];
+
+module.exports = { companyLibrary, comingSoonCompanies, curatedCompanies };

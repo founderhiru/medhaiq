@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Companies | Company Interview Library | MedhaIQ.ai</title>
+  <meta name="description" content="Every company in the MedhaIQ Interview Library — available guides and what's coming next.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0A0F1E">
+  <link rel="canonical" href="https://www.medhaiq.ai/explore/company-library/all">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/medhaiq.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/hero-v2.css">
+  <link rel="stylesheet" href="/css/value-footer.css">
+  <link rel="stylesheet" href="/css/explore.css">
+  <link rel="stylesheet" href="/css/company-library.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <!-- Simple directory — deliberately not a landing page. This is the
+       overflow destination for "View all companies", so it can just be
+       a plain, scannable list rather than a curated experience. -->
+  <div class="mh-editorial-surface">
+    <div class="mh-editorial-inner">
+
+      <nav aria-label="Breadcrumb" style="padding-bottom: 32px; font-size: 13px;">
+        <a href="/explore" style="color: var(--ed-muted);">Explore MedhaIQ</a>
+        <span aria-hidden="true" style="color: var(--ed-faint);">/</span>
+        <a href="/explore/company-library" style="color: var(--ed-muted);">Company Interview Library</a>
+        <span aria-hidden="true" style="color: var(--ed-faint);">/</span>
+        <span aria-current="page" style="color: var(--ed-text); font-weight: 600;">All Companies</span>
+      </nav>
+
+      <div class="mh-editorial-card">
+        <div class="mh-eyebrow">Available Now</div>
+        <h1 class="mh-editorial-card-title" style="font-size: 25px;">Every guide, ready to read</h1>
+        <div class="mh-colib-category-companies" style="margin-top: 20px;">
+          <% available.forEach(function(company) { %>
+            <a href="/explore/company-library/<%= company.slug %>" class="mh-colib-category-pill" style="background:rgba(37,99,235,0.08); color:#2563EB;"><%= company.name %></a>
+          <% }); %>
+        </div>
+      </div>
+
+      <div class="mh-editorial-card">
+        <div class="mh-eyebrow">Coming Soon</div>
+        <h2 class="mh-editorial-card-title" style="font-size: 21px;">More companies, on the way</h2>
+        <div class="mh-colib-category-companies" style="margin-top: 20px;">
+          <% comingSoon.forEach(function(name) { %>
+            <span class="mh-explore-pill" style="background:rgba(217,119,6,0.1); color:#D97706;"><%= name %></span>
+          <% }); %>
+        </div>
+      </div>
+
+      <p style="margin-top: 8px;"><a href="/explore/company-library" class="mh-explore-card-link">Back to Company Library <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></a></p>
+
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

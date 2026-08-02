@@ -1,0 +1,27 @@
+<%
+/* Curated Company Card — expects `company` in locals (one item from
+   curatedCompanies). Deliberately minimal per the landing-page redesign:
+   logo monogram + name + one short identifier line, nothing else
+   (no description, no category pill, no competency chips). The logo
+   monogram is computed here (first two letters of the name) rather than
+   stored in the data, so a new company entry never needs a logo field.
+   If hasGuide is false, the card renders in a muted, non-clickable
+   "Guide coming soon" state instead of linking to a page that doesn't
+   exist yet. */
+%>
+<% if (company.hasGuide) { %>
+<a href="/explore/company-library/<%= company.slug %>" class="mh-explore-card-btn" role="listitem" aria-label="<%= company.name %> interview guide">
+  <div class="mh-explore-card mh-colib-curated-card">
+    <div class="mh-explore-company-logo" aria-hidden="true"><%= company.name.slice(0, 2).toUpperCase() %></div>
+    <div class="mh-explore-company-name"><%= company.name %></div>
+    <div class="mh-colib-curated-identifier"><%= company.identifier %></div>
+  </div>
+</a>
+<% } else { %>
+<div class="mh-explore-card mh-colib-curated-card mh-colib-curated-card-soon" role="listitem" aria-label="<%= company.name %> — guide coming soon">
+  <div class="mh-explore-company-logo" aria-hidden="true"><%= company.name.slice(0, 2).toUpperCase() %></div>
+  <div class="mh-explore-company-name"><%= company.name %></div>
+  <div class="mh-colib-curated-identifier"><%= company.identifier %></div>
+  <span class="mh-colib-curated-soon-tag">Guide coming soon</span>
+</div>
+<% } %>
