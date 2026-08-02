@@ -20,9 +20,17 @@
   --ed-bg-alt: #F5F7FA;
   --ed-card: #FFFFFF;
   --ed-text: #1A1F2B;
-  --ed-muted: #5B6472;
+  --ed-muted: #4B5563; /* darkened ~12% from #5B6472 for stronger reading contrast */
   --ed-faint: #8B93A1;
   --ed-border: rgba(15, 23, 42, 0.07);
+  /* Local override of the global (dark-theme) --text-muted token (#94A3B8),
+     scoped only to this surface. Several inner components (timeline desc,
+     competency/tip desc, helps list) reference --text-muted directly; on
+     dark navy backgrounds elsewhere in the app that color is fine, but it
+     read as washed-out grey on this light surface's white cards. This
+     shadows the value for every element inside .mh-editorial-surface only —
+     the global --text-muted used on dark pages is untouched. */
+  --text-muted: #4B5563;
   background: var(--ed-bg);
   padding: 64px 40px;
 }
@@ -40,10 +48,10 @@
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
   padding: 40px 44px;
 }
-.mh-editorial-card + .mh-editorial-card { margin-top: 28px; }
+.mh-editorial-card + .mh-editorial-card { margin-top: 54px; } /* was 28px — +26px for a calmer reading rhythm */
 .mh-editorial-card-title { font-family: var(--font-display); font-weight: 700; font-size: 21px; color: var(--ed-text); margin-bottom: 8px; }
 .mh-editorial-card .mh-eyebrow { margin-bottom: 12px; }
-.mh-editorial-body { font-size: 16px; color: var(--ed-muted); line-height: 1.75; }
+.mh-editorial-body { font-size: 16px; color: var(--ed-muted); line-height: 1.8; } /* line-height 1.75 -> 1.8 */
 .mh-editorial-muted { font-size: 15px; color: var(--ed-faint); }
 
 /* Hero titles get their own larger scale (48-56px) — distinct from
@@ -117,21 +125,22 @@
   display: flex; flex-direction: column; gap: 0;
 }
 .mh-colib-timeline-item {
-  display: flex; gap: 20px; position: relative; padding-bottom: 32px;
+  display: flex; gap: 14px; align-items: flex-start; position: relative; padding-bottom: 28px;
 }
 .mh-colib-timeline-item:last-child { padding-bottom: 0; }
 .mh-colib-timeline-item::before {
-  content: ''; position: absolute; left: 17px; top: 36px; bottom: 0; width: 1px;
+  content: ''; position: absolute; left: 14px; top: 30px; bottom: 0; width: 1px;
   background: var(--navy-border);
 }
 .mh-colib-timeline-item:last-child::before { display: none; }
 .mh-colib-timeline-num {
-  flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
   background: var(--navy-card); border: 1px solid var(--navy-border);
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--blue-bright);
+  font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--blue-bright);
   z-index: 1;
 }
+.mh-colib-timeline-body { padding-top: 4px; } /* nudges stage title baseline in line with the marker's center */
 .mh-colib-timeline-stage { font-family: var(--font-display); font-weight: 700; font-size: 15px; margin-bottom: 4px; }
 .mh-colib-timeline-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
 
@@ -139,6 +148,18 @@
 .mh-colib-competency-card { padding: 22px; }
 .mh-colib-competency-name { font-family: var(--font-display); font-weight: 700; font-size: 15px; margin-bottom: 8px; }
 .mh-colib-competency-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+/* ---- Preparation Tip cards — a distinct, more editorial treatment than
+   the plain competency cards: subtle off-white fill (vs. pure white),
+   a slightly stronger border, and more breathing room. Scoped to
+   .mh-colib-tip-card only, so Core Competency cards are unaffected. ---- */
+.mh-colib-tip-card {
+  padding: 28px; /* was 22px */
+  background: #F7F8FA !important; /* subtle off-white, distinct from the page's white cards */
+  border-color: rgba(15, 23, 42, 0.12) !important; /* was 0.07 — stronger definition */
+}
+.mh-colib-tip-card .mh-colib-competency-name { margin-bottom: 10px; } /* was 8px — clearer separation from the description */
+.mh-colib-tip-card .mh-colib-competency-desc { color: #454C58; } /* darker than the default --text-muted for this card only */
 
 /* ---- Representative questions ---- */
 .mh-colib-question-list {
