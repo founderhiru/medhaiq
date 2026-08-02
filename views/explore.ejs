@@ -35,9 +35,10 @@
         <p class="mh-explore-trust-line" style="text-align:left; margin-top: 12px;">No login required. Explore freely.</p>
       </div>
 
-      <!-- Intelligence illustration — STATIC elliptical rings, now more
-           visible (thicker stroke + glow) per this round's request. Only
-           the 4 node icons animate (gentle float). -->
+      <!-- Intelligence illustration — STATIC elliptical rings, thicker
+           stroke + glow. All 4 nodes sit on the outer ring (flat layout,
+           no depth). No animation — subtle scale/glow on hover only.
+           Labels removed per this round's request. -->
       <div class="mh-explore-hero-viz" aria-hidden="true">
         <div class="mh-explore-hero-viz-ring mh-explore-hero-viz-ring-1"></div>
         <div class="mh-explore-hero-viz-ring mh-explore-hero-viz-ring-2"></div>
@@ -48,35 +49,31 @@
         </div>
 
         <div class="mh-explore-hero-viz-node-pos mh-explore-hero-viz-pos-nw">
-          <div class="mh-explore-hero-viz-node" style="animation-delay:0s;">
+          <div class="mh-explore-hero-viz-node">
             <span class="mh-explore-hero-viz-node-icon" style="background:#1E40AF;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 21h18M6 21V7l6-4 6 4v14M10 21v-6h4v6"/></svg>
             </span>
-            <span class="mh-explore-hero-viz-node-label">Company<br>Library</span>
           </div>
         </div>
         <div class="mh-explore-hero-viz-node-pos mh-explore-hero-viz-pos-ne">
-          <div class="mh-explore-hero-viz-node" style="animation-delay:1.1s;">
+          <div class="mh-explore-hero-viz-node">
             <span class="mh-explore-hero-viz-node-icon" style="background:#1E1B4B;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
             </span>
-            <span class="mh-explore-hero-viz-node-label">Role<br>Library</span>
           </div>
         </div>
         <div class="mh-explore-hero-viz-node-pos mh-explore-hero-viz-pos-sw">
-          <div class="mh-explore-hero-viz-node" style="animation-delay:2.2s;">
+          <div class="mh-explore-hero-viz-node">
             <span class="mh-explore-hero-viz-node-icon" style="background:#0F3B36;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
             </span>
-            <span class="mh-explore-hero-viz-node-label">Sample<br>Reports</span>
           </div>
         </div>
         <div class="mh-explore-hero-viz-node-pos mh-explore-hero-viz-pos-se">
-          <div class="mh-explore-hero-viz-node" style="animation-delay:3.3s;">
+          <div class="mh-explore-hero-viz-node">
             <span class="mh-explore-hero-viz-node-icon" style="background:#241B10;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
             </span>
-            <span class="mh-explore-hero-viz-node-label mh-explore-hero-viz-node-label-accent">Interview<br>Guides</span>
           </div>
         </div>
       </div>
