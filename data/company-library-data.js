@@ -78,6 +78,39 @@ const companyLibrary = [
       'Get real-time STAR structure feedback so weak answers get caught before the real interview.',
       'Receive a report scoring your readiness across the principles most relevant to your role.',
     ],
+    // BRIEFING — drives the new executive-briefing hero (summary cards +
+    // one-sentence summary) and the sticky sidebar. difficulty/rounds are
+    // editorial estimates (industry-standard perception, not sourced from
+    // a specific published statistic) — flagged here rather than presented
+    // as verified data, consistent with the project's no-unsourced-claims
+    // policy for anything more specific than this.
+    briefing: {
+      rounds: '5–6',
+      primaryFocus: 'Leadership Principles',
+      behavioralWeight: 'High',
+      technicalDepth: 'Medium–High',
+      difficulty: 4, // out of 5, editorial estimate
+      fingerprintLabel: 'Decision Style',
+      fingerprint: 'Data-driven, high ownership',
+      summary: 'Learn how Amazon evaluates candidates through Leadership Principles, Bar Raiser interviews, and structured behavioral and technical assessments.',
+    },
+    // Compressed 5-stage journey for the executive-briefing layout —
+    // deliberately generic stage labels (shared across all companies) so
+    // the template never changes; each desc stays company-specific.
+    journeyCompressed: [
+      { stage: 'Recruiter', desc: 'Confirms background and motivation, and gauges early Leadership Principle alignment.' },
+      { stage: 'Hiring Manager', desc: 'Discusses role fit, team context, and your longer-term trajectory at Amazon.' },
+      { stage: 'Technical / Behavioral', desc: 'Coding or case-style problem solving alongside STAR-structured principle questions.' },
+      { stage: 'Final Loop', desc: 'A Bar Raiser — an interviewer from outside the team — joins to protect hiring quality.' },
+      { stage: 'Offer', desc: 'The Bar Raiser and hiring committee review all feedback together before deciding.' },
+    ],
+    checklist: [
+      'Review all 16 Leadership Principles',
+      'Prepare one STAR story per principle',
+      'Quantify results wherever possible',
+      'Practice concise, first-person answers',
+      'Expect a Bar Raiser in the loop',
+    ],
     relatedRoles: ['Software Engineer', 'Product Manager', 'Program Manager', 'Business Analyst'],
     // Verified real, current URLs (checked via web search, not memory) —
     // official company pages only, max 3, per the Official Resources spec.
@@ -153,6 +186,30 @@ const companyLibrary = [
       'Get feedback on how well you demonstrate growth-mindset framing versus reciting outcomes.',
       'Receive a report scoring collaboration and communication alongside technical depth.',
     ],
+    briefing: {
+      rounds: '4–5',
+      primaryFocus: 'Growth Mindset',
+      behavioralWeight: 'Medium–High',
+      technicalDepth: 'High',
+      difficulty: 4,
+      fingerprintLabel: 'Interview Style',
+      fingerprint: 'Conversational, collaborative',
+      summary: "Understand Microsoft's collaborative interview style, growth-mindset philosophy, and technical problem-solving expectations.",
+    },
+    journeyCompressed: [
+      { stage: 'Recruiter', desc: 'An initial call on background, motivation, and role fit with the hiring team.' },
+      { stage: 'Hiring Manager', desc: 'A conversation with the actual team lead about role scope and mutual fit.' },
+      { stage: 'Technical / Behavioral', desc: 'Coding or system design alongside growth-mindset and collaboration questions.' },
+      { stage: 'Final Loop', desc: 'A full loop of interviewers (often 4–5) evaluates role and culture fit together.' },
+      { stage: 'Offer', desc: 'Feedback from the full loop is reviewed together before a decision is made.' },
+    ],
+    checklist: [
+      "Research the specific team you're interviewing with",
+      'Prepare stories that show reasoning, not just outcomes',
+      'Practice thinking out loud under ambiguity',
+      'Have a genuine "what I learned" story ready',
+      'Ask clarifying questions before answering',
+    ],
     relatedRoles: ['Software Engineer', 'Program Manager', 'Cloud Engineer', 'Data Scientist'],
     officialResources: [
       { title: 'Microsoft Careers', url: 'https://careers.microsoft.com/' },
@@ -224,6 +281,30 @@ const companyLibrary = [
       'Practice structured, multi-part problem-solving with adaptive follow-ups that mirror Google\'s reasoning-focused style.',
       'Get feedback specifically on clarity of explanation, not just correctness.',
       'Receive a report scoring problem-solving process alongside communication and role-related depth.',
+    ],
+    briefing: {
+      rounds: '4–6',
+      primaryFocus: 'Googleyness',
+      behavioralWeight: 'Medium',
+      technicalDepth: 'Very High',
+      difficulty: 5,
+      fingerprintLabel: 'Interview Style',
+      fingerprint: 'Structured, analytical',
+      summary: "Explore Google's structured interview process, problem-solving approach, and the qualities behind Googleyness.",
+    },
+    journeyCompressed: [
+      { stage: 'Recruiter', desc: 'An introductory call to align on role, team, and process expectations.' },
+      { stage: 'Hiring Manager', desc: "A conversation focused on team fit and how your strengths map to the role." },
+      { stage: 'Technical / Behavioral', desc: 'Structured, often multi-part problem-solving alongside collaboration and ambiguity questions.' },
+      { stage: 'Final Loop', desc: "A hiring committee — separate from your interviewers — reviews the full loop's feedback." },
+      { stage: 'Offer', desc: "A final decision follows committee review, which can add time versus other companies." },
+    ],
+    checklist: [
+      'Practice thinking out loud, not just reaching answers',
+      'Prepare structured, multi-part problem walkthroughs',
+      'Ask clarifying questions before diving in',
+      'Prepare STAR stories with genuine follow-up depth',
+      "Treat \"I don't know\" as an opportunity, not a failure",
     ],
     relatedRoles: ['Software Engineer', 'Product Manager', 'Data Scientist', 'UX Designer'],
     officialResources: [
@@ -297,6 +378,30 @@ const companyLibrary = [
       'Get feedback on whether your answers connect to customer outcomes, a pattern interviewers specifically listen for.',
       'Receive a report scoring customer focus and collaboration alongside role-specific competence.',
     ],
+    briefing: {
+      rounds: '4–5',
+      primaryFocus: 'Ohana Culture',
+      behavioralWeight: 'High',
+      technicalDepth: 'Medium',
+      difficulty: 3,
+      fingerprintLabel: 'Decision Style',
+      fingerprint: 'Values-led, customer-first',
+      summary: 'Learn how Salesforce balances customer-first values, collaboration, and role-specific technical evaluation.',
+    },
+    journeyCompressed: [
+      { stage: 'Recruiter', desc: "An introductory call on background and alignment with Salesforce's stated values." },
+      { stage: 'Hiring Manager', desc: 'A conversation on team fit and how your experience maps to the product area.' },
+      { stage: 'Technical / Behavioral', desc: 'Role-specific technical or solution-design rounds alongside values-driven behavioral questions.' },
+      { stage: 'Final Loop', desc: 'Additional stakeholder conversations, depending on the business unit and role level.' },
+      { stage: 'Offer', desc: 'Feedback is consolidated, with customer-success framing often a deciding factor.' },
+    ],
+    checklist: [
+      "Know Salesforce's four core values",
+      'Connect your stories to Trust and Customer Success explicitly',
+      'Be direct about tradeoffs, not just successes',
+      'Tie STAR results back to customer or business outcomes',
+      'Avoid answers with no visible customer connection',
+    ],
     relatedRoles: ['Sales Engineer', 'Software Engineer', 'Product Manager', 'Customer Success Manager'],
     officialResources: [
       { title: 'Salesforce Careers', url: 'https://careers.salesforce.com/en/' },
@@ -367,6 +472,30 @@ const companyLibrary = [
       'Practice case-style structured problem-solving with adaptive follow-ups, not just fixed scripts.',
       'Get feedback on answer-first communication clarity, a consulting-specific skill most candidates haven\'t practiced.',
       'Receive a report scoring structured reasoning and executive presence alongside behavioral competence.',
+    ],
+    briefing: {
+      rounds: '3–4',
+      primaryFocus: 'Case & Behavioural',
+      behavioralWeight: 'High',
+      technicalDepth: 'Medium',
+      difficulty: 4,
+      fingerprintLabel: 'Decision Style',
+      fingerprint: 'Analytical, client-first',
+      summary: "Understand Deloitte's consulting interview process, case discussions, behavioral evaluation, and client-focused mindset.",
+    },
+    journeyCompressed: [
+      { stage: 'Recruiter', desc: 'An introductory call confirming background and practice-area interest.' },
+      { stage: 'Hiring Manager', desc: 'A conversation with a partner or senior manager on practice fit and trajectory.' },
+      { stage: 'Technical / Behavioral', desc: 'Case interviews on structured business problems, alongside leadership and teamwork questions.' },
+      { stage: 'Final Loop', desc: 'Additional case or partner conversations, depending on practice area.' },
+      { stage: 'Offer', desc: 'Case and behavioral feedback is reviewed together, with case performance weighted most.' },
+    ],
+    checklist: [
+      'Practice structuring case problems out loud',
+      'Lead with your conclusion, then the supporting logic',
+      'Prepare STAR stories with quantified, business-outcome results',
+      "Confirm which practice area you're interviewing for",
+      "Avoid calculating before you've structured the problem",
     ],
     relatedRoles: ['Strategy Consultant', 'Technology Consultant', 'Business Analyst', 'Risk Advisory Associate'],
     officialResources: [
