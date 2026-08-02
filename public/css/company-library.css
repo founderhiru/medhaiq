@@ -60,6 +60,20 @@
    on non-editorial pages like Why MedhaIQ / Architecture. Scoped to this
    modifier class so those other pages are completely unaffected. */
 .mh-colib-hero-title { font-size: clamp(32px, 4.5vw, 52px) !important; line-height: 1.12 !important; }
+/* Company Library landing page only — reduced ~12% from the shared
+   .mh-colib-hero-title scale above so it aligns with the typography
+   used on Why MedhaIQ, Architecture, and the Company Guide pages,
+   without changing those other pages (which share the base class and
+   are intentionally left untouched). Two classes = higher specificity,
+   so this wins over the !important rule above despite equal !important. */
+.mh-colib-hero-title.mh-colib-hero-title-compact { font-size: clamp(28px, 4vw, 46px) !important; }
+
+/* Real brand-mark logos (Google, Meta, Apple, Stripe — see the card
+   partial for why only these four) render muted/monochrome rather than
+   full brand color, so the grid stays calm and editorial rather than
+   reading as a partner showcase. */
+.mh-colib-brand-logo { color: rgba(255, 255, 255, 0.68); }
+.mh-colib-brand-logo svg { display: block; }
 
 /* Official Resources — deliberately NOT a card (per spec: "not another
    card section"), just lightweight text sitting directly on the surface. */
@@ -161,6 +175,14 @@
   color: var(--text-faint); margin-top: 2px;
 }
 .mh-colib-viewall-row { text-align: center; margin-top: 32px; }
+
+/* Trademark/ownership disclaimer — sits below the curated grid, above
+   the CTA. Deliberately quiet: small, muted, centered, editorial
+   attribution rather than a prominent legal notice. */
+.mh-colib-trademark-disclaimer {
+  font-size: 11.5px; color: var(--ed-faint); line-height: 1.6; text-align: center;
+  max-width: 640px; margin: 40px auto 0;
+}
 
 /* ---- Preparation Tip cards — a distinct, more editorial treatment than
    the plain competency cards: subtle off-white fill (vs. pure white),
