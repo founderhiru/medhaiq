@@ -411,25 +411,6 @@
   var QID    = '<%= questionId %>';
   var QN     = <%= answeredCount %> + 1;
   var MAXQ   = <%= questionBudget %>;
-  // TRUE_QN mirrors QN's starting value but is NEVER clamped — QN is
-  // deliberately capped at MAXQ (the visible budget), which means QN
-  // alone cannot tell a genuine Question 6/7 apart from Question 5.
-  // TOTAL_CEILING (visible budget + any Executive Extension allowance)
-  // and this uncapped counter are the only way the client can know it
-  // has entered the extension phase, without inferring anything the
-  // server didn't already compute (routes/interview.js's own GUARD 2
-  // logic) or changing any API response shape — both are plain display
-  // values passed down from server.js, same as MAXQ already is.
-  var TRUE_QN = <%= answeredCount %> + 1;
-  var TOTAL_CEILING = <%= totalQuestionCeiling %>;
-  // Single source of truth for "are we in the Advanced Follow-up phase"
-  // — computed once here (covers a resumed/reloaded session landing
-  // directly on an extension question) and recomputed at every
-  // increment below, so the main header, the sidebar progress card, and
-  // the topbar counter all read the exact same two values rather than
-  // each re-deriving them independently.
-  var IS_EXECUTIVE_EXTENSION = TRUE_QN > MAXQ;
-  var EXTENSION_QUESTION_NUMBER = TRUE_QN - MAXQ;
   var SESSION_DURATION_MINUTES = <%= sessionDurationMinutes %>;
   var PNAME  = '<%= personaName %>';
   var PTITLE = '<%= personaTitle %>';
@@ -539,24 +520,6 @@
   window.MedhaIQ_IsFollowupTurn = (QTYPE === 'follow_up');
 
   function updateCounter() {
-    if (IS_EXECUTIVE_EXTENSION) {
-      // Advanced Follow-up phase — every progress surface switches to the
-      // same phase terminology together, never a mix of "Advanced
-      // Follow-up" in one place and stale "Question 5 of 5" /
-      // "0 remaining" in another. Nothing here exposes MAXQ/TOTAL_CEILING
-      // or a "6 of 7"-style count — only EXTENSION_QUESTION_NUMBER (1, 2).
-      var phaseText = 'Advanced Follow-up · ' + EXTENSION_QUESTION_NUMBER;
-      document.getElementById('qCounter').textContent = phaseText;
-      document.getElementById('qFollowupBadge').style.display = 'none';
-      document.getElementById('sbProgLabel').textContent = phaseText;
-      // Core Interview phase is fully complete at this point (Question
-      // 1-5 all answered) — freezing the bar at 100% rather than at
-      // whatever fraction Q5 left it at reads as "Phase 1 done", not as
-      // a stalled or broken progress bar.
-      document.getElementById('sbProgFill').style.width = '100%';
-      document.getElementById('sbProgRemaining').textContent = 'Additional AI validation in progress';
-      return;
-    }
     document.getElementById('qCounter').textContent = 'Question '+QN+' / '+MAXQ;
     document.getElementById('qFollowupBadge').style.display = window.MedhaIQ_IsFollowupTurn ? '' : 'none';
     document.getElementById('sbProgNum').textContent = QN;
@@ -862,22 +825,9 @@
     document.querySelector('.answer-bar-wrap').style.display='block';
 
     var label = competency ? competency.replace(/_/g,' ').toUpperCase() : (type==='drill_down' ? 'DEEP DIVE' : 'BEHAVIORAL');
-    // Advanced Follow-up header text (Leadership only — TOTAL_CEILING
-    // equals MAXQ for every other package, so IS_EXECUTIVE_EXTENSION can
-    // never be true for Growth/Explorer). Takes precedence over the
-    // normal and follow-up eyebrow text: a follow-up asked during the
-    // extension phase should still read as "Advanced Follow-up", not
-    // revert to the generic FOLLOW-UP label, since it's still part of
-    // the same advanced-assessment phase from the candidate's point of
-    // view. Deliberately does NOT say "Question 6 of 7" or expose
-    // MAXQ/TOTAL_CEILING anywhere in the visible text — same DOM element
-    // and CSS class as before, so typography/spacing/color are
-    // unchanged; only the string differs.
-    document.getElementById('qEyebrow').textContent = IS_EXECUTIVE_EXTENSION
-      ? 'Advanced Follow-up · ' + EXTENSION_QUESTION_NUMBER
-      : (window.MedhaIQ_IsFollowupTurn
-          ? 'FOLLOW-UP · '+label
-          : 'QUESTION '+QN+' OF '+MAXQ+' · '+label);
+    document.getElementById('qEyebrow').textContent = window.MedhaIQ_IsFollowupTurn
+      ? 'FOLLOW-UP · '+label
+      : 'QUESTION '+QN+' OF '+MAXQ+' · '+label;
     var why = document.getElementById('qWhyText');
     why.textContent = QUESTION_WHY[type] || QUESTION_WHY.behavioral;
     why.classList.remove('shown');
@@ -1098,12 +1048,8 @@
             // QN/MAXQ are already tracked client-side (same scope as
             // submitAnswer), so we know this before the backend even
             // responds -- no need to wait for data.sessionEnded to decide
-            // what to say. Uses TRUE_QN/TOTAL_CEILING, not QN/MAXQ — MAXQ
-            // is frozen at the visible budget (5) for progress-display
-            // purposes and would otherwise wrongly claim "final question"
-            // at Question 6 even when a 7th (Leadership Executive
-            // Extension) question might still follow.
-            var isFinalQuestion = (TRUE_QN >= TOTAL_CEILING);
+            // what to say.
+            var isFinalQuestion = (QN >= MAXQ);
             var ackText = isFinalQuestion
               ? "That's the final question. I'll prepare your report now."
               : pickSkipAcknowledgement();
@@ -1120,7 +1066,7 @@
           // "final question" override as skip, since a genuine last
           // answer also deserves the wrap-up rather than "Got it."
           try {
-            var _isFinalAnswer = (TRUE_QN >= TOTAL_CEILING); // see isFinalQuestion above — same reasoning
+            var _isFinalAnswer = (QN >= MAXQ);
             var _answerAckText = _isFinalAnswer
               ? "That's the final question. I'll prepare your report now."
               : pickAnswerAcknowledgement();
@@ -1258,9 +1204,6 @@
       window.MedhaIQ_IsFollowupTurn = (data.question.type === 'follow_up'); // feature, 2026-07-23 — drives the topbar Follow-up badge
       if (data.question.type !== 'follow_up') {
         QN = Math.min(QN + 1, MAXQ); // clamp — never display past MAXQ even if something upstream misbehaves
-        TRUE_QN = TRUE_QN + 1; // deliberately uncapped — see declaration above
-        IS_EXECUTIVE_EXTENSION = TRUE_QN > MAXQ;
-        EXTENSION_QUESTION_NUMBER = TRUE_QN - MAXQ;
       }
       updateCounter();
       var nextQ = { text: data.text || data.question.text, type: data.question.type, id: data.question.id, order: data.question.order };
