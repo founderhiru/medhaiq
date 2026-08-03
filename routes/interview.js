@@ -14,8 +14,10 @@ const {
   scoreAnswer,
   generateReport,
   computeStarProgress,
+  hasSufficientCoverage,
   PERSONAS,
 } = require('../services/interview');
+
 const {
   createSession,
   getSession,
@@ -85,12 +87,71 @@ function isPrimaryQuestionType(questionType) {
 }
 
 // ── Shared: pick + persist the next question for a session ──────────────────
-// Hard session time cap — independent of the 5-primary / 5-follow-up
-// structural bound. A candidate spending 8 minutes on one answer would
-// otherwise be able to stretch a "10 turns max" session indefinitely.
+// Hard session time cap — independent of the primary/follow-up structural
+// bound. A candidate spending 8 minutes on one answer would otherwise be
+// able to stretch a "N turns max" session indefinitely.
+//
+// Interview Policy (question budget + duration cap): read directly off
+// `session.interview_policy` — the value frozen once, at creation, by
+// controllers/sessionController.js — NEVER re-resolved from the
+// candidate's current package. This also means MAX_QUESTIONS is no
+// longer a caller-supplied parameter: it used to be, and one of this
+// function's two call sites (the Vapi webhook, below) silently omitted
+// it and fell back to a hardcoded default without anyone noticing —
+// deriving it internally from the session itself removes that entire
+// class of bug, since every caller now automatically gets the same
+// answer with no argument to forget.
+//
+// LEGACY_QUESTION_BUDGET / a session with no interview_policy (created
+// before this feature shipped) falls back to exactly the value every
+// session used before packages had their own durations — a genuine
+// no-op for anything already in progress when this ships.
+const LEGACY_QUESTION_BUDGET = 5;
 
-async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
+function getSessionQuestionBudget(session) {
+  return session.question_budget || LEGACY_QUESTION_BUDGET;
+}
+// Executive Extension budget (Leadership only) — how many additional
+// adaptive questions may be asked beyond the visible budget, IF coverage
+// is insufficient at that point (see hasSufficientCoverage gate below).
+// Defaults to 0 for any session without this column populated — a
+// session created before this feature shipped, or any Explorer/Growth
+// session, simply has no extension capacity, which is exactly today's
+// existing behavior for those tiers.
+function getSessionExtensionBudget(session) {
+  return session.executive_extension_budget || 0;
+}
+function getSessionDurationMinutes(session) {
+  return session.session_duration_minutes || INTERVIEW_MAX_SESSION_MINUTES;
+}
+
+async function pickAndPersistNextQuestion(session) {
+  const visibleQuestionBudget = getSessionQuestionBudget(session);
+  const executiveExtensionBudget = getSessionExtensionBudget(session);
+  const totalQuestionCeiling = visibleQuestionBudget + executiveExtensionBudget;
+  const sessionDurationMinutes = getSessionDurationMinutes(session);
   const allQuestions = await getSessionQuestions(session.id);
+
+  // Moved earlier (was previously built just before the generateNextQuestion
+  // call further down) so the Executive Extension coverage gate below can
+  // reuse this exact same qaPairs construction — one computation, two
+  // consumers, never duplicated logic that could quietly drift apart.
+  const allScores = await getSessionScores(session.id);
+  const scoreByQuestionId = new Map(allScores.map(s => [s.question_id, Number(s.weighted_overall)]));
+  const answeredQuestions = allQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined);
+  const engineAnsweredQuestions = answeredQuestions.filter(q => !isDiscoveryQuestionType(q.question_type));
+  const qaPairs = engineAnsweredQuestions.map(q => ({
+    question: q.question_text,
+    answer: q.answer_text,
+    // NOTE: score is a real Number here, not the raw Postgres NUMERIC
+    // string — "0.00" is truthy in JS, which previously made a skipped
+    // (0-score) answer look like a valid low score and incorrectly
+    // triggered a drill-down question with no real answer to drill into.
+    score: Number.isFinite(scoreByQuestionId.get(q.id)) ? scoreByQuestionId.get(q.id) : null,
+    wasSkipped: q.answer_text === '',
+    storyKey: q.story_key || null,
+    competency: q.competency || null,
+  }));
 
   const countAnsweredPrimaries = (qs) => qs.filter(q =>
     isPrimaryQuestionType(q.question_type) && q.answer_text !== null && q.answer_text !== undefined
@@ -100,7 +161,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   // simply run too long ends immediately regardless of question counts.
   if (session.started_at) {
     const elapsedMinutes = (Date.now() - new Date(session.started_at).getTime()) / 60000;
-    if (elapsedMinutes >= INTERVIEW_MAX_SESSION_MINUTES) {
+    if (elapsedMinutes >= sessionDurationMinutes) {
       return {
         done: true,
         text: "We're at the time limit for this session — thank you. I'll put together your intelligence report now.",
@@ -108,7 +169,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
           id: 'session_done',
           text: "We're at the time limit for this session — thank you. I'll put together your intelligence report now.",
           type: 'done',
-          order: MAX_QUESTIONS
+          order: totalQuestionCeiling
         }
       };
     }
@@ -120,15 +181,20 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
 
     // 🚨 GUARD 1: FINAL QUESTION RACE CONDITION — counts PRIMARY answers only,
     // so a follow-up mixed into the sequence can never mis-trigger this.
-    if (countAnsweredPrimaries(allQuestions) >= MAX_QUESTIONS) {
+    // Uses the TOTAL ceiling (visible budget + any Executive Extension
+    // allowance), not just the visible budget — a pending extension
+    // question (Leadership, coverage was insufficient at question 5)
+    // must still be answerable, not blocked here.
+    const _guard1AnsweredPrimaries = countAnsweredPrimaries(allQuestions);
+    if (_guard1AnsweredPrimaries >= totalQuestionCeiling) {
       return {
         done: true,
-        text: "That's all five questions — thank you. I'll put together your intelligence report now.",
+        text: "That's all the questions for this interview — thank you. I'll put together your intelligence report now.",
         question: {
           id: pending.id || 'session_done',
-          text: "That's all five questions — thank you. I'll put together your intelligence report now.",
+          text: "That's all the questions for this interview — thank you. I'll put together your intelligence report now.",
           type: 'done',
-          order: MAX_QUESTIONS
+          order: totalQuestionCeiling
         }
       };
     }
@@ -156,18 +222,54 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   // 2. Check if the maximum PRIMARY questions limit has already been met
   const answeredPrimaryCount = countAnsweredPrimaries(allQuestions);
 
-  // 🚨 GUARD 2: MAX PRIMARY QUESTION LIMIT REACHED
-  if (answeredPrimaryCount >= MAX_QUESTIONS) {
+  // 🚨 GUARD 2: session completion decision.
+  // Three cases, in order:
+  //   a) Total ceiling reached (visible budget + extension budget, if any)
+  //      -> hard stop, no exceptions, regardless of coverage.
+  //   b) Visible budget reached but ceiling not yet reached (only
+  //      possible for Leadership, where executiveExtensionBudget > 0) ->
+  //      check coverage via the EXISTING Coverage/Hypothesis Engine
+  //      (hasSufficientCoverage — see services/interview.js; not a new
+  //      algorithm, a read of the same snapshot generateNextQuestion
+  //      already computes every turn). Sufficient -> stop here, exactly
+  //      like Growth/Explorer would. Insufficient -> fall through and
+  //      let the existing question-selection logic decide the next
+  //      question normally (competency gap, follow-up, or scenario —
+  //      whatever it would already decide) for one more turn.
+  //   c) Visible budget not yet reached -> unchanged, fall through.
+  if (answeredPrimaryCount >= totalQuestionCeiling) {
     return {
       done: true,
-      text: "That's all five questions — thank you. I'll put together your intelligence report now.",
+      text: "That's all the questions for this interview — thank you. I'll put together your intelligence report now.",
       question: {
         id: 'session_done',
-        text: "That's all five questions — thank you. I'll put together your intelligence report now.",
+        text: "That's all the questions for this interview — thank you. I'll put together your intelligence report now.",
         type: 'done',
-        order: MAX_QUESTIONS
+        order: totalQuestionCeiling
       }
     };
+  }
+
+  if (answeredPrimaryCount >= visibleQuestionBudget) {
+    const coverageIsSufficient = hasSufficientCoverage({
+      roleTitle: session.role_title,
+      qaPairs,
+      questionCount: answeredPrimaryCount,
+    });
+    if (coverageIsSufficient) {
+      return {
+        done: true,
+        text: "That's all the questions for this interview — thank you. I'll put together your intelligence report now.",
+        question: {
+          id: 'session_done',
+          text: "That's all the questions for this interview — thank you. I'll put together your intelligence report now.",
+          type: 'done',
+          order: visibleQuestionBudget
+        }
+      };
+    }
+    // Coverage insufficient and extension budget remains — fall through
+    // to the exact same question-selection logic every other turn uses.
   }
 
   // 2b. Decide: is this turn the (at most one) adaptive follow-up to the
@@ -197,7 +299,7 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
     lastPrimary &&
     lastPrimaryHasSubstance &&
     !followupAlreadyUsedForLastPrimary &&
-    answeredPrimaryCount < MAX_QUESTIONS // never offer a follow-up after the final primary — go straight to the report
+    answeredPrimaryCount < totalQuestionCeiling // never offer a follow-up after the final question (visible or extension) — go straight to the report
   );
 
   // 3. Generate the next question — single source of truth.
@@ -207,41 +309,9 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
   // the frontend text UI (via /sessions/:id/answer) and Vapi (via
   // /vapi/next-question below) will see, because both call this one
   // function and both read/write the same interview_questions row.
-  const allScores = await getSessionScores(session.id);
-  const scoreByQuestionId = new Map(allScores.map(s => [s.question_id, Number(s.weighted_overall)]));
-  const answeredQuestions = allQuestions.filter(q => q.answer_text !== null && q.answer_text !== undefined);
-  // Engine-facing view: excludes Discovery-authored rows. For any session
-  // with zero discovery rows (Professional/Leadership/Executive in v1, and
-  // any Early Career session post-handoff for turns after handoff), this is
-  // identical to `answeredQuestions` — provably zero behavior change. Used
-  // ONLY for qaPairs/questionCount below; `answeredQuestions` itself is left
-  // untouched everywhere else (questionOrder, primary/follow-up counting),
-  // so DB ordering and existing guards are unaffected.
-  const engineAnsweredQuestions = answeredQuestions.filter(q => !isDiscoveryQuestionType(q.question_type));
-  const qaPairs = engineAnsweredQuestions.map(q => ({
-    question: q.question_text,
-    answer: q.answer_text,
-    // NOTE: score is a real Number here, not the raw Postgres NUMERIC
-    // string — "0.00" is truthy in JS, which previously made a skipped
-    // (0-score) answer look like a valid low score and incorrectly
-    // triggered a drill-down question with no real answer to drill into.
-    score: Number.isFinite(scoreByQuestionId.get(q.id)) ? scoreByQuestionId.get(q.id) : null,
-    wasSkipped: q.answer_text === '',
-    storyKey: q.story_key || null,
-    // ROOT CAUSE FIX (P0 "skip generates paraphrase of same competency"):
-    // `competency` was never included here even though it's already
-    // present on every `q` row (getSessionQuestions selects q.*, and
-    // addQuestion() already persists it correctly on write). Without
-    // it, qaBelongsToCompetency() in the Coverage/Memory Engine could
-    // never attribute any past question to its actual competency, so
-    // lastAskedTurn stayed -1 forever for every competency and the
-    // recency penalty in selectNextCompetency() never engaged --
-    // leaving the array's first-priority competency (e.g. 'technical'
-    // for Data Engineer/AI Engineer roles) selected on every turn,
-    // regardless of questionCount. This one field is the fix; no
-    // change to the Coverage Engine's scoring logic itself.
-    competency: q.competency || null,
-  }));
+  // (allScores/qaPairs etc. were already built earlier in this function —
+  // reused here, not rebuilt, so the coverage gate above and question
+  // generation below can never see two different snapshots of the same data.)
 
   let competencyMatrix = session.competency_matrix;
   if (typeof competencyMatrix === 'string') {
@@ -393,7 +463,6 @@ async function pickAndPersistNextQuestion(session, MAX_QUESTIONS = 5) {
 // res.json directly, so callers without a real Express req/res (like the
 // Vapi webhook) can use it identically to the HTTP route.
 async function processInterviewAnswer({ sessionId, questionId, answerText, skip, voiceMode, userId, userEmail, userName }) {
-  const MAX_QUESTIONS = 5;
   // One turnId per invocation — the single correlating value threaded
   // through every log line for this request/response round-trip, so
   // backend generation, frontend receipt, UI render, and vapi.say() can
@@ -419,6 +488,18 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   if (!session) return { httpStatus: 404, body: { error: 'Session not found' } };
   if (String(session.user_id) !== String(userId)) return { httpStatus: 403, body: { error: 'Forbidden' } };
   if (session.status !== 'active') return { httpStatus: 400, body: { error: 'Session is not active' } };
+
+  // Interview Policy — read from THIS session's frozen columns (see
+  // pickAndPersistNextQuestion's header comment above), not re-resolved
+  // from the candidate's current package. Must be declared after session
+  // load. totalQuestionCeiling (visible budget + any Executive Extension
+  // allowance) is what this function's own early-exit check below must
+  // use — NOT the visible budget alone, or a Leadership session would be
+  // finalized here, before ever reaching pickAndPersistNextQuestion's own
+  // coverage-gate logic, silently skipping the extension entirely.
+  const visibleQuestionBudget = getSessionQuestionBudget(session);
+  const executiveExtensionBudget = getSessionExtensionBudget(session);
+  const totalQuestionCeiling = visibleQuestionBudget + executiveExtensionBudget;
 
   const allQuestions = await getSessionQuestions(sessionId);
 
@@ -668,8 +749,12 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     };
   }
 
-  // 4. Check if session should end
-  if (answeredCount >= MAX_QUESTIONS) {
+  // 4. Check if session should end. Uses the TOTAL ceiling, not the
+  // visible budget — the actual "is coverage sufficient at the visible
+  // budget" decision lives inside pickAndPersistNextQuestion (called
+  // just below), never here. This is only a hard stop for when even the
+  // extension allowance is exhausted.
+  if (answeredCount >= totalQuestionCeiling) {
     return await finalizeSessionAndRespond();
   }
 
@@ -681,7 +766,7 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   // — both need the real next question text to speak/display.
   const picked = await (async () => {
     _timing.beforeQuestionGen = process.hrtime.bigint();
-    const result = await pickAndPersistNextQuestion(session, MAX_QUESTIONS);
+    const result = await pickAndPersistNextQuestion(session);
     _timing.afterQuestionGen = process.hrtime.bigint();
     return result;
   })();

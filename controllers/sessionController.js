@@ -15,6 +15,13 @@ const {
 // place parsing happens). Absent/undefined is the normal, fully-supported
 // case for a candidate with no resume on file.
 const { getCareerProfile } = require('../db/career-profile');
+// Interview Policy (question budget + session duration) — resolved ONCE
+// here, from the candidate's package at the moment their session is
+// created, then frozen onto the session row itself (interview_policy
+// JSONB). Nothing downstream (routes/interview.js, the setup screen, the
+// session timer/progress counter) ever re-resolves this from a package —
+// they all read the one frozen value this controller wrote.
+const { resolveInterviewPolicy } = require('../config/product-packages');
 // Discovery Profile (Phase 2, additive) — decides ONLY whether Discovery or
 // the existing generateNextQuestion() supplies the opening question. Never
 // modifies, wraps, or duplicates generateNextQuestion() itself — see the
@@ -96,6 +103,7 @@ async function initializeSession(req, res) {
     // ── 5. Persist session document state (Resume Intelligence snapshotted
     // here, same precedent as jd_text/competency_matrix — frozen at creation,
     // immune to a later resume replace) ──────────────────────────────────────
+    const _resolvedInterviewPolicy = resolveInterviewPolicy(req.capabilities && req.capabilities.package && req.capabilities.package.id);
     const session = await createSession({
       userId: req.user.id,
       personaId,
@@ -107,6 +115,12 @@ async function initializeSession(req, res) {
       resumeCompetencies,
       resumeContext,
       storyLibrary,
+      // Frozen here, once, from the candidate's package at this exact
+      // moment — never re-resolved from a package again for this session,
+      // even if their package changes mid-interview.
+      questionBudget: _resolvedInterviewPolicy.questionBudget,
+      sessionDurationMinutes: _resolvedInterviewPolicy.sessionDurationMinutes,
+      executiveExtensionBudget: _resolvedInterviewPolicy.executiveExtensionBudget,
     });
 
     // ── 5b. Discovery Router / Opening Strategy (additive, stateless) ──────

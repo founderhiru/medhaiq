@@ -1,10 +1,10 @@
 // Interview sessions DB access — all queries go through here.
 const { pool } = require('./index');
 
-async function createSession({ userId, personaId, roleTitle, experienceLevel, orgPreset, jdText, competencyMatrix, resumeCompetencies, resumeContext, storyLibrary }) {
+async function createSession({ userId, personaId, roleTitle, experienceLevel, orgPreset, jdText, competencyMatrix, resumeCompetencies, resumeContext, storyLibrary, questionBudget, sessionDurationMinutes, executiveExtensionBudget }) {
   const result = await pool.query(
-    `INSERT INTO interview_sessions (user_id, persona_id, role_title, experience_level, org_preset, jd_text, competency_matrix, resume_competencies, resume_context, story_library)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+    `INSERT INTO interview_sessions (user_id, persona_id, role_title, experience_level, org_preset, jd_text, competency_matrix, resume_competencies, resume_context, story_library, question_budget, session_duration_minutes, executive_extension_budget)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
     [
       userId,
       personaId,
@@ -16,6 +16,14 @@ async function createSession({ userId, personaId, roleTitle, experienceLevel, or
       (resumeCompetencies && resumeCompetencies.length) ? JSON.stringify(resumeCompetencies) : null,
       resumeContext ? JSON.stringify(resumeContext) : null,
       (storyLibrary && storyLibrary.length) ? JSON.stringify(storyLibrary) : null,
+      // Frozen at creation, never recomputed afterward — plain integers,
+      // not a JSON blob (kept simple per explicit instruction: simpler
+      // SQL, easier debugging/reporting/Founder Dashboard analytics).
+      // NULL if not supplied — routes/interview.js falls back to its
+      // pre-existing hardcoded defaults for NULL values.
+      questionBudget || null,
+      sessionDurationMinutes || null,
+      executiveExtensionBudget || null,
     ]
   );
   return result.rows[0];

@@ -416,7 +416,14 @@
       <div class="ctx-item"><div class="ctx-icon">💼</div><div><div class="ctx-k">Role</div><div class="ctx-v" id="ctxRole">Not selected</div></div></div>
       <div class="ctx-item"><div class="ctx-icon">⚡</div><div><div class="ctx-k">Experience</div><div class="ctx-v" id="ctxExp">Not selected</div></div></div>
       <div class="ctx-item"><div class="ctx-icon">👤</div><div><div class="ctx-k">Interviewer</div><div class="ctx-v" id="ctxPersona">Not selected</div></div></div>
-      <div class="ctx-item"><div class="ctx-icon">🕐</div><div><div class="ctx-k">Duration</div><div class="ctx-v">~45 minutes</div></div></div>
+      <div class="ctx-item"><div class="ctx-icon">🕐</div><div><div class="ctx-k">Estimated Duration</div><div class="ctx-v"><%
+        // Interview Policy (config/product-packages.js) — same source
+        // routes/interview.js reads at session-creation time. This is
+        // display only; the real, enforced value gets frozen onto the
+        // session itself the moment it's created (see
+        // controllers/sessionController.js), not re-read from here.
+        const _sessionDuration = (typeof capabilities !== 'undefined' && capabilities && capabilities.package && capabilities.package.entitlements && capabilities.package.entitlements.sessionDurationMinutes) || 10;
+      %>Up to <%= _sessionDuration %> minutes</div></div></div>
       <div class="ctx-item"><div class="ctx-icon">✦</div><div><div class="ctx-k">Difficulty</div><div class="ctx-v" id="ctxDiff">—</div></div></div>
       <div class="ctx-item" id="ctxCompanyWrap" style="display:none">
         <div class="ctx-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16"/><path d="M14 9h5a1 1 0 0 1 1 1v11"/><path d="M2 21h20"/><path d="M7.5 8h3M7.5 12h3M7.5 16h3M17 13h1M17 17h1"/></svg></div>

@@ -3637,9 +3637,10 @@ button { cursor: pointer; }
   line-height: 1.0;
   margin-bottom: 16px;
 }
+
 .mh-cta-subheadline {
   font-family: var(--font-body);
-  font-size: 18px;
+  font-size: 16.5px;
   color: rgba(255,255,255,0.88);
   margin-bottom: 40px;
   line-height: 1.5;

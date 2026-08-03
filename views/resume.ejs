@@ -3,19 +3,60 @@
 <h1>Resume Intelligence</h1>
 <p class="subtitle">Upload your resume once — MedhaIQ personalizes your interview questions and adds your real experience as an evaluation signal, automatically.</p>
 
+<!-- ═══ Status panel — now a richer summary, not just one line (feature, ═══
+     2026-07-29). Reads the exact same /api/resume/status payload as
+     before; only the rendering changed. ══════════════════════════════ -->
 <div class="panel" style="margin-bottom:16px;">
   <div class="panel-header-row">
     <h3>Status</h3>
   </div>
   <div id="resumeStatusLoading" style="font-size:14px; color:var(--muted);">Checking your resume status…</div>
+
   <div id="resumeStatusLoaded" style="display:none;">
-    <p id="resumeStatusLine" style="font-size:14px; margin-bottom:6px;"></p>
-    <p id="resumeStatusDetail" style="font-size:12.5px; color:var(--dim);"></p>
+
+    <!-- Active state: 2x2 intelligence summary grid -->
+    <div id="resumeStatusGrid" class="resume-status-grid" style="display:none;">
+      <div class="resume-stat">
+        <span class="resume-stat-label">Status</span>
+        <span class="resume-stat-value" id="resumeStatValue" style="color:var(--emerald);">✓ Active</span>
+      </div>
+      <div class="resume-stat">
+        <span class="resume-stat-label">Last Updated</span>
+        <span class="resume-stat-value" id="resumeStatUpdated">—</span>
+      </div>
+      <div class="resume-stat">
+        <span class="resume-stat-label">Career Stories Detected</span>
+        <span class="resume-stat-value" id="resumeStatStories">—</span>
+      </div>
+      <div class="resume-stat">
+        <span class="resume-stat-label">Competencies Detected</span>
+        <span class="resume-stat-value" id="resumeStatCompetencies">—</span>
+      </div>
+    </div>
+
+    <!-- Weak-parse state: a resume is on file but little was extracted —
+         same condition the old single-line version handled, kept as-is. -->
+    <p id="resumeWeakNote" style="display:none; font-size:13px; color:var(--gold);"></p>
+
+    <!-- Empty state: no resume at all -->
+    <p id="resumeEmptyNote" style="display:none; font-size:14px; color:var(--muted);">
+      No resume on file yet. Upload or paste your resume below to personalize your next interview.
+    </p>
+
+    <!-- Primary actions — only shown when Resume Intelligence is genuinely active -->
+    <div id="resumeActions" style="display:none; margin-top:18px; gap:10px;">
+      <button type="button" id="btnReplaceResume" class="resume-btn resume-btn-secondary">Replace Resume</button>
+      <button type="button" id="btnRemoveResume" class="resume-btn resume-btn-danger">Remove Resume</button>
+    </div>
   </div>
 </div>
 
-<div class="panel">
-  <h3>Upload or Replace Resume</h3>
+<!-- ═══ Upload / Replace panel — same form, same endpoint, same behavior ═══
+     as before. Visibility is now conditional: open by default when there's
+     no resume yet (the initial state), collapsed once Resume Intelligence
+     is active until "Replace Resume" is clicked. ══════════════════════ -->
+<div class="panel" id="uploadPanel">
+  <h3 id="uploadPanelTitle">Upload Resume</h3>
   <p style="font-size:12.5px; color:var(--dim); margin-bottom:16px;">
     PDF or DOCX, or paste the text directly below. Replacing your resume re-parses it once — it won't change any interview report you've already completed.
   </p>
@@ -39,33 +80,102 @@
   </form>
 </div>
 
+<!-- ═══ Remove Resume confirmation dialog (feature, 2026-07-29) ═══ -->
+<div id="removeResumeOverlay" style="display:none; position:fixed; inset:0; background:rgba(10,15,30,0.65); z-index:1000; align-items:center; justify-content:center;">
+  <div class="panel" style="max-width:440px; margin:0 16px;">
+    <h3 style="margin-bottom:12px;">Remove Resume Intelligence?</h3>
+    <p style="font-size:13.5px; color:var(--muted); line-height:1.55; margin-bottom:10px;">
+      Your uploaded resume and extracted career intelligence will be removed.
+    </p>
+    <p style="font-size:13.5px; color:var(--muted); line-height:1.55; margin-bottom:10px;">
+      Your completed interview reports will <strong style="color:var(--white);">NOT</strong> be affected.
+    </p>
+    <p style="font-size:13.5px; color:var(--muted); line-height:1.55; margin-bottom:20px;">
+      Future interviews will continue using JD Intelligence and your live responses until you upload another resume.
+    </p>
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button type="button" id="btnCancelRemove" class="resume-btn resume-btn-secondary">Cancel</button>
+      <button type="button" id="btnConfirmRemove" class="resume-btn resume-btn-danger">Remove Resume</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .resume-status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 24px;
+  }
+  .resume-stat { display: flex; flex-direction: column; gap: 4px; }
+  .resume-stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .resume-stat-value { font-size: 18px; font-weight: 700; color: var(--white); }
+  #resumeActions.resume-actions-visible { display: flex !important; }
+  .resume-btn {
+    padding: 10px 18px; border-radius: var(--radius); font-size: 13.5px; font-weight: 600;
+    cursor: pointer; border: 1px solid transparent; transition: .15s;
+  }
+  .resume-btn-secondary { background: var(--card); border-color: rgba(255,255,255,.12); color: var(--white); }
+  .resume-btn-secondary:hover { border-color: var(--bright); }
+  .resume-btn-danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+  .resume-btn-danger:hover { background: var(--danger); color: var(--white); }
+  @media (max-width: 640px) {
+    .resume-status-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
 <script>
 (function () {
   const loadingEl = document.getElementById('resumeStatusLoading');
   const loadedEl = document.getElementById('resumeStatusLoaded');
-  const lineEl = document.getElementById('resumeStatusLine');
-  const detailEl = document.getElementById('resumeStatusDetail');
+  const gridEl = document.getElementById('resumeStatusGrid');
+  const weakNoteEl = document.getElementById('resumeWeakNote');
+  const emptyNoteEl = document.getElementById('resumeEmptyNote');
+  const actionsEl = document.getElementById('resumeActions');
+  const uploadPanel = document.getElementById('uploadPanel');
+  const uploadPanelTitle = document.getElementById('uploadPanelTitle');
+
+  const statValueEl = document.getElementById('resumeStatValue');
+  const statUpdatedEl = document.getElementById('resumeStatUpdated');
+  const statStoriesEl = document.getElementById('resumeStatStories');
+  const statCompetenciesEl = document.getElementById('resumeStatCompetencies');
 
   function renderStatus(data) {
     loadingEl.style.display = 'none';
     loadedEl.style.display = 'block';
+    gridEl.style.display = 'none';
+    weakNoteEl.style.display = 'none';
+    emptyNoteEl.style.display = 'none';
+    actionsEl.style.display = 'none';
+    actionsEl.classList.remove('resume-actions-visible');
+
     const hasRealContent = data && (data.competencyCount > 0 || data.storyCount > 0);
+
     if (data && data.hasResume && hasRealContent) {
-      const parsedDate = data.parsedAt ? new Date(data.parsedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-      lineEl.textContent = 'Resume Intelligence is active.';
-      detailEl.textContent = `Last parsed ${parsedDate} · ${data.competencyCount || 0} competencies, ${data.storyCount || 0} career stories detected. Every new interview you start will use this automatically.`;
+      const parsedDate = data.parsedAt
+        ? new Date(data.parsedAt).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
+        : '—';
+      statValueEl.textContent = '✓ Active';
+      statUpdatedEl.textContent = parsedDate;
+      statStoriesEl.textContent = data.storyCount || 0;
+      statCompetenciesEl.textContent = data.competencyCount || 0;
+      gridEl.style.display = 'grid';
+      actionsEl.classList.add('resume-actions-visible');
+
+      // Active: collapse the upload panel by default — Replace Resume
+      // reveals it. Preserves the exact same form/endpoint underneath.
+      uploadPanel.style.display = 'none';
+      uploadPanelTitle.textContent = 'Replace Resume';
     } else if (data && data.hasResume && !hasRealContent) {
       // A resume is on file but genuinely has almost nothing extractable —
-      // distinct from "no resume at all" and from "parsing failed" (that
-      // case never reaches here, since a failed re-parse always preserves
-      // whatever WAS there — if you're seeing this, the last successful
-      // parse itself found very little, which usually means the resume
-      // text was thin; try pasting the full text directly).
-      lineEl.textContent = '⚠ Resume on file, but little could be extracted.';
-      detailEl.textContent = 'Try pasting the full resume text directly instead of uploading the file — this often extracts much more detail.';
+      // same case the previous single-line version handled.
+      weakNoteEl.textContent = '⚠ Resume on file, but little could be extracted. Try pasting the full resume text directly instead of uploading the file — this often extracts much more detail.';
+      weakNoteEl.style.display = 'block';
+      uploadPanel.style.display = 'block';
+      uploadPanelTitle.textContent = 'Replace Resume';
     } else {
-      lineEl.textContent = 'No resume on file yet.';
-      detailEl.textContent = 'Upload or paste your resume below to personalize your next interview.';
+      emptyNoteEl.style.display = 'block';
+      uploadPanel.style.display = 'block';
+      uploadPanelTitle.textContent = 'Upload Resume';
     }
   }
 
@@ -75,7 +185,8 @@
     .catch(() => {
       loadingEl.style.display = 'none';
       loadedEl.style.display = 'block';
-      lineEl.textContent = 'Could not load resume status.';
+      emptyNoteEl.textContent = 'Could not load resume status.';
+      emptyNoteEl.style.display = 'block';
     });
 
   const form = document.getElementById('resumeForm');
@@ -121,6 +232,51 @@
       })
       .finally(() => {
         submitBtn.disabled = false;
+      });
+  });
+
+  // ── Replace Resume — just reveals the existing upload panel; no new
+  //    endpoint, no change to the form/upload behavior itself. ──────────
+  document.getElementById('btnReplaceResume').addEventListener('click', function () {
+    uploadPanel.style.display = 'block';
+    uploadPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // ── Remove Resume — confirmation dialog, then DELETE /api/resume ─────
+  const removeOverlay = document.getElementById('removeResumeOverlay');
+  const btnRemoveResume = document.getElementById('btnRemoveResume');
+  const btnCancelRemove = document.getElementById('btnCancelRemove');
+  const btnConfirmRemove = document.getElementById('btnConfirmRemove');
+
+  btnRemoveResume.addEventListener('click', function () {
+    removeOverlay.style.display = 'flex';
+  });
+  btnCancelRemove.addEventListener('click', function () {
+    removeOverlay.style.display = 'none';
+  });
+  removeOverlay.addEventListener('click', function (e) {
+    if (e.target === removeOverlay) removeOverlay.style.display = 'none';
+  });
+
+  btnConfirmRemove.addEventListener('click', function () {
+    btnConfirmRemove.disabled = true;
+    btnConfirmRemove.textContent = 'Removing…';
+    fetch('/api/resume', { method: 'DELETE' })
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Failed to remove resume');
+        return data;
+      })
+      .then((data) => {
+        removeOverlay.style.display = 'none';
+        renderStatus(data); // { hasResume:false, ... } -> returns page to initial Upload Resume state
+      })
+      .catch((err) => {
+        alert(err.message || 'Something went wrong removing your resume. Please try again.');
+      })
+      .finally(() => {
+        btnConfirmRemove.disabled = false;
+        btnConfirmRemove.textContent = 'Remove Resume';
       });
   });
 })();

@@ -287,6 +287,35 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
       });
     }
 
+    // Interview Policy — read from THIS session's frozen columns
+    // (interview_sessions.question_budget / .executive_extension_budget /
+    // .session_duration_minutes), NEVER re-resolved from the candidate's
+    // current package. A session created before this migration has NULL
+    // here; the LEGACY_* constants match exactly what every session used
+    // before packages had their own durations — a genuine no-op for
+    // anything already in progress when this ships. Mirrors the same
+    // fallback constants routes/interview.js uses server-side, so the
+    // client-rendered numbers can never disagree with what's actually
+    // enforced.
+    const LEGACY_QUESTION_BUDGET = 5;
+    const LEGACY_SESSION_DURATION_MINUTES = 25;
+    const visibleQuestionBudget = session.question_budget || LEGACY_QUESTION_BUDGET;
+    const executiveExtensionBudget = session.executive_extension_budget || 0;
+    const sessionDurationMinutes = session.session_duration_minutes || LEGACY_SESSION_DURATION_MINUTES;
+    // Progress-counter denominator. Questions 1 through the visible budget
+    // (5 for every package) show "X of 5" exactly as today — it isn't yet
+    // known whether an extension will happen. Once the candidate is
+    // actually on a question past the visible budget (only possible for
+    // Leadership, and only once routes/interview.js's coverage gate has
+    // already decided one more question is warranted — a 6th question
+    // was already generated in a prior turn to reach this point), the
+    // real total ceiling is shown naturally ("Question 6 of 7"), not
+    // hidden behind the original visible number.
+    const questionBudget = (answeredCount + 1) > visibleQuestionBudget
+      ? (visibleQuestionBudget + executiveExtensionBudget)
+      : visibleQuestionBudget;
+    const sessionStartedAtMs = session.started_at ? new Date(session.started_at).getTime() : Date.now();
+
    res.render('interview-session', {
   sessionId:        req.params.id,
   questionId:       currentQ.id,
@@ -294,6 +323,9 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
   questionType:     currentQ.question_type || 'opening',
   questionNumber:   answeredCount + 1,
   answeredCount,
+  questionBudget,
+  sessionDurationMinutes,
+  sessionStartedAtMs,
   personaName:      persona.name,
   personaTitle:     persona.title + ' @ ' + persona.org,
   personaInitials:  initials,
