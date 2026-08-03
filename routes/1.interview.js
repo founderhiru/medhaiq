@@ -17,25 +17,6 @@ const {
   hasSufficientCoverage,
   PERSONAS,
 } = require('../services/interview');
-
-// TEMPORARY DIAGNOSTIC (requested explicitly — remove once root cause is
-// confirmed on the actual deployed environment). Runs once, at module
-// load time, printing to whatever environment actually loads this file.
-// This is the only way to see Render's actual runtime state — running
-// this locally proves what happens in a sandbox, not what happens on
-// Render's deployed instance.
-{
-  const interviewService = require('../services/interview');
-  console.log("================================");
-  console.log("Resolved Path:", require.resolve('../services/interview'));
-  console.log("Export Object:", interviewService);
-  console.log("Export Function:", interviewService.hasSufficientCoverage);
-  console.log("Export Type:", typeof interviewService.hasSufficientCoverage);
-  console.log("Imported Function:", hasSufficientCoverage);
-  console.log("Imported Type:", typeof hasSufficientCoverage);
-  console.log("================================");
-}
-
 const {
   createSession,
   getSession,
@@ -148,10 +129,6 @@ async function pickAndPersistNextQuestion(session) {
   const executiveExtensionBudget = getSessionExtensionBudget(session);
   const totalQuestionCeiling = visibleQuestionBudget + executiveExtensionBudget;
   const sessionDurationMinutes = getSessionDurationMinutes(session);
-  // TEMPORARY DEBUG LOGGING (Executive Extension trace, requested
-  // explicitly — remove once the stuck-after-Q5 issue is root-caused).
-  // No behavior change: purely observational, placed before any guard.
-  console.log(`[EXT-TRACE] pickAndPersistNextQuestion ENTRY sessionId=${session.id} status=${session.status} visibleQuestionBudget=${visibleQuestionBudget} executiveExtensionBudget=${executiveExtensionBudget} totalQuestionCeiling=${totalQuestionCeiling}`);
   const allQuestions = await getSessionQuestions(session.id);
 
   // Moved earlier (was previously built just before the generateNextQuestion
@@ -199,7 +176,6 @@ async function pickAndPersistNextQuestion(session) {
 
   // 1. Idempotency guard: returns current pending question if it exists
   const pending = allQuestions.find(q => q.answer_text === null || q.answer_text === undefined);
-  console.log(`[EXT-TRACE] sessionId=${session.id} pendingQuestionExists=${!!pending} pendingQuestionId=${pending ? pending.id : 'none'}`);
   if (pending) {
 
     // 🚨 GUARD 1: FINAL QUESTION RACE CONDITION — counts PRIMARY answers only,
@@ -208,9 +184,7 @@ async function pickAndPersistNextQuestion(session) {
     // allowance), not just the visible budget — a pending extension
     // question (Leadership, coverage was insufficient at question 5)
     // must still be answerable, not blocked here.
-    const _guard1AnsweredPrimaries = countAnsweredPrimaries(allQuestions);
-    console.log(`[EXT-TRACE] sessionId=${session.id} GUARD1 answeredPrimaries=${_guard1AnsweredPrimaries} totalQuestionCeiling=${totalQuestionCeiling} willStop=${_guard1AnsweredPrimaries >= totalQuestionCeiling}`);
-    if (_guard1AnsweredPrimaries >= totalQuestionCeiling) {
+    if (countAnsweredPrimaries(allQuestions) >= totalQuestionCeiling) {
       return {
         done: true,
         text: "That's all the questions for this interview — thank you. I'll put together your intelligence report now.",
@@ -245,7 +219,6 @@ async function pickAndPersistNextQuestion(session) {
 
   // 2. Check if the maximum PRIMARY questions limit has already been met
   const answeredPrimaryCount = countAnsweredPrimaries(allQuestions);
-  console.log(`[EXT-TRACE] sessionId=${session.id} GUARD2 ENTRY answeredPrimaryCount=${answeredPrimaryCount} visibleQuestionBudget=${visibleQuestionBudget} totalQuestionCeiling=${totalQuestionCeiling}`);
 
   // 🚨 GUARD 2: session completion decision.
   // Three cases, in order:
@@ -263,7 +236,6 @@ async function pickAndPersistNextQuestion(session) {
   //      whatever it would already decide) for one more turn.
   //   c) Visible budget not yet reached -> unchanged, fall through.
   if (answeredPrimaryCount >= totalQuestionCeiling) {
-    console.log(`[EXT-TRACE] sessionId=${session.id} GUARD2a HARD CEILING REACHED (${answeredPrimaryCount} >= ${totalQuestionCeiling}) -> finishing, no coverage check`);
     return {
       done: true,
       text: "That's all the questions for this interview — thank you. I'll put together your intelligence report now.",
@@ -277,25 +249,12 @@ async function pickAndPersistNextQuestion(session) {
   }
 
   if (answeredPrimaryCount >= visibleQuestionBudget) {
-    console.log(`[EXT-TRACE] sessionId=${session.id} GUARD2b IN EXTENSION TERRITORY (${answeredPrimaryCount} >= ${visibleQuestionBudget}) -> calling hasSufficientCoverage() now`);
-    let coverageIsSufficient;
-    try {
-      coverageIsSufficient = hasSufficientCoverage({
-        roleTitle: session.role_title,
-        qaPairs,
-        questionCount: answeredPrimaryCount,
-      });
-      console.log(`[EXT-TRACE] sessionId=${session.id} hasSufficientCoverage() RETURNED coverageIsSufficient=${coverageIsSufficient}`);
-    } catch (coverageErr) {
-      // TEMPORARY: if hasSufficientCoverage throws, this makes that
-      // fact impossible to miss — previously an uncaught exception here
-      // would have propagated up as an unhandled rejection with no
-      // context about WHICH decision point it came from.
-      console.error(`[EXT-TRACE] sessionId=${session.id} hasSufficientCoverage() THREW:`, coverageErr && coverageErr.stack || coverageErr);
-      throw coverageErr;
-    }
+    const coverageIsSufficient = hasSufficientCoverage({
+      roleTitle: session.role_title,
+      qaPairs,
+      questionCount: answeredPrimaryCount,
+    });
     if (coverageIsSufficient) {
-      console.log(`[EXT-TRACE] sessionId=${session.id} GUARD2b DECISION: coverage sufficient -> finishing at question ${answeredPrimaryCount}`);
       return {
         done: true,
         text: "That's all the questions for this interview — thank you. I'll put together your intelligence report now.",
