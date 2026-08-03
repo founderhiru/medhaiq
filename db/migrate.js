@@ -564,6 +564,34 @@ async function runMigrations() {
           console.log(`[migrate] 016: backfilled ${backfillResult.rows.length} existing pro-tier user(s) into package_acquisitions`);
         }
       },
+      {
+        name: '017_interview_policy_snapshot',
+        up: async (c) => {
+          // Interview settings frozen onto a session at creation time (see
+          // controllers/sessionController.js) and never recomputed
+          // afterward. Two simple additive integer columns, not a JSONB
+          // blob — simpler SQL, easier debugging/reporting/Founder
+          // Dashboard analytics, matching this table's existing scalar
+          // columns (overall_score, etc.) rather than its JSON ones,
+          // since this policy is exactly two flat numbers today, not a
+          // nested structure. Can evolve to JSON later if the policy
+          // becomes materially richer — not a decision to make now.
+          //
+          // NULL for every session that existed before this migration —
+          // routes/interview.js falls back to the pre-existing hardcoded
+          // defaults (5 questions / INTERVIEW_MAX_SESSION_MINUTES) for
+          // any session with NULL values, so nothing in progress when
+          // this ships changes behavior.
+          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS question_budget INTEGER`);
+          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS session_duration_minutes INTEGER`);
+          // Leadership-only: how many additional adaptive questions may be
+          // asked beyond question_budget, IF coverage is insufficient at
+          // that point (see services/interview.js's hasSufficientCoverage
+          // and routes/interview.js's GUARD 2). NULL/0 for every other
+          // package and every pre-existing session — a genuine no-op.
+          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS executive_extension_budget INTEGER`);
+        },
+      },
     ];
 
     for (const m of migrations) {

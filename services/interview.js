@@ -617,6 +617,29 @@ function buildInterviewSnapshot({ roleTitle, qaPairs, questionCount }) {
   return { roleKey, priority, currentTurn, memoryMap, hypothesisMap, globalMaturityTiers };
 }
 
+// ── Executive Extension coverage gate (Leadership only) ──
+// Deliberately NOT a new algorithm — this is a thin, read-only wrapper
+// around the exact same buildInterviewSnapshot()/runHypothesisEngine()
+// machinery every question generation call already runs, reusing the
+// exact same EVIDENCE_TIERS thresholds already defined above. It asks
+// one new question of an already-computed thing ("is coverage sufficient
+// across every priority competency?") rather than computing anything new.
+//
+// "Sufficient" = every priority competency's evidenceTier.needsVerification
+// is false — i.e. STRONG or VERIFIED (the exact tier the engine's own
+// existing logic already treats as no longer needing more evidence, see
+// EVIDENCE_TIERS above). This is the natural, already-existing meaning of
+// "covered enough" in this codebase, not a new threshold invented for
+// this feature.
+//
+// Used by routes/interview.js, after a Leadership session's 5th (visible)
+// question is answered, to decide whether to allow up to
+// executiveExtensionBudget more adaptive questions before wrapping up.
+function hasSufficientCoverage({ roleTitle, qaPairs, questionCount }) {
+  const snapshot = buildInterviewSnapshot({ roleTitle, qaPairs, questionCount });
+  return snapshot.priority.every(c => snapshot.hypothesisMap[c].needsVerification === false);
+}
+
 // ── E. Candidate Model Engine ──
 // Shifts from "score this answer" to "understand this candidate."
 // Entirely deterministic — text-pattern and score-trend heuristics over
@@ -2377,4 +2400,5 @@ module.exports = {
   scoreAnswer,
   generateReport,
   computeStarProgress,
+  hasSufficientCoverage,
 };

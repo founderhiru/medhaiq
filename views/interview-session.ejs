@@ -128,6 +128,15 @@
   </div>
 </div>
 
+<!-- One-minute warning banner (Requirement: informational only — the
+     candidate is never interrupted mid-answer; the actual graceful stop
+     happens server-side, between turns, via the existing time-cap check
+     in routes/interview.js). Hidden by default; shown once by tick()
+     above when ~60s remain, and never shown again for this page view. -->
+<div id="timeWarningBanner" style="display:none; align-items:center; justify-content:center; gap:8px; background:rgba(217,119,6,0.12); border-bottom:1px solid rgba(217,119,6,0.3); color:#D97706; font-size:13px; font-weight:600; padding:8px 16px; text-align:center;">
+  ⏱ 1 minute remaining. We'll finish after the current response.
+</div>
+
 <div class="os-grid">
 
   <%- include('partials/session-context') %>
@@ -401,8 +410,8 @@
   var SID    = '<%= sessionId %>';
   var QID    = '<%= questionId %>';
   var QN     = <%= answeredCount %> + 1;
-  var MAXQ   = 5;
-  var SEC_PER_Q = 180; /* 3 min budget per question, drives the "Est. remaining" clock */
+  var MAXQ   = <%= questionBudget %>;
+  var SESSION_DURATION_MINUTES = <%= sessionDurationMinutes %>;
   var PNAME  = '<%= personaName %>';
   var PTITLE = '<%= personaTitle %>';
   var PINIT  = '<%= personaInitials %>';
@@ -432,22 +441,32 @@
   document.getElementById('sbLevel').textContent  = LEVEL || '—';
 
   /* ── Elapsed timer (topbar) + Est. remaining (sidebar) — both driven off
-     the SAME real clock now. Previously "Est. remaining" was recomputed
-     only from the question count (MAXQ-remaining * 180s) and never moved
-     within a question, so it could show 9:00 remaining while the actual
-     elapsed timer said 2:00 — the two numbers had nothing to do with each
-     other. Now there's one 15:00 session budget and remaining = budget
-     minus actual elapsed seconds, ticking every second like the timer. ── */
-  var TOTAL_BUDGET_SEC = MAXQ * SEC_PER_Q; // 5 * 180s = 15:00 total
-  var t0 = Date.now(), timerInt;
+     the SAME real clock, counting down to the SAME real end timestamp.
+     Previously "Est. remaining" was built from a synthetic MAXQ*180s
+     estimate that could disagree with the actual server-enforced cutoff,
+     and t0 was Date.now() at page load — meaning a refresh silently reset
+     the clock to zero regardless of true elapsed time. Both fixed here:
+     TOTAL_BUDGET_SEC is now this session's real, frozen
+     sessionDurationMinutes (server.js -> interview_sessions.interview_policy),
+     and t0 is the session's real started_at, not page-load time. ── */
+  var SESSION_STARTED_AT_MS = <%= sessionStartedAtMs %>;
+  var TOTAL_BUDGET_SEC = SESSION_DURATION_MINUTES * 60;
+  var t0 = SESSION_STARTED_AT_MS, timerInt;
+  var _oneMinuteWarningShown = false;
   function mmss(totalSeconds) {
     var s = Math.max(0, Math.floor(totalSeconds));
     return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
   }
   function tick() {
     var elapsed = Math.floor((Date.now()-t0)/1000);
+    var remaining = TOTAL_BUDGET_SEC - elapsed;
     document.getElementById('timer').textContent = mmss(elapsed);
-    document.getElementById('sbTimeRemaining').textContent = mmss(TOTAL_BUDGET_SEC - elapsed);
+    document.getElementById('sbTimeRemaining').textContent = mmss(remaining);
+    if (!_oneMinuteWarningShown && remaining <= 60 && remaining > 0) {
+      _oneMinuteWarningShown = true;
+      var banner = document.getElementById('timeWarningBanner');
+      if (banner) banner.style.display = 'flex';
+    }
   }
   timerInt = setInterval(tick, 1000);
   tick();
