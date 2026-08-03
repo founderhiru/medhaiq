@@ -117,10 +117,10 @@
               </div>
 
               <div class="mh-cip-gauge">
-                <svg width="88" height="52" viewBox="0 0 88 52">
-                  <path d="M6 46 A38 38 0 0 1 82 46" fill="none" stroke="var(--navy-border)" stroke-width="7" stroke-linecap="round"/>
-                  <path d="M6 46 A38 38 0 0 1 82 46" fill="none" stroke="var(--emerald)" stroke-width="7" stroke-linecap="round"
-                    stroke-dasharray="119" stroke-dashoffset="119" id="mh-preview-gauge-arc" style="transition: stroke-dashoffset 1s ease"/>
+                <svg width="96" height="56" viewBox="0 0 96 56">
+                  <path d="M8 48 A40 40 0 0 1 88 48" fill="none" stroke="var(--navy-border)" stroke-width="8" stroke-linecap="round"/>
+                  <path d="M8 48 A40 40 0 0 1 88 48" fill="none" stroke="var(--emerald)" stroke-width="8" stroke-linecap="round"
+                    stroke-dasharray="126" stroke-dashoffset="126" id="mh-preview-gauge-arc" style="transition: stroke-dashoffset 1s ease"/>
                 </svg>
                 <div class="mh-cip-gauge-label" id="mh-preview-gauge-label"></div>
                 <div class="mh-cip-gauge-sub">Overall Rating</div>
@@ -155,8 +155,8 @@
           <div class="mh-preview-section mh-preview-section--last">
             <div class="mh-preview-cta">
               <div class="mh-preview-cta-icon">&#9733;</div>
-              <p class="mh-preview-cta-text"><b>A resume can't reveal your Executive Presence, Strategic Thinking, Decision Making, or Leadership Judgement.</b> Validate your true potential in a live, AI-powered interview.</p>
-              <button type="button" class="mh-score-run-btn mh-preview-cta-btn">Start Free Trial</button>
+              <p class="mh-preview-cta-text"><b>A resume only tells part of your story.</b> Discover what a live AI interview reveals.</p>
+              <a href="/interview" class="mh-score-run-btn mh-preview-cta-btn">Continue &rarr;</a>
             </div>
           </div>
 
@@ -174,7 +174,7 @@
   // (chip rendering, gauge fill, button success/reset state) changed in
   // this pass; the fetch/response-handling logic itself is unchanged.
 
-  var CONFIDENCE_GAUGE_OFFSET = { High: 18, Medium: 48, Low: 89 }; // out of dasharray=119 (semicircle length)
+  var CONFIDENCE_GAUGE_OFFSET = { High: 19, Medium: 50, Low: 95 }; // out of dasharray=126 (new semicircle length, r=40)
 
   // Illustrative example shown before any real upload — same schema as a
   // real /api/public-preview response, just static content. Never sent to
@@ -195,30 +195,39 @@
     recruiterFirstImpression: 'This profile shows real leadership scope and team ownership, with measurable business outcomes beginning to take shape. Framing achievements with more specific numbers would strengthen the impression further.',
   };
 
-  // Band → color mapping for REAL results (per the approved distinction:
-  // sample stays a neutral blue regardless of band; a real result colors
-  // itself by how strong the band actually is).
+  // Band → color mapping for REAL results — semantic scale (not always
+  // green): Early Signal="Poor"=red, Developing="Fair"=orange, Good=blue
+  // (MedhaIQ's primary brand color — kept per explicit decision, NOT
+  // yellow), Strong=green, Excellent=teal/blue-green. Applied identically
+  // to the headline text, the gauge arc, AND the gauge label, so all
+  // three always belong to the same semantic color family.
   var BAND_COLORS = {
-    'Excellent': 'var(--emerald)',
+    'Excellent': '#14B8A6',
     'Strong': 'var(--emerald)',
     'Good': 'var(--blue-bright)',
     'Developing': 'var(--gold)',
-    'Early Signal': 'var(--text-faint)',
+    'Early Signal': 'var(--danger, #EF4444)',
   };
-  var SAMPLE_COLOR = 'var(--blue-bright)';
+  var SAMPLE_COLOR = 'var(--blue-bright)'; // sample stays neutral — it isn't a real rating on this scale
 
   function renderPreview(preview, isSample) {
     var bandText = isSample ? 'Strong' : preview.metrics.overall.band;
+    var ratingColor = isSample ? SAMPLE_COLOR : (BAND_COLORS[preview.metrics.overall.band] || 'var(--emerald)');
+
     var bandEl = document.getElementById('mh-preview-band');
     bandEl.textContent = bandText;
-    bandEl.style.color = isSample ? SAMPLE_COLOR : (BAND_COLORS[preview.metrics.overall.band] || 'var(--emerald)');
+    bandEl.style.color = ratingColor;
 
     var confEl = document.getElementById('mh-preview-confidence');
     if (confEl) confEl.textContent = preview.metrics.overall.confidence;
 
     var arc = document.getElementById('mh-preview-gauge-arc');
     var offset = CONFIDENCE_GAUGE_OFFSET[preview.metrics.overall.confidence];
-    arc.style.strokeDashoffset = (offset !== undefined ? offset : 89);
+    arc.style.strokeDashoffset = (offset !== undefined ? offset : 95);
+    arc.style.stroke = ratingColor;
+
+    var gaugeLabelEl = document.getElementById('mh-preview-gauge-label');
+    gaugeLabelEl.style.color = ratingColor;
 
     // Gauge label mirrors the SAME band word shown in the headline — one
     // consistent scoring language throughout, instead of a separate

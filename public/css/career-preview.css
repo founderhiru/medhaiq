@@ -18,35 +18,40 @@
 /* ── Connected shell ─────────────────────────────────────────────────── */
 .mh-cip-shell {
   margin-top: 24px;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
+  grid-template-columns: 1fr 1.22fr; /* ≈45/55, per the balanced-column target */
   background: var(--navy-rich);
   border: 1px solid var(--navy-border);
   border-radius: var(--radius-xl);
   overflow: hidden;
 }
-.mh-cip-left, .mh-preview-output { padding: 26px; }
+.mh-cip-left, .mh-preview-output { padding: 21px; }
 .mh-cip-left { border-right: 1px solid rgba(255, 255, 255, 0.1); background: var(--navy-card); display: flex; flex-direction: column; }
 
-.mh-cip-step { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
-.mh-cip-step:not(:first-child) { margin-top: 22px; }
+.mh-cip-step { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.mh-cip-step:not(:first-child) { margin-top: 15px; }
 .mh-cip-step-num {
-  width: 22px; height: 22px; border-radius: 50%;
+  width: 20px; height: 20px; border-radius: 50%;
   border: 1.5px solid var(--blue-bright); color: var(--blue-bright);
-  font-family: var(--font-display); font-size: 11.5px; font-weight: 700;
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.mh-cip-step-label { font-family: var(--font-display); font-size: 13.5px; font-weight: 700; color: var(--white); }
+.mh-cip-step-label { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--white); }
 
-/* Dropzone — IDs/state classes unchanged; visual container restyled only. */
+/* Dropzone — IDs/state classes unchanged; visual container restyled only.
+   Height reduced further so the upload area no longer visually dominates
+   the top-of-panel pairing against the gauge on the right. */
 .mh-cip-left .mh-drop-zone {
   flex-direction: column;
   text-align: center;
   background: var(--navy-deep);
   border: 1.5px dashed var(--navy-border);
   border-radius: var(--radius-lg);
-  padding: 18px 20px;
-  gap: 6px;
+  padding: 12px 16px;
+  gap: 4px;
 }
 .mh-cip-left .mh-drop-zone:hover { border-color: var(--blue-bright); background: rgba(59,130,246,0.04); box-shadow: none; }
 .mh-cip-left .mh-drop-icon { background: none; color: var(--blue-bright); width: auto; height: auto; margin: 0 auto; }
@@ -60,10 +65,10 @@
 /* Role/org-scale rows — row layout (icon left, select right) */
 .mh-cip-left .mh-drop-zone:not(.mh-upload-zone) {
   flex-direction: row; align-items: center; text-align: left; background: transparent;
-  border-style: solid; padding: 12px 16px; gap: 14px;
+  border-style: solid; padding: 9px 13px; gap: 11px;
 }
 .mh-cip-left .mh-drop-zone:not(.mh-upload-zone) .mh-drop-icon {
-  width: 34px; height: 34px; border-radius: 10px; background: var(--navy-deep);
+  width: 30px; height: 30px; border-radius: 10px; background: var(--navy-deep);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 
@@ -71,7 +76,7 @@
   background-color: var(--navy-deep);
   border: 1px solid var(--navy-border);
   color: var(--white);
-  height: 42px;
+  height: 35px;
   line-height: 1.2;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
@@ -82,7 +87,7 @@
 }
 .mh-cip-left .mh-drop-select option { background: var(--navy-deep); color: var(--white); }
 
-.mh-cip-left .mh-score-cta-wrap { margin-top: auto; padding-top: 22px; }
+.mh-cip-left .mh-score-cta-wrap { margin-top: auto; padding-top: 18px; }
 .mh-cip-left .mh-score-run-btn { border-radius: 999px; }
 .mh-cip-left .mh-score-run-btn.is-complete {
   background: linear-gradient(90deg, #047857, var(--emerald));
@@ -107,104 +112,117 @@
 
 .mh-cip-right-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .mh-preview-eyebrow {
-  font-family: var(--font-display); font-size: 10.5px; font-weight: 700;
+  font-family: var(--font-display); font-size: 9.5px; font-weight: 700;
   letter-spacing: 0.06em; color: var(--blue-bright); text-transform: uppercase;
   margin-bottom: 6px;
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
 }
 .mh-preview-sample-badge {
-  font-family: var(--font-body); font-size: 9px; font-weight: 600;
+  font-family: var(--font-body); font-size: 8.5px; font-weight: 600;
   letter-spacing: 0.05em; text-transform: uppercase;
   color: var(--text-faint);
   border: 1px solid var(--navy-border);
   border-radius: 999px;
-  padding: 2px 8px;
+  padding: 2px 7px;
 }
 .mh-preview-upload-hint {
-  font-size: 11px; color: var(--text-faint); text-align: center;
-  margin-bottom: 12px;
+  font-size: 10px; color: var(--text-faint); text-align: center;
+  margin-bottom: 10px;
 }
 
 .mh-preview-card { transition: opacity 0.3s ease; opacity: 1; }
 .mh-preview-card.mh-preview-fade-out { opacity: 0; }
-.mh-preview-band { font-family: var(--font-display); font-size: clamp(28px, 3vw, 34px); font-weight: 800; color: var(--emerald); line-height: 1; }
-.mh-preview-caption { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+.mh-preview-band { font-family: var(--font-display); font-size: clamp(24px, 2.6vw, 29px); font-weight: 800; color: var(--emerald); line-height: 1; }
+.mh-preview-caption { font-size: 9.5px; color: var(--text-faint); margin-top: 5px; }
 .mh-preview-caption span { color: var(--white); font-weight: 600; }
-.mh-preview-helper { font-size: 11px; color: var(--text-faint); margin-top: 6px; max-width: 340px; line-height: 1.5; }
+.mh-preview-helper { font-size: 10px; color: var(--text-faint); margin-top: 5px; max-width: 30ch; line-height: 1.5; }
 
-/* Gauge — redesigned to guarantee no overlap. Label/sub now sit in normal
-   document flow BELOW the arc with real (positive) spacing, instead of the
-   previous negative-margin trick that pulled them up into the arc itself. */
-.mh-cip-gauge { width: 96px; flex-shrink: 0; text-align: center; padding: 2px 4px 0; }
+/* Gauge — slightly larger/bolder than the last pass, to visually balance
+   against the (now shorter) upload dropzone on the left, per the
+   "equalize top panels" request. Label/sub still sit below the arc in
+   normal flow — no overlap risk reintroduced. */
+.mh-cip-gauge { width: 100px; flex-shrink: 0; text-align: center; padding: 2px 4px 0; }
 .mh-cip-gauge svg { display: block; margin: 0 auto; }
-.mh-cip-gauge-label { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--white); margin-top: 6px; }
+.mh-cip-gauge-label { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--white); margin-top: 6px; }
 .mh-cip-gauge-sub { font-size: 9px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
 
-.mh-preview-section { margin-top: 22px; }
+.mh-preview-section { margin-top: 15px; }
 .mh-preview-section:first-child { margin-top: 0; }
-.mh-preview-section--divided { padding-bottom: 22px; border-bottom: 1px solid var(--navy-border); }
-.mh-preview-section--last { margin-top: 24px; }
+.mh-preview-section--divided { padding-bottom: 15px; border-bottom: 1px solid var(--navy-border); }
+.mh-preview-section--last { margin-top: 17px; }
 
-.mh-preview-section-title { font-family: var(--font-display); font-size: 11px; font-weight: 700; color: var(--white); margin-bottom: 12px; }
+.mh-preview-section-title { font-family: var(--font-display); font-size: 10px; font-weight: 700; color: var(--white); margin-bottom: 10px; }
 
-.mh-score-bars { display: flex; flex-direction: column; gap: 11px; }
+.mh-score-bars { display: flex; flex-direction: column; gap: 9px; }
 .mh-score-bar-row { display: flex; align-items: center; gap: 12px; }
-.mh-score-bar-label { font-size: 12px; color: var(--text-muted); width: 155px; flex-shrink: 0; }
-.mh-score-bar-track { flex: 1; height: 6px; background: var(--navy-deep); border-radius: 4px; overflow: hidden; }
+.mh-score-bar-label { font-size: 11px; color: var(--text-muted); width: 145px; flex-shrink: 0; }
+.mh-score-bar-track { flex: 1; max-width: 190px; height: 6px; background: var(--navy-deep); border-radius: 4px; overflow: hidden; }
 .mh-score-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--blue-bright), var(--emerald)); width: 0; transition: width 1s ease; }
 .mh-score-bar-fill.gold-fill { background: linear-gradient(90deg, var(--gold), #fbbf24); }
 .mh-preview-limited-row { opacity: 0.75; }
 .mh-preview-limited-chip {
-  font-size: 10px; font-weight: 600; color: var(--text-faint);
-  border: 1px solid var(--navy-border); border-radius: 999px; padding: 2px 10px; flex-shrink: 0;
+  font-size: 9px; font-weight: 600; color: var(--text-faint);
+  border: 1px solid var(--navy-border); border-radius: 999px; padding: 2px 9px; flex-shrink: 0;
 }
 
-.mh-cip-split { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-.mh-preview-signal-list { display: flex; flex-wrap: wrap; gap: 7px; list-style: none; margin: 0; padding: 0; }
+.mh-cip-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mh-preview-signal-list { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
 .mh-preview-signal-list li {
-  display: inline-flex; align-items: center; gap: 6px;
+  display: inline-flex; align-items: center; gap: 5px;
   background: var(--emerald-soft); color: #6EE7B7;
   border: 1px solid rgba(5,150,105,0.3); border-radius: 999px;
-  padding: 5px 11px; font-size: 11px; font-weight: 600;
+  padding: 4.5px 10px; font-size: 10px; font-weight: 600;
 }
 .mh-preview-muted-item {
   background: transparent !important; border-color: var(--navy-border) !important;
   color: var(--text-faint) !important; font-style: italic; font-weight: 400 !important;
 }
-.mh-preview-note { font-size: 10.5px; color: var(--text-faint); margin-top: 10px; font-style: italic; }
+.mh-preview-note { font-size: 9.5px; color: var(--text-faint); margin-top: 8px; font-style: italic; }
 
-.mh-preview-recruiter-text { font-size: 12px; color: var(--text-muted); line-height: 1.6; margin: 0; }
+/* Recruiter text — width capped in ch units so lines wrap at ~50-65
+   characters, per the readability target, instead of stretching to fill
+   the full column width. */
+.mh-preview-recruiter-text { font-size: 10.5px; color: var(--text-muted); line-height: 1.55; margin: 0; max-width: 58ch; }
 
-.mh-preview-opportunity-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
-.mh-preview-opportunity-list li { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.mh-preview-opportunity-list { margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 5px; max-width: 58ch; }
+.mh-preview-opportunity-list li { font-size: 10.5px; color: var(--text-muted); line-height: 1.5; }
 
 .mh-preview-cta {
-  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   background: linear-gradient(90deg, rgba(30,64,175,0.15), rgba(5,150,105,0.1));
   border: 1px solid var(--navy-border); border-radius: var(--radius-lg);
-  padding: 16px 20px;
+  padding: 10px 14px;
 }
 .mh-preview-cta-icon {
-  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
   background: var(--navy-deep); border: 1px solid var(--navy-border);
-  display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 14px;
+  display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 11px;
 }
-.mh-preview-cta-text { flex: 1; min-width: 220px; font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+.mh-preview-cta-text { flex: 1; min-width: 200px; max-width: 46ch; font-size: 10.5px; color: var(--text-muted); line-height: 1.5; margin: 0; }
 .mh-preview-cta-text b { color: var(--white); }
 .mh-preview-cta-btn {
   background: linear-gradient(90deg, var(--emerald), #10B981) !important;
   width: auto !important; white-space: nowrap;
-  padding: 11px 20px !important; border-radius: 999px !important;
+  font-size: 12px !important; font-weight: 600 !important;
+  padding: 8px 14px !important; border-radius: 999px !important;
+  box-shadow: 0 0 12px rgba(5,150,105,0.25) !important;
+  display: inline-flex !important; align-items: center; justify-content: center;
+  text-decoration: none;
 }
+.mh-preview-cta-btn:hover { box-shadow: 0 3px 16px rgba(5,150,105,0.35) !important; }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 1000px) {
+  .mh-cip-shell { max-width: 100%; }
+}
 @media (max-width: 900px) {
   .mh-cip-shell { grid-template-columns: 1fr; }
   .mh-cip-left { border-right: none; border-bottom: 1px solid var(--navy-border); }
-  .mh-cip-split { grid-template-columns: 1fr; gap: 18px; }
+  .mh-cip-split { grid-template-columns: 1fr; gap: 16px; }
+  .mh-preview-recruiter-text, .mh-preview-opportunity-list, .mh-preview-cta-text { max-width: none; }
 }
 @media (max-width: 520px) {
-  .mh-cip-left, .mh-preview-output { padding: 20px; }
+  .mh-cip-left, .mh-preview-output { padding: 18px; }
   .mh-cip-stats { gap: 8px; }
   .mh-cip-stats .sep { display: none; }
   .mh-cip-stats span { width: 100%; justify-content: center; }
@@ -212,5 +230,5 @@
   .mh-cip-gauge { align-self: flex-start; }
   .mh-preview-cta { flex-direction: column; align-items: flex-start; }
   .mh-preview-cta-btn { width: 100% !important; justify-content: center; }
-  .mh-score-bar-label { width: 115px; font-size: 11px; }
+  .mh-score-bar-label { width: 110px; font-size: 10.5px; }
 }

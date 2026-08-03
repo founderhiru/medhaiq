@@ -74,7 +74,7 @@
   font-weight: 700; font-size: 15px; color: var(--white);
 }
 .mh-explore-company-name { font-family: var(--font-display); font-weight: 700; font-size: 16px; margin-top: 2px; }
-.mh-explore-company-sub { font-size: 13px; color: var(--text-muted); }
+.mh-explore-company-sub { font-size: 13px; color: rgba(255, 255, 255, 0.74); } /* brightened from --text-muted (#94A3B8, ~58% white) to ~74% white for readability, per this round's spec — tags below stay on --text-muted intentionally */
 .mh-explore-company-stat { font-size: 12px; color: var(--blue-bright); font-weight: 600; margin-top: 6px; }
 .mh-explore-company-stat-placeholder { color: var(--text-faint); font-weight: 500; font-style: italic; }
 
@@ -243,55 +243,76 @@
 .mh-explore-hero-text .mh-section-title,
 .mh-explore-hero-text .mh-section-sub { text-align: left; margin-left: 0; }
 .mh-explore-hero-h1 { font-size: clamp(28px, 3.6vw, 40px); line-height: 1.2; margin-bottom: 16px; }
+/* Guide/detail-page hero title — ~15% smaller than the landing-page
+   scale above, per this round's two-tier hierarchy: Landing pages get
+   the larger .mh-explore-hero-h1; Company/Role/Framework Guide pages
+   (one level deeper) get this slightly smaller editorial scale, so
+   detail pages never compete visually with the section they belong to. */
+.mh-explore-guide-hero-h1 { font-size: clamp(24px, 3.1vw, 34px); line-height: 1.2; margin-bottom: 16px; }
+/* Canonical compact hero padding for the Explore ecosystem (Company
+   Library, Company Guide, Role Library, Role Guide, Interview
+   Frameworks, Framework Guide). Applied ALONGSIDE .mh-why-hero, not by
+   editing it — .mh-why-hero is shared with Why MedhaIQ and Architecture,
+   which are out of scope for this round and keep their own padding. */
+.mh-explore-hero-compact { padding: 68px var(--section-pad-x) 32px; } /* bottom padding -20% (40px -> 32px) this round */
+@media (max-width: 640px) {
+  .mh-explore-hero-compact { padding: 64px 24px 28px; }
+}
 .mh-explore-hero-h1-accent {
   background: linear-gradient(90deg, #3B82F6, #9333EA);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
+/* Search bar in the hero specifically (not the Company Library landing
+   page, which reuses .mh-explore-search-wrap at its own default 560px)
+   is ~26px shorter so it no longer spans almost the full text column. */
+.mh-explore-hero-text .mh-explore-search-wrap { max-width: 534px; }
 
-/* ---- Intelligence illustration — STATIC elliptical rings, now ~35%
-   more visible: higher border opacity, thicker stroke, added glow layer.
-   No rotation anywhere; only the 4 node icons float gently. ---- */
-.mh-explore-hero-viz { position: relative; width: 340px; height: 340px; margin: 0 auto; }
+/* ---- Intelligence illustration — STATIC elliptical rings. This round:
+   thinner stroke + slightly higher opacity + much less glow, for a
+   technical-blueprint feel rather than neon. All 4 nodes now sit directly
+   on ring-2 (the middle "outer visible" ring) as attached orbit nodes,
+   not floating past the rings. Nudged 26px left to balance the hero
+   against the text column. ---- */
+.mh-explore-hero-viz { position: relative; width: 340px; height: 340px; margin: 0 auto; transform: translateX(-26px); }
 .mh-explore-hero-viz-ring {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  border-radius: 50%; border: 1.5px solid rgba(59, 130, 246, 0.32);
-  box-shadow: 0 0 22px rgba(59, 130, 246, 0.16), inset 0 0 22px rgba(59, 130, 246, 0.05);
+  border-radius: 50%; border: 1px solid rgba(59, 130, 246, 0.48);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.08);
 }
 .mh-explore-hero-viz-ring-1 { width: 340px; height: 246px; }
-.mh-explore-hero-viz-ring-2 { width: 272px; height: 198px; border-color: rgba(147, 51, 234, 0.28); box-shadow: 0 0 20px rgba(147, 51, 234, 0.14); }
-.mh-explore-hero-viz-ring-3 { width: 204px; height: 150px; border-color: rgba(255, 255, 255, 0.16); box-shadow: 0 0 16px rgba(255, 255, 255, 0.06); }
+.mh-explore-hero-viz-ring-2 { width: 272px; height: 198px; border-color: rgba(147, 51, 234, 0.42); box-shadow: 0 0 7px rgba(147, 51, 234, 0.07); }
+.mh-explore-hero-viz-ring-3 { width: 204px; height: 150px; border-color: rgba(255, 255, 255, 0.26); box-shadow: 0 0 6px rgba(255, 255, 255, 0.05); }
 
 .mh-explore-hero-viz-center {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: 78px; height: 78px; border-radius: 50%; background: var(--navy-card);
   border: 1px solid var(--navy-border); display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 38px rgba(59, 130, 246, 0.42); /* enhanced — keeps the logo the clear focal point now that ring glow is reduced */
   z-index: 3;
 }
 .mh-explore-hero-viz-logo { width: 38px; height: 38px; object-fit: contain; }
 
 .mh-explore-hero-viz-node-pos { position: absolute; width: 0; height: 0; z-index: 2; }
-.mh-explore-hero-viz-pos-nw { top: 16%; left: 12%; }
-.mh-explore-hero-viz-pos-ne { top: 16%; left: 88%; }
-.mh-explore-hero-viz-pos-sw { top: 84%; left: 12%; }
-.mh-explore-hero-viz-pos-se { top: 84%; left: 88%; }
+/* All 4 positioned directly on ring-2's ellipse (272x198 within the 340x340
+   viz box: ±40% horizontal, ±29.1% vertical from center) so each icon reads
+   as a node attached to that orbit, not floating outside the rings. */
+.mh-explore-hero-viz-pos-nw { top: 29%; left: 22%; }
+.mh-explore-hero-viz-pos-ne { top: 29%; left: 78%; }
+.mh-explore-hero-viz-pos-sw { top: 71%; left: 22%; }
+.mh-explore-hero-viz-pos-se { top: 71%; left: 78%; }
 .mh-explore-hero-viz-node {
   position: absolute; transform: translate(-50%, -50%);
   display: flex; flex-direction: column; align-items: center; gap: 8px;
-  animation: mh-viz-float 5s ease-in-out infinite;
+  transition: transform 0.25s ease;
   width: 92px;
 }
+.mh-explore-hero-viz-node:hover { transform: translate(-50%, -50%) scale(1.06); }
 .mh-explore-hero-viz-node-icon {
-  width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
   box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+  transition: box-shadow 0.25s ease;
 }
-.mh-explore-hero-viz-node-label { font-size: 12px; font-weight: 600; color: #fff; text-align: center; line-height: 1.35; }
-.mh-explore-hero-viz-node-label-accent { color: #D97706; }
-
-@keyframes mh-viz-float {
-  0%, 100% { margin-top: 0; }
-  50% { margin-top: -6px; }
-}
+.mh-explore-hero-viz-node:hover .mh-explore-hero-viz-node-icon { box-shadow: 0 6px 20px rgba(0,0,0,0.35), 0 0 18px rgba(59,130,246,0.35); }
 
 @media (max-width: 1024px) {
   .mh-explore-hero-grid { grid-template-columns: 1fr; max-width: 100%; }
@@ -302,7 +323,4 @@
   .mh-explore-hero-text .mh-explore-search-wrap,
   .mh-explore-hero-text #mh-explore-search-meta,
   .mh-explore-hero-text .mh-explore-trust-line { text-align: center !important; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .mh-explore-hero-viz-node { animation: none; }
 }

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= fw.seo.title %></title>
+  <meta name="description" content="<%= fw.seo.description %>">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0A0F1E">
+  <link rel="canonical" href="https://www.medhaiq.ai/explore/interview-frameworks/<%= fw.slug %>">
+  <meta property="og:title" content="<%= fw.seo.title %>">
+  <meta property="og:description" content="<%= fw.seo.description %>">
+  <meta property="og:type" content="article">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/medhaiq.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/hero-v2.css">
+  <link rel="stylesheet" href="/css/value-footer.css">
+  <link rel="stylesheet" href="/css/explore.css">
+  <link rel="stylesheet" href="/css/company-library.css">
+  <link rel="stylesheet" href="/css/role-library.css">
+  <link rel="stylesheet" href="/css/interview-frameworks.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <!-- Hero — dark, canonical Explore scale. No CTA: the framework
+       page begins with learning; the practice invitation comes only
+       after the reader understands the framework, at the bottom. -->
+  <section class="mh-why-hero mh-explore-hero-compact reveal">
+    <div class="mh-why-hero-inner mh-section-center">
+      <div class="mh-eyebrow"><%= fw.hero.subheadline %></div>
+      <h1 class="mh-section-title mh-explore-guide-hero-h1"><%= fw.title %></h1>
+    </div>
+  </section>
+
+  <!-- ============ LIGHT EDITORIAL READING SURFACE ============ -->
+  <div class="mh-editorial-surface">
+    <div class="mh-editorial-inner">
+
+      <%
+        const _wordSource = [
+          fw.overview,
+          fw.breakdown.map(function(b) { return b.stage + ' ' + b.desc; }).join(' '),
+          fw.workedExample,
+          fw.commonMistakes.join(' '),
+          fw.checklist.join(' '),
+        ].join(' ');
+        const _readingMinutes = Math.max(1, Math.round(_wordSource.split(/\s+/).filter(Boolean).length / 200));
+      %>
+      <nav class="mh-colib-breadcrumb-row" aria-label="Breadcrumb" style="padding: 0 0 32px;">
+        <div>
+          <a href="/explore" style="color: var(--ed-muted);">Explore MedhaIQ</a>
+          <span aria-hidden="true" style="color: var(--ed-faint);">/</span>
+          <a href="/explore/interview-frameworks" style="color: var(--ed-muted);">Interview Frameworks</a>
+          <span aria-hidden="true" style="color: var(--ed-faint);">/</span>
+          <span style="color: var(--ed-text); font-weight: 600;"><%= fw.title %></span>
+        </div>
+        <span class="mh-colib-reading-time" style="background: rgba(15,23,42,0.05); color: var(--ed-faint);"><%= _readingMinutes %> min read</span>
+      </nav>
+
+      <!-- Framework Overview -->
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Framework Overview</div>
+          <h2 class="mh-editorial-card-title">What it is, and why it matters</h2>
+        </div>
+        <p style="margin-top: 16px; font-size: 15px; line-height: 1.65; color: var(--ed-text, #1A1F2B); text-align: center; max-width: 720px; margin-left: auto; margin-right: auto;"><%= fw.overview %></p>
+      </div>
+
+      <!-- When To Use It -->
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">When To Use It</div>
+          <h2 class="mh-editorial-card-title">Where this framework applies</h2>
+        </div>
+        <div class="mh-explore-chip-row" style="justify-content:center; margin-top: 20px;">
+          <% fw.whenToUse.forEach(function(item) { %>
+            <span class="mh-explore-chip"><%= item %></span>
+          <% }); %>
+        </div>
+      </div>
+
+      <!-- Framework Breakdown — each framework's own stage sequence -->
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Framework Breakdown</div>
+          <h2 class="mh-editorial-card-title">How it works</h2>
+        </div>
+        <div class="mh-fw-breakdown">
+          <% fw.breakdown.forEach(function(step, i) { %>
+            <div class="mh-fw-breakdown-step">
+              <div class="mh-fw-breakdown-index"><%= i + 1 %></div>
+              <div class="mh-fw-breakdown-body">
+                <div class="mh-fw-breakdown-stage"><%= step.stage %></div>
+                <div class="mh-fw-breakdown-desc"><%= step.desc %></div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+
+      <!-- Worked Example -->
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Worked Example</div>
+          <h2 class="mh-editorial-card-title">Seeing it applied</h2>
+        </div>
+        <div class="mh-fw-example"><%= fw.workedExample %></div>
+      </div>
+
+      <!-- Common Mistakes -->
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Common Mistakes</div>
+          <h2 class="mh-editorial-card-title">What to avoid</h2>
+        </div>
+        <ul class="mh-fw-mistakes">
+          <% fw.commonMistakes.forEach(function(mistake) { %>
+            <li class="mh-fw-mistake-item"><span class="mh-fw-mistake-icon" aria-hidden="true">✕</span><span><%= mistake %></span></li>
+          <% }); %>
+        </ul>
+      </div>
+
+      <!-- Preparation Checklist — same interactive pattern as Role Guide -->
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Preparation Checklist</div>
+          <h2 class="mh-editorial-card-title">Before you practise</h2>
+        </div>
+        <ul class="mh-role-checklist" style="margin-top: 16px;">
+          <% fw.checklist.forEach(function(item, i) { %>
+            <li class="mh-role-checklist-item">
+              <button type="button" class="mh-role-checklist-box" role="checkbox" aria-checked="false" aria-label="Mark done: <%= item %>" data-checklist-item="<%= fw.slug %>-<%= i %>">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+              <span class="mh-role-checklist-text"><%= item %></span>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+
+      <!-- Official Resources -->
+      <% if (fw.resources && fw.resources.length) { %>
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Official Resources</div>
+          <h2 class="mh-editorial-card-title">Go deeper</h2>
+        </div>
+        <ul class="mh-role-resource-list" style="margin-top: 20px;">
+          <% fw.resources.forEach(function(res) { %>
+            <li class="mh-role-resource-item">
+              <a href="<%= res.url %>" target="_blank" rel="noopener noreferrer" class="mh-role-resource-link">
+                <%= res.name %>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+      <% } %>
+
+    </div>
+  </div>
+
+  <!-- Final CTA — dark, per color system. Unified Explore-wide pattern:
+       same title and button label everywhere; only the supporting line
+       is dynamic (fw.ctaCopy, per framework). -->
+  <section class="mh-colib-dark-cta reveal">
+    <div class="mh-explore-cta-inner">
+      <h2 class="mh-section-title">Ready to practice?</h2>
+      <p class="mh-explore-cta-sub"><%= fw.ctaCopy %></p>
+      <div class="mh-explore-cta-actions">
+        <a href="/login" class="mh-btn-primary">Start Practice Interview</a>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script>
+  (function() {
+    var reveals = document.querySelectorAll('.reveal');
+    if (reveals.length) {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+      reveals.forEach(function(el) { observer.observe(el); });
+    }
+  })();
+  (function() {
+    // Preparation checklist — visual-only toggle, no persistence.
+    document.querySelectorAll('.mh-role-checklist-box').forEach(function(box) {
+      box.addEventListener('click', function() {
+        var checked = box.getAttribute('aria-checked') === 'true';
+        box.setAttribute('aria-checked', String(!checked));
+        box.closest('.mh-role-checklist-item').classList.toggle('mh-role-checklist-item-done', !checked);
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

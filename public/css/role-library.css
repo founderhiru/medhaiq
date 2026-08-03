@@ -6,14 +6,34 @@
    role-specific rules live here.
    ============================================ */
 
-/* ---- Category browse groups (landing page) ---- */
-.mh-role-category-group { margin-bottom: 56px; }
-.mh-role-category-group:last-child { margin-bottom: 0; }
-.mh-role-category-heading {
-  font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--text-faint); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--white-border);
+/* ---- Landing page grid card (flat, curated — no categories) ---- */
+.mh-role-browse-card { display: flex; flex-direction: column; min-height: 150px; }
+
+/* ---- Preparation checklist (guide page) ---- */
+.mh-role-checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.mh-role-checklist-item { display: flex; align-items: flex-start; gap: 12px; }
+.mh-role-checklist-box {
+  flex: 0 0 20px; width: 20px; height: 20px; margin-top: 1px; border-radius: 5px;
+  border: 1.5px solid var(--ed-border, rgba(15,23,42,0.18)); background: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; color: transparent; padding: 0;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-.mh-role-browse-card { display: flex; flex-direction: column; min-height: 140px; }
+.mh-role-checklist-box:hover { border-color: #2563EB; }
+.mh-role-checklist-item-done .mh-role-checklist-box { background: #2563EB; border-color: #2563EB; color: #fff; }
+.mh-role-checklist-text { font-size: 14.5px; line-height: 1.55; color: var(--ed-text, #1A1F2B); }
+.mh-role-checklist-item-done .mh-role-checklist-text { color: var(--ed-muted, #64748B); text-decoration: line-through; text-decoration-color: rgba(100,116,139,0.5); }
+
+/* ---- Official resources (guide page) ---- */
+.mh-role-resource-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.mh-role-resource-item { border-bottom: 1px solid var(--ed-border, rgba(15,23,42,0.07)); }
+.mh-role-resource-item:last-child { border-bottom: none; }
+.mh-role-resource-link {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 2px; font-size: 14.5px; font-weight: 600; color: var(--ed-text, #1A1F2B); text-decoration: none;
+}
+.mh-role-resource-link:hover { color: #2563EB; }
+.mh-role-resource-link svg { flex-shrink: 0; opacity: 0.55; }
+.mh-role-resource-link:hover svg { opacity: 1; }
 
 /* ---- Interview flow row (simple horizontal stage strip, no descriptions) ---- */
 .mh-role-flow-row {

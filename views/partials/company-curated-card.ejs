@@ -1,0 +1,52 @@
+<%
+/* Curated Company Card — expects `company` in locals (one item from
+   curatedCompanies): { slug, name, identifier, icon, accentColor, hasGuide }.
+
+   V1 VISUAL IDENTITY: no real company logos, no simplified brand
+   redraws. Microsoft's and Amazon's own trademark guidelines prohibit
+   reproducing their marks in any form, in any size, without a written
+   license — a small monochrome version is still "the mark." Instead,
+   every company gets a MedhaIQ-designed abstract icon + accent color,
+   acting as a navigation cue, not company branding.
+
+   V2 REFINEMENT: icons moved from fully arbitrary shapes to generic,
+   universal category symbols (grid, search, cloud, briefcase, network,
+   card) that are loosely evocative of what each company does — this is
+   deliberately standard, ubiquitous UI iconography (the same magnifying
+   glass every app uses for "search", the same cloud every SaaS product
+   uses for "cloud"), NOT an attempt to recreate any company's specific
+   logo proportions or arrangement. Goal per this round's spec:
+   "company-inspired," not "unofficial logo." Real, licensed logos
+   remain a separate future enhancement if ever pursued. */
+const ICONS = {
+  ascend:    '<rect x="4" y="13" width="4" height="7" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="16" y="4" width="4" height="16" rx="1"/>',
+  grid:      '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  search:    '<circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.3 15.3L20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  cloud:     '<path d="M7.5 18a4.5 4.5 0 0 1-.7-8.94A5.5 5.5 0 0 1 17.2 8.4 4 4 0 0 1 16.5 18h-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  briefcase: '<rect x="4" y="8" width="16" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8V6.5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2V8" fill="none" stroke="currentColor" stroke-width="2"/>',
+  network:   '<circle cx="6" cy="7" r="2.2" fill="currentColor"/><circle cx="18" cy="7" r="2.2" fill="currentColor"/><circle cx="12" cy="18" r="2.2" fill="currentColor"/><path d="M8 8l6.5-1.3M8.2 9l3 7.3M15.8 9l-3 7.3" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+  diamond:   '<rect x="7.5" y="7.5" width="9" height="9" rx="1.5" transform="rotate(45 12 12)" fill="none" stroke="currentColor" stroke-width="2"/>',
+  card:      '<rect x="3" y="6" width="18" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 10.2h18" stroke="currentColor" stroke-width="2"/><rect x="6" y="14" width="5" height="2" rx="1" fill="currentColor"/>',
+};
+const iconSvg = ICONS[company.icon] || ICONS.grid;
+%>
+<% if (company.hasGuide) { %>
+<a href="/explore/company-library/<%= company.slug %>" class="mh-explore-card-btn" role="listitem" aria-label="<%= company.name %> interview guide">
+  <div class="mh-explore-card mh-colib-curated-card">
+    <div class="mh-colib-curated-icon" style="background: <%= company.accentColor %>1A; color: <%= company.accentColor %>;" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 24 24"><%- iconSvg %></svg>
+    </div>
+    <div class="mh-explore-company-name"><%= company.name %></div>
+    <div class="mh-colib-curated-identifier"><%= company.identifier %></div>
+  </div>
+</a>
+<% } else { %>
+<div class="mh-explore-card mh-colib-curated-card mh-colib-curated-card-soon" role="listitem" aria-label="<%= company.name %> — guide coming soon">
+  <div class="mh-colib-curated-icon" style="background: <%= company.accentColor %>1A; color: <%= company.accentColor %>;" aria-hidden="true">
+    <svg width="20" height="20" viewBox="0 0 24 24"><%- iconSvg %></svg>
+  </div>
+  <div class="mh-explore-company-name"><%= company.name %></div>
+  <div class="mh-colib-curated-identifier"><%= company.identifier %></div>
+  <span class="mh-colib-curated-soon-tag">Guide coming soon</span>
+</div>
+<% } %>

@@ -20,11 +20,19 @@
   --ed-bg-alt: #F5F7FA;
   --ed-card: #FFFFFF;
   --ed-text: #1A1F2B;
-  --ed-muted: #5B6472;
+  --ed-muted: #4B5563; /* darkened ~12% from #5B6472 for stronger reading contrast */
   --ed-faint: #8B93A1;
   --ed-border: rgba(15, 23, 42, 0.07);
+  /* Local override of the global (dark-theme) --text-muted token (#94A3B8),
+     scoped only to this surface. Several inner components (timeline desc,
+     competency/tip desc, helps list) reference --text-muted directly; on
+     dark navy backgrounds elsewhere in the app that color is fine, but it
+     read as washed-out grey on this light surface's white cards. This
+     shadows the value for every element inside .mh-editorial-surface only —
+     the global --text-muted used on dark pages is untouched. */
+  --text-muted: #4B5563;
   background: var(--ed-bg);
-  padding: 64px 40px;
+  padding: 35px 40px; /* vertical -20% (44px -> 35px) this round; horizontal unchanged */
 }
 .mh-editorial-surface-alt { background: var(--ed-bg-alt); }
 .mh-editorial-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -38,12 +46,12 @@
   border: 1px solid var(--ed-border);
   border-radius: 18px;
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
-  padding: 40px 44px;
+  padding: 27px 31px; /* -10% this round (30/34 -> 27/31) */
 }
-.mh-editorial-card + .mh-editorial-card { margin-top: 28px; }
+.mh-editorial-card + .mh-editorial-card { margin-top: 22px; } /* -25% this round (30 -> 22) */
 .mh-editorial-card-title { font-family: var(--font-display); font-weight: 700; font-size: 21px; color: var(--ed-text); margin-bottom: 8px; }
 .mh-editorial-card .mh-eyebrow { margin-bottom: 12px; }
-.mh-editorial-body { font-size: 16px; color: var(--ed-muted); line-height: 1.75; }
+.mh-editorial-body { font-size: 16px; color: var(--ed-muted); line-height: 1.8; } /* line-height 1.75 -> 1.8 */
 .mh-editorial-muted { font-size: 15px; color: var(--ed-faint); }
 
 /* Hero titles get their own larger scale (48-56px) — distinct from
@@ -52,7 +60,28 @@
    on non-editorial pages like Why MedhaIQ / Architecture. Scoped to this
    modifier class so those other pages are completely unaffected. */
 .mh-colib-hero-title { font-size: clamp(32px, 4.5vw, 52px) !important; line-height: 1.12 !important; }
+/* Company Library landing page only — reduced ~12% from the shared
+   .mh-colib-hero-title scale above so it aligns with the typography
+   used on Why MedhaIQ, Architecture, and the Company Guide pages,
+   without changing those other pages (which share the base class and
+   are intentionally left untouched). Two classes = higher specificity,
+   so this wins over the !important rule above despite equal !important. */
+.mh-colib-hero-title.mh-colib-hero-title-compact { font-size: clamp(28px, 4vw, 46px) !important; }
 
+/* Real brand-mark logos (currently disabled — see the card partial's
+   USE_BRAND_ICONS flag) would render muted/monochrome rather than full
+   brand color, so the grid stays calm and editorial rather than
+   reading as a partner showcase. */
+/* Curated grid icon badge — MedhaIQ-designed abstract icon per company
+   (accent color set inline per-company via style attr, see the card
+   partial). Deliberately smaller than the shared 44px
+   .mh-explore-company-logo used elsewhere (e.g. the main Explore
+   page's company cards), so this override doesn't affect those. */
+.mh-colib-curated-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 2px;
+}
 /* Official Resources — deliberately NOT a card (per spec: "not another
    card section"), just lightweight text sitting directly on the surface. */
 .mh-colib-official-block { text-align: center; padding: 8px 0 32px; }
@@ -117,21 +146,22 @@
   display: flex; flex-direction: column; gap: 0;
 }
 .mh-colib-timeline-item {
-  display: flex; gap: 20px; position: relative; padding-bottom: 32px;
+  display: flex; gap: 14px; align-items: flex-start; position: relative; padding-bottom: 28px;
 }
 .mh-colib-timeline-item:last-child { padding-bottom: 0; }
 .mh-colib-timeline-item::before {
-  content: ''; position: absolute; left: 17px; top: 36px; bottom: 0; width: 1px;
+  content: ''; position: absolute; left: 14px; top: 30px; bottom: 0; width: 1px;
   background: var(--navy-border);
 }
 .mh-colib-timeline-item:last-child::before { display: none; }
 .mh-colib-timeline-num {
-  flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
   background: var(--navy-card); border: 1px solid var(--navy-border);
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--blue-bright);
+  font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--blue-bright);
   z-index: 1;
 }
+.mh-colib-timeline-body { padding-top: 4px; } /* nudges stage title baseline in line with the marker's center */
 .mh-colib-timeline-stage { font-family: var(--font-display); font-weight: 700; font-size: 15px; margin-bottom: 4px; }
 .mh-colib-timeline-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
 
@@ -139,6 +169,39 @@
 .mh-colib-competency-card { padding: 22px; }
 .mh-colib-competency-name { font-family: var(--font-display); font-weight: 700; font-size: 15px; margin-bottom: 8px; }
 .mh-colib-competency-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+/* ---- Curated grid cards (simplified Company Library landing page) —
+   logo monogram + name + one short identifier line only. Deliberately
+   lean: no category pill, no description, no competency chips. ---- */
+.mh-colib-curated-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.mh-colib-curated-card { align-items: flex-start; gap: 10px; }
+.mh-colib-curated-identifier { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.mh-colib-curated-card-soon { opacity: 0.55; cursor: default; }
+.mh-colib-curated-soon-tag {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.03em;
+  color: var(--text-faint); margin-top: 2px;
+}
+.mh-colib-viewall-row { text-align: center; margin-top: 32px; }
+
+/* Trademark/ownership disclaimer — sits below the curated grid, above
+   the CTA. Deliberately quiet: small, muted, centered, editorial
+   attribution rather than a prominent legal notice. */
+.mh-colib-trademark-disclaimer {
+  font-size: 11.5px; color: var(--ed-faint); line-height: 1.6; text-align: center;
+  max-width: 640px; margin: 40px auto 0;
+}
+
+/* ---- Preparation Tip cards — a distinct, more editorial treatment than
+   the plain competency cards: subtle off-white fill (vs. pure white),
+   a slightly stronger border, and more breathing room. Scoped to
+   .mh-colib-tip-card only, so Core Competency cards are unaffected. ---- */
+.mh-colib-tip-card {
+  padding: 28px; /* was 22px */
+  background: #F7F8FA !important; /* subtle off-white, distinct from the page's white cards */
+  border-color: rgba(15, 23, 42, 0.12) !important; /* was 0.07 — stronger definition */
+}
+.mh-colib-tip-card .mh-colib-competency-name { margin-bottom: 10px; } /* was 8px — clearer separation from the description */
+.mh-colib-tip-card .mh-colib-competency-desc { color: #454C58; } /* darker than the default --text-muted for this card only */
 
 /* ---- Representative questions ---- */
 .mh-colib-question-list {
@@ -215,3 +278,114 @@
 .mh-colib-final-cta .mh-section-title { font-size: 25px; margin-bottom: 8px; } /* real .mh-section-title maxes at 29px (clamp(22px,4.5vw,29px)), not 40px — this is ~12% below that actual value */
 .mh-colib-final-cta .mh-explore-cta-sub { font-size: 14px; max-width: 560px; margin: 0 auto 6px; } /* default margin-bottom is 8px — this tightens it slightly */
 .mh-colib-final-cta .mh-explore-cta-actions { margin-top: 4px; }
+
+/* ============================================================
+   EXECUTIVE BRIEFING LAYOUT — Company Guide redesign. New rules
+   only; nothing above this point was touched. Legacy classes for
+   the old snapshot grid / long-form timeline / prose wrap / howMedhaiqHelps
+   list are left in place (unused by the new template, but low-risk to
+   leave — see delivery notes for what's now orphaned).
+   ============================================================ */
+
+/* ---- Hero: summary-card row + one-line summary ---- */
+.mh-colib-brief-row {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 28px;
+  margin: 28px 0 20px; padding: 20px 0; border-top: 1px solid var(--navy-border);
+  border-bottom: 1px solid var(--navy-border);
+}
+.mh-colib-brief-stat { text-align: center; min-width: 96px; }
+.mh-colib-brief-stat-label {
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px;
+}
+.mh-colib-brief-stat-value { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--white); }
+.mh-colib-hero-summary { max-width: 640px; margin: 0 auto !important; font-size: 15px !important; line-height: 1.6 !important; }
+
+/* ---- Two-column briefing grid (main + sticky sidebar) ---- */
+.mh-colib-brief-grid {
+  display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 48px; align-items: start;
+}
+.mh-colib-brief-main { min-width: 0; }
+/* Denser section rhythm than the old .mh-editorial-card spacing —
+   this redesign targets ~60% information / 40% whitespace, so cards
+   sit closer together and have tighter internal padding. */
+.mh-colib-brief-card { padding: 28px 32px; }
+.mh-colib-brief-card + .mh-colib-brief-card { margin-top: 20px; }
+.mh-colib-brief-card .mh-editorial-card-title { margin-bottom: 14px; }
+
+.mh-colib-brief-sidebar { position: sticky; top: 100px; }
+.mh-colib-sidebar-card {
+  background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: var(--radius-lg);
+  padding: 22px 20px;
+}
+.mh-colib-sidebar-name { font-family: var(--font-display); font-weight: 800; font-size: 13px; letter-spacing: 0.04em; color: var(--white); }
+.mh-colib-sidebar-focus { font-size: 12px; color: var(--blue-bright); margin-top: 2px; margin-bottom: 14px; }
+.mh-colib-sidebar-divider { height: 1px; background: var(--navy-border); margin-bottom: 14px; }
+.mh-colib-sidebar-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  font-size: 12.5px; color: var(--text-muted); padding: 7px 0;
+}
+.mh-colib-sidebar-row span:last-child { color: var(--white); font-weight: 600; text-align: right; }
+.mh-colib-sidebar-row + .mh-colib-sidebar-row { border-top: 1px solid rgba(255,255,255,0.05); }
+/* Longer phrase values (Decision Style / Interview Style) stack instead
+   of sitting side-by-side, so they don't wrap awkwardly in the 300px
+   sidebar column. */
+.mh-colib-sidebar-row-stacked { flex-direction: column; align-items: flex-start; gap: 3px; }
+.mh-colib-sidebar-row-stacked span:last-child { text-align: left; font-weight: 500; font-size: 12px; color: var(--white); }
+.mh-colib-sidebar-stars { letter-spacing: 1px; color: var(--gold); font-weight: 400 !important; }
+
+@media (max-width: 900px) {
+  .mh-colib-brief-grid { grid-template-columns: 1fr; }
+  .mh-colib-brief-sidebar { position: static; order: -1; margin-bottom: 24px; }
+}
+
+/* ---- Interview Philosophy — max 5 principles, one sentence each ---- */
+.mh-colib-philosophy-list { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.mh-colib-philosophy-name { font-family: var(--font-display); font-weight: 700; font-size: 14.5px; color: var(--ed-text, #1A1F2B); }
+.mh-colib-philosophy-desc { font-size: 13.5px; color: var(--ed-muted, #5B6472); line-height: 1.55; margin-top: 2px; }
+
+/* ---- Compressed Interview Journey — one line per stage, minimal
+   vertical whitespace (a deliberate contrast to the old circular-marker
+   timeline used elsewhere, which this redesign replaces on this page). ---- */
+.mh-colib-journey-compact { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.mh-colib-journey-compact li {
+  display: grid; grid-template-columns: 22px auto 1fr; align-items: baseline; gap: 10px;
+  font-size: 13.5px; padding: 8px 0; border-bottom: 1px dashed var(--ed-border, rgba(15,23,42,0.08));
+}
+.mh-colib-journey-compact li:last-child { border-bottom: none; }
+.mh-colib-journey-num { font-family: var(--font-mono); font-size: 11px; color: var(--blue-bright); font-weight: 700; }
+.mh-colib-journey-stage { font-family: var(--font-display); font-weight: 700; color: var(--ed-text, #1A1F2B); white-space: nowrap; }
+.mh-colib-journey-desc { color: var(--ed-muted, #5B6472); line-height: 1.5; }
+@media (max-width: 560px) {
+  .mh-colib-journey-compact li { grid-template-columns: 18px 1fr; }
+  .mh-colib-journey-stage { grid-column: 2; }
+  .mh-colib-journey-desc { grid-column: 2; }
+}
+
+/* ---- Sample Questions accordion — native <details>/<summary>,
+   collapsed by default, no JS required. ---- */
+.mh-colib-accordion { display: flex; flex-direction: column; gap: 8px; }
+.mh-colib-accordion-item {
+  background: #FBFCFD; border: 1px solid var(--ed-border, rgba(15,23,42,0.07)); border-radius: 10px;
+  overflow: hidden;
+}
+.mh-colib-accordion-trigger {
+  display: flex; align-items: center; gap: 10px; padding: 13px 16px; cursor: pointer;
+  font-size: 13.5px; color: var(--ed-text, #1A1F2B); list-style: none;
+}
+.mh-colib-accordion-trigger::-webkit-details-marker { display: none; }
+.mh-colib-accordion-num {
+  flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--blue-glow); color: var(--blue-bright);
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+.mh-colib-accordion-q { flex: 1; line-height: 1.45; }
+.mh-colib-accordion-chevron { flex-shrink: 0; transition: transform 0.2s ease; color: var(--ed-faint, #8B93A1); }
+.mh-colib-accordion-item[open] .mh-colib-accordion-chevron { transform: rotate(180deg); }
+.mh-colib-accordion-body {
+  padding: 0 16px 14px 46px; font-size: 12.5px; color: var(--ed-muted, #5B6472); line-height: 1.55;
+}
+
+/* ---- Preparation Checklist ---- */
+.mh-colib-checklist { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.mh-colib-checklist li { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; color: var(--ed-text, #1A1F2B); line-height: 1.5; }
+.mh-colib-checklist li svg { flex-shrink: 0; margin-top: 2px; color: var(--emerald); }

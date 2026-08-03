@@ -39,17 +39,16 @@ const companyLibrary = [
       popularFunctions: ['Software Engineering', 'Product Management', 'Operations', 'Cloud & Infrastructure'],
     },
     overview: [
-      "Amazon is best known for building its hiring process around a written set of 16 Leadership Principles — Customer Obsession, Ownership, and Deliver Results among them — which the company has published openly on its own careers site for years. These aren't slogans; they're the actual evaluation rubric interviewers use, which is what makes Amazon's interview style distinct from most large tech companies.",
-      "What this means for candidates: nearly every interview question, even ones that sound technical, is really asking you to demonstrate a Leadership Principle through a real story from your experience. Amazon interviewers are trained to probe for specific, first-person detail — not hypotheticals — and to keep asking \"what did you personally do\" until they get a concrete answer.",
-      "Amazon also uses a 'Bar Raiser' — an interviewer from outside the hiring team, trained specifically to protect hiring quality — as part of most loops. Expect a heavier emphasis on structured storytelling than on whiteboard theatrics, even in technical rounds.",
+      "Amazon builds its hiring process around 16 published Leadership Principles — Customer Obsession, Ownership, and Deliver Results among them. These are the actual evaluation rubric interviewers use. Nearly every question, even technical ones, asks you to demonstrate a principle through a real story — interviewers keep probing \"what did you personally do\" until they get a concrete answer.",
+      "Amazon also uses a 'Bar Raiser' — an interviewer from outside the hiring team, trained to protect hiring quality. Expect structured storytelling over whiteboard theatrics, even in technical rounds.",
     ],
     interviewProcess: [
-      { stage: 'Application', desc: 'Resume and application are reviewed against the specific role\'s requirements; referrals can help surface your application but don\'t skip the review.' },
-      { stage: 'Recruiter Screen', desc: 'A recruiter call to confirm background, motivation, and logistics — light-touch, but your first chance to signal Leadership Principle alignment.' },
-      { stage: 'Technical / Functional', desc: 'Role-specific assessment — for technical roles, coding and system design; for business roles, case-style problem solving grounded in real scenarios.' },
-      { stage: 'Behavioral', desc: 'The core of Amazon\'s process — multiple interviewers, each mapped to specific Leadership Principles, asking STAR-style questions in depth.' },
-      { stage: 'Hiring Manager', desc: 'A conversation focused on role fit, team context, and your longer-term trajectory within Amazon.' },
-      { stage: 'Offer', desc: 'The Bar Raiser and hiring committee review the full loop\'s feedback before an offer is extended.' },
+      { stage: 'Application', desc: 'Reviewed against the specific role\'s requirements; referrals help surface an application but don\'t skip the review.' },
+      { stage: 'Recruiter Screen', desc: 'A call to confirm background and motivation — your first chance to signal Leadership Principle alignment.' },
+      { stage: 'Technical / Functional', desc: 'Coding and system design for technical roles; case-style problem solving for business roles.' },
+      { stage: 'Behavioral', desc: 'The core of Amazon\'s process — multiple interviewers, each mapped to specific principles, asking STAR-style questions in depth.' },
+      { stage: 'Hiring Manager', desc: 'A conversation on role fit, team context, and your longer-term trajectory at Amazon.' },
+      { stage: 'Offer', desc: 'The Bar Raiser and hiring committee review the full loop\'s feedback before extending an offer.' },
     ],
     competencies: [
       { name: 'Customer Obsession', desc: 'Starting from the customer and working backward, rather than starting from internal constraints.' },
@@ -65,21 +64,52 @@ const companyLibrary = [
       "Describe a project that failed. What did you learn, and what did you do differently afterward?",
       "Tell me about a time you had to resolve a conflict between two stakeholders with different priorities.",
       "Describe the most innovative idea you've implemented. What made it necessary?",
-      "Tell me about a time you had to make a decision with incomplete information.",
       "Describe a time you had to deliver results under a tight deadline with limited resources.",
     ],
     tips: [
-      { title: 'Preparation', desc: 'Read all 16 Leadership Principles before your interview and prepare at least one strong story per principle — reused stories across principles is a common mistake.' },
-      { title: 'Behavior', desc: 'Every answer should be about what YOU did, specifically — not what your team did. Interviewers will follow up until they get personal detail.' },
-      { title: 'Communication', desc: 'Be concise. Amazon interviewers value clarity over length — a tight, well-structured answer beats a rambling one.' },
-      { title: 'STAR', desc: 'Structure answers as Situation, Task, Action, Result — and don\'t skip the Result. Quantify impact wherever you honestly can.' },
-      { title: 'Mistakes', desc: 'Avoid generic or hypothetical answers ("I would probably..."). Amazon wants real situations, not theoretical ones.' },
+      { title: 'Preparation', desc: 'Prepare one strong story per Leadership Principle — reusing the same story across principles is a common mistake.' },
+      { title: 'Behavior', desc: 'Answers should be about what YOU did, specifically. Interviewers follow up until they get personal detail.' },
+      { title: 'Communication', desc: 'Be concise — a tight, well-structured answer beats a rambling one.' },
+      { title: 'STAR', desc: 'Structure answers as Situation, Task, Action, Result — don\'t skip the Result.' },
+      { title: 'Mistakes', desc: 'Avoid hypothetical answers ("I would probably..."). Amazon wants real situations.' },
     ],
     howMedhaiqHelps: [
-      'Practice behavioral rounds calibrated to Amazon\'s Leadership Principles specifically, not generic behavioral questions.',
-      'Get real-time STAR structure feedback so weak or incomplete answers get caught before the real interview.',
-      'Adaptive follow-up questions mirror how Amazon interviewers probe for personal, specific detail.',
-      'Receive an executive-style report scoring your readiness across the principles most relevant to your target role.',
+      'Practice behavioral rounds calibrated to Amazon\'s Leadership Principles, not generic questions.',
+      'Get real-time STAR structure feedback so weak answers get caught before the real interview.',
+      'Receive a report scoring your readiness across the principles most relevant to your role.',
+    ],
+    // BRIEFING — drives the new executive-briefing hero (summary cards +
+    // one-sentence summary) and the sticky sidebar. difficulty/rounds are
+    // editorial estimates (industry-standard perception, not sourced from
+    // a specific published statistic) — flagged here rather than presented
+    // as verified data, consistent with the project's no-unsourced-claims
+    // policy for anything more specific than this.
+    briefing: {
+      rounds: '5–6',
+      primaryFocus: 'Leadership Principles',
+      behavioralWeight: 'High',
+      technicalDepth: 'Medium–High',
+      difficulty: 4, // out of 5, editorial estimate
+      fingerprintLabel: 'Decision Style',
+      fingerprint: 'Data-driven, high ownership',
+      summary: 'Learn how Amazon evaluates candidates through Leadership Principles, Bar Raiser interviews, and structured behavioral and technical assessments.',
+    },
+    // Compressed 5-stage journey for the executive-briefing layout —
+    // deliberately generic stage labels (shared across all companies) so
+    // the template never changes; each desc stays company-specific.
+    journeyCompressed: [
+      { stage: 'Recruiter', desc: 'Confirms background and motivation, and gauges early Leadership Principle alignment.' },
+      { stage: 'Hiring Manager', desc: 'Discusses role fit, team context, and your longer-term trajectory at Amazon.' },
+      { stage: 'Technical / Behavioral', desc: 'Coding or case-style problem solving alongside STAR-structured principle questions.' },
+      { stage: 'Final Loop', desc: 'A Bar Raiser — an interviewer from outside the team — joins to protect hiring quality.' },
+      { stage: 'Offer', desc: 'The Bar Raiser and hiring committee review all feedback together before deciding.' },
+    ],
+    checklist: [
+      'Review all 16 Leadership Principles',
+      'Prepare one STAR story per principle',
+      'Quantify results wherever possible',
+      'Practice concise, first-person answers',
+      'Expect a Bar Raiser in the loop',
     ],
     relatedRoles: ['Software Engineer', 'Product Manager', 'Program Manager', 'Business Analyst'],
     // Verified real, current URLs (checked via web search, not memory) —
@@ -116,17 +146,16 @@ const companyLibrary = [
       popularFunctions: ['Software Engineering', 'Program Management', 'Cloud & Infrastructure', 'Data & AI'],
     },
     overview: [
-      "Microsoft's interview culture is publicly associated with the 'growth mindset' philosophy CEO Satya Nadella has championed since 2014 — the idea that ability develops through effort and learning, not fixed talent. This shows up directly in interviews: candidates are evaluated as much on how they approach an unfamiliar problem as on whether they get the 'right' answer.",
-      "What makes Microsoft distinct from Amazon's principle-driven format is its emphasis on collaborative problem-solving. Interviewers often want to see you think out loud, ask clarifying questions, and build on feedback in real time — a live audition for how you'd work with a Microsoft team, not just a knowledge test.",
-      "Candidates should expect a mix of technical depth (especially for engineering roles) and genuinely open-ended discussion questions with no single correct answer, designed to surface how you reason under ambiguity.",
+      "Microsoft's interview culture is tied to the 'growth mindset' philosophy CEO Satya Nadella has championed since 2014 — the idea that ability develops through effort and learning, not fixed talent. Candidates are evaluated as much on how they approach an unfamiliar problem as on whether they reach the 'right' answer, with a strong emphasis on collaborative problem-solving: interviewers want to see you think out loud, ask clarifying questions, and build on feedback in real time.",
+      "Expect a mix of technical depth (especially for engineering roles) and genuinely open-ended discussion questions with no single correct answer, designed to surface how you reason under ambiguity.",
     ],
     interviewProcess: [
-      { stage: 'Application', desc: 'Applications are matched to specific teams and roles — Microsoft hires into named teams more often than generic pools.' },
-      { stage: 'Recruiter Screen', desc: 'An initial call covering background, motivation, and role fit, often with a recruiter dedicated to that business group.' },
-      { stage: 'Technical / Functional', desc: 'Coding, system design, or role-specific problem-solving, with real-time collaboration and clarifying questions expected.' },
-      { stage: 'Behavioral', desc: "Growth-mindset and collaboration-focused questions — how you've learned from setbacks and worked through disagreement." },
-      { stage: 'Hiring Manager', desc: 'A conversation with the actual team lead about role scope, team dynamics, and mutual fit.' },
-      { stage: 'Offer', desc: 'Feedback from the full loop (often 4–5 interviewers) is reviewed together before a decision is made.' },
+      { stage: 'Application', desc: 'Matched to specific teams and roles — Microsoft hires into named teams more often than generic pools.' },
+      { stage: 'Recruiter Screen', desc: 'An initial call covering background, motivation, and role fit.' },
+      { stage: 'Technical / Functional', desc: 'Coding, system design, or role-specific problem-solving, with real-time collaboration expected.' },
+      { stage: 'Behavioral', desc: "Growth-mindset and collaboration questions — how you've learned from setbacks and worked through disagreement." },
+      { stage: 'Hiring Manager', desc: 'A conversation with the actual team lead about role scope and mutual fit.' },
+      { stage: 'Offer', desc: 'Feedback from the full loop is reviewed together before a decision is made.' },
     ],
     competencies: [
       { name: 'Growth Mindset', desc: 'Treating challenges as opportunities to learn rather than threats to your competence.' },
@@ -146,17 +175,40 @@ const companyLibrary = [
       "Describe a project where collaboration across teams was essential to success.",
     ],
     tips: [
-      { title: 'Preparation', desc: 'Research the specific team you\'re interviewing with, not just Microsoft broadly — questions are often tailored to that group\'s current focus.' },
-      { title: 'Behavior', desc: 'Show your reasoning process, not just conclusions. Microsoft interviewers are evaluating how you think, especially under ambiguity.' },
+      { title: 'Preparation', desc: 'Research the specific team you\'re interviewing with — questions are often tailored to that group\'s current focus.' },
+      { title: 'Behavior', desc: 'Show your reasoning process, not just conclusions. Microsoft evaluates how you think, especially under ambiguity.' },
       { title: 'Communication', desc: 'Ask clarifying questions before diving into an answer — jumping straight to a solution can read as not listening.' },
       { title: 'STAR', desc: 'Use STAR structure, but lean into the "what I learned" element — growth-mindset framing genuinely matters here.' },
-      { title: 'Mistakes', desc: 'Avoid presenting yourself as someone who never struggles. A well-told story about a real mistake often lands better than a polished success story.' },
+      { title: 'Mistakes', desc: 'A well-told story about a real mistake often lands better than a polished success story.' },
     ],
     howMedhaiqHelps: [
       'Practice ambiguous, open-ended discussion questions with adaptive follow-ups, not just scripted Q&A.',
       'Get feedback on how well you demonstrate growth-mindset framing versus reciting outcomes.',
-      'Simulate real-time collaborative problem-solving, not just isolated answer delivery.',
       'Receive a report scoring collaboration and communication alongside technical depth.',
+    ],
+    briefing: {
+      rounds: '4–5',
+      primaryFocus: 'Growth Mindset',
+      behavioralWeight: 'Medium–High',
+      technicalDepth: 'High',
+      difficulty: 4,
+      fingerprintLabel: 'Interview Style',
+      fingerprint: 'Conversational, collaborative',
+      summary: "Understand Microsoft's collaborative interview style, growth-mindset philosophy, and technical problem-solving expectations.",
+    },
+    journeyCompressed: [
+      { stage: 'Recruiter', desc: 'An initial call on background, motivation, and role fit with the hiring team.' },
+      { stage: 'Hiring Manager', desc: 'A conversation with the actual team lead about role scope and mutual fit.' },
+      { stage: 'Technical / Behavioral', desc: 'Coding or system design alongside growth-mindset and collaboration questions.' },
+      { stage: 'Final Loop', desc: 'A full loop of interviewers (often 4–5) evaluates role and culture fit together.' },
+      { stage: 'Offer', desc: 'Feedback from the full loop is reviewed together before a decision is made.' },
+    ],
+    checklist: [
+      "Research the specific team you're interviewing with",
+      'Prepare stories that show reasoning, not just outcomes',
+      'Practice thinking out loud under ambiguity',
+      'Have a genuine "what I learned" story ready',
+      'Ask clarifying questions before answering',
     ],
     relatedRoles: ['Software Engineer', 'Program Manager', 'Cloud Engineer', 'Data Scientist'],
     officialResources: [
@@ -190,17 +242,16 @@ const companyLibrary = [
       popularFunctions: ['Software Engineering', 'Product Management', 'Data Science', 'UX & Design'],
     },
     overview: [
-      "Google has publicly described its hiring approach as evaluating four core attributes: general cognitive ability, role-related knowledge, leadership, and 'Googleyness' — a term Google itself uses for cultural and collaborative fit. This framework, discussed in Google's own published hiring content, is a useful lens for understanding why Google interviews feel different from a typical skills test.",
-      "In practice, this means Google places significant weight on how you approach a problem you've never seen before — not whether you already know the answer. Interviewers are trained to focus more on your reasoning process, the questions you ask, and how you handle being stuck, than on reaching a 'correct' answer quickly.",
-      "Candidates should expect structured, often multi-part problems in technical rounds, and open, collaborative discussion in behavioral rounds — Google's interview style rewards curiosity and intellectual honesty over confident-sounding guesses.",
+      "Google evaluates candidates against four core attributes: general cognitive ability, role-related knowledge, leadership, and 'Googleyness' — its own term for cultural and collaborative fit. In practice, this means significant weight on how you approach a problem you've never seen before, not whether you already know the answer. Interviewers focus more on your reasoning process and how you handle being stuck than on reaching a 'correct' answer quickly.",
+      "Expect structured, often multi-part problems in technical rounds, and open, collaborative discussion in behavioral rounds — Google's style rewards curiosity and intellectual honesty over confident-sounding guesses.",
     ],
     interviewProcess: [
-      { stage: 'Application', desc: 'Applications are reviewed against the specific role — Google\'s process is known for being thorough at every stage rather than fast.' },
-      { stage: 'Recruiter Screen', desc: 'An introductory call to align on role, team, and process expectations, and to schedule the loop ahead.' },
-      { stage: 'Technical / Functional', desc: 'Structured problem-solving — coding and systems thinking for technical roles, structured case reasoning for others.' },
+      { stage: 'Application', desc: 'Reviewed against the specific role — Google\'s process is known for being thorough rather than fast.' },
+      { stage: 'Recruiter Screen', desc: 'An introductory call to align on role, team, and process expectations.' },
+      { stage: 'Technical / Functional', desc: 'Structured problem-solving — coding and systems thinking for technical roles, case reasoning for others.' },
       { stage: 'Behavioral', desc: 'Questions probing collaboration, leadership without authority, and how you\'ve handled ambiguity or failure.' },
-      { stage: 'Hiring Manager', desc: 'A conversation with the hiring manager focused on team fit and how your strengths map to the role\'s needs.' },
-      { stage: 'Offer', desc: 'Feedback across the loop is reviewed by a hiring committee — a distinct step Google has long been known for, separate from the interviewers themselves.' },
+      { stage: 'Hiring Manager', desc: 'A conversation focused on team fit and how your strengths map to the role\'s needs.' },
+      { stage: 'Offer', desc: 'Feedback across the loop is reviewed by a hiring committee, a step separate from the interviewers themselves.' },
     ],
     competencies: [
       { name: 'Problem Solving', desc: 'Breaking down unfamiliar problems methodically rather than pattern-matching to memorized solutions.' },
@@ -220,17 +271,40 @@ const companyLibrary = [
       "Tell me about a time you received critical feedback. How did you respond?",
     ],
     tips: [
-      { title: 'Preparation', desc: 'Practice thinking out loud — Google interviewers weight your reasoning process as heavily as your final answer.' },
+      { title: 'Preparation', desc: 'Practice thinking out loud — Google weighs your reasoning process as heavily as your final answer.' },
       { title: 'Behavior', desc: 'Ask clarifying questions rather than assuming — jumping to an answer too fast can read as overconfidence.' },
       { title: 'Communication', desc: 'Structure complex answers clearly; Google values the ability to make a hard problem sound simple.' },
-      { title: 'STAR', desc: 'Use STAR for behavioral answers, but be ready for genuine follow-up probing — Google interviewers dig into the "why" behind decisions.' },
+      { title: 'STAR', desc: 'Use STAR for behavioral answers, but be ready for genuine follow-up probing into the "why" behind decisions.' },
       { title: 'Mistakes', desc: 'Don\'t treat "I don\'t know" as failure — showing how you\'d find out is often more valuable than a confident wrong answer.' },
     ],
     howMedhaiqHelps: [
       'Practice structured, multi-part problem-solving with adaptive follow-ups that mirror Google\'s reasoning-focused style.',
       'Get feedback specifically on clarity of explanation, not just correctness.',
-      'Simulate collaborative, ambiguity-heavy discussion rounds rather than one-shot Q&A.',
       'Receive a report scoring problem-solving process alongside communication and role-related depth.',
+    ],
+    briefing: {
+      rounds: '4–6',
+      primaryFocus: 'Googleyness',
+      behavioralWeight: 'Medium',
+      technicalDepth: 'Very High',
+      difficulty: 5,
+      fingerprintLabel: 'Interview Style',
+      fingerprint: 'Structured, analytical',
+      summary: "Explore Google's structured interview process, problem-solving approach, and the qualities behind Googleyness.",
+    },
+    journeyCompressed: [
+      { stage: 'Recruiter', desc: 'An introductory call to align on role, team, and process expectations.' },
+      { stage: 'Hiring Manager', desc: "A conversation focused on team fit and how your strengths map to the role." },
+      { stage: 'Technical / Behavioral', desc: 'Structured, often multi-part problem-solving alongside collaboration and ambiguity questions.' },
+      { stage: 'Final Loop', desc: "A hiring committee — separate from your interviewers — reviews the full loop's feedback." },
+      { stage: 'Offer', desc: "A final decision follows committee review, which can add time versus other companies." },
+    ],
+    checklist: [
+      'Practice thinking out loud, not just reaching answers',
+      'Prepare structured, multi-part problem walkthroughs',
+      'Ask clarifying questions before diving in',
+      'Prepare STAR stories with genuine follow-up depth',
+      "Treat \"I don't know\" as an opportunity, not a failure",
     ],
     relatedRoles: ['Software Engineer', 'Product Manager', 'Data Scientist', 'UX Designer'],
     officialResources: [
@@ -264,17 +338,16 @@ const companyLibrary = [
       popularFunctions: ['Sales Engineering', 'Software Engineering', 'Customer Success', 'Product Management'],
     },
     overview: [
-      "Salesforce has publicly built its culture around four stated core values: Trust, Customer Success, Innovation, and Equality. As the company that popularized the enterprise SaaS model, its interviews tend to weight customer-centric thinking more heavily than pure technical depth — even for engineering roles.",
-      "What distinguishes Salesforce interviews is the consistent thread of 'customer success' running through nearly every question, technical or behavioral. Interviewers are listening for whether you naturally frame decisions in terms of customer outcomes, not just internal execution.",
-      "Candidates should expect a genuinely values-driven conversation — Salesforce interviewers are known for probing not just what you did, but whether your approach reflects trust and integrity in how you worked with others to get there.",
+      "Salesforce has built its culture around four stated core values: Trust, Customer Success, Innovation, and Equality. As the company that popularized the enterprise SaaS model, its interviews weight customer-centric thinking more heavily than pure technical depth — even for engineering roles. 'Customer success' runs through nearly every question, technical or behavioral; interviewers listen for whether you naturally frame decisions in terms of customer outcomes.",
+      "Candidates should expect a genuinely values-driven conversation — interviewers probe not just what you did, but whether your approach reflects trust and integrity in how you worked with others to get there.",
     ],
     interviewProcess: [
-      { stage: 'Application', desc: 'Applications are reviewed against the specific business unit — Salesforce\'s org spans many distinct product clouds and functions.' },
-      { stage: 'Recruiter Screen', desc: 'An introductory call covering background, motivation, and alignment with Salesforce\'s stated values.' },
-      { stage: 'Technical / Functional', desc: 'Role-specific assessment — technical rounds for engineering, solution-design exercises for sales engineering and consulting roles.' },
-      { stage: 'Behavioral', desc: 'Values-driven questions probing trust, customer focus, and how you\'ve handled ambiguity or conflict.' },
-      { stage: 'Hiring Manager', desc: 'A conversation focused on team fit and how your experience maps to the specific cloud or product area.' },
-      { stage: 'Offer', desc: 'Feedback from the loop is consolidated before an offer, with customer-success framing often a deciding factor between close candidates.' },
+      { stage: 'Application', desc: 'Reviewed against the specific business unit — Salesforce\'s org spans many distinct product clouds.' },
+      { stage: 'Recruiter Screen', desc: 'An introductory call covering background and alignment with Salesforce\'s stated values.' },
+      { stage: 'Technical / Functional', desc: 'Technical rounds for engineering; solution-design exercises for sales engineering and consulting roles.' },
+      { stage: 'Behavioral', desc: 'Values-driven questions probing trust, customer focus, and how you\'ve handled conflict.' },
+      { stage: 'Hiring Manager', desc: 'A conversation focused on team fit and how your experience maps to the product area.' },
+      { stage: 'Offer', desc: 'Feedback from the loop is consolidated, with customer-success framing often a deciding factor.' },
     ],
     competencies: [
       { name: 'Customer Success Focus', desc: 'Framing decisions around customer outcomes, not just internal metrics or convenience.' },
@@ -294,17 +367,40 @@ const companyLibrary = [
       "Describe a project where you had to balance innovation against reliability.",
     ],
     tips: [
-      { title: 'Preparation', desc: 'Know Salesforce\'s four core values (Trust, Customer Success, Innovation, Equality) and be ready to connect your stories to them explicitly.' },
-      { title: 'Behavior', desc: 'Frame technical or process decisions in terms of customer impact wherever genuinely true — it\'s a consistent thread interviewers listen for.' },
-      { title: 'Communication', desc: 'Be direct about tradeoffs rather than glossing over them; Salesforce interviewers value transparency over polish.' },
-      { title: 'STAR', desc: 'Use STAR structure, and make sure the "Result" section ties back to a customer or business outcome, not just task completion.' },
-      { title: 'Mistakes', desc: 'Avoid answers that focus purely on internal process improvements with no visible customer connection.' },
+      { title: 'Preparation', desc: 'Know Salesforce\'s four core values and be ready to connect your stories to them explicitly.' },
+      { title: 'Behavior', desc: 'Frame decisions in terms of customer impact wherever genuinely true — a consistent thread interviewers listen for.' },
+      { title: 'Communication', desc: 'Be direct about tradeoffs rather than glossing over them; transparency matters more than polish here.' },
+      { title: 'STAR', desc: 'Use STAR, and make sure the "Result" ties back to a customer or business outcome, not just task completion.' },
+      { title: 'Mistakes', desc: 'Avoid answers that focus purely on internal process with no visible customer connection.' },
     ],
     howMedhaiqHelps: [
       'Practice values-driven behavioral questions calibrated to Salesforce\'s specific culture, not generic prompts.',
-      'Get feedback on whether your answers connect to customer outcomes, a pattern Salesforce interviewers specifically listen for.',
-      'Adaptive follow-ups probe trust and integrity the way real Salesforce interviewers do.',
-      'Receive a report scoring customer-focus and collaboration alongside role-specific competence.',
+      'Get feedback on whether your answers connect to customer outcomes, a pattern interviewers specifically listen for.',
+      'Receive a report scoring customer focus and collaboration alongside role-specific competence.',
+    ],
+    briefing: {
+      rounds: '4–5',
+      primaryFocus: 'Ohana Culture',
+      behavioralWeight: 'High',
+      technicalDepth: 'Medium',
+      difficulty: 3,
+      fingerprintLabel: 'Decision Style',
+      fingerprint: 'Values-led, customer-first',
+      summary: 'Learn how Salesforce balances customer-first values, collaboration, and role-specific technical evaluation.',
+    },
+    journeyCompressed: [
+      { stage: 'Recruiter', desc: "An introductory call on background and alignment with Salesforce's stated values." },
+      { stage: 'Hiring Manager', desc: 'A conversation on team fit and how your experience maps to the product area.' },
+      { stage: 'Technical / Behavioral', desc: 'Role-specific technical or solution-design rounds alongside values-driven behavioral questions.' },
+      { stage: 'Final Loop', desc: 'Additional stakeholder conversations, depending on the business unit and role level.' },
+      { stage: 'Offer', desc: 'Feedback is consolidated, with customer-success framing often a deciding factor.' },
+    ],
+    checklist: [
+      "Know Salesforce's four core values",
+      'Connect your stories to Trust and Customer Success explicitly',
+      'Be direct about tradeoffs, not just successes',
+      'Tie STAR results back to customer or business outcomes',
+      'Avoid answers with no visible customer connection',
     ],
     relatedRoles: ['Sales Engineer', 'Software Engineer', 'Product Manager', 'Customer Success Manager'],
     officialResources: [
@@ -338,17 +434,16 @@ const companyLibrary = [
       popularFunctions: ['Strategy Consulting', 'Technology Consulting', 'Audit & Assurance', 'Risk Advisory'],
     },
     overview: [
-      "As one of the 'Big Four' professional services networks, Deloitte's interview process shares the case-interview tradition common across major consulting firms — structured business problems used to evaluate analytical reasoning in real time, not just past experience.",
-      "What distinguishes Deloitte's approach is an equal emphasis on client-facing communication alongside analytical rigor. Because consultants represent the firm directly in front of clients from very early in their careers, interviewers are evaluating executive presence and clarity of thought as much as the correctness of an analysis.",
-      "Candidates should expect a genuine mix of case-based problem-solving and behavioral questions probing leadership and teamwork — Deloitte's process varies somewhat by practice area (Strategy, Technology, Audit), so it's worth confirming which track you're interviewing for.",
+      "As one of the 'Big Four' professional services networks, Deloitte's interview process shares the case-interview tradition common across major consulting firms — structured business problems used to evaluate analytical reasoning in real time. What distinguishes Deloitte is an equal emphasis on client-facing communication: because consultants represent the firm in front of clients early in their careers, interviewers evaluate executive presence and clarity of thought as much as the correctness of an analysis.",
+      "Expect a mix of case-based problem-solving and behavioral questions on leadership and teamwork — process varies somewhat by practice area (Strategy, Technology, Audit), so confirm which track you're interviewing for.",
     ],
     interviewProcess: [
-      { stage: 'Application', desc: 'Applications are typically reviewed by practice area — Strategy, Technology, Audit, and Risk each have distinct hiring tracks.' },
-      { stage: 'Recruiter Screen', desc: 'An introductory call confirming background, practice-area interest, and process logistics.' },
-      { stage: 'Technical / Functional', desc: 'Case interviews — structured business problems requiring you to reason through ambiguity out loud, often with a partner or manager observing.' },
+      { stage: 'Application', desc: 'Reviewed by practice area — Strategy, Technology, Audit, and Risk each have distinct hiring tracks.' },
+      { stage: 'Recruiter Screen', desc: 'An introductory call confirming background and practice-area interest.' },
+      { stage: 'Technical / Functional', desc: 'Case interviews — structured business problems requiring you to reason through ambiguity out loud.' },
       { stage: 'Behavioral', desc: 'Questions on leadership, teamwork, and how you\'ve handled client or stakeholder pressure.' },
-      { stage: 'Hiring Manager', desc: 'A conversation with a partner or senior manager focused on practice fit and long-term trajectory within the firm.' },
-      { stage: 'Offer', desc: 'Feedback from case and behavioral rounds is reviewed together, with case performance typically weighted most heavily.' },
+      { stage: 'Hiring Manager', desc: 'A conversation with a partner or senior manager focused on practice fit and trajectory.' },
+      { stage: 'Offer', desc: 'Feedback from case and behavioral rounds is reviewed together, with case performance weighted most heavily.' },
     ],
     competencies: [
       { name: 'Analytical Problem Solving', desc: 'Structuring ambiguous business problems logically, out loud, under time pressure.' },
@@ -364,21 +459,43 @@ const companyLibrary = [
       "Tell me about a time you had to quickly get up to speed in an unfamiliar domain.",
       "Describe how you'd structure your approach to a problem with very little available data.",
       "Tell me about a time you disagreed with a team's direction. How did you handle it?",
-      "Describe a project where you had to manage competing stakeholder expectations.",
       "Tell me about a time you had to present a complex recommendation to a senior audience.",
     ],
     tips: [
-      { title: 'Preparation', desc: 'Practice structuring case problems out loud before the interview — the structure matters as much as the final answer.' },
-      { title: 'Behavior', desc: 'Treat the interviewer like a client in the case portion — ask clarifying questions and check in on your framing.' },
+      { title: 'Preparation', desc: 'Practice structuring case problems out loud — structure matters as much as the final answer.' },
+      { title: 'Behavior', desc: 'Treat the interviewer like a client in the case portion — ask clarifying questions and check your framing.' },
       { title: 'Communication', desc: 'Lead with your conclusion, then walk through supporting logic — consulting favors "answer-first" communication.' },
-      { title: 'STAR', desc: 'For behavioral questions, use STAR but keep results quantified and client- or business-outcome focused wherever possible.' },
-      { title: 'Mistakes', desc: 'Avoid diving into calculations before structuring the problem — Deloitte interviewers weight your framing heavily.' },
+      { title: 'STAR', desc: 'For behavioral questions, use STAR and keep results quantified and business-outcome focused.' },
+      { title: 'Mistakes', desc: 'Avoid diving into calculations before structuring the problem — framing is weighted heavily here.' },
     ],
     howMedhaiqHelps: [
       'Practice case-style structured problem-solving with adaptive follow-ups, not just fixed scripts.',
       'Get feedback on answer-first communication clarity, a consulting-specific skill most candidates haven\'t practiced.',
-      'Simulate the client-facing tone Deloitte interviewers specifically listen for.',
       'Receive a report scoring structured reasoning and executive presence alongside behavioral competence.',
+    ],
+    briefing: {
+      rounds: '3–4',
+      primaryFocus: 'Case & Behavioural',
+      behavioralWeight: 'High',
+      technicalDepth: 'Medium',
+      difficulty: 4,
+      fingerprintLabel: 'Decision Style',
+      fingerprint: 'Analytical, client-first',
+      summary: "Understand Deloitte's consulting interview process, case discussions, behavioral evaluation, and client-focused mindset.",
+    },
+    journeyCompressed: [
+      { stage: 'Recruiter', desc: 'An introductory call confirming background and practice-area interest.' },
+      { stage: 'Hiring Manager', desc: 'A conversation with a partner or senior manager on practice fit and trajectory.' },
+      { stage: 'Technical / Behavioral', desc: 'Case interviews on structured business problems, alongside leadership and teamwork questions.' },
+      { stage: 'Final Loop', desc: 'Additional case or partner conversations, depending on practice area.' },
+      { stage: 'Offer', desc: 'Case and behavioral feedback is reviewed together, with case performance weighted most.' },
+    ],
+    checklist: [
+      'Practice structuring case problems out loud',
+      'Lead with your conclusion, then the supporting logic',
+      'Prepare STAR stories with quantified, business-outcome results',
+      "Confirm which practice area you're interviewing for",
+      "Avoid calculating before you've structured the problem",
     ],
     relatedRoles: ['Strategy Consultant', 'Technology Consultant', 'Business Analyst', 'Risk Advisory Associate'],
     officialResources: [
@@ -393,4 +510,34 @@ const companyLibrary = [
 // for these yet, so this array intentionally has no slugs/links.
 const comingSoonCompanies = ['Accenture', 'NVIDIA', 'Oracle', 'ServiceNow', 'TCS', 'Infosys'];
 
-module.exports = { companyLibrary, comingSoonCompanies };
+// Curated Companies — drives the simplified /explore/company-library
+// landing page grid (recognition + selection only: name + one short
+// interview identifier, no descriptions). Deliberately decoupled from
+// companyLibrary above: adding a new company to this landing grid means
+// adding one object here, whether or not its full guide exists yet.
+// `hasGuide: false` renders the card in a muted, non-clickable "Guide
+// coming soon" state instead of linking to a page that doesn't exist —
+// V1 visual identity: no real company logos or simplified redraws (see
+// trademark note above — Microsoft and Amazon's own guidelines prohibit
+// any reproduction of their marks without a written license). Instead,
+// each company gets a MedhaIQ-designed abstract icon + accent color,
+// acting purely as a navigation cue — not company branding. If real,
+// licensed logos are introduced later, that's a separate enhancement;
+// this data shape (icon key + accentColor) stays the same either way.
+const curatedCompanies = [
+  { slug: 'amazon',    name: 'Amazon',    identifier: 'Leadership Principles & Ownership', icon: 'ascend',    accentColor: '#F97316', hasGuide: true },
+  { slug: 'microsoft', name: 'Microsoft', identifier: 'Growth Mindset & Collaboration',    icon: 'grid',      accentColor: '#0EA5E9', hasGuide: true },
+  { slug: 'google',    name: 'Google',    identifier: 'Googleyness & Innovation',          icon: 'search',    accentColor: '#6366F1', hasGuide: true },
+  { slug: 'salesforce',name: 'Salesforce',identifier: 'Ohana Culture & Trust',             icon: 'cloud',     accentColor: '#14B8A6', hasGuide: true },
+  { slug: 'deloitte',  name: 'Deloitte',  identifier: 'Case Method & Client Impact',       icon: 'briefcase', accentColor: '#8B5CF6', hasGuide: true },
+  // Disabled "Coming Soon" cards per this round's direction — no guides
+  // written yet, kept visible so the library reads as actively growing.
+  // Identifiers picked to avoid reusing Amazon's own branded principle
+  // names (e.g. "Ownership", "Customer Obsession") verbatim on an
+  // unrelated company's card.
+  { slug: 'meta',      name: 'Meta',      identifier: 'Move Fast & Impact',                icon: 'network',   accentColor: '#F43F5E', hasGuide: false },
+  { slug: 'apple',     name: 'Apple',     identifier: 'Craftsmanship & Simplicity',        icon: 'diamond',   accentColor: '#64748B', hasGuide: false },
+  { slug: 'stripe',    name: 'Stripe',    identifier: 'High Standards & Rigor',            icon: 'card',      accentColor: '#4F46E5', hasGuide: false },
+];
+
+module.exports = { companyLibrary, comingSoonCompanies, curatedCompanies };
