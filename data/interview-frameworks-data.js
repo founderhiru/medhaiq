@@ -17,6 +17,7 @@ const frameworks = [
     slug: 'star-method',
     title: 'STAR Method',
     oneLiner: 'Structure behavioural answers with clear evidence and measurable impact.',
+    ctaCopy: 'Apply the STAR Method in a realistic interview and receive personalized AI feedback.',
     seo: {
       title: 'STAR Method Interview Framework | MedhaIQ',
       description: 'Learn the STAR method for behavioural interviews — structure, worked example, common mistakes, and preparation checklist.',
@@ -65,6 +66,7 @@ const frameworks = [
     slug: 'tell-me-about-yourself',
     title: 'Tell Me About Yourself',
     oneLiner: 'Open every interview with a concise, confident narrative.',
+    ctaCopy: 'Practice your opening narrative in a realistic interview and receive personalized AI feedback.',
     seo: {
       title: 'Tell Me About Yourself Framework | MedhaIQ',
       description: 'A structure for answering "tell me about yourself" — present, transition, and connect to the role, with a worked example and common mistakes.',
@@ -111,6 +113,7 @@ const frameworks = [
     slug: 'behavioural-interviews',
     title: 'Behavioural Interviews',
     oneLiner: 'Answer any behavioural question with structure, evidence, and reflection.',
+    ctaCopy: 'Apply this approach in a realistic behavioural interview and receive personalized AI feedback.',
     seo: {
       title: 'Behavioural Interview Framework | MedhaIQ',
       description: 'A general-purpose approach to behavioural interview questions — listening, structuring, evidencing, and reflecting.',
@@ -158,6 +161,7 @@ const frameworks = [
     slug: 'system-design',
     title: 'System Design',
     oneLiner: 'Build structured, scalable technical solutions with confidence.',
+    ctaCopy: 'Apply this framework in a realistic system design interview and receive personalized AI feedback.',
     seo: {
       title: 'System Design Interview Framework | MedhaIQ',
       description: 'A structure for system design interviews — clarifying requirements, constraints, high-level design, deep dives, and trade-offs.',
@@ -207,6 +211,7 @@ const frameworks = [
     slug: 'product-sense',
     title: 'Product Sense',
     oneLiner: 'Learn how product companies evaluate customer thinking and prioritization.',
+    ctaCopy: 'Apply this approach in a realistic product sense interview and receive personalized AI feedback.',
     seo: {
       title: 'Product Sense Interview Framework | MedhaIQ',
       description: 'A structure for product sense interviews — understanding the user, defining the problem, generating solutions, and prioritizing.',
@@ -255,6 +260,7 @@ const frameworks = [
     slug: 'leadership-stories',
     title: 'Leadership Stories',
     oneLiner: 'Tell leadership stories that demonstrate real ownership and impact.',
+    ctaCopy: 'Apply this storytelling approach in a realistic interview and receive personalized AI feedback.',
     seo: {
       title: 'Leadership Stories Interview Framework | MedhaIQ',
       description: 'A structure for leadership and management interview stories — context, challenge, decision, outcome, and reflection.',

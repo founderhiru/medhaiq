@@ -33,7 +33,7 @@
   <section class="mh-why-hero mh-explore-hero-compact reveal">
     <div class="mh-why-hero-inner mh-section-center">
       <div class="mh-eyebrow"><%= company.category %></div>
-      <h1 class="mh-section-title mh-explore-hero-h1"><%= company.name %> Interview Guide</h1>
+      <h1 class="mh-section-title mh-explore-guide-hero-h1"><%= company.name %> Interview Guide</h1>
       <p class="mh-section-sub"><%= company.briefing.summary %></p>
     </div>
   </section>
@@ -188,13 +188,15 @@
     </div>
   </div>
 
-  <!-- FINAL CTA — the only CTA on the page. -->
+  <!-- FINAL CTA — the only CTA on the page. Unified Explore-wide
+       pattern: same title and button label everywhere; only the
+       supporting line is dynamic. -->
   <section class="mh-colib-dark-cta reveal">
     <div class="mh-explore-cta-inner">
-      <h2 class="mh-section-title">Your preparation starts here.</h2>
-      <p class="mh-explore-cta-sub">You've seen how <%= company.name %> evaluates candidates and what to prepare for. Now experience a personalized interview tailored to your resume and target role.</p>
+      <h2 class="mh-section-title">Ready to practice?</h2>
+      <p class="mh-explore-cta-sub">Practice an interview inspired by <%= company.name %>'s interview style and receive personalized AI feedback.</p>
       <div class="mh-explore-cta-actions">
-        <a href="/login" class="mh-btn-primary">Practice <%= company.name %> Interview</a>
+        <a href="/login" class="mh-btn-primary">Start Practice Interview</a>
       </div>
       <p style="margin-top: 16px;"><a href="/explore/company-library" class="mh-explore-card-link" style="justify-content: center; color: var(--text-muted);">Back to Library</a></p>
     </div>

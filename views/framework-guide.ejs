@@ -32,7 +32,7 @@
   <section class="mh-why-hero mh-explore-hero-compact reveal">
     <div class="mh-why-hero-inner mh-section-center">
       <div class="mh-eyebrow"><%= fw.hero.subheadline %></div>
-      <h1 class="mh-section-title mh-explore-hero-h1"><%= fw.title %></h1>
+      <h1 class="mh-section-title mh-explore-guide-hero-h1"><%= fw.title %></h1>
     </div>
   </section>
 
@@ -165,13 +165,15 @@
     </div>
   </div>
 
-  <!-- Final CTA — dark, per color system -->
+  <!-- Final CTA — dark, per color system. Unified Explore-wide pattern:
+       same title and button label everywhere; only the supporting line
+       is dynamic (fw.ctaCopy, per framework). -->
   <section class="mh-colib-dark-cta reveal">
     <div class="mh-explore-cta-inner">
-      <h2 class="mh-section-title">Ready to practise <%= fw.title.toLowerCase() %>?</h2>
-      <p class="mh-explore-cta-sub">Experience a personalized interview and get AI feedback on your structure, evidence, and communication.</p>
+      <h2 class="mh-section-title">Ready to practice?</h2>
+      <p class="mh-explore-cta-sub"><%= fw.ctaCopy %></p>
       <div class="mh-explore-cta-actions">
-        <a href="/login" class="mh-btn-primary">Practice <%= fw.title %> Interview</a>
+        <a href="/login" class="mh-btn-primary">Start Practice Interview</a>
       </div>
     </div>
   </section>

@@ -31,7 +31,7 @@
   <section class="mh-why-hero mh-explore-hero-compact reveal">
     <div class="mh-why-hero-inner mh-section-center">
       <div class="mh-eyebrow"><%= role.hero.subheadline %></div>
-      <h1 class="mh-section-title mh-explore-hero-h1"><%= role.title %> Interview Guide</h1>
+      <h1 class="mh-section-title mh-explore-guide-hero-h1"><%= role.title %> Interview Guide</h1>
     </div>
   </section>
 
@@ -180,7 +180,7 @@
 
       <!-- Practice With MedhaIQ -->
       <div class="mh-editorial-card">
-        <div class="mh-eyebrow">Ready To Practice?</div>
+        <div class="mh-eyebrow">What You'll Get</div>
         <h2 class="mh-editorial-card-title">Put your preparation into practice</h2>
         <ul class="mh-colib-helps-list" style="margin-top: 16px;">
           <% role.practiceHelps.forEach(function(point) { %>
@@ -192,13 +192,16 @@
     </div>
   </div>
 
-  <!-- Final CTA — dark, per color system -->
-  <section class="mh-colib-dark-cta reveal" id="sample-report">
+  <!-- Final CTA — dark, per color system. Unified Explore-wide pattern:
+       same title and button label everywhere; only the supporting line
+       is dynamic. -->
+  <% const _article = /^[aeiou]/i.test(role.title) ? 'an' : 'a'; %>
+  <section class="mh-colib-dark-cta reveal">
     <div class="mh-explore-cta-inner">
       <h2 class="mh-section-title">Ready to practice?</h2>
-      <p class="mh-explore-cta-sub">Start a personalized <%= role.title %> interview based on your resume and target level.</p>
+      <p class="mh-explore-cta-sub">Practice <%= _article %> <%= role.title %> interview with AI-powered feedback.</p>
       <div class="mh-explore-cta-actions">
-        <a href="/login" class="mh-btn-primary">Practice <%= role.title %> Interview</a>
+        <a href="/login" class="mh-btn-primary">Start Practice Interview</a>
       </div>
     </div>
   </section>

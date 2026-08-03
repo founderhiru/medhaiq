@@ -7,23 +7,28 @@
    reproducing their marks in any form, in any size, without a written
    license — a small monochrome version is still "the mark." Instead,
    every company gets a MedhaIQ-designed abstract icon + accent color,
-   acting as a navigation cue, not company branding. Icons are simple,
-   generic geometric shapes (bars, rings, arches, hexagons) chosen to
-   NOT evoke each company's actual logo silhouette. Real, licensed
-   logos are a separate future enhancement, not a V1 concern — this
-   card's structure (icon key + accentColor per company) doesn't need
-   to change if that happens later. */
+   acting as a navigation cue, not company branding.
+
+   V2 REFINEMENT: icons moved from fully arbitrary shapes to generic,
+   universal category symbols (grid, search, cloud, briefcase, network,
+   card) that are loosely evocative of what each company does — this is
+   deliberately standard, ubiquitous UI iconography (the same magnifying
+   glass every app uses for "search", the same cloud every SaaS product
+   uses for "cloud"), NOT an attempt to recreate any company's specific
+   logo proportions or arrangement. Goal per this round's spec:
+   "company-inspired," not "unofficial logo." Real, licensed logos
+   remain a separate future enhancement if ever pursued. */
 const ICONS = {
-  ascend:  '<rect x="4" y="13" width="4" height="7" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="16" y="4" width="4" height="16" rx="1"/>',
-  pennant: '<path d="M6 3v18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M6 4l13 5.5L6 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
-  orbit:   '<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/>',
-  arch:    '<path d="M5 20v-6a7 7 0 0 1 14 0v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-  stack:   '<path d="M12 4l7 4-7 4-7-4 7-4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 13l7 4 7-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
-  hex:     '<path d="M12 3.5l7.5 4.25v8.5L12 20.5l-7.5-4.25v-8.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
-  diamond: '<rect x="7.5" y="7.5" width="9" height="9" rx="1.5" transform="rotate(45 12 12)" fill="none" stroke="currentColor" stroke-width="2"/>',
-  wave:    '<path d="M3 13c1.8-3.5 3.6-3.5 5.4 0s3.6 3.5 5.4 0 3.6-3.5 5.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  ascend:    '<rect x="4" y="13" width="4" height="7" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="16" y="4" width="4" height="16" rx="1"/>',
+  grid:      '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  search:    '<circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.3 15.3L20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  cloud:     '<path d="M7.5 18a4.5 4.5 0 0 1-.7-8.94A5.5 5.5 0 0 1 17.2 8.4 4 4 0 0 1 16.5 18h-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  briefcase: '<rect x="4" y="8" width="16" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8V6.5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2V8" fill="none" stroke="currentColor" stroke-width="2"/>',
+  network:   '<circle cx="6" cy="7" r="2.2" fill="currentColor"/><circle cx="18" cy="7" r="2.2" fill="currentColor"/><circle cx="12" cy="18" r="2.2" fill="currentColor"/><path d="M8 8l6.5-1.3M8.2 9l3 7.3M15.8 9l-3 7.3" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+  diamond:   '<rect x="7.5" y="7.5" width="9" height="9" rx="1.5" transform="rotate(45 12 12)" fill="none" stroke="currentColor" stroke-width="2"/>',
+  card:      '<rect x="3" y="6" width="18" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 10.2h18" stroke="currentColor" stroke-width="2"/><rect x="6" y="14" width="5" height="2" rx="1" fill="currentColor"/>',
 };
-const iconSvg = ICONS[company.icon] || ICONS.orbit;
+const iconSvg = ICONS[company.icon] || ICONS.grid;
 %>
 <% if (company.hasGuide) { %>
 <a href="/explore/company-library/<%= company.slug %>" class="mh-explore-card-btn" role="listitem" aria-label="<%= company.name %> interview guide">
