@@ -32,7 +32,7 @@
      the global --text-muted used on dark pages is untouched. */
   --text-muted: #4B5563;
   background: var(--ed-bg);
-  padding: 64px 40px;
+  padding: 44px 40px;
 }
 .mh-editorial-surface-alt { background: var(--ed-bg-alt); }
 .mh-editorial-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -46,9 +46,9 @@
   border: 1px solid var(--ed-border);
   border-radius: 18px;
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
-  padding: 40px 44px;
+  padding: 30px 34px;
 }
-.mh-editorial-card + .mh-editorial-card { margin-top: 54px; } /* was 28px — +26px for a calmer reading rhythm */
+.mh-editorial-card + .mh-editorial-card { margin-top: 30px; }
 .mh-editorial-card-title { font-family: var(--font-display); font-weight: 700; font-size: 21px; color: var(--ed-text); margin-bottom: 8px; }
 .mh-editorial-card .mh-eyebrow { margin-bottom: 12px; }
 .mh-editorial-body { font-size: 16px; color: var(--ed-muted); line-height: 1.8; } /* line-height 1.75 -> 1.8 */

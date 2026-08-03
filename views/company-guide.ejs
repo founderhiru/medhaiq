@@ -26,52 +26,15 @@
   <%- include('partials/header') %>
 
   <!-- ============================================================
-       EXECUTIVE BRIEFING HERO — informs, doesn't market. Eyebrow +
-       name + a single horizontal row of interview-intelligence stats
-       + one two-line summary sentence. No CTA and no "view sample
-       report" link here — the page has exactly one CTA, at the very
-       bottom, per this round's redesign.
+       Canonical Explore hero — Eyebrow, Title, one supporting
+       sentence. No stats row, no CTA: this page has exactly one CTA,
+       at the very bottom of the guide.
        ============================================================ -->
-  <section class="mh-why-hero reveal">
+  <section class="mh-why-hero mh-explore-hero-compact reveal">
     <div class="mh-why-hero-inner mh-section-center">
       <div class="mh-eyebrow"><%= company.category %></div>
-      <h1 class="mh-section-title mh-colib-hero-title mh-colib-hero-title-compact"><%= company.name %> Interview Guide</h1>
-
-      <div class="mh-colib-brief-row" role="list">
-        <div class="mh-colib-brief-stat" role="listitem">
-          <div class="mh-colib-brief-stat-label">Interview Rounds</div>
-          <div class="mh-colib-brief-stat-value"><%= company.briefing.rounds %></div>
-        </div>
-        <div class="mh-colib-brief-stat" role="listitem">
-          <div class="mh-colib-brief-stat-label">Primary Focus</div>
-          <div class="mh-colib-brief-stat-value"><%= company.briefing.primaryFocus %></div>
-        </div>
-        <div class="mh-colib-brief-stat" role="listitem">
-          <div class="mh-colib-brief-stat-label">Behavioral Weight</div>
-          <div class="mh-colib-brief-stat-value"><%= company.briefing.behavioralWeight %></div>
-        </div>
-        <div class="mh-colib-brief-stat" role="listitem">
-          <div class="mh-colib-brief-stat-label">Technical Depth</div>
-          <div class="mh-colib-brief-stat-value"><%= company.briefing.technicalDepth %></div>
-        </div>
-        <%
-          const _wordSource = [
-            company.briefing.summary,
-            company.journeyCompressed.map(function(s) { return s.stage + ' ' + s.desc; }).join(' '),
-            company.competencies.map(function(c) { return c.name + ' ' + c.desc; }).join(' '),
-            company.questions.join(' '),
-            company.checklist.join(' '),
-          ].join(' ');
-          const _wordCount = _wordSource.split(/\s+/).filter(Boolean).length;
-          const _readingMinutes = Math.max(1, Math.round(_wordCount / 200));
-        %>
-        <div class="mh-colib-brief-stat" role="listitem">
-          <div class="mh-colib-brief-stat-label">Reading Time</div>
-          <div class="mh-colib-brief-stat-value"><%= _readingMinutes %> min</div>
-        </div>
-      </div>
-
-      <p class="mh-section-sub mh-colib-hero-summary"><%= company.briefing.summary %></p>
+      <h1 class="mh-section-title mh-explore-hero-h1"><%= company.name %> Interview Guide</h1>
+      <p class="mh-section-sub"><%= company.briefing.summary %></p>
     </div>
   </section>
 
@@ -82,6 +45,17 @@
        ============================================================ -->
   <div class="mh-editorial-surface">
     <div class="mh-editorial-inner">
+      <%
+        const _wordSource = [
+          company.briefing.summary,
+          company.journeyCompressed.map(function(s) { return s.stage + ' ' + s.desc; }).join(' '),
+          company.competencies.map(function(c) { return c.name + ' ' + c.desc; }).join(' '),
+          company.questions.join(' '),
+          company.checklist.join(' '),
+        ].join(' ');
+        const _wordCount = _wordSource.split(/\s+/).filter(Boolean).length;
+        const _readingMinutes = Math.max(1, Math.round(_wordCount / 200));
+      %>
 
       <nav class="mh-colib-breadcrumb-row" aria-label="Breadcrumb" style="padding: 0 0 24px; color: var(--ed-muted, #5B6472);">
         <div style="color: inherit;">

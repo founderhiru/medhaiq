@@ -25,15 +25,13 @@
 <body>
   <%- include('partials/header') %>
 
-  <!-- Hero — dark -->
-  <section class="mh-why-hero reveal">
+  <!-- Hero — dark, canonical Explore scale. No CTA here: the guide
+       begins with learning; the practice invitation lives at the
+       bottom, after the reader has actually gone through the role. -->
+  <section class="mh-why-hero mh-explore-hero-compact reveal">
     <div class="mh-why-hero-inner mh-section-center">
       <div class="mh-eyebrow"><%= role.hero.subheadline %></div>
-      <h1 class="mh-section-title mh-colib-hero-title"><%= role.title %> Interview Guide</h1>
-      <div class="mh-explore-cta-actions" style="margin-top: 28px;">
-        <a href="/login" class="mh-btn-primary">Practice <%= role.title %> Interview</a>
-      </div>
-      <p style="margin-top: 16px;"><a href="#sample-report" class="mh-explore-card-link" style="justify-content: center;">View Sample Report</a></p>
+      <h1 class="mh-section-title mh-explore-hero-h1"><%= role.title %> Interview Guide</h1>
     </div>
   </section>
 

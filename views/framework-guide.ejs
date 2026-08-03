@@ -26,14 +26,13 @@
 <body>
   <%- include('partials/header') %>
 
-  <!-- Hero — dark, same layout as Role Guide's hero (not redesigned) -->
-  <section class="mh-why-hero reveal">
+  <!-- Hero — dark, canonical Explore scale. No CTA: the framework
+       page begins with learning; the practice invitation comes only
+       after the reader understands the framework, at the bottom. -->
+  <section class="mh-why-hero mh-explore-hero-compact reveal">
     <div class="mh-why-hero-inner mh-section-center">
       <div class="mh-eyebrow"><%= fw.hero.subheadline %></div>
-      <h1 class="mh-section-title mh-colib-hero-title"><%= fw.title %></h1>
-      <div class="mh-explore-cta-actions" style="margin-top: 28px;">
-        <a href="/login" class="mh-btn-primary">Practice <%= fw.title %> Interview</a>
-      </div>
+      <h1 class="mh-section-title mh-explore-hero-h1"><%= fw.title %></h1>
     </div>
   </section>
 
