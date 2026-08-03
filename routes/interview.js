@@ -18,24 +18,6 @@ const {
   PERSONAS,
 } = require('../services/interview');
 
-// TEMPORARY DIAGNOSTIC (requested explicitly — remove once root cause is
-// confirmed on the actual deployed environment). Runs once, at module
-// load time, printing to whatever environment actually loads this file.
-// This is the only way to see Render's actual runtime state — running
-// this locally proves what happens in a sandbox, not what happens on
-// Render's deployed instance.
-{
-  const interviewService = require('../services/interview');
-  console.log("================================");
-  console.log("Resolved Path:", require.resolve('../services/interview'));
-  console.log("Export Object:", interviewService);
-  console.log("Export Function:", interviewService.hasSufficientCoverage);
-  console.log("Export Type:", typeof interviewService.hasSufficientCoverage);
-  console.log("Imported Function:", hasSufficientCoverage);
-  console.log("Imported Type:", typeof hasSufficientCoverage);
-  console.log("================================");
-}
-
 const {
   createSession,
   getSession,

@@ -617,6 +617,29 @@ function buildInterviewSnapshot({ roleTitle, qaPairs, questionCount }) {
   return { roleKey, priority, currentTurn, memoryMap, hypothesisMap, globalMaturityTiers };
 }
 
+// ── Executive Extension coverage gate (Leadership only) ──
+// Deliberately NOT a new algorithm — this is a thin, read-only wrapper
+// around the exact same buildInterviewSnapshot()/runHypothesisEngine()
+// machinery every question generation call already runs, reusing the
+// exact same EVIDENCE_TIERS thresholds already defined above. It asks
+// one new question of an already-computed thing ("is coverage sufficient
+// across every priority competency?") rather than computing anything new.
+//
+// "Sufficient" = every priority competency's evidenceTier.needsVerification
+// is false — i.e. STRONG or VERIFIED (the exact tier the engine's own
+// existing logic already treats as no longer needing more evidence, see
+// EVIDENCE_TIERS above). This is the natural, already-existing meaning of
+// "covered enough" in this codebase, not a new threshold invented for
+// this feature.
+//
+// Used by routes/interview.js, after a Leadership session's 5th (visible)
+// question is answered, to decide whether to allow up to
+// executiveExtensionBudget more adaptive questions before wrapping up.
+function hasSufficientCoverage({ roleTitle, qaPairs, questionCount }) {
+  const snapshot = buildInterviewSnapshot({ roleTitle, qaPairs, questionCount });
+  return snapshot.priority.every(c => snapshot.hypothesisMap[c].needsVerification === false);
+}
+
 // ── E. Candidate Model Engine ──
 // Shifts from "score this answer" to "understand this candidate."
 // Entirely deterministic — text-pattern and score-trend heuristics over
@@ -1613,29 +1636,6 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   // past turn's storyKey, so "already used" is derived with zero new state).
   const usedStoryKeys = new Set(qaPairs.map(p => p.storyKey).filter(Boolean));
 
-  // ── FUTURE EXTENSION POINT (design prep only, 2026-07-29 — no behavior
-  // change in this release): usedStoryKeys is currently seeded ONLY from
-  // this session's own qaPairs, so a story retired here (see the
-  // Retirement comment in selectStoryForCompetency below) is only
-  // excluded within THIS session — a candidate's next, separate
-  // interview starts with a clean slate and can be asked about the exact
-  // same story again. To prioritize previously-unused stories across
-  // multiple interviews (continuous practice), the correct seam is
-  // exactly this line: merge a persisted per-user "story usage history"
-  // into this same Set before it's passed to selectStoryForCompetency,
-  // e.g. `new Set([...qaPairs-derived keys, ...persistedHistoryKeys])`.
-  // selectStoryForCompetency() itself needs ZERO changes to support this
-  // — it already treats "used" as a hard exclusion (with the founder-
-  // approved "reuse if nothing else is available" fallback), and doesn't
-  // care whether a key came from this session or a prior one. The only
-  // new work would be: (1) a persistence layer for story usage — most
-  // naturally a new column/table keyed by user_id + story_key (e.g.
-  // career_profiles.story_usage_history jsonb, or a dedicated
-  // story_usage table if last-used-at / use-count per story is wanted),
-  // and (2) this call site reading and merging that history in, plus
-  // recording new usage after a story is selected. No change needed to
-  // Resume Intelligence parsing, extraction, or story_library itself.
-
   // ── Story Consistency Validator (bug fix, 2026-07-23) — see functions
   // above. A follow-up no longer blindly trusts forcedStoryKey; it checks
   // the candidate's actual last answer against the planned story first.
@@ -2400,4 +2400,5 @@ module.exports = {
   scoreAnswer,
   generateReport,
   computeStarProgress,
+  hasSufficientCoverage,
 };
