@@ -411,7 +411,7 @@
   var QID    = '<%= questionId %>';
   var QN     = <%= answeredCount %> + 1;
   var MAXQ   = <%= questionBudget %>;
-  // Adaptive Follow-up state — derived entirely from values that already
+  // Advanced Follow-up state — derived entirely from values that already
   // exist and are already sent by the current server.js (answeredCount,
   // MAXQ) plus a field the answer-submission API response already
   // includes today (data.question.order, the question's true, uncapped
@@ -534,14 +534,12 @@
 
   function updateCounter() {
     if (IS_EXECUTIVE_EXTENSION) {
-      // Adaptive Follow-up phase — every progress surface switches to the
-      // same phase terminology together, never a mix of the new label in
-      // one place and stale "Question 5 of 5" / "0 remaining" in another.
-      // Deliberately no numbering anywhere (no "1"/"2"/"Q1"/"Q2") and no
-      // "6 of 7"-style count — EXTENSION_QUESTION_NUMBER is still computed
-      // (unchanged, still drives the detection logic above) but is no
-      // longer rendered into any visible text.
-      var phaseText = 'Adaptive Follow-up in Progress';
+      // Advanced Follow-up phase — every progress surface switches to the
+      // same phase terminology together, never a mix of "Advanced
+      // Follow-up" in one place and stale "Question 5 of 5" /
+      // "0 remaining" in another. Nothing here exposes MAXQ or a
+      // "6 of 7"-style count — only EXTENSION_QUESTION_NUMBER (1, 2).
+      var phaseText = 'Advanced Follow-up · ' + EXTENSION_QUESTION_NUMBER;
       document.getElementById('qCounter').textContent = phaseText;
       document.getElementById('qFollowupBadge').style.display = 'none';
       document.getElementById('sbProgLabel').textContent = phaseText;
@@ -550,7 +548,7 @@
       // whatever fraction Q5 left it at reads as "Phase 1 done", not as
       // a stalled or broken progress bar.
       document.getElementById('sbProgFill').style.width = '100%';
-      document.getElementById('sbProgRemaining').textContent = 'Validating executive judgement.';
+      document.getElementById('sbProgRemaining').textContent = 'Additional AI validation in progress';
       return;
     }
     document.getElementById('qCounter').textContent = 'Question '+QN+' / '+MAXQ;
@@ -858,20 +856,19 @@
     document.querySelector('.answer-bar-wrap').style.display='block';
 
     var label = competency ? competency.replace(/_/g,' ').toUpperCase() : (type==='drill_down' ? 'DEEP DIVE' : 'BEHAVIORAL');
-    // Adaptive Follow-up header text (Leadership only — for Growth/
+    // Advanced Follow-up header text (Leadership only — for Growth/
     // Explorer, data.question.order never reaches MAXQ, so
     // IS_EXECUTIVE_EXTENSION can never be true). Takes precedence over the
     // normal and follow-up eyebrow text: a follow-up asked during the
-    // extension phase should still read as "Adaptive Follow-up in
-    // Progress", not revert to the generic FOLLOW-UP label, since it's
-    // still part of the same adaptive-assessment phase from the
-    // candidate's point of view. Deliberately no numbering ("1"/"2"/
-    // "Q1"/"Q2") and does NOT say "Question 6 of 7" or expose MAXQ
+    // extension phase should still read as "Advanced Follow-up", not
+    // revert to the generic FOLLOW-UP label, since it's still part of
+    // the same advanced-assessment phase from the candidate's point of
+    // view. Deliberately does NOT say "Question 6 of 7" or expose MAXQ
     // anywhere in the visible text — same DOM element
     // and CSS class as before, so typography/spacing/color are
     // unchanged; only the string differs.
     document.getElementById('qEyebrow').textContent = IS_EXECUTIVE_EXTENSION
-      ? 'Adaptive Follow-up in Progress'
+      ? 'Advanced Follow-up · ' + EXTENSION_QUESTION_NUMBER
       : (window.MedhaIQ_IsFollowupTurn
           ? 'FOLLOW-UP · '+label
           : 'QUESTION '+QN+' OF '+MAXQ+' · '+label);
