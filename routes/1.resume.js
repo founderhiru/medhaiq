@@ -9,7 +9,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { getCareerProfile, saveResumeIntelligence, deleteResumeIntelligence } = require('../db/career-profile');
+const { getCareerProfile, saveResumeIntelligence } = require('../db/career-profile');
 const { parseResume } = require('../services/resume-parser');
 // requireAuth now lives in middleware/guards.js — see routes/dashboard.js
 // for the same swap; identical duplicated implementation removed here.
@@ -128,22 +128,4 @@ router.post('/upload', requireAuth, upload.single('resumeFile'), async (req, res
   }
 });
 
-// ── DELETE /api/resume — Remove Resume Intelligence (feature, 2026-07-29) ──
-// Removes the uploaded resume, parsed Resume Intelligence, extracted career
-// stories, and resume-derived metadata. Does NOT touch completed interview
-// reports, interview history, or account settings (current_role_title/
-// target_role/experience_level) — see db/career-profile.js's
-// deleteResumeIntelligence for exactly which columns this touches and why
-// reports are already safe by construction (session-level snapshotting).
-router.delete('/', requireAuth, async (req, res) => {
-  try {
-    await deleteResumeIntelligence(req.user.id);
-    return res.json({ success: true, hasResume: false, competencyCount: 0, storyCount: 0, parsedAt: null });
-  } catch (err) {
-    console.error('[resume/delete]', err);
-    return res.status(500).json({ error: 'Failed to remove resume' });
-  }
-});
-
 module.exports = router;
-

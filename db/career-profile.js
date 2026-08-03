@@ -93,4 +93,40 @@ async function saveResumeIntelligence(userId, { rawText, resumeCompetencies, res
   return result.rows[0];
 }
 
-module.exports = { getCareerProfile, saveResumeIntelligence };
+/**
+ * Remove all Resume Intelligence data for a user, in place.
+ *
+ * Scope, deliberately narrow: nulls ONLY the resume-derived columns on
+ * career_profiles (resume_raw_text, resume_competencies, resume_context,
+ * story_library, resume_parse_status, resume_parsed_at,
+ * resume_last_parse_attempt_at). Does NOT touch current_role_title,
+ * target_role, experience_level, or the row itself — those are unrelated
+ * account/career fields on the same table and must survive a resume
+ * removal untouched.
+ *
+ * Does NOT touch interview_sessions at all. Every session already stores
+ * its OWN snapshotted copy of resume_competencies/resume_context at
+ * creation time (migration 008 — "so a later resume update never
+ * rewrites the history of a past interview/report"). That snapshot
+ * design means completed interview reports are already structurally
+ * immune to this deletion; there is nothing to additionally preserve
+ * there.
+ */
+async function deleteResumeIntelligence(userId) {
+  const result = await pool.query(
+    `UPDATE career_profiles
+     SET resume_raw_text = NULL,
+         resume_competencies = NULL,
+         resume_context = NULL,
+         story_library = NULL,
+         resume_parsed_at = NULL,
+         resume_parse_status = NULL,
+         resume_last_parse_attempt_at = NULL
+     WHERE user_id = $1
+     RETURNING *`,
+    [userId]
+  );
+  return result.rows[0] || null;
+}
+
+module.exports = { getCareerProfile, saveResumeIntelligence, deleteResumeIntelligence };
