@@ -517,26 +517,27 @@ const comingSoonCompanies = ['Accenture', 'NVIDIA', 'Oracle', 'ServiceNow', 'TCS
 // adding one object here, whether or not its full guide exists yet.
 // `hasGuide: false` renders the card in a muted, non-clickable "Guide
 // coming soon" state instead of linking to a page that doesn't exist —
-// this is how Meta, Apple, and Stripe are handled today. Once a full
-// guide is written for one of them (added to companyLibrary above with
-// a matching slug), flip its hasGuide to true and it becomes clickable.
-// The logo tile is rendered as the first two letters of `name` in the
-// view — no per-entry logo field needed, so adding NVIDIA or Netflix
-// later really is just one object, per the architecture goal.
+// V1 visual identity: no real company logos or simplified redraws (see
+// trademark note above — Microsoft and Amazon's own guidelines prohibit
+// any reproduction of their marks without a written license). Instead,
+// each company gets a MedhaIQ-designed abstract icon + accent color,
+// acting purely as a navigation cue — not company branding. If real,
+// licensed logos are introduced later, that's a separate enhancement;
+// this data shape (icon key + accentColor) stays the same either way.
 const curatedCompanies = [
-  { slug: 'amazon',    name: 'Amazon',    identifier: 'Leadership Principles', hasGuide: true },
-  { slug: 'microsoft', name: 'Microsoft', identifier: 'Growth Mindset',        hasGuide: true },
-  { slug: 'google',    name: 'Google',    identifier: 'Googleyness',          hasGuide: true },
-  { slug: 'salesforce',name: 'Salesforce',identifier: 'Ohana Culture',        hasGuide: true },
-  { slug: 'deloitte',  name: 'Deloitte',  identifier: 'Case + Behavioral',    hasGuide: true },
+  { slug: 'amazon',    name: 'Amazon',    identifier: 'Leadership Principles & Ownership', icon: 'ascend',  accentColor: '#F97316', hasGuide: true },
+  { slug: 'microsoft', name: 'Microsoft', identifier: 'Growth Mindset & Collaboration',    icon: 'pennant', accentColor: '#0EA5E9', hasGuide: true },
+  { slug: 'google',    name: 'Google',    identifier: 'Googleyness & Innovation',          icon: 'orbit',   accentColor: '#6366F1', hasGuide: true },
+  { slug: 'salesforce',name: 'Salesforce',identifier: 'Ohana Culture & Trust',             icon: 'arch',    accentColor: '#14B8A6', hasGuide: true },
+  { slug: 'deloitte',  name: 'Deloitte',  identifier: 'Case Method & Client Impact',       icon: 'stack',   accentColor: '#8B5CF6', hasGuide: true },
   // Disabled "Coming Soon" cards per this round's direction — no guides
   // written yet, kept visible so the library reads as actively growing.
   // Identifiers picked to avoid reusing Amazon's own branded principle
   // names (e.g. "Ownership", "Customer Obsession") verbatim on an
   // unrelated company's card.
-  { slug: 'meta',      name: 'Meta',      identifier: 'Move Fast',            hasGuide: false },
-  { slug: 'apple',     name: 'Apple',     identifier: 'Craftsmanship',        hasGuide: false },
-  { slug: 'stripe',    name: 'Stripe',    identifier: 'High Standards',       hasGuide: false },
+  { slug: 'meta',      name: 'Meta',      identifier: 'Move Fast & Impact',                icon: 'hex',     accentColor: '#F43F5E', hasGuide: false },
+  { slug: 'apple',     name: 'Apple',     identifier: 'Craftsmanship & Simplicity',        icon: 'diamond', accentColor: '#64748B', hasGuide: false },
+  { slug: 'stripe',    name: 'Stripe',    identifier: 'High Standards & Rigor',            icon: 'wave',    accentColor: '#4F46E5', hasGuide: false },
 ];
 
 module.exports = { companyLibrary, comingSoonCompanies, curatedCompanies };

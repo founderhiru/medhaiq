@@ -1,0 +1,46 @@
+/* ============================================
+   INTERVIEW-FRAMEWORKS.CSS — scoped to /explore/interview-frameworks and
+   its per-framework pages. Reuses .mh-explore-*/.mh-colib-*/.mh-role-*
+   classes (breadcrumb, checklist, resource list, checkbox pattern)
+   wherever they already fit — checklist and resources are visually
+   identical to Role Library's, just re-scoped under .mh-fw-* where a
+   framework-specific need exists. Only new rules live here.
+   ============================================ */
+
+/* ---- Landing page grid card (flat, curated — no categories) ---- */
+.mh-fw-browse-card { display: flex; flex-direction: column; min-height: 130px; }
+
+/* ---- Framework Breakdown — each framework defines its own stage
+   sequence and length (STAR has 4 steps, System Design has 6), so this
+   is a simple vertical/wrapping step list rather than a fixed-width
+   horizontal flow like Role Library's interview-flow row. ---- */
+.mh-fw-breakdown { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+.mh-fw-breakdown-step {
+  display: flex; gap: 16px; align-items: flex-start; padding: 16px 18px;
+  background: #FBFCFD; border: 1px solid var(--ed-border, rgba(15,23,42,0.07)); border-radius: 12px;
+}
+.mh-fw-breakdown-index {
+  flex: 0 0 28px; height: 28px; border-radius: 50%; background: rgba(37,99,235,0.1); color: #2563EB;
+  font-family: var(--font-display); font-weight: 700; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+.mh-fw-breakdown-body { flex: 1; }
+.mh-fw-breakdown-stage { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--ed-text, #1A1F2B); margin-bottom: 4px; }
+.mh-fw-breakdown-desc { font-size: 14px; line-height: 1.55; color: var(--ed-muted, #64748B); }
+
+/* ---- Worked example ---- */
+.mh-fw-example {
+  background: #FBFCFD; border: 1px solid var(--ed-border, rgba(15,23,42,0.07)); border-left: 3px solid #2563EB;
+  border-radius: 10px; padding: 18px 20px; font-size: 14.5px; line-height: 1.65; color: var(--ed-text, #1A1F2B); margin-top: 20px;
+}
+
+/* ---- Common mistakes (❌ editorial list) ---- */
+.mh-fw-mistakes { list-style: none; margin: 20px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.mh-fw-mistake-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14.5px; line-height: 1.55; color: var(--ed-text, #1A1F2B);
+}
+.mh-fw-mistake-icon { flex: 0 0 auto; color: #DC2626; font-weight: 700; }
+
+@media (max-width: 640px) {
+  .mh-fw-breakdown-step { padding: 14px; }
+}

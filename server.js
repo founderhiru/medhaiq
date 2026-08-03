@@ -163,6 +163,22 @@ app.get('/explore/company-library/:slug', (req, res) => {
   if (!company) return res.status(404).send('Company guide not found');
   res.render('company-guide', { company });
 });
+// Interview Frameworks — new pillar, mirrors Role Library's flat-grid
+// architecture. frameworks holds the 6 launch-ready guides; the landing
+// page renders all of them as one grid, no categories. Adding a 7th
+// framework later = adding one object to data/interview-frameworks-data.js
+// — no template changes.
+app.get('/explore/interview-frameworks', (_req, res) => {
+  const { frameworks } = require('./data/interview-frameworks-data');
+  const list = frameworks.map(f => ({ slug: f.slug, title: f.title, oneLiner: f.oneLiner }));
+  res.render('interview-frameworks', { frameworks: list });
+});
+app.get('/explore/interview-frameworks/:slug', (req, res) => {
+  const { frameworks } = require('./data/interview-frameworks-data');
+  const fw = frameworks.find(f => f.slug === req.params.slug);
+  if (!fw) return res.status(404).send('Framework guide not found');
+  res.render('framework-guide', { fw });
+});
 app.get('/professional-horizons', (_req, res) => res.render('professional-horizons'));
 app.get('/career-architecture', (_req, res) => res.redirect(301, '/architecture#career-architecture'));
 app.get('/technical-blueprint', (_req, res) => res.redirect(301, '/architecture#technical-blueprint'));
