@@ -548,10 +548,11 @@
       // "6 of 7"-style count — EXTENSION_QUESTION_NUMBER is still computed
       // (unchanged, still drives the detection logic above) but is no
       // longer rendered into any visible text.
-      var phaseText = 'Adaptive Follow-up in Progress';
-      document.getElementById('qCounter').textContent = phaseText;
+      var navPhaseText = 'Adaptive Follow-up';
+      var panelPhaseText = 'Adaptive Follow-up in Progress';
+      document.getElementById('qCounter').textContent = navPhaseText;
       document.getElementById('qFollowupBadge').style.display = 'none';
-      document.getElementById('sbProgLabel').textContent = phaseText;
+      document.getElementById('sbProgLabel').textContent = panelPhaseText;
       // Core Interview phase is fully complete at this point (Question
       // 1-5 all answered) — freezing the bar at 100% rather than at
       // whatever fraction Q5 left it at reads as "Phase 1 done", not as
@@ -878,7 +879,7 @@
     // and CSS class as before, so typography/spacing/color are
     // unchanged; only the string differs.
     document.getElementById('qEyebrow').textContent = IS_EXECUTIVE_EXTENSION
-      ? 'Adaptive Follow-up in Progress'
+      ? 'LEADERSHIP'
       : (window.MedhaIQ_IsFollowupTurn
           ? 'FOLLOW-UP · '+label
           : 'QUESTION '+QN+' OF '+MAXQ+' · '+label);
