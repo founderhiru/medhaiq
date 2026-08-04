@@ -826,7 +826,7 @@
   function showLoading(text) {
     document.getElementById('answerBarWrap') || null;
     document.querySelector('.answer-bar-wrap').style.display='none';
-    document.getElementById('questionCard').style.display='none';
+    document.getElementById('questionCard').classList.add('is-hidden');
     document.getElementById('loadingOverlay').classList.add('show');
     document.getElementById('loadingText').textContent = text || 'Analysing...';
   }
@@ -846,8 +846,8 @@
     // Calling it twice is harmless; it just re-renders the same numbers.
     updateCounter();
 
-    document.getElementById('loadingOverlay').classList.remove('show');
-    document.getElementById('questionCard').style.display='flex';
+   document.getElementById('loadingOverlay').classList.remove('show');
+    document.getElementById('questionCard').classList.remove('is-hidden');
     document.querySelector('.answer-bar-wrap').style.display='block';
 
     var label = competency ? competency.replace(/_/g,' ').toUpperCase() : (type==='drill_down' ? 'DEEP DIVE' : 'BEHAVIORAL');
@@ -1149,7 +1149,7 @@
         // stuck on "Analyzing..." forever with dead Skip/End buttons.
         slog('Duplicate submission ignored (already answered)', 'info');
         document.getElementById('loadingOverlay').classList.remove('show');
-        document.getElementById('questionCard').style.display='flex';
+        document.getElementById('questionCard').classList.remove('is-hidden');
         document.querySelector('.answer-bar-wrap').style.display='block';
         document.getElementById('submitBtn').disabled = false;
         document.getElementById('skipBtn').disabled = false;
@@ -1272,7 +1272,7 @@
       console.error('[MedhaIQ]', err);
       slog('ERROR: '+err.message, 'err');
       document.getElementById('loadingOverlay').classList.remove('show');
-      document.getElementById('questionCard').style.display='flex';
+      document.getElementById('questionCard').classList.remove('is-hidden');
       document.querySelector('.answer-bar-wrap').style.display='block';
       document.getElementById('submitBtn').disabled = false;
       document.getElementById('skipBtn').disabled = false;
