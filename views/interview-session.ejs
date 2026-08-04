@@ -532,25 +532,18 @@
      subsequent turn. */
   window.MedhaIQ_IsFollowupTurn = (QTYPE === 'follow_up');
 
-  function updateCounter() {
+ function updateCounter() {
     if (IS_EXECUTIVE_EXTENSION) {
-      // Adaptive Follow-up phase — every progress surface switches to the
-      // same phase terminology together, never a mix of the new label in
-      // one place and stale "Question 5 of 5" / "0 remaining" in another.
-      // Deliberately no numbering anywhere (no "1"/"2"/"Q1"/"Q2") and no
-      // "6 of 7"-style count — EXTENSION_QUESTION_NUMBER is still computed
-      // (unchanged, still drives the detection logic above) but is no
-      // longer rendered into any visible text.
-      var phaseText = 'Adaptive Follow-up in Progress';
-      document.getElementById('qCounter').textContent = phaseText;
+      // Top nav gets the compact label; the left panel keeps the fuller
+      // "...in Progress" phrasing — same shared phase, two copy lengths
+      // for two different amounts of surrounding UI space.
+      var navPhaseText = 'Adaptive Follow-up';
+      var panelPhaseText = 'Adaptive Follow-up in Progress';
+      document.getElementById('qCounter').textContent = navPhaseText;
       document.getElementById('qFollowupBadge').style.display = 'none';
-      document.getElementById('sbProgLabel').textContent = phaseText;
-      // Core Interview phase is fully complete at this point (Question
-      // 1-5 all answered) — freezing the bar at 100% rather than at
-      // whatever fraction Q5 left it at reads as "Phase 1 done", not as
-      // a stalled or broken progress bar.
+      document.getElementById('sbProgLabel').textContent = panelPhaseText;
       document.getElementById('sbProgFill').style.width = '100%';
-      document.getElementById('sbProgRemaining').textContent = 'Validating executive judgement.';
+      document.getElementById('sbProgRemaining').textContent = 'Validating leadership judgement.';
       return;
     }
     document.getElementById('qCounter').textContent = 'Question '+QN+' / '+MAXQ;
@@ -871,7 +864,7 @@
     // and CSS class as before, so typography/spacing/color are
     // unchanged; only the string differs.
     document.getElementById('qEyebrow').textContent = IS_EXECUTIVE_EXTENSION
-      ? 'Adaptive Follow-up in Progress'
+      ? 'LEADERSHIP'
       : (window.MedhaIQ_IsFollowupTurn
           ? 'FOLLOW-UP · '+label
           : 'QUESTION '+QN+' OF '+MAXQ+' · '+label);
