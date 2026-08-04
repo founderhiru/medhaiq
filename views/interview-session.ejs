@@ -934,6 +934,22 @@
     logStarDetection(this.value, 'typed');
   });
 
+  // Keyboard support (UI polish) — Enter submits, Shift+Enter inserts a
+  // newline. Shift+Enter is native textarea behavior already; only plain
+  // Enter needs intercepting. Reuses window.MedhaIQ_requestSubmit(), the
+  // exact same entry point voice auto-submit already calls (see
+  // CandidateTurnComplete handler below) — submitAnswer() itself is not
+  // touched by this listener.
+  answerInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      var _btn = document.getElementById('submitBtn');
+      if (_btn && !_btn.disabled && typeof window.MedhaIQ_requestSubmit === 'function') {
+        window.MedhaIQ_requestSubmit();
+      }
+    }
+  });
+
   // TEMPORARY INSTRUMENTATION (Priority 0.5 validation request) --
   // remove after validation is complete. Logs exactly the requested
   // fields for every significant transcript update. "Confidence" is
@@ -1897,7 +1913,7 @@
   }
   function setErr(msg){
     setState(STATES.IDLE,msg,true);
-    setTimeout(function(){ if(state===STATES.IDLE){ sub.textContent='Speak directly with your AI interviewer'; sub.style.color=''; } },7000);
+    setTimeout(function(){ if(state===STATES.IDLE){ sub.textContent='🎤 Click mic to speak'; sub.style.color=''; } },7000);
   }
 
   /* ── Exposed to the main engine's MedhaIQSync so it can (a) check
@@ -2016,7 +2032,7 @@
         window._sttAutoReconnectCount = 0;
       }
       slog('[LIFECYCLE-TRACE] call-start fired at ' + Date.now(), 'info');
-      setState(STATES.LIVE, 'Voice active — speak your answer');
+      setState(STATES.LIVE, '🔴 Listening...');
       window.MedhaIQVoiceLive = true;
       /* ── v2.2 sessionReadyContext handshake (cold-start amnesia + latency
          fix) — two-part, matching the instructNext fix above:
@@ -2479,7 +2495,7 @@
       // working fine after an ejection, silently masking a dead mic --
       // which is exactly why this went unnoticed until now.
       try { vapi.stop(); } catch (e) {}
-      setState(STATES.IDLE, 'Speak directly with your AI interviewer');
+      setState(STATES.IDLE, '🎤 Click mic to speak');
 
       // THE ACTUAL FIX (not another investigation): auto-reconnect unless
       // this was the user deliberately clicking Stop. Every symptom this
@@ -2570,7 +2586,7 @@
   // exactly one place. No internal behavior, ordering, or guard changes.
   async function connectVoice(){
     if(state===STATES.LIVE||state===STATES.STOPPING){
-      setState(STATES.STOPPING,'Ending voice session…');
+      setState(STATES.STOPPING,'✓ Processing...');
       window._sttIntentionalStop = true; // user deliberately stopped -- do not auto-reconnect
       if(vapi){try{vapi.stop();}catch(e){}}
       return;

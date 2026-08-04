@@ -131,6 +131,24 @@ button{font-family:inherit}
 .sb-progress-track{height:4px;border-radius:99px;background:var(--border);overflow:hidden}
 .sb-progress-fill{display:block;height:100%;width:0;border-radius:99px;background:var(--blue);transition:width .4s}
 
+/* Left panel design-consistency pass — aligns this panel's typography,
+   icon treatment, row spacing, divider, and card padding to the
+   Interview Setup screen's left rail (views/interview-setup.ejs
+   .panel / .panel-label / .ctx-item / .ctx-icon / .ctx-k / .ctx-v),
+   so the two screens read as one design system. Scoped entirely under
+   .col-left — .eyebrow and .card are shared classes used elsewhere on
+   this page (question card, right panel) and in the PDF report, so
+   nothing outside this panel is touched. Inter is already loaded on
+   this page (see the font <link> in <head>), matching Setup's body font. */
+.col-left{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.col-left .card{padding:16px}
+.col-left .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.4px;color:var(--blue);margin-bottom:12px}
+.col-left .ctx-row{padding:8px 0}
+.col-left .ctx-row + .ctx-row{border-top:1px solid rgba(255,255,255,.07)}
+.col-left .icon-badge{border-radius:8px;background:rgba(59,130,246,.15);border:none;color:var(--blue)}
+.col-left .ctx-label{font-size:11px}
+.col-left .ctx-value{font-size:13px}
+
 .breakdown{flex:1;display:flex;flex-direction:column;align-items:center;gap:16px}
 .doughnut{
   flex-shrink:0;width:100px;height:100px;border-radius:50%;
@@ -244,10 +262,10 @@ button{font-family:inherit}
   flex-shrink:0;width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;
   background:var(--card2);border:1px solid var(--border-soft);color:var(--blue-soft);
   display:flex;align-items:center;justify-content:center;
-  opacity:0;transform:scale(.8);pointer-events:none;transition:.2s;
+  opacity:1;transform:scale(1);transition:.2s;
 }
 .btn-submit.show{opacity:1;transform:scale(1);pointer-events:auto;background:var(--green);border-color:transparent;color:#fff}
-.btn-submit:disabled{opacity:.35;pointer-events:none}
+.btn-submit:disabled{opacity:.35;pointer-events:none;cursor:not-allowed}
 .btn-submit .ic{width:16px;height:16px}
 /* Mic — the primary action, left-anchored inside its own soft glow circle */
 .btn-mic{
@@ -379,6 +397,17 @@ button{font-family:inherit}
 .dbg-entry.err{color:var(--red)}
 .dbg-entry.info{color:var(--blue-soft)}
 .dbg-hint{padding:8px 14px;border-top:1px solid var(--border);font-size:10px;color:#5B6880;text-align:center}
+
+/* ═══ Laptop-width refinement (1024–1360px) — the desktop grid stays a
+   3-column layout down to 820px (see block below), but on 13"-class
+   laptops the side rails were sitting at/near their clamp() ceilings,
+   squeezing the question card and answer bar. This trims the ceilings
+   and outer spacing slightly so the center column gets more room;
+   nothing below 820px or above 1360px is affected. ═══ */
+@media (max-width: 1360px){
+  .os-grid{grid-template-columns:clamp(220px, 18vw, 300px) minmax(0, 1fr) clamp(260px, 22vw, 340px); gap:14px; padding:14px}
+  .q-text{font-size:20px}
+}
 
 /* ═══ Genuinely small screens only — phones/small tablets. The old 1024px
    breakpoint was the D.png bug: a laptop zoomed to ~125–150% dropped its
