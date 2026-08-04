@@ -86,6 +86,17 @@
       padding: 16px;
     }
     .panel + .panel { margin-top: 14px; }
+
+    /* ── LEFT rail rebalance ──────────────────────────
+       Two panels now instead of three. Rather than leaving empty
+       space below a shorter column, the rail becomes a flex column
+       and its last panel (Session Breakdown) absorbs the freed
+       height — same "last card fills remaining space" pattern
+       already used for the interview session columns. */
+    .left-rail { display: flex; flex-direction: column; }
+    .left-rail .panel + .panel { margin-top: 14px; }
+    .left-rail .panel:last-child { flex: 1; display: flex; flex-direction: column; }
+    .left-rail .panel:last-child .donut-wrap { flex: 1; align-items: center; }
     .panel-label {
       font-size: 10px; font-weight: 700; letter-spacing: 1.4px;
       text-transform: uppercase; color: var(--blue-hi);
@@ -410,11 +421,11 @@
 <div class="layout">
 
   <!-- ══════════ LEFT SIDEBAR ══════════ -->
-  <aside>
+  <aside class="left-rail">
     <div class="panel">
       <div class="panel-label">Session Context</div>
       <div class="ctx-item"><div class="ctx-icon">💼</div><div><div class="ctx-k">Role</div><div class="ctx-v" id="ctxRole">Not selected</div></div></div>
-      <div class="ctx-item"><div class="ctx-icon">⚡</div><div><div class="ctx-k">Experience</div><div class="ctx-v" id="ctxExp">Not selected</div></div></div>
+      <div class="ctx-item"><div class="ctx-icon">⚡</div><div><div class="ctx-k">Career Stage</div><div class="ctx-v" id="ctxExp">Not selected</div></div></div>
       <div class="ctx-item"><div class="ctx-icon">👤</div><div><div class="ctx-k">Interviewer</div><div class="ctx-v" id="ctxPersona">Not selected</div></div></div>
       <div class="ctx-item"><div class="ctx-icon">🕐</div><div><div class="ctx-k">Estimated Duration</div><div class="ctx-v"><%
         // Interview Policy (config/product-packages.js) — same source
@@ -447,16 +458,7 @@
           <li><span class="dot" style="background:var(--v-leadership)"></span>Leadership &amp; Exec.<span class="pct">10%</span></li>
         </ul>
       </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-label" style="display:flex;justify-content:space-between;align-items:center;">Live Terminal Preview <span class="live-pill">Live</span></div>
-      <div class="prev-row"><span class="p-ic">◎</span>STAR Engine<span class="prev-ready">Ready</span></div>
-      <div class="prev-row"><span class="p-ic">◎</span>Behavior Analyzer<span class="prev-ready">Ready</span></div>
-      <div class="prev-row"><span class="p-ic">◎</span>Sentiment Engine<span class="prev-ready">Ready</span></div>
-      <div class="prev-row"><span class="p-ic">◎</span>Response Predictor<span class="prev-ready">Ready</span></div>
-      <div class="prev-msg">All systems ready. Let's begin!</div>
-    </div>
+</div>
   </aside>
 
   <!-- ══════════ CENTER: WIZARD ══════════ -->

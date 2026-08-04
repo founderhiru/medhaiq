@@ -12,25 +12,31 @@
 ══════════════════════════════════════════════════════════════════ %>
 <main class="col col-center">
 
-  <!-- Question card (engine sets display:flex / none) -->
-  <section class="card question-card" id="questionCard">
-    <div class="q-head">
-      <p class="eyebrow" id="qEyebrow">QUESTION 1 OF 5 · BEHAVIORAL</p>
-      <span class="q-report">Report Issue</span>
-    </div>
-    <h1 class="q-text" id="questionText"></h1>
-    <button class="btn-why" id="whyBtn" type="button">
-      <svg class="ic" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
-      Why this question?
-    </button>
-    <p class="q-why-text" id="qWhyText"></p>
-  </section>
+  <!-- Question / loading slot — both cards stacked in the same grid
+       cell (see .question-slot in interview-session.css) so swapping
+       between them never changes this region's height, which is what
+       used to push the video panel below up/down on every transition. -->
+  <div class="question-slot">
+    <!-- Question card (engine toggles .is-hidden) -->
+    <section class="card question-card" id="questionCard">
+      <div class="q-head">
+        <p class="eyebrow" id="qEyebrow">QUESTION 1 OF 5 · BEHAVIORAL</p>
+        <span class="q-report">Report Issue</span>
+      </div>
+      <h1 class="q-text" id="questionText"></h1>
+      <button class="btn-why" id="whyBtn" type="button">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+        Why this question?
+      </button>
+      <p class="q-why-text" id="qWhyText"></p>
+    </section>
 
-  <!-- Loading overlay (engine toggles .show) -->
-  <section class="card loading-overlay" id="loadingOverlay">
-    <div class="load-spinner"></div>
-    <p id="loadingText">Analysing...</p>
-  </section>
+    <!-- Loading overlay (engine toggles .show) -->
+    <section class="card loading-overlay" id="loadingOverlay">
+      <div class="load-spinner"></div>
+      <p id="loadingText">Analysing...</p>
+    </section>
+  </div>
 
   <!-- Video panel -->
   <section class="card video-panel">
@@ -69,7 +75,7 @@
           <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
       </div>
-      <p class="vapi-sub" id="vapiSub">Speak directly with your AI interviewer</p>
+      <p class="vapi-sub" id="vapiSub">🎤 Click mic to speak</p>
       <div class="answer-meta">
         <span id="charCount">0 / 4000</span>
         <button class="btn-skip" id="skipBtn" type="button">Skip question <span aria-hidden="true">&rarr;</span></button>
