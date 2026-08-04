@@ -339,25 +339,11 @@ button{font-family:inherit}
 .vec-score{width:24px;text-align:right;font-size:12px;color:var(--muted);font-family:var(--mono)}
 .vec-score.is-zero{color:#5B6880}
 
-.col-right{
-  --rt-top-pad: 12px;        /* top padding: 20px -> 12px (-8px) */
-  --rt-ai-gap: 8px;          /* space below AI Status: 16px -> 8px (-8px) */
-  --rt-card-pull: -10px;     /* space below STAR Progress: -10px (via margin, not column gap) */
-  --rt-head-gap: 8px;        /* score circle area: 12px -> 8px (-4px of -20px) */
-  --rt-ring-gap: 0px;        /* score circle area: 6px/4px -> 0 (-10px of -20px) */
-  --rt-ring-max-gap: 0px;    /* score circle area: 2px -> 0 (-2px of -20px) */
-  --rt-ring-status-gap: 2px; /* score circle area: 6px -> 2px (-4px of -20px) */
-  --rt-desc-pull: -8px;      /* description under score: -8px (via margin, not line-height) */
-  --rt-vec-gap: 4px;         /* gap before 5-Vector: 16px -> 4px (-12px) */
-}
-.col-right .card:first-child{padding-top:var(--rt-top-pad); margin-bottom:var(--rt-card-pull)}
-.engine-status + .sublabel{margin-top:var(--rt-ai-gap)}
-.card-head.head-top{margin-bottom:var(--rt-head-gap)}
-.score-ring-wrap{margin:var(--rt-ring-gap) 0}
-.ring-max{margin-top:var(--rt-ring-max-gap)}
-.ring-status{margin-top:var(--rt-ring-status-gap)}
-.ring-status-sub{margin-bottom:var(--rt-desc-pull)}
-.score-ring-wrap + .sublabel{margin-top:var(--rt-vec-gap)}
+.activity-feed{list-style:none}
+.activity-feed li{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.activity-feed li + li{margin-top:9px}
+.activity-feed li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0}
+
 /* ═══ SCORE TOAST (.show toggled by engine) ═══ */
 .score-toast{
   position:fixed;right:24px;bottom:84px;z-index:60;
