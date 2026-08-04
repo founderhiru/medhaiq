@@ -131,6 +131,11 @@ async function synthesizeViaElevenLabs(params) {
       },
       body: JSON.stringify({
         text: spokenText,
+        // Phase 2B: model_id now explicit (VOICE_SERVER_CONFIG.ttsModelId,
+        // default eleven_flash_v2_5) -- previously absent entirely, so
+        // ElevenLabs silently applied its own account default. See the
+        // ElevenLabs Model Usage Audit for the full finding.
+        model_id: VOICE_SERVER_CONFIG.ttsModelId,
         // language/streaming forwarded as-is; ElevenLabs-specific request
         // shape lives ENTIRELY inside this function -- nothing above this
         // line (routes/voice-tts.js, and everything client-side) knows
@@ -177,4 +182,152 @@ async function synthesizeViaElevenLabs(params) {
   return { buffer, contentType };
 }
 
-module.exports = { synthesizeViaElevenLabs };
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 2B -- True streaming via a POST-prepare / GET-stream token handoff
+//
+// The browser's native <audio> element can only issue GET requests, and
+// progressively plays a URL's bytes as they arrive -- no MediaSource/
+// SourceBuffer code needed (see the Phase 2B architecture note's Option A
+// vs Option B comparison). But a GET request means whatever's in the URL
+// is exposed in browser history, server access logs, and any intermediate
+// proxy's logs -- and the founder explicitly did not want interview
+// question text there.
+//
+// The fix: POST the real text here first (exactly like the existing
+// synthesizeViaElevenLabs path -- same auth, same request shape). This
+// function stores it server-side, keyed by a random opaque token, and
+// hands back ONLY that token. The browser's subsequent GET carries the
+// token, never the text. The token is single-use (deleted on first GET)
+// and short-lived (PENDING_TOKEN_TTL_MS), since the GET happens
+// essentially immediately after the POST resolves in the same
+// synthesize() call -- there's no legitimate reason for one to survive
+// more than a few seconds, so the window for a leaked/replayed token to
+// matter at all is deliberately tiny.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const crypto = require('crypto');
+
+const PENDING_TOKEN_TTL_MS = 30000; // generous vs. the realistic <1s gap between prepare() and the browser's GET, not a real usage window
+const pendingSyntheses = new Map(); // token -> { text, voice, language, userId, expiresAt }
+
+// Lazy sweep, not a hard requirement for correctness (expired tokens are
+// also rejected on lookup below) -- this just bounds memory if a prepared
+// token is ever abandoned (e.g. the client errored before its GET fired).
+setInterval(() => {
+  const now = Date.now();
+  for (const [token, entry] of pendingSyntheses) {
+    if (entry.expiresAt <= now) pendingSyntheses.delete(token);
+  }
+}, 60000).unref(); // unref: never keeps the process alive on its own
+
+/**
+ * @param {{ text: string, voice: string, language: string, userId: string|number }} params
+ * @returns {string} an opaque, single-use, short-lived token -- never the text itself
+ */
+function prepareStream(params) {
+  const token = crypto.randomBytes(24).toString('base64url');
+  pendingSyntheses.set(token, {
+    text: params.text,
+    voice: params.voice,
+    language: params.language,
+    userId: params.userId,
+    expiresAt: Date.now() + PENDING_TOKEN_TTL_MS,
+  });
+  logTTS('stream:prepared', { token, textLength: (params.text || '').length, voice: params.voice });
+  return token;
+}
+
+/**
+ * @param {{ token: string, userId: string|number }} params
+ * @returns {Promise<{ upstreamResponse: Response, contentType: string }>}
+ *   upstreamResponse.body is a WHATWG ReadableStream -- the route pipes it
+ *   straight to the browser (Readable.fromWeb(...).pipe(res)), never
+ *   buffered here, which is the actual "true streaming" fix.
+ * @throws {Error} with `.code` of 'TOKEN_NOT_FOUND' | 'TOKEN_EXPIRED' |
+ *   'TOKEN_FORBIDDEN' | the same upstream codes synthesizeViaElevenLabs can throw
+ */
+async function streamViaElevenLabsToken(params) {
+  const entry = pendingSyntheses.get(params.token);
+
+  // Single-use: delete on first lookup regardless of what happens next --
+  // a token that fails validation must not be retryable either.
+  if (entry) pendingSyntheses.delete(params.token);
+
+  if (!entry) {
+    const err = new Error('Stream token not found or already used');
+    err.code = 'TOKEN_NOT_FOUND';
+    throw err;
+  }
+  if (entry.expiresAt <= Date.now()) {
+    const err = new Error('Stream token expired');
+    err.code = 'TOKEN_EXPIRED';
+    throw err;
+  }
+  // Defense in depth: even though the token itself is unguessable (192
+  // bits of randomness), also confirm it belongs to the requesting user --
+  // the GET route is still requireAuth-gated, so this just makes sure one
+  // authenticated user's token can't be used by another authenticated user.
+  if (String(entry.userId) !== String(params.userId)) {
+    const err = new Error('Stream token does not belong to this user');
+    err.code = 'TOKEN_FORBIDDEN';
+    throw err;
+  }
+
+  const startedAt = Date.now();
+  const spokenText = normalizeSpokenCurrency(entry.text); // same currency-normalization fix as the non-streaming path
+  logTTS('stream:start', { textLength: (entry.text || '').length, voice: entry.voice, language: entry.language });
+
+  if (!VOICE_SERVER_CONFIG.elevenLabsApiKey) {
+    const err = new Error('VOICE_SERVER_CONFIG.elevenLabsApiKey is not set');
+    err.code = 'CONFIG_MISSING';
+    logTTS('stream:error', { code: err.code, message: err.message });
+    throw err;
+  }
+
+  const voiceId = entry.voice || 'Rachel';
+  const url = VOICE_SERVER_CONFIG.elevenLabsApiBaseUrl.replace(/\/$/, '')
+    + '/v1/text-to-speech/' + encodeURIComponent(voiceId) + '/stream';
+
+  let response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'xi-api-key': VOICE_SERVER_CONFIG.elevenLabsApiKey,
+      },
+      body: JSON.stringify({
+        text: spokenText,
+        model_id: VOICE_SERVER_CONFIG.ttsModelId,
+        language: entry.language,
+      }),
+    });
+  } catch (err) {
+    const networkErr = new Error('Network error reaching ElevenLabs (stream): ' + err.message);
+    networkErr.code = 'NETWORK_ERROR';
+    logTTS('stream:error', { code: networkErr.code, message: err.message });
+    throw networkErr;
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    const authErr = new Error('ElevenLabs rejected the API key (status ' + response.status + ')');
+    authErr.code = 'UPSTREAM_AUTH';
+    logTTS('stream:error', { code: authErr.code, status: response.status });
+    throw authErr;
+  }
+  if (!response.ok) {
+    const upstreamErr = new Error('ElevenLabs returned status ' + response.status + ' (stream)');
+    upstreamErr.code = 'UPSTREAM_ERROR';
+    logTTS('stream:error', { code: upstreamErr.code, status: response.status });
+    throw upstreamErr;
+  }
+
+  logTTS('stream:first_response_headers', { elapsedMs: Date.now() - startedAt }); // headers back != first audio byte -- that's logged by the route once actual body bytes start flowing
+
+  return {
+    upstreamResponse: response,
+    contentType: response.headers.get('content-type') || 'audio/mpeg',
+  };
+}
+
+module.exports = { synthesizeViaElevenLabs, prepareStream, streamViaElevenLabsToken };

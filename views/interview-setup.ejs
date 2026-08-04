@@ -110,10 +110,13 @@
     .ctx-k { font-size: 11px; color: var(--dim); }
     .ctx-v { font-size: 13px; font-weight: 600; color: var(--white); }
 
-    /* ── LEFT: Session Breakdown donut ───────────────── */
-    .donut-wrap { display: flex; align-items: center; gap: 14px; }
+   /* ── LEFT: Session Breakdown donut — stacked to match the Interview
+       Session layout (donut above the legend) instead of the previous
+       side-by-side row, and resized to Interview's 100px/70px reference.
+       Pure CSS: same HTML, same legend alignment technique. ── */
+    .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
     .donut {
-      width: 92px; height: 92px; border-radius: 50%;
+      width: 100px; height: 100px; border-radius: 50%;
       background: conic-gradient(
         var(--v-structure) 0deg 126deg,
         var(--v-domain) 126deg 216deg,
@@ -125,13 +128,13 @@
       flex-shrink: 0;
     }
     .donut-hole {
-      width: 62px; height: 62px; border-radius: 50%;
+      width: 70px; height: 70px; border-radius: 50%;
       background: var(--surface);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
     .donut-num { font-family:'Plus Jakarta Sans',sans-serif; font-size: 20px; font-weight: 800; line-height: 1; }
     .donut-sub { font-size: 9px; color: var(--muted); }
-    .legend { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
+    .legend { display: flex; flex-direction: column; gap: 5px; width: 100%; min-width: 0; }
     .legend li { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
     .legend .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
     .legend .pct { margin-left: auto; color: var(--white); font-weight: 600; }
