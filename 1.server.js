@@ -302,27 +302,18 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
     const visibleQuestionBudget = session.question_budget || LEGACY_QUESTION_BUDGET;
     const executiveExtensionBudget = session.executive_extension_budget || 0;
     const sessionDurationMinutes = session.session_duration_minutes || LEGACY_SESSION_DURATION_MINUTES;
-    // Authoritative "is this the final question" for the question this
-    // page is about to render — same formula, same source of truth as
-    // routes/interview.js's pickAndPersistNextQuestion (which computes
-    // this identically for every subsequent question). The client stores
-    // this once per question and never predicts it — see
-    // interview-session.ejs, which previously computed QN >= MAXQ
-    // (the visible budget) instead of the real ceiling, and could be
-    // wrong during a Leadership Executive Extension.
-    const isFinalQuestion = (answeredCount + 1) >= (visibleQuestionBudget + executiveExtensionBudget);
-    // Progress-counter denominator — REVERTED per explicit product
-    // direction: the sidebar/progress-bar always shows "X of 5", frozen,
-    // never exposing the total ceiling or that an extension occurred.
-    // (An earlier revision made this dynamically become the total
-    // ceiling during extension questions — that is intentionally undone
-    // here.) The real total ceiling is still computed and passed
-    // separately below, for the main question header's "Advanced
-    // Follow-up" text and for the voice pipeline's own "is this genuinely
-    // the last question" accuracy — two different concerns that used to
-    // share this one number and now don't.
-    const questionBudget = visibleQuestionBudget;
-    const totalQuestionCeiling = visibleQuestionBudget + executiveExtensionBudget;
+    // Progress-counter denominator. Questions 1 through the visible budget
+    // (5 for every package) show "X of 5" exactly as today — it isn't yet
+    // known whether an extension will happen. Once the candidate is
+    // actually on a question past the visible budget (only possible for
+    // Leadership, and only once routes/interview.js's coverage gate has
+    // already decided one more question is warranted — a 6th question
+    // was already generated in a prior turn to reach this point), the
+    // real total ceiling is shown naturally ("Question 6 of 7"), not
+    // hidden behind the original visible number.
+    const questionBudget = (answeredCount + 1) > visibleQuestionBudget
+      ? (visibleQuestionBudget + executiveExtensionBudget)
+      : visibleQuestionBudget;
     const sessionStartedAtMs = session.started_at ? new Date(session.started_at).getTime() : Date.now();
 
    res.render('interview-session', {
@@ -333,8 +324,6 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
   questionNumber:   answeredCount + 1,
   answeredCount,
   questionBudget,
-  totalQuestionCeiling,
-  isFinalQuestion,
   sessionDurationMinutes,
   sessionStartedAtMs,
   personaName:      persona.name,

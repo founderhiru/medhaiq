@@ -206,7 +206,6 @@ async function pickAndPersistNextQuestion(session) {
       type: pending.question_type,
       isFollowup: pending.question_type === 'follow_up',
       order: pending.question_order,
-      isFinalQuestion: (pending.question_order + 1) >= totalQuestionCeiling,
       competency: pending.competency || null,
       audio_url: null,
       question: {
@@ -215,7 +214,6 @@ async function pickAndPersistNextQuestion(session) {
         type: pending.question_type,
         isFollowup: pending.question_type === 'follow_up',
         order: pending.question_order,
-        isFinalQuestion: (pending.question_order + 1) >= totalQuestionCeiling,
         competency: pending.competency || null
       }
     };
@@ -436,18 +434,6 @@ async function pickAndPersistNextQuestion(session) {
     strategyPurpose: generated.questionBlueprint ? generated.questionBlueprint.strategy_purpose : null,
   });
 
-  // Authoritative "is this the final question" — deterministic, not a
-  // guess: true only when answering this question will bring the primary
-  // count to the hard ceiling (GUARD 2a above), which always stops
-  // unconditionally regardless of coverage. Deliberately does NOT try to
-  // predict a coverage-based early stop (e.g. Q5/Q6 ending early because
-  // evidence was sufficient) — that genuinely isn't knowable until the
-  // answer is scored, and is correctly communicated via sessionEnded on
-  // the NEXT response instead. Replaces the client's own QN>=MAXQ guess
-  // (views/interview-session.ejs), which used the visible budget instead
-  // of the real ceiling and could be wrong during a Leadership extension.
-  const isFinalQuestion = (savedQuestion.question_order + 1) >= totalQuestionCeiling;
-
   return {
     done: false,
     id: savedQuestion.id,
@@ -455,7 +441,6 @@ async function pickAndPersistNextQuestion(session) {
     type: savedQuestion.question_type,
     isFollowup: isFollowupTurn,
     order: savedQuestion.question_order,
-    isFinalQuestion,
     competency: generated.competency || null,
     audio_url: null,
     question: {
@@ -464,7 +449,6 @@ async function pickAndPersistNextQuestion(session) {
       type: savedQuestion.question_type,
       isFollowup: isFollowupTurn,
       order: savedQuestion.question_order,
-      isFinalQuestion,
       competency: generated.competency || null,
     },
   };
@@ -842,7 +826,6 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
         text: picked.text,
         type: picked.type,
         order: picked.order,
-        isFinalQuestion: picked.isFinalQuestion,
       },
       text: picked.text,
       audio_url: picked.audio_url,
