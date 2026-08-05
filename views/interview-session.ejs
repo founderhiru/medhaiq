@@ -851,8 +851,8 @@
   /* ── Loading / question rendering ── */
   function showLoading(text) {
     document.getElementById('answerBarWrap') || null;
-    document.querySelector('.answer-bar-wrap').style.display='none';
-    document.getElementById('questionCard').style.display='none';
+    document.querySelector('.answer-bar-wrap').classList.add('is-hidden');
+    document.getElementById('questionCard').classList.add('is-hidden');
     document.getElementById('loadingOverlay').classList.add('show');
     document.getElementById('loadingText').textContent = text || 'Analysing...';
   }
@@ -873,8 +873,8 @@
     updateCounter();
 
     document.getElementById('loadingOverlay').classList.remove('show');
-    document.getElementById('questionCard').style.display='flex';
-    document.querySelector('.answer-bar-wrap').style.display='block';
+    document.getElementById('questionCard').classList.remove('is-hidden');
+    document.querySelector('.answer-bar-wrap').classList.remove('is-hidden');
 
     var label = competency ? competency.replace(/_/g,' ').toUpperCase() : (type==='drill_down' ? 'DEEP DIVE' : 'BEHAVIORAL');
     // Adaptive Follow-up header text (Leadership only — for Growth/
@@ -1184,8 +1184,8 @@
         // stuck on "Analyzing..." forever with dead Skip/End buttons.
         slog('Duplicate submission ignored (already answered)', 'info');
         document.getElementById('loadingOverlay').classList.remove('show');
-        document.getElementById('questionCard').style.display='flex';
-        document.querySelector('.answer-bar-wrap').style.display='block';
+        document.getElementById('questionCard').classList.remove('is-hidden');
+        document.querySelector('.answer-bar-wrap').classList.remove('is-hidden');
         document.getElementById('submitBtn').disabled = false;
        document.getElementById('skipBtn').disabled = false;
         return;
@@ -1319,8 +1319,8 @@
       console.error('[MedhaIQ]', err);
       slog('ERROR: '+err.message, 'err');
       document.getElementById('loadingOverlay').classList.remove('show');
-      document.getElementById('questionCard').style.display='flex';
-      document.querySelector('.answer-bar-wrap').style.display='block';
+      document.getElementById('questionCard').classList.remove('is-hidden');
+      document.querySelector('.answer-bar-wrap').classList.remove('is-hidden');
       document.getElementById('submitBtn').disabled = false;
       document.getElementById('skipBtn').disabled = false;
       alert('Error: '+err.message);
