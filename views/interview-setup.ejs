@@ -98,7 +98,7 @@
        persona list, while both side panels stay at this same fixed
        722px total height regardless, so neither one moves as center
        content changes. */
-    .left-rail { display: flex; flex-direction: column; }
+    .left-rail { position: sticky; top: 66px; display: flex; flex-direction: column; }
     .left-rail .panel + .panel { margin-top: 14px; }
     .left-rail .panel:last-child { min-height: 382px; }
     .panel-label {
@@ -298,7 +298,8 @@
        clamped rails above absorb the squeeze instead; only genuinely
        small screens (phones/small tablets) stack now. ── */
     @media (max-width: 820px) {
-      .layout { grid-template-columns: 1fr; }
+     .layout { grid-template-columns: 1fr; }
+      .left-rail { position: static; }
       .terminal { position: static; }
       .role-grid { grid-template-columns: repeat(2, 1fr); }
       .exp-grid { grid-template-columns: repeat(2, 1fr); }
