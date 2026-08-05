@@ -141,7 +141,7 @@ button{font-family:inherit}
    this page (question card, right panel) and in the PDF report, so
    nothing outside this panel is touched. Inter is already loaded on
    this page (see the font <link> in <head>), matching Setup's body font. */
-.col-left{font-family:'Inter',system-ui,sans-serif;gap:14px}
+.col-left{font-family:'Inter',system-ui,sans-serif;gap:14px;-webkit-font-smoothing:auto}
 .col-left .card{padding:16px;background:#0d1424;border-color:rgba(255,255,255,.07);border-radius:14px}
 .col-left .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.4px;color:var(--blue);margin-bottom:12px}
 .col-left .ctx-row{padding:8px 0}
