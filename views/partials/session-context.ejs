@@ -9,64 +9,25 @@
   <section class="card">
     <p class="eyebrow">Session Context</p>
 
-    <!-- Role Row -->
     <div class="ctx-row">
-      <span class="icon-badge">
-        <!-- Replace SVG below with exact SVG from Interview Setup 'Role' -->
-        <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-      </span>
-      <div class="ctx-txt">
-        <p class="ctx-label">Role</p>
-        <p class="ctx-value" id="sbRole">—</p>
-      </div>
+      <span class="icon-badge">💼</span>
+      <div class="ctx-txt"><p class="ctx-label">Role</p><p class="ctx-value" id="sbRole">—</p></div>
     </div>
-
-    <!-- Career Stage Row -->
     <div class="ctx-row">
-      <span class="icon-badge">
-        <!-- Replace SVG below with exact SVG from Interview Setup 'Career Stage' -->
-        <svg class="ic" viewBox="0 0 24 24"><path d="M12 3c1 3-2 4.5-2 7a4 4 0 0 0 8 .5C18 14 20 15 20 17a8 8 0 1 1-16 0c0-3 2-5 3.5-6.5C9 9 10.5 6 12 3Z"/></svg>
-      </span>
-      <div class="ctx-txt">
-        <p class="ctx-label">Career Stage</p>
-        <p class="ctx-value" id="sbLevel">—</p>
-      </div>
+      <span class="icon-badge">⚡</span>
+     <div class="ctx-txt"><p class="ctx-label">Career Stage</p><p class="ctx-value" id="sbLevel">—</p></div>
     </div>
-
-    <!-- Interviewer Row -->
     <div class="ctx-row">
-      <span class="icon-badge">
-        <!-- Replace SVG below with exact SVG from Interview Setup 'Interviewer' -->
-        <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-5 8-5s6.5 1 8 5"/></svg>
-      </span>
-      <div class="ctx-txt">
-        <p class="ctx-label">Interviewer</p>
-        <p class="ctx-value"><%= personaName %></p>
-      </div>
+      <span class="icon-badge">👤</span>
+      <div class="ctx-txt"><p class="ctx-label">Interviewer</p><p class="ctx-value"><%= personaName %></p></div>
     </div>
-
-    <!-- Time Remaining Row -->
     <div class="ctx-row">
-      <span class="icon-badge">
-        <!-- Replace SVG below with exact SVG from Interview Setup 'Estimated Duration' -->
-        <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-      </span>
-      <div class="ctx-txt">
-        <p class="ctx-label">Time remaining</p>
-        <p class="ctx-value" id="sbTimeRemaining">15:00</p>
-      </div>
+      <span class="icon-badge">🕐</span>
+      <div class="ctx-txt"><p class="ctx-label">Time remaining</p><p class="ctx-value" id="sbTimeRemaining">15:00</p></div>
     </div>
-
-    <!-- Difficulty Row -->
     <div class="ctx-row">
-      <span class="icon-badge">
-        <!-- Replace SVG below with exact SVG from Interview Setup 'Difficulty' -->
-        <svg class="ic" viewBox="0 0 24 24"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2L12 3Z"/></svg>
-      </span>
-      <div class="ctx-txt">
-        <p class="ctx-label">Difficulty</p>
-        <p class="ctx-value">Elite (<%= personaStyleLabel || 'Rigorous' %>)</p>
-      </div>
+      <span class="icon-badge">✦</span>
+      <div class="ctx-txt"><p class="ctx-label">Difficulty</p><p class="ctx-value">Elite (<%= personaStyleLabel || 'Rigorous' %>)</p></div>
     </div>
 
     <%# Progress strip — required by updateCounter() in the engine %>
@@ -75,18 +36,14 @@
         <span id="sbProgLabel">Question <b id="sbProgNum">1</b> of 5</span>
         <span id="sbProgRemaining">4 questions remaining</span>
       </div>
-      <div class="sb-progress-track">
-        <div class="sb-progress-fill" id="sbProgFill"></div>
-      </div>
+      <div class="sb-progress-track"><div class="sb-progress-fill" id="sbProgFill"></div></div>
     </div>
   </section>
 
   <section class="card">
     <p class="eyebrow">Session Breakdown</p>
     <div class="breakdown">
-      <div class="doughnut">
-        <div class="doughnut-hole"><b>5</b><span>Areas</span></div>
-      </div>
+      <div class="doughnut"><div class="doughnut-hole"><b>5</b><span>Areas</span></div></div>
       <ul class="legend">
         <li><span class="lg-name"><i class="swatch" style="background:#3B82F6"></i>Structure</span><b>35%</b></li>
         <li><span class="lg-name"><i class="swatch" style="background:#8B5CF6"></i>Domain Expertise</span><b>25%</b></li>
@@ -98,3 +55,7 @@
   </section>
 
 </aside>
+<%# Live Terminal Preview card intentionally removed (UX polish, 2026-07-24):
+    it duplicated the real Live Terminal panel in the right sidebar. The
+    freed vertical space now goes to Session Breakdown, which renders
+    larger (see .doughnut/.breakdown rules in interview-session.css). %>
