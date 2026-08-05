@@ -67,14 +67,13 @@
        browser zoom or window resize can never stretch or crush them;
        the wizard column absorbs the remaining space. min-width:0 on
        children stops any content from widening its frame. ── */
-    .layout {
+   .layout {
       display: grid;
       grid-template-columns: clamp(220px, 18vw, 300px) minmax(0,1fr) clamp(260px, 22vw, 340px);
       gap: 18px;
       max-width: 1560px;
       margin: 0 auto;
       padding: 18px 20px 24px;
-      align-items: start;
     }
     .layout > * { min-width: 0; }
 
@@ -242,7 +241,8 @@
     .p-traits li::before { content:'•'; position: absolute; left: 0; color: var(--dim); }
 
     /* ── RIGHT: Live Terminal ────────────────────────── */
-    .terminal { position: sticky; top: 66px; }
+    .terminal { position: sticky; top: 66px; display: flex; flex-direction: column; }
+    .terminal .panel { flex: 1; display: flex; flex-direction: column; }
     .term-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
     .term-title { font-family:'JetBrains Mono',monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); }
     .term-block { padding: 12px 0; border-bottom: 1px solid var(--border); }
