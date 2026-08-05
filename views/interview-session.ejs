@@ -56,7 +56,7 @@
   })();
   </script>
   <link rel="stylesheet" href="/css/brand-logo.css">
-  <link rel="stylesheet" href="/css/interview-session.css">
+  <link rel="stylesheet" href="/css/interview-session.css?v=20260805b">
   <style>
     /* Hide Vapi's own default floating call widget (html-script-tag's
        built-in "vapi-support-btn" — the green phone-icon button seen in
@@ -834,7 +834,18 @@
     el.className = 'toast-score '+(s>=75?'high':s>=55?'mid':'low');
     var t = document.getElementById('scoreToast');
     t.classList.add('show');
-    setTimeout(function(){ t.classList.remove('show'); }, 4000);
+  setTimeout(function(){ t.classList.remove('show'); }, 4000);
+  }
+
+  /* ── Idle-timeout expiry (minimal version, 2026-08-05) ── */
+  function showIdleExpiredModal() {
+    try { window.MedhaIQ_stopMicForExpiry(); } catch (e) {}
+    try { clearInterval(timerInt); } catch (e) {}
+    try { clearInterval(heartbeatInt); } catch (e) {}
+    isSubmitting = true; // prevent any further submission
+    document.getElementById('loadingOverlay').classList.remove('show');
+    var overlay = document.getElementById('idleExpiredOverlay');
+    if (overlay) overlay.style.display = 'flex';
   }
 
   /* ── Loading / question rendering ── */
@@ -919,6 +930,17 @@
 
   /* ── Answer input ── */
   var answerInput = document.getElementById('answerInput');
+  var _lastTypingActivityPing = 0;
+  var TYPING_ACTIVITY_DEBOUNCE_MS = 45000; // at most one ping per 45s while typing
+  function pingTypingActivity() {
+    var now = Date.now();
+    if (now - _lastTypingActivityPing < TYPING_ACTIVITY_DEBOUNCE_MS) return;
+    _lastTypingActivityPing = now;
+    fetch('/api/interview/sessions/' + SID + '/heartbeat', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ genuine: true }),
+    }).catch(function (e) { console.warn('[typing activity] ping failed (non-fatal):', e); });
+  }
   answerInput.addEventListener('input', function() {
     // DIAGNOSTIC (bug fix investigation, 2026-07-24) — added specifically
     // to root-cause the "live STAR indicators never activate" report.
@@ -939,6 +961,7 @@
     // isn't reacting" even when the DOM is, in fact, updating correctly).
     // Remove once confirmed either way.
     window.timelineLog && window.timelineLog('star_listener_fired', (typeof currentSpokenQuestionId !== 'undefined' ? currentSpokenQuestionId : null), true, 'inputLength=' + this.value.length);
+    pingTypingActivity();
     document.getElementById('charCount').textContent = this.value.length+' / 4000';
     var hasText = !!this.value.trim();
     document.getElementById('submitBtn').disabled = !hasText;
@@ -1148,7 +1171,7 @@
       console.log('[SUBMIT-TRACE] requestId=' + _thisRequestId + ' questionId=' + QID + ' NETWORK CALL STARTING at ' + Date.now());
       var resp = await fetch('/api/interview/sessions/'+SID+'/answer', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ questionId: QID, answerText: ans, skip: skip }),
+        body: JSON.stringify({ questionId: QID, answerText: ans, skip: skip, micLive: (typeof window.MedhaIQ_isMicLive === 'function' && window.MedhaIQ_isMicLive()) }),
       });
       var data = await resp.json();
       console.log('[SUBMIT-TRACE] requestId=' + _thisRequestId + ' questionId=' + QID + ' NETWORK CALL RESOLVED at ' + Date.now() + ' status=' + resp.status + ' error=' + (data && data.error) + ' sessionEnded=' + (data && data.sessionEnded));
@@ -1164,7 +1187,11 @@
         document.getElementById('questionCard').style.display='flex';
         document.querySelector('.answer-bar-wrap').style.display='block';
         document.getElementById('submitBtn').disabled = false;
-        document.getElementById('skipBtn').disabled = false;
+       document.getElementById('skipBtn').disabled = false;
+        return;
+      }
+      if (resp.status === 410 && data && data.code === 'SESSION_EXPIRED') {
+        showIdleExpiredModal();
         return;
       }
       if (!resp.ok) throw new Error(data.error || 'Server error '+resp.status);
@@ -2664,6 +2691,25 @@
 
   btn.addEventListener('click', connectVoice);
 
+  // Idle-timeout feature (minimal version, 2026-08-05) — reuses the same
+  // vapi.stop() call connectVoice already makes for a manual disconnect.
+  window.MedhaIQ_stopMicForExpiry = function () {
+    try {
+      if (vapi && (state === STATES.LIVE || state === STATES.CONNECTING || state === STATES.REQUESTING)) {
+        window._sttIntentionalStop = true;
+        vapi.stop();
+      }
+    } catch (e) { /* best-effort */ }
+  };
+
+  // "Actively recording" bypass (2026-08-05 follow-up) — lets
+  // submitAnswer report the candidate's real mic state to the server, so
+  // the idle-timeout check can be skipped for a submission that follows
+  // active speech, no matter how long that speech went on.
+  window.MedhaIQ_isMicLive = function () {
+    try { return state === STATES.LIVE; } catch (e) { return false; }
+  };
+
   // Continue Interview gate (feature, 2026-07-24 follow-up) — only present
   // in the DOM when answeredCount > 0 (see the EJS conditional near the
   // top of <body>). Same connectVoice() as the mic button; this is just a
@@ -2674,6 +2720,10 @@
     continueGateBtn.addEventListener('click', function () {
       var overlay = document.getElementById('continueGateOverlay');
       if (overlay) overlay.style.display = 'none';
+      fetch('/api/interview/sessions/' + SID + '/heartbeat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ genuine: true }),
+      }).catch(function (e) { console.warn('[Continue Interview] activity ping failed (non-fatal):', e); });
       connectVoice();
     });
   }
@@ -2688,6 +2738,15 @@
   // does can block or delay reading/answering the current question.
 })();
 </script>
+
+<!-- Idle-timeout expiry modal (minimal version, 2026-08-05). -->
+<div id="idleExpiredOverlay" style="display:none; position:fixed; inset:0; background:rgba(2,6,16,0.75); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:var(--card); border:1px solid var(--border-soft); border-radius:16px; max-width:440px; width:90%; padding:28px; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="font-size:18px; font-weight:700; color:var(--text); margin-bottom:10px;">Interview Session Expired</div>
+    <div style="font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:22px;">Your interview was inactive for more than 10 minutes. Start a new interview to continue.</div>
+    <a href="/interview" style="display:block; text-align:center; padding:12px; border-radius:10px; background:var(--blue); color:#fff; font-weight:600; font-size:14px; text-decoration:none;">Start New Interview</a>
+  </div>
+</div>
 
 </body>
 </html>

@@ -30,6 +30,8 @@ const {
   completeSession,
   abandonSession,
   touchSessionActivity,
+  touchUserActivity,
+  expireSessionForInactivity,
 } = require('../db/interview');
 const { sendInterviewReportEmail } = require('../services/email');
 const {
@@ -59,6 +61,13 @@ function isDiscoveryQuestionType(questionType) {
 // identical value in config/plans.js. Sourcing it from there means there is
 // now exactly one place this number can be changed.
 const { INTERVIEW_MAX_SESSION_MINUTES } = require('../config/plans');
+
+// Idle-timeout feature (minimal version, 2026-08-05) — see
+// processInterviewAnswer below. Kept as a local constant rather than a
+// config export: nothing else needs this number (no frontend warning
+// timer to keep in sync with), so a shared export would be an extra
+// moving part with no actual consumer.
+const IDLE_TIMEOUT_MINUTES = 10;
 
 // NOTE: harmonicAlignmentEngine (services/harmonicAlignmentEngine.js) only
 // builds the JD/company/role competency matrix — it exports
@@ -478,7 +487,44 @@ async function pickAndPersistNextQuestion(session) {
 // apart. Returns a plain { httpStatus, body } object rather than calling
 // res.json directly, so callers without a real Express req/res (like the
 // Vapi webhook) can use it identically to the HTTP route.
-async function processInterviewAnswer({ sessionId, questionId, answerText, skip, voiceMode, userId, userEmail, userName }) {
+// Idle-timeout feature (2026-08-05, extended). Shared by every protected
+// endpoint that advances interview state (currently: processInterviewAnswer
+// and /vapi/next-question below) — one implementation, not a copy per
+// route. last_user_activity_at only advances on genuine candidate
+// actions (touchUserActivity — see its call sites) — never on the
+// heartbeat's unconditional 60s auto-ping, AI speech, TTS, score
+// updates, or polling. expireSessionForInactivity anchors ended_at to
+// that same timestamp (not NOW()), so no idle time is ever billed.
+// Returns null if the session is fine to proceed; the exact 410 shape
+// (or the pre-existing 400 for an already-inactive session) otherwise.
+async function checkSessionActiveAndNotIdle(session, sessionId, opts) {
+  if (session.status !== 'active') return { httpStatus: 400, body: { error: 'Session is not active' } };
+
+  // "Actively recording" bypass (2026-08-05 follow-up): while the
+  // candidate is genuinely mid-speech, the idle-minutes evaluation is
+  // skipped entirely — not just deferred by touching the timestamp, but
+  // not evaluated at all — so a long spoken answer can never trigger a
+  // false expiry no matter how long it runs. The active-session check
+  // above still applies regardless, so an already-ended session is never
+  // let through just because this flag was set.
+  if (opts && opts.skipIdleCheck) return null;
+
+  const lastUserActivityAt = session.last_user_activity_at || session.started_at;
+  const idleMinutes = (Date.now() - new Date(lastUserActivityAt).getTime()) / 60000;
+  if (idleMinutes > IDLE_TIMEOUT_MINUTES) {
+    await expireSessionForInactivity(sessionId);
+    return {
+      httpStatus: 410,
+      body: {
+        code: 'SESSION_EXPIRED',
+        message: 'Your interview session expired due to 10 minutes of inactivity.',
+      },
+    };
+  }
+  return null;
+}
+
+async function processInterviewAnswer({ sessionId, questionId, answerText, skip, voiceMode, micLive, userId, userEmail, userName }) {
   // One turnId per invocation — the single correlating value threaded
   // through every log line for this request/response round-trip, so
   // backend generation, frontend receipt, UI render, and vapi.say() can
@@ -503,7 +549,17 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   const session = await getSession(sessionId);
   if (!session) return { httpStatus: 404, body: { error: 'Session not found' } };
   if (String(session.user_id) !== String(userId)) return { httpStatus: 403, body: { error: 'Forbidden' } };
-  if (session.status !== 'active') return { httpStatus: 400, body: { error: 'Session is not active' } };
+  // "Actively recording" bypass (2026-08-05 follow-up): voiceMode is
+  // only ever true from the Vapi webhook (routes/vapi.js), which by
+  // construction only fires during a live call — recording is
+  // definitionally active there. micLive is the HTTP path's own signal,
+  // reported by the frontend's actual mic state at submission time.
+  const idleCheck = await checkSessionActiveAndNotIdle(session, sessionId, { skipIdleCheck: !!voiceMode || !!micLive });
+  if (idleCheck) return idleCheck;
+  // Genuine activity, regardless of channel — shared here (not just the
+  // HTTP route) so the Vapi voice-answer path also resets the idle
+  // clock, not just typed/HTTP submissions.
+  touchUserActivity(sessionId).catch((e) => console.warn('[interview] touchUserActivity failed (non-fatal):', e.message));
 
   // Interview Policy — read from THIS session's frozen columns (see
   // pickAndPersistNextQuestion's header comment above), not re-resolved
@@ -855,7 +911,7 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
 router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
   try {
     const sessionId = parseInt(req.params.id, 10);
-    const { questionId, answerText, skip, voiceMode } = req.body;
+    const { questionId, answerText, skip, voiceMode, micLive } = req.body;
 
     // Server-owned session lifecycle management (bug fix, 2026-07-24):
     // any real answer submission IS activity, independent of the
@@ -865,7 +921,7 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
     touchSessionActivity(sessionId).catch((e) => console.warn('[interview] touchSessionActivity failed (non-fatal):', e.message));
 
     const result = await processInterviewAnswer({
-      sessionId, questionId, answerText, skip, voiceMode,
+      sessionId, questionId, answerText, skip, voiceMode, micLive,
       userId: req.user.id,
       userEmail: req.user.email || null,
       userName: req.user.name || '',
@@ -916,9 +972,17 @@ router.post('/sessions/:id/heartbeat', requireAuth, async (req, res) => {
     const session = await getSession(sessionId);
     if (!session) return res.status(404).json({ error: 'Session not found' });
     if (String(session.user_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' });
-    if (session.status !== 'active') return res.json({ success: true, ignored: true }); // already ended — nothing to refresh
+  if (session.status !== 'active') return res.json({ success: true, ignored: true }); // already ended — nothing to refresh
 
     await touchSessionActivity(sessionId);
+    // Idle-timeout feature (2026-08-05 follow-up): the regular 60s
+    // auto-ping never sends this flag — only an explicit caller (the
+    // Continue Interview gate, views/interview-session.ejs) can assert
+    // "this heartbeat represents a genuine action," so the unconditional
+    // background ping still can't contaminate the idle-timeout signal.
+    if (req.body && req.body.genuine === true) {
+      await touchUserActivity(sessionId);
+    }
     return res.json({ success: true });
   } catch (err) {
     console.error('[interview/sessions heartbeat]', err);
@@ -1011,6 +1075,16 @@ router.post('/vapi/next-question', async (req, res) => {
 
     const session = await getSession(sessionId);
     if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const idleCheck = await checkSessionActiveAndNotIdle(session, sessionId, { skipIdleCheck: true });
+    if (idleCheck) {
+      // This route's contract is Vapi's tool-call response shape, not
+      // processInterviewAnswer's {httpStatus, body} — translate rather
+      // than return idleCheck directly, so Vapi still gets a spoken
+      // result instead of a raw error the assistant can't say anything
+      // sensible about.
+      return res.json({ results: [{ toolCallId, result: "This interview session has ended." }] });
+    }
 
     const picked = await pickAndPersistNextQuestion(session);
     const spokenText = picked.text;

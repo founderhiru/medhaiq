@@ -589,7 +589,23 @@ async function runMigrations() {
           // that point (see services/interview.js's hasSufficientCoverage
           // and routes/interview.js's GUARD 2). NULL/0 for every other
           // package and every pre-existing session — a genuine no-op.
-          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS executive_extension_budget INTEGER`);
+        await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS executive_extension_budget INTEGER`);
+        },
+      },
+      {
+        name: '018_idle_timeout',
+        up: async (c) => {
+          // Idle-timeout feature (minimal version, 2026-08-05). A new
+          // column, not a reuse of last_activity_at: that one is already
+          // refreshed unconditionally every 60s by the existing
+          // heartbeat regardless of real engagement, so reusing it here
+          // would mean idle time could never actually accumulate while
+          // the tab stayed open. This column only updates on genuine
+          // candidate actions (see touchUserActivity, db/interview.js).
+          // Defaults to started_at for any session that predates this
+          // migration, same backfill pattern as migration 015.
+          await c.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS last_user_activity_at TIMESTAMPTZ DEFAULT NOW()`);
+          await c.query(`UPDATE interview_sessions SET last_user_activity_at = started_at WHERE last_user_activity_at IS NULL`);
         },
       },
     ];

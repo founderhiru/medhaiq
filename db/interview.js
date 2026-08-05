@@ -107,6 +107,38 @@ async function touchSessionActivity(sessionId) {
   );
 }
 
+// Idle-timeout feature (minimal version, 2026-08-05). Updates ONLY on
+// genuine candidate actions (submit/skip — see routes/interview.js) —
+// never on the unconditional 60s heartbeat above, never on AI speech,
+// TTS, score updates, or polling.
+async function touchUserActivity(sessionId) {
+  await pool.query(
+    `UPDATE interview_sessions SET last_user_activity_at = NOW() WHERE id = $1 AND status = 'active'`,
+    [sessionId]
+  );
+}
+
+// Idle-timeout feature (minimal version, 2026-08-05). ended_at is set to
+// the session's last real activity, NOT NOW() — minutes billing
+// (lib/capability-engine.js's cappedSessionMinutes) computes duration as
+// ended_at - started_at, so this excludes all idle time from billing
+// with zero changes to the billing logic itself. Any answers/scores
+// already saved are untouched.
+//
+// NON-NEGOTIABLE: The idle timeout must never bill idle time. The
+// interview end time must always be recorded as the user's last genuine
+// activity timestamp, never the timeout execution timestamp.
+async function expireSessionForInactivity(sessionId) {
+  await pool.query(
+    `UPDATE interview_sessions
+     SET status = 'expired',
+         ended_at = COALESCE(last_user_activity_at, started_at),
+         abandoned_reason = 'inactivity_timeout'
+     WHERE id = $1 AND status = 'active'`,
+    [sessionId]
+  );
+}
+
 /**
  * If this user has an ACTIVE session that's gone silent, auto-abandons it
  * and returns the abandoned session's id(s). Two timeouts apply:
@@ -350,7 +382,8 @@ async function getUserCompletedReportCount(userId) {
 
 module.exports = {
   createSession, getSession, getUserSessions, completeSession, abandonSession,
-  touchSessionActivity, abandonStaleActiveSession, findRecoverableSession,
+  touchSessionActivity, touchUserActivity, expireSessionForInactivity,
+  abandonStaleActiveSession, findRecoverableSession,
   getSessionQuestions, getSessionScores, getUserAggregateScores,
   addQuestion, addAnswer, addScore,
   saveReport, getReport, getUserCompletedReportCount,
