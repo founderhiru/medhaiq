@@ -118,8 +118,7 @@ button{font-family:inherit}
 /* ═══ LEFT SIDEBAR ═══ */
 .ctx-row{display:flex;align-items:center;gap:11px;padding:6px 0}
 .ctx-row + .ctx-row{border-top:1px solid rgba(255,255,255,.05)}
-.icon-badge{flex-shrink:0;width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--card2);border:1px solid var(--border-soft);color:var(--blue-soft)}
-.icon-badge .ic{width:18px;height:18px}
+.icon-badge{flex-shrink:0;width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--card2);border:1px solid var(--border-soft);color:var(--blue-soft)}
 .ctx-txt{min-width:0}
 .ctx-label{font-size:12px;color:var(--muted)}
 .ctx-value{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
