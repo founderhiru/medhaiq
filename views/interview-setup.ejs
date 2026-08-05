@@ -87,14 +87,20 @@
     }
     .panel + .panel { margin-top: 14px; }
 
-    /* ── LEFT rail rebalance ──────────────────────────
-       Two panels now instead of three. Rather than leaving empty
-       space below a shorter column, the rail becomes a flex column
-       and its last panel (Session Breakdown) absorbs the freed
-       height — same "last card fills remaining space" pattern
-       already used for the interview session columns. */
+   /* ── LEFT rail bottom-alignment ──────────────────────
+       Session Breakdown gets a fixed min-height so its bottom edge
+       lines up with Live Terminal's bottom edge exactly (measured:
+       Session Context 326px + 14px gap + Session Breakdown's own
+       277.5px = 617.5px; Live Terminal = 722px; the 104.5px
+       difference is added here as min-height: 277.5 + 104.5 = 382px).
+       Deliberately NOT tied to the center column's height (no
+       align-items:stretch) — center is free to grow/shrink with the
+       persona list, while both side panels stay at this same fixed
+       722px total height regardless, so neither one moves as center
+       content changes. */
     .left-rail { display: flex; flex-direction: column; }
     .left-rail .panel + .panel { margin-top: 14px; }
+    .left-rail .panel:last-child { min-height: 382px; }
     .panel-label {
       font-size: 10px; font-weight: 700; letter-spacing: 1.4px;
       text-transform: uppercase; color: var(--blue-hi);
