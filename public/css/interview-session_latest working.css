@@ -330,8 +330,8 @@ button{font-family:inherit}
 .vectors{list-style:none}
 .vectors li{display:flex;align-items:center;gap:9px}
 .vectors li + li{margin-top:12px}
-.vec-ic{flex-shrink:0;width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:var(--card2);border:1px solid var(--border);color:var(--blue-soft)}
-.vec-ic .ic{width:10px;height:10px}
+.vec-ic{flex-shrink:0;width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--card2);border:1px solid var(--border);color:var(--blue-soft)}
+.vec-ic .ic{width:12px;height:12px}
 .vec-name{width:44%;font-size:13px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vec-track{flex:1;height:6px;border-radius:99px;background:var(--border);overflow:hidden}
 .vec-fill{display:block;height:100%;width:0;border-radius:99px;background:var(--blue);transition:width .7s}
@@ -358,14 +358,6 @@ button{font-family:inherit}
 .ring-status{margin-top:var(--rt-ring-status-gap)}
 .ring-status-sub{margin-bottom:var(--rt-desc-pull)}
 .score-ring-wrap + .sublabel{margin-top:var(--rt-vec-gap)}
-
-/* Restoring — was missing entirely (HTML referenced the class with no
-   matching CSS anywhere), which dropped the bullet dot before each
-   activity-feed line. */
-.activity-feed{list-style:none}
-.activity-feed li{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
-.activity-feed li + li{margin-top:9px}
-.activity-feed li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0}
 
 /* ═══ Live Terminal typography pass — matches Setup's Live Terminal
    (views/interview-setup.ejs .term-title/.term-label/.engine-sub/
