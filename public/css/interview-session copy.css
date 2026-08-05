@@ -39,9 +39,7 @@ button{font-family:inherit}
 .eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
 .card-head .eyebrow{margin-bottom:0}
 .sublabel{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
-/* .sublabel-note intentionally left unstyled — Setup applies identical
-   typography to the parenthetical note as the rest of the label (same
-   uppercase/bold/letter-spacing), so this now just inherits .sublabel. */
+.sublabel-note{font-weight:400;text-transform:none;letter-spacing:0}
 .panel-title{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text)}
 .panel-title.small{font-size:12px;line-height:1.4}
 .panel-title-sub{color:var(--muted)}
@@ -292,8 +290,8 @@ button{font-family:inherit}
 #aiStatusRing{transition:stroke-dashoffset .6s}
 #aiStatusRing.pulsing{animation:ringPulse 1.4s ease-in-out infinite}
 @keyframes ringPulse{0%,100%{opacity:1}50%{opacity:.45}}
-.engine-status-txt b{display:block;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;color:#FFFFFF;line-height:1.5}
-.engine-status-txt span{font-size:12px;font-family:'Inter',system-ui,sans-serif;color:#94A3B8}
+.engine-status-txt b{display:block;font-size:14px}
+.engine-status-txt span{font-size:12px;color:var(--muted)}
 
 .star-rail{display:flex;align-items:flex-start;margin-top:4px}
 .star-step{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:44px}
@@ -322,11 +320,11 @@ button{font-family:inherit}
 #ringFill{transition:stroke-dashoffset .7s}
 .ring-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;letter-spacing:.06em;color:var(--text)}
 .ring-max{font-size:11px;color:var(--muted);margin-top:2px}
-.ring-status{font-family:'Inter',system-ui,sans-serif;font-size:12px;font-weight:600;line-height:1.5;color:#10B981;margin-top:6px}
+.ring-status{font-size:13px;font-weight:700;margin-top:6px}
 .ring-status.high{color:var(--green)}
 .ring-status.mid{color:var(--amber)}
 .ring-status.low{color:var(--red)}
-.ring-status-sub{font-family:'Inter',system-ui,sans-serif;font-size:11px;color:#94A3B8;text-align:center;line-height:1.5;max-width:220px}
+.ring-status-sub{font-size:13px;color:var(--muted);text-align:center;line-height:1.5;max-width:220px}
 
 .vectors{list-style:none}
 .vectors + .sublabel{margin-top:16px;padding-top:12px;border-top:1px solid var(--border-soft)}
@@ -359,7 +357,6 @@ button{font-family:inherit}
 .col-right .card:first-child{padding-top:var(--rt-top-pad); margin-bottom:var(--rt-card-pull)}
 .engine-status + .sublabel{margin-top:var(--rt-ai-gap);padding-top:12px;border-top:1px solid var(--border-soft)}
 .card-head.head-top{margin-bottom:var(--rt-head-gap)}
-.col-right .panel-title.small{font-family:'Inter',system-ui,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:#475569;line-height:1.5}
 .score-ring-wrap{margin:var(--rt-ring-gap) 0}
 .ring-max{margin-top:var(--rt-ring-max-gap)}
 .ring-status{margin-top:var(--rt-ring-status-gap)}
@@ -370,7 +367,7 @@ button{font-family:inherit}
    matching CSS anywhere), which dropped the bullet dot before each
    activity-feed line. */
 .activity-feed{list-style:none}
-.activity-feed li{display:flex;align-items:center;gap:8px;font-family:'Inter',system-ui,sans-serif;font-size:12px;line-height:1.5;color:#94A3B8}
+.activity-feed li{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
 .activity-feed li + li{margin-top:9px}
 .activity-feed li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0}
 
@@ -382,8 +379,8 @@ button{font-family:inherit}
    STAR rail, score ring, and icon sizes are untouched, and the
    spacing/margin values already tuned to match Setup's panel height
    are left as they are. Scoped to .col-right only. ═══ */
-.col-right .panel-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.8px;color:#94A3B8;line-height:1.5}
-.col-right .sublabel{font-family:'Inter',system-ui,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:#475569;line-height:1.5}
+.col-right .panel-title{font-family:var(--mono);font-size:11px;letter-spacing:0.8px}
+.col-right .sublabel{font-size:10px;font-weight:700;letter-spacing:1px}
 .col-right .engine-status-txt span{font-size:11px;line-height:1.5}
 .col-right .live-pill{font-size:10px;font-weight:700;letter-spacing:normal}
 /* ═══ SCORE TOAST (.show toggled by engine) ═══ */
