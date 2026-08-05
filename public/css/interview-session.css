@@ -39,7 +39,9 @@ button{font-family:inherit}
 .eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
 .card-head .eyebrow{margin-bottom:0}
 .sublabel{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
-.sublabel-note{font-weight:400;text-transform:none;letter-spacing:0}
+/* .sublabel-note intentionally left unstyled — Setup applies identical
+   typography to the parenthetical note as the rest of the label (same
+   uppercase/bold/letter-spacing), so this now just inherits .sublabel. */
 .panel-title{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text)}
 .panel-title.small{font-size:12px;line-height:1.4}
 .panel-title-sub{color:var(--muted)}
@@ -118,8 +120,7 @@ button{font-family:inherit}
 /* ═══ LEFT SIDEBAR ═══ */
 .ctx-row{display:flex;align-items:center;gap:11px;padding:6px 0}
 .ctx-row + .ctx-row{border-top:1px solid rgba(255,255,255,.05)}
-.icon-badge{flex-shrink:0;width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--card2);border:1px solid var(--border-soft);color:var(--blue-soft)}
-.icon-badge .ic{width:18px;height:18px}
+.icon-badge{flex-shrink:0;width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--card2);border:1px solid var(--border-soft);color:var(--blue-soft)}
 .ctx-txt{min-width:0}
 .ctx-label{font-size:12px;color:var(--muted)}
 .ctx-value{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -140,14 +141,14 @@ button{font-family:inherit}
    this page (question card, right panel) and in the PDF report, so
    nothing outside this panel is touched. Inter is already loaded on
    this page (see the font <link> in <head>), matching Setup's body font. */
-.col-left{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.col-left{font-family:'Inter',system-ui,sans-serif}
 .col-left .card{padding:16px;background:#0d1424;border-color:rgba(255,255,255,.07);border-radius:14px}
 .col-left .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.4px;color:var(--blue);margin-bottom:12px}
 .col-left .ctx-row{padding:8px 0}
 .col-left .ctx-row + .ctx-row{border-top:1px solid rgba(255,255,255,.07)}
 .col-left .icon-badge{border-radius:8px;background:rgba(59,130,246,.15);border:none;color:var(--blue)}
-.col-left .ctx-label{font-size:11px}
-.col-left .ctx-value{font-size:13px}
+.col-left .ctx-label{font-size:11px;color:#475569;line-height:1.5}
+.col-left .ctx-value{font-size:13px;color:#FFFFFF;line-height:1.5}
 
 .breakdown{flex:1;display:flex;flex-direction:column;align-items:center;gap:16px}
 .doughnut{
@@ -291,8 +292,8 @@ button{font-family:inherit}
 #aiStatusRing{transition:stroke-dashoffset .6s}
 #aiStatusRing.pulsing{animation:ringPulse 1.4s ease-in-out infinite}
 @keyframes ringPulse{0%,100%{opacity:1}50%{opacity:.45}}
-.engine-status-txt b{display:block;font-size:14px}
-.engine-status-txt span{font-size:12px;color:var(--muted)}
+.engine-status-txt b{display:block;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;color:#FFFFFF;line-height:1.5}
+.engine-status-txt span{font-size:12px;font-family:'Inter',system-ui,sans-serif;color:#94A3B8}
 
 .star-rail{display:flex;align-items:flex-start;margin-top:4px}
 .star-step{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:44px}
@@ -321,22 +322,27 @@ button{font-family:inherit}
 #ringFill{transition:stroke-dashoffset .7s}
 .ring-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;letter-spacing:.06em;color:var(--text)}
 .ring-max{font-size:11px;color:var(--muted);margin-top:2px}
-.ring-status{font-size:13px;font-weight:700;margin-top:6px}
+.ring-status{font-family:'Inter',system-ui,sans-serif;font-size:12px;font-weight:600;line-height:1.5;color:#10B981;margin-top:6px}
 .ring-status.high{color:var(--green)}
 .ring-status.mid{color:var(--amber)}
 .ring-status.low{color:var(--red)}
-.ring-status-sub{font-size:13px;color:var(--muted);text-align:center;line-height:1.5;max-width:220px}
+.ring-status-sub{font-family:'Inter',system-ui,sans-serif;font-size:11px;color:#94A3B8;text-align:center;line-height:1.5;max-width:220px}
 
 .vectors{list-style:none}
-.vectors li{display:flex;align-items:center;gap:9px}
-.vectors li + li{margin-top:12px}
-.vec-ic{flex-shrink:0;width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--card2);border:1px solid var(--border);color:var(--blue-soft)}
-.vec-ic .ic{width:12px;height:12px}
-.vec-name{width:44%;font-size:13px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.vec-track{flex:1;height:6px;border-radius:99px;background:var(--border);overflow:hidden}
-.vec-fill{display:block;height:100%;width:0;border-radius:99px;background:var(--blue);transition:width .7s}
+.vectors + .sublabel{margin-top:16px;padding-top:12px;border-top:1px solid var(--border-soft)}
+.vectors li{display:flex;align-items:center;gap:8px}
+.vectors li + li{margin-top:10px}
+.vec-ic{flex-shrink:0;width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;background:var(--card2);border:1px solid var(--border);color:var(--blue-soft)}
+.vectors li:nth-child(1) .vec-ic{background:rgba(59,130,246,0.15);border:none;color:#3B82F6}
+.vectors li:nth-child(2) .vec-ic{background:rgba(167,139,250,0.15);border:none;color:#A78BFA}
+.vectors li:nth-child(3) .vec-ic{background:rgba(34,197,94,0.15);border:none;color:#22C55E}
+.vectors li:nth-child(4) .vec-ic{background:rgba(251,146,60,0.15);border:none;color:#FB923C}
+.vectors li:nth-child(5) .vec-ic{background:rgba(245,158,11,0.15);border:none;color:#F59E0B}
+.vec-name{width:44%;font-family:'Inter',system-ui,sans-serif;font-size:12px;font-weight:400;line-height:1.5;color:#94A3B8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vec-track{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden}
+.vec-fill{display:block;height:100%;width:0;border-radius:2px;background:var(--blue);transition:width .7s}
 .vec-fill.is-zero{background:var(--border2)}
-.vec-score{width:24px;text-align:right;font-size:12px;color:var(--muted);font-family:var(--mono)}
+.vec-score{width:24px;text-align:right;font-size:11px;line-height:1.5;color:#475569;font-family:var(--mono)}
 .vec-score.is-zero{color:#5B6880}
 
 .col-right{
@@ -351,13 +357,22 @@ button{font-family:inherit}
   --rt-vec-gap: 4px;         /* gap before 5-Vector: 16px -> 4px (-12px) */
 }
 .col-right .card:first-child{padding-top:var(--rt-top-pad); margin-bottom:var(--rt-card-pull)}
-.engine-status + .sublabel{margin-top:var(--rt-ai-gap)}
+.engine-status + .sublabel{margin-top:var(--rt-ai-gap);padding-top:12px;border-top:1px solid var(--border-soft)}
 .card-head.head-top{margin-bottom:var(--rt-head-gap)}
+.col-right .panel-title.small{font-family:'Inter',system-ui,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:#475569;line-height:1.5}
 .score-ring-wrap{margin:var(--rt-ring-gap) 0}
 .ring-max{margin-top:var(--rt-ring-max-gap)}
 .ring-status{margin-top:var(--rt-ring-status-gap)}
 .ring-status-sub{margin-bottom:var(--rt-desc-pull)}
-.score-ring-wrap + .sublabel{margin-top:var(--rt-vec-gap)}
+.score-ring-wrap + .sublabel{margin-top:var(--rt-vec-gap);padding-top:12px;border-top:1px solid var(--border-soft)}
+
+/* Restoring — was missing entirely (HTML referenced the class with no
+   matching CSS anywhere), which dropped the bullet dot before each
+   activity-feed line. */
+.activity-feed{list-style:none}
+.activity-feed li{display:flex;align-items:center;gap:8px;font-family:'Inter',system-ui,sans-serif;font-size:12px;line-height:1.5;color:#94A3B8}
+.activity-feed li + li{margin-top:9px}
+.activity-feed li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0}
 
 /* ═══ Live Terminal typography pass — matches Setup's Live Terminal
    (views/interview-setup.ejs .term-title/.term-label/.engine-sub/
@@ -367,8 +382,8 @@ button{font-family:inherit}
    STAR rail, score ring, and icon sizes are untouched, and the
    spacing/margin values already tuned to match Setup's panel height
    are left as they are. Scoped to .col-right only. ═══ */
-.col-right .panel-title{font-family:var(--mono);font-size:11px;letter-spacing:0.8px}
-.col-right .sublabel{font-size:10px;font-weight:700;letter-spacing:1px}
+.col-right .panel-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.8px;color:#94A3B8;line-height:1.5}
+.col-right .sublabel{font-family:'Inter',system-ui,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:#475569;line-height:1.5}
 .col-right .engine-status-txt span{font-size:11px;line-height:1.5}
 .col-right .live-pill{font-size:10px;font-weight:700;letter-spacing:normal}
 /* ═══ SCORE TOAST (.show toggled by engine) ═══ */
