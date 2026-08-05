@@ -910,50 +910,41 @@ function switchTab(tab) {
     var packageId = (errorData.package && errorData.package.id) || 'explorer';
     var entitlement = errorData.entitlement || {};
     var packageLabel = capitalize(packageId);
-    var minutesIncluded = entitlement.minutesIncluded != null ? entitlement.minutesIncluded : '?';
 
-    // Title is intentionally identical across all packages — the modal's
-    // job is just to say the allowance is used up, not to restate the
-    // number twice (once in the title, once in the body).
-    var title = 'You\'ve used all your AI Minutes';
+    // Same phrasing convention as the Settings page's "Interview Minutes:
+    // X of Y remaining" line — one short sentence, not a paragraph.
+    var body = 'You\'ve used ' + (entitlement.minutesUsed != null ? Math.round(entitlement.minutesUsed) : '?')
+      + ' of ' + (entitlement.minutesIncluded != null ? entitlement.minutesIncluded : '?')
+      + ' minutes included with your ' + packageLabel + ' package.';
 
-    // Per-package body copy. Deliberately NOT a cumulative "X of Y used"
-    // string (that duplicates what the Settings page's usage line already
-    // shows and reads like a meter, not a message) — just the package
-    // allowance plus the one next action available for that tier.
-    var body;
+    // Per-package option copy. NOT derived from PACKAGE_ORDER/config —
+    // deliberately hardcoded here, since this specific marketing phrasing
+    // ("Resume Intelligence, JD Intelligence & 3 AI Interviewers") isn't
+    // data that exists anywhere in config/product-packages.js today; that
+    // file stores permission KEYS and a minute count, not customer-facing
+    // prose. If this needs to change (new persona counts, a 4th package),
+    // it's a one-place edit here — small and explicit, not silently
+    // auto-generated from config in a way that could produce awkward text.
     var options;
-    var primaryCtaLabel;
     if (packageId === 'growth') {
-      body = 'Your Growth plan includes ' + minutesIncluded + ' AI Minutes. Upgrade to Leadership to continue practicing.';
-      // Only Leadership is promoted here — Growth doesn't get re-shown its
-      // own package, per spec.
-      options = ['Leadership – 300 AI Minutes, Executive Intelligence & 6 AI Interviewers.'];
-      primaryCtaLabel = 'Upgrade to Leadership';
+      options = ['Top Up Minutes', 'Upgrade to Leadership'];
     } else if (packageId === 'leadership') {
-      body = 'You\'ve used all ' + minutesIncluded + ' AI Minutes included in your Leadership plan. Purchase additional AI Minutes to continue practicing.';
-      // Top-of-the-line package — nothing left to upsell, so no option
-      // rows at all, just the purchase CTA below.
-      options = [];
-      primaryCtaLabel = 'Buy AI Minutes';
+      options = ['Top Up Minutes'];
     } else {
-      body = 'Your Explorer plan includes ' + minutesIncluded + ' AI Minutes. Upgrade to continue practicing.';
       options = [
-        'Growth – 120 AI Minutes, Resume Intelligence, JD Intelligence & 3 AI Interviewers.',
-        'Leadership – 300 AI Minutes, Executive Intelligence & 6 AI Interviewers.',
+        'Growth – 120 interview minutes, Resume Intelligence, JD Intelligence & 3 AI Interviewers.',
+        'Leadership – 300 interview minutes, Executive Intelligence & 6 AI Interviewers.',
       ];
-      primaryCtaLabel = 'View Plans & Pricing';
     }
 
     showCapabilityModal({
-      title: title,
+      title: 'No Interview Minutes Remaining',
       body: body,
       options: options,
-      // Single primary CTA, per spec — until real per-tier checkout/top-up
-      // exists, every path leads to the pricing section (same destination
-      // the header's existing "Upgrade to Pro" CTA already uses). Only the
-      // LABEL changes per package above; the destination is unchanged.
-      primaryCtaLabel: primaryCtaLabel,
+      // Single primary CTA, per spec — until real checkout/top-up exists,
+      // every path leads to the pricing section (same destination the
+      // header's existing "Upgrade to Pro" CTA already uses).
+      primaryCtaLabel: 'View Plans & Pricing',
       primaryCtaHref: '/#pricing',
     });
   }
@@ -1016,20 +1007,12 @@ function switchTab(tab) {
     };
   }
 
-  // BUGFIX: the capability modal's markup (#capabilityModalDismiss) lives
-  // further down the document than this script tag, so getElementById
-  // here used to run before that element existed in the DOM — the `if`
-  // guard below silently no-opped and "Not now" never got wired up.
-  // Deferring to DOMContentLoaded (without touching the modal's markup,
-  // styling, or the overlay hide logic itself) fixes that ordering issue.
-  document.addEventListener('DOMContentLoaded', function () {
-    var capabilityDismissBtn = document.getElementById('capabilityModalDismiss');
-    if (capabilityDismissBtn) {
-      capabilityDismissBtn.addEventListener('click', function () {
-        document.getElementById('capabilityModalOverlay').style.display = 'none';
-      });
-    }
-  });
+  var capabilityDismissBtn = document.getElementById('capabilityModalDismiss');
+  if (capabilityDismissBtn) {
+    capabilityDismissBtn.addEventListener('click', function () {
+      document.getElementById('capabilityModalOverlay').style.display = 'none';
+    });
+  }
 
   document.getElementById('beginBtn').addEventListener('click', async () => {
     const btn = document.getElementById('beginBtn');
