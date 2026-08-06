@@ -330,20 +330,3 @@ a.fdash-qa-link:hover { background: var(--card-hover); }
 .fdash-modal-save { background: var(--bright); color: var(--white); font-weight: 600; cursor: pointer; border: none; }
 .fdash-modal-save:hover { background: var(--royal); }
 .fdash-modal-save:disabled { opacity: 0.6; cursor: not-allowed; }
-
-/* Create User modal (Founder Dashboard → Users) — additive only, reuses
-   every token/class above rather than introducing new colors. */
-.fdash-section-header-actions { display: flex; align-items: center; gap: 10px; }
-.fdash-create-user-btn {
-  cursor: pointer; border: none; background: var(--royal); color: var(--white);
-  font-weight: 600; font-size: 12.5px; padding: 8px 14px; border-radius: 6px;
-}
-.fdash-create-user-btn:hover { background: var(--bright); }
-.fdash-modal-input {
-  width: 100%; padding: 8px 10px; font-size: 13.5px;
-  background: var(--card-hover); color: var(--white);
-  border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
-  box-sizing: border-box;
-}
-.fdash-modal-checkbox-row { margin-bottom: 10px; font-size: 13px; color: var(--muted); }
-.fdash-modal-checkbox-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; }

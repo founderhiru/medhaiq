@@ -9,7 +9,7 @@ const { isFounder } = require('../db/founder-access');
 const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, getFounderAlerts } = require('../db/founder-stats');
 const { getFeedbackSummary, getRecentFeedback } = require('../db/founder-feedback');
 const { getPendingWaitlistEntries } = require('../db/founder-waitlist');
-const { listUsers, createUserAsFounder } = require('../db/founder-users');
+const { listUsers } = require('../db/founder-users');
 const { reassignPackage } = require('../db/package-acquisitions');
 const { PRODUCT_PACKAGES } = require('../config/product-packages');
 const { createInvitation } = require('../db/invitations');
@@ -60,56 +60,6 @@ router.get('/users', requireFounder, async (req, res) => {
   } catch (err) {
     console.error('[founder] users error:', err);
     return res.status(500).json({ error: 'Failed to load users' });
-  }
-});
-
-// POST /api/founder/users — "Create User" (Founder Dashboard → Users).
-// Supports both real and demo accounts through one path — Demo Account,
-// Skip Email Verification, and Seed Sample Data are independent toggles,
-// not separate modes. See db/founder-users.js::createUserAsFounder for
-// what each one actually does; this handler only validates input.
-router.post('/users', requireFounder, async (req, res) => {
-  try {
-    const body = req.body || {};
-    const cleanName = typeof body.fullName === 'string' ? body.fullName.trim() : '';
-    const cleanEmail = typeof body.email === 'string' ? body.email.trim() : '';
-    const minutes = Number(body.aiMinutes);
-
-    if (!cleanName) {
-      return res.status(400).json({ error: 'Name is required' });
-    }
-    if (!cleanEmail || !/^[^\n\r@]+@[^\n\r@]+\.[^\n\r@]+$/.test(cleanEmail)) {
-      return res.status(400).json({ error: 'Valid email required' });
-    }
-    if (!PRODUCT_PACKAGES[body.packageId]) {
-      return res.status(400).json({ error: 'A valid package is required' });
-    }
-    if (!Number.isFinite(minutes) || minutes < 0) {
-      return res.status(400).json({ error: 'AI Minutes must be a non-negative number' });
-    }
-
-    const { user, seeded } = await createUserAsFounder({
-      fullName: cleanName,
-      email: cleanEmail,
-      packageId: body.packageId,
-      aiMinutes: minutes,
-      isDemo: !!body.isDemo,
-      skipEmailVerification: !!body.skipEmailVerification,
-      seedSampleData: !!body.seedSampleData,
-      createdBy: req.user.id,
-    });
-
-    return res.json({
-      success: true,
-      user: { id: user.id, name: user.name, email: user.email },
-      seeded,
-    });
-  } catch (err) {
-    if (err.message === 'An account with this email already exists.') {
-      return res.status(409).json({ error: err.message });
-    }
-    console.error('[founder] create user error:', err);
-    return res.status(500).json({ error: 'Failed to create user' });
   }
 });
 

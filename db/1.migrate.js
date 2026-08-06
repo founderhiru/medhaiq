@@ -608,34 +608,6 @@ async function runMigrations() {
           await c.query(`UPDATE interview_sessions SET last_user_activity_at = started_at WHERE last_user_activity_at IS NULL`);
         },
       },
-      {
-        name: '019_founder_created_users',
-        up: async (c) => {
-          // Founder Dashboard "Create User" (real or demo accounts).
-          // Purely additive — nothing else in the app reads these columns
-          // yet, so this cannot change behavior for any existing user or
-          // any existing signup/login flow.
-          //
-          // is_demo: marks an account as a demo/test account, set at
-          // creation only by db/founder-users.js::createUserAsFounder.
-          //
-          // email_verified: defaults TRUE for every existing row — this
-          // app never tracked a real "unverified" state before now (magic
-          // link + password signup both had no separate verification
-          // step), so defaulting true avoids retroactively branding real
-          // existing users as unverified for a concept they never had.
-          // New founder-created accounts pass this explicitly based on
-          // the "Skip Email Verification" checkbox.
-          //
-          // created_by: audit trail of which founder created the account,
-          // same precedent as package_acquisitions.granted_by and
-          // invitations.invited_by. Nullable — irrelevant for every
-          // account that isn't founder-created.
-          await c.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_demo BOOLEAN DEFAULT false`);
-          await c.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT true`);
-          await c.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_by INTEGER REFERENCES users(id) ON DELETE SET NULL`);
-        },
-      },
     ];
 
     for (const m of migrations) {
