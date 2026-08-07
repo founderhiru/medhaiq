@@ -203,7 +203,7 @@ app.get('/auth/login',  (req, res) => {
   }
   res.render('auth-login');
 });
-app.get('/auth/signup', (_req, res) => res.render('auth-signup'));
+app.get('/auth/signup', (_req, res) => res.redirect(301, '/auth/login'));
 app.get('/login',       (_req, res) => res.redirect('/auth/login'));
 
  // Defensive 301s — none of these old paths were ever real routes in this
