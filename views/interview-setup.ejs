@@ -384,7 +384,18 @@
       color:#e2e8f0; font:inherit; font-size:13px; padding:10px 12px; outline:none; transition:border .15s;
     }
     .tc-input:focus, .tc-textarea:focus{ border-color:var(--blue-hi); }
-    .tc-textarea{ min-height:130px; resize:vertical; line-height:1.55; }
+    .miq-autocomplete-dropdown{
+      position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:10;
+      background:var(--card); border:1px solid var(--border); border-radius:10px;
+      max-height:260px; overflow-y:auto; box-shadow:0 12px 32px rgba(0,0,0,.5);
+    }
+    .miq-autocomplete-item{
+      padding:8px 12px; font-size:13px; color:#e2e8f0; cursor:pointer;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .miq-autocomplete-item mark{ background:none; color:var(--blue-hi); font-weight:700; }
+    .miq-autocomplete-item.active, .miq-autocomplete-item:hover{ background:rgba(59,130,246,.14); }
+    .tc-textarea{ min-height:130 .tc-input:focus, .tc-textarea:focus{ bpx; resize:vertical; line-height:1.55; }
     .tc-count{ text-align:right; font-size:11px; color:var(--muted); margin-top:4px; }
     .tc-levels{ display:flex; flex-wrap:wrap; gap:6px; }
     .tc-level{
@@ -1207,6 +1218,8 @@ function switchTab(tab) {
 })();
 </script>
 
+<script src="/js/company-dataset.js"></script>
+<script src="/js/company-autocomplete.js"></script>
 <script>
 (function () {
   'use strict';
@@ -1219,6 +1232,13 @@ function switchTab(tab) {
   var cards    = Array.prototype.slice.call(document.querySelectorAll('.tailor-card'));
   var overlay  = document.getElementById('tcOverlay');
   var companyIn= document.getElementById('tcCompanyIn');
+  if (typeof window.MedhaIQCompanyAutocomplete !== 'undefined') {
+    // Purely additive: assists typing, never restricts it. The existing
+    // Apply handler below already reads companyIn.value.trim() as-is,
+    // so a selection from the dropdown needs no separate wiring beyond
+    // setting the input's value, which the component does itself.
+    window.MedhaIQCompanyAutocomplete.attach(companyIn);
+  }
   var jdIn     = document.getElementById('tcJdIn');
   var countEl  = document.getElementById('tcCount');
   var chipsEl  = document.getElementById('tcChips');
