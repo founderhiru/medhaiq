@@ -230,6 +230,7 @@
       flex-shrink: 0; overflow: hidden;
     }
     .p-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .p-avatar .fallback-initials { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; }
     .p-avatar.emerald { background: linear-gradient(135deg, #047857, #10b981); }
     .p-avatar.gold    { background: linear-gradient(135deg, #b45309, #f59e0b); }
     .p-name { font-size: 13px; font-weight: 700; }
@@ -618,7 +619,7 @@
       <% if (_personaVisible('alex_chen')) { %>
       <div class="sel-card persona-card" data-persona="alex_chen" data-voice="voice-alex" data-diff="Hard (Rigorous)">
         <div class="check">✓</div>
-        <div class="p-head"><div class="p-avatar"><img src="/images/personas/alex-chen.png" alt="Alex Chen headshot" width="38" height="38" loading="lazy"></div><div><div class="p-name">Alex Chen <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Senior Principal Engineer · AWS</div></div></div>
+        <div class="p-head"><div class="p-avatar"><img src="/images/personas/alex-chen.png" alt="Alex Chen headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">AC</span></div><div><div class="p-name">Alex Chen <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Senior Principal Engineer · AWS</div></div></div>
         <span class="p-style royal-blue">Technical Excellence</span>
         <ul class="p-traits"><li>System Design</li><li>Scalability</li><li>Technical Judgment</li><li>Ownership</li></ul>
       </div>
@@ -627,7 +628,7 @@
       <% if (_personaVisible('priya_ramesh')) { %>
       <div class="sel-card persona-card" data-persona="priya_ramesh" data-voice="voice-priya" data-diff="Elite (Rigorous)">
         <div class="check">✓</div>
-        <div class="p-head"><div class="p-avatar emerald"><img src="/images/personas/priya-ramesh.png" alt="Priya Ramesh headshot" width="38" height="38" loading="lazy"></div><div><div class="p-name">Priya Ramesh <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Partner · McKinsey Consulting</div></div></div>
+        <div class="p-head"><div class="p-avatar emerald"><img src="/images/personas/priya-ramesh.png" alt="Priya Ramesh headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">PR</span></div><div><div class="p-name">Priya Ramesh <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Partner · McKinsey Consulting</div></div></div>
         <span class="p-style emerald">Case-Led Strategy</span>
         <ul class="p-traits"><li>Case Structuring</li><li>Strategic Thinking</li><li>Executive Presence</li><li>Clear Communication</li></ul>
       </div>
@@ -636,7 +637,7 @@
       <% if (_personaVisible('marcus_webb')) { %>
       <div class="sel-card persona-card" data-persona="marcus_webb" data-voice="voice-marcus" data-diff="Medium (Balanced)">
         <div class="check">✓</div>
-        <div class="p-head"><div class="p-avatar gold"><img src="/images/personas/marcus-webb.png" alt="Marcus Webb headshot" width="38" height="38" loading="lazy"></div><div><div class="p-name">Marcus Webb <span class="difficulty diff-medium">⚡ Medium</span></div><div class="p-title">VP Product · Series B SaaS</div></div></div>
+        <div class="p-head"><div class="p-avatar gold"><img src="/images/personas/marcus-webb.png" alt="Marcus Webb headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">MW</span></div><div><div class="p-name">Marcus Webb <span class="difficulty diff-medium">⚡ Medium</span></div><div class="p-title">VP Product · Series B SaaS</div></div></div>
         <span class="p-style gold">Product Leadership</span>
         <ul class="p-traits"><li>Product Strategy</li><li>Prioritization</li><li>Commercial Acumen</li><li>Customer Insight</li></ul>
       </div>
@@ -645,7 +646,7 @@
       <% if (_personaVisible('sanjeev_nair')) { %>
       <div class="sel-card persona-card" data-persona="sanjeev_nair" data-voice="voice-sanjeev" data-diff="Hard (Rigorous)">
         <div class="check">✓</div>
-        <div class="p-head"><div class="p-avatar"><img src="/images/personas/sanjeev-nair.png" alt="Sanjeev Nair headshot" width="38" height="38" loading="lazy"></div><div><div class="p-name">Sanjeev Nair <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Engineering Director · Global Tech Firm</div></div></div>
+        <div class="p-head"><div class="p-avatar"><img src="/images/personas/sanjeev-nair.png" alt="Sanjeev Nair headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">SN</span></div><div><div class="p-name">Sanjeev Nair <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Engineering Director · Global Tech Firm</div></div></div>
         <span class="p-style royal-blue">Engineering Leadership</span>
         <ul class="p-traits"><li>Engineering Strategy</li><li>Organizational Leadership</li><li>Delivery Excellence</li><li>Technical Vision</li></ul>
       </div>
@@ -654,7 +655,7 @@
       <% if (_personaVisible('sarah_kim')) { %>
       <div class="sel-card persona-card" data-persona="sarah_kim" data-voice="voice-sarah" data-diff="Hard (Rigorous)">
         <div class="check">✓</div>
-        <div class="p-head"><div class="p-avatar emerald"><img src="/images/personas/sarah-kim.png" alt="Sarah Kim headshot" width="38" height="38" loading="lazy"></div><div><div class="p-name">Sarah Kim <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">CEO · Pre-Series A Startup</div></div></div>
+        <div class="p-head"><div class="p-avatar emerald"><img src="/images/personas/sarah-kim.png" alt="Sarah Kim headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">SK</span></div><div><div class="p-name">Sarah Kim <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">CEO · Pre-Series A Startup</div></div></div>
         <span class="p-style emerald">Founder Mindset</span>
         <ul class="p-traits"><li>First Principles</li><li>Speed of Execution</li><li>Resilience</li><li>Bias for Action</li></ul>
       </div>
@@ -663,7 +664,7 @@
       <% if (_personaVisible('raj_mehta')) { %>
       <div class="sel-card persona-card" data-persona="raj_mehta" data-voice="voice-raj" data-diff="Elite (Rigorous)">
         <div class="check">✓</div>
-        <div class="p-head"><div class="p-avatar gold"><img src="/images/personas/raj-mehta.png" alt="Raj Mehta headshot" width="38" height="38" loading="lazy"></div><div><div class="p-name">Raj Mehta <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Global Director · GCC Enterprise Network</div></div></div>
+        <div class="p-head"><div class="p-avatar gold"><img src="/images/personas/raj-mehta.png" alt="Raj Mehta headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">RM</span></div><div><div class="p-name">Raj Mehta <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Global Director · GCC Enterprise Network</div></div></div>
         <span class="p-style gold">Executive Leadership</span>
         <ul class="p-traits"><li>Executive Presence</li><li>Strategic Judgment</li><li>Board Readiness</li><li>Stakeholder Influence</li></ul>
       </div>
