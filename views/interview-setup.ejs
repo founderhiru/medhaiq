@@ -375,10 +375,15 @@
     }
     .tc-m-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
     .tc-m-title{ font-size:16px; font-weight:800; }
-    .tc-m-close{ background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer; }
+ .tc-m-close{ background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer; }
     .tc-m-close:hover{ color:#fff; }
-    .tc-field-label{ font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:12px 0 6px; }
-    .tc-field-label .opt{ font-weight:400; text-transform:none; letter-spacing:0; }
+    .tc-section{ padding:16px 0; }
+    .tc-section:first-of-type{ padding-top:2px; }
+    .tc-section + .tc-section{ border-top:1px solid var(--border); }
+    .tc-section-head{ font-size:12px; font-weight:700; color:#cbd5e1; margin-bottom:10px; }
+    .tc-field-label{ font-size:12px; font-weight:600; color:var(--muted); margin:14px 0 6px; }
+    .tc-field-label:first-child{ margin-top:0; }
+    .tc-field-label .opt{ font-weight:400; color:#64748b; }
     .tc-input, .tc-textarea{
       width:100%; background:var(--card); border:1px solid var(--border); border-radius:10px;
       color:#e2e8f0; font:inherit; font-size:13px; padding:10px 12px; outline:none; transition:border .15s;
@@ -395,14 +400,24 @@
     }
     .miq-autocomplete-item mark{ background:none; color:var(--blue-hi); font-weight:700; }
     .miq-autocomplete-item.active, .miq-autocomplete-item:hover{ background:rgba(59,130,246,.14); }
-    .tc-textarea{ min-height:130 .tc-input:focus, .tc-textarea:focus{ bpx; resize:vertical; line-height:1.55; }
-    .tc-count{ text-align:right; font-size:11px; color:var(--muted); margin-top:4px; }
-    .tc-levels{ display:flex; flex-wrap:wrap; gap:6px; }
+    .tc-textarea{ min-height:130px; resize:vertical; line-height:1.55; }
+    .tc-jd-wrap{ position:relative; }
+    .tc-jd-wrap .tc-textarea{ padding-bottom:26px; } /* room for the overlaid counter so it never sits on top of typed text */
+    .tc-count{ position:absolute; right:10px; bottom:8px; font-size:10.5px; color:#64748b; pointer-events:none; background:var(--card); }
+    .tc-levels{ display:flex; flex-wrap:wrap; gap:8px; }
     .tc-level{
       background:var(--card); border:1px solid var(--border); color:var(--muted);
-      font:inherit; font-size:11.5px; font-weight:600; padding:5px 11px; border-radius:8px; cursor:pointer; transition:.15s;
+      font:inherit; font-size:11.5px; font-weight:600; padding:6px 12px; border-radius:8px; cursor:pointer;
+      transition:background-color .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease;
     }
-    .tc-level.active{ border-color:var(--blue-hi); color:#bfdbfe; background:rgba(59,130,246,.12); }
+    .tc-level:hover{ background:#182236; border-color:var(--blue-hi); }
+    .tc-level:focus-visible{ outline:2px solid var(--blue-hi); outline-offset:2px; }
+    .tc-level.active{
+      background:var(--blue-hi); border-color:var(--blue-hi); color:#fff;
+      box-shadow:0 0 0 3px rgba(59,130,246,.25);
+    }
+    .tc-level.active:hover{ background:var(--blue-hi); border-color:var(--blue-hi); }
+    .tc-empty-hint{ display:flex; align-items:flex-start; gap:8px; font-size:12px; color:#64748b; line-height:1.5; background:rgba(255,255,255,.02); border:1px dashed var(--border); border-radius:8px; padding:10px 12px; }
     .tc-chips{ display:flex; flex-wrap:wrap; gap:6px; min-height:24px; }
     .tc-chip{
       font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:7px;
@@ -1165,29 +1180,39 @@ function switchTab(tab) {
       <button class="tc-m-close" type="button" id="tcClose" aria-label="Close">✕</button>
     </div>
 
-    <div class="tc-field-label">Target Company</div>
-    <input class="tc-input" id="tcCompanyIn" type="text" maxlength="80"
-           placeholder="e.g. Microsoft, Flipkart, a Series B SaaS…" autocomplete="organization">
+    <div class="tc-section">
+      <div class="tc-field-label" style="margin-top:0">Target Company</div>
+      <input class="tc-input" id="tcCompanyIn" type="text" maxlength="80"
+             placeholder="e.g. Microsoft, Flipkart, a Series B SaaS…" autocomplete="organization">
 
-    <div class="tc-field-label">Target Level <span class="opt">(Optional)</span></div>
-    <div class="tc-levels" id="tcLevels">
-      <button class="tc-level" type="button" data-level="Senior PM">Senior PM</button>
-      <button class="tc-level" type="button" data-level="Principal Engineer">Principal Engineer</button>
-      <button class="tc-level" type="button" data-level="L6">L6</button>
-      <button class="tc-level" type="button" data-level="Staff">Staff</button>
-      <button class="tc-level" type="button" data-level="Director">Director</button>
+      <div class="tc-field-label">Target Level <span class="opt">(Optional)</span></div>
+      <div class="tc-levels" id="tcLevels">
+        <button class="tc-level" type="button" data-level="Senior PM">Senior PM</button>
+        <button class="tc-level" type="button" data-level="Principal Engineer">Principal Engineer</button>
+        <button class="tc-level" type="button" data-level="L6">L6</button>
+        <button class="tc-level" type="button" data-level="Staff">Staff</button>
+        <button class="tc-level" type="button" data-level="Director">Director</button>
+      </div>
     </div>
 
-    <div class="tc-field-label">Paste Job Description <span class="opt">(Optional) — supports markdown</span></div>
-    <textarea class="tc-textarea" id="tcJdIn" maxlength="5000"
-              placeholder="Paste the JD here and MedhaIQ will detect the competencies to probe…"></textarea>
-    <div class="tc-count"><span id="tcCount">0</span> / 5000</div>
+    <div class="tc-section">
+      <div class="tc-field-label" style="margin-top:0">Job Description <span class="opt">(Optional) — supports markdown</span></div>
+      <div class="tc-jd-wrap">
+        <textarea class="tc-textarea" id="tcJdIn" maxlength="5000"
+                  placeholder="Paste the JD here and MedhaIQ will detect the competencies to probe…"></textarea>
+        <div class="tc-count"><span id="tcCount">0</span> / 5000</div>
+      </div>
+    </div>
 
-    <div class="tc-field-label">AI Detected Focus Areas</div>
-    <div class="tc-chips" id="tcChips"><span style="font-size:11px;color:var(--muted)">Paste a JD above to detect focus areas…</span></div>
+    <div class="tc-section">
+      <div class="tc-section-head">AI Intelligence</div>
 
-    <div class="tc-field-label">Resume Intelligence</div>
-    <div id="tcResumeStatus" style="font-size:12.5px; color:var(--muted); margin-bottom:14px;">Checking…</div>
+      <div class="tc-field-label" style="margin-top:0">AI Focus Areas</div>
+      <div class="tc-chips" id="tcChips"><div class="tc-empty-hint"><span>✦</span><span>Focus areas will be detected automatically once you paste a job description above.</span></div></div>
+
+      <div class="tc-field-label">Resume Intelligence</div>
+      <div id="tcResumeStatus"><div class="tc-empty-hint"><span>⏳</span><span>Checking…</span></div></div>
+    </div>
 
     <button class="tc-apply" type="button" id="tcApply">✦ Apply Context</button>
     <div class="tc-privacy">🔒 Private &amp; secure — used only to personalize your interview.</div>
@@ -1209,9 +1234,9 @@ function switchTab(tab) {
     .then(r => r.json())
     .then((data) => {
       if (data && data.hasResume) {
-        el.innerHTML = `✓ Resume on file (${data.competencyCount || 0} competencies detected) — will personalize this interview automatically. <a href="/resume" style="color:var(--blue-hi);">Manage</a>`;
+        el.innerHTML = `<div class="tc-empty-hint"><span>✓</span><span>Resume on file (${data.competencyCount || 0} competencies detected) — will personalize this interview automatically. <a href="/resume" style="color:var(--blue-hi);">Manage</a></span></div>`;
       } else {
-        el.innerHTML = `No resume on file yet. <a href="/resume" style="color:var(--blue-hi);">Add one</a> to personalize your questions.`;
+        el.innerHTML = `<div class="tc-empty-hint"><span>↑</span><span>Upload your resume for sharper, more personalized questions. <a href="/resume" style="color:var(--blue-hi);">Add one</a></span></div>`;
       }
     })
     .catch(() => { el.textContent = 'Resume status unavailable.'; });
@@ -1284,7 +1309,7 @@ function switchTab(tab) {
     var areas = detectAreas(jdIn.value);
     chipsEl.innerHTML = '';
     if (!areas.length) {
-      chipsEl.innerHTML = '<span style="font-size:11px;color:var(--muted)">Paste a JD above to detect focus areas…</span>';
+      chipsEl.innerHTML = '<div class="tc-empty-hint"><span>✦</span><span>Focus areas will be detected automatically once you paste a job description above.</span></div>';
       return;
     }
     areas.forEach(function (a) {
