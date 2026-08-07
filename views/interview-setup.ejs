@@ -227,8 +227,10 @@
       background: linear-gradient(135deg, var(--blue), var(--blue-hi));
       display: flex; align-items: center; justify-content: center;
       font-family:'Plus Jakarta Sans',sans-serif; font-size: 13px; font-weight: 700;
-      flex-shrink: 0;
+      flex-shrink: 0; overflow: hidden;
     }
+    .p-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .p-avatar .fallback-initials { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; }
     .p-avatar.emerald { background: linear-gradient(135deg, #047857, #10b981); }
     .p-avatar.gold    { background: linear-gradient(135deg, #b45309, #f59e0b); }
     .p-name { font-size: 13px; font-weight: 700; }
@@ -241,8 +243,8 @@
     .p-style.royal-blue { background: rgba(30,64,175,0.3); color: #93c5fd; }
     .p-style.emerald    { background: rgba(5,150,105,0.3);  color: #6ee7b7; }
     .p-style.gold       { background: rgba(217,119,6,0.3);  color: #fcd34d; }
-    .p-traits { display: flex; flex-wrap: wrap; gap: 4px 10px; }
-    .p-traits li { font-size: 10.5px; color: var(--muted); position: relative; padding-left: 9px; }
+    .p-traits { display: flex; flex-wrap: wrap; gap: 3px 8px; }
+    .p-traits li { font-size: 10px; color: rgba(148,163,184,.68); line-height: 1.5; position: relative; padding-left: 9px; }
     .p-traits li::before { content:'•'; position: absolute; left: 0; color: var(--dim); }
 
     /* ── RIGHT: Live Terminal ────────────────────────── */
@@ -373,23 +375,49 @@
     }
     .tc-m-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
     .tc-m-title{ font-size:16px; font-weight:800; }
-    .tc-m-close{ background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer; }
+ .tc-m-close{ background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer; }
     .tc-m-close:hover{ color:#fff; }
-    .tc-field-label{ font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:12px 0 6px; }
-    .tc-field-label .opt{ font-weight:400; text-transform:none; letter-spacing:0; }
+    .tc-section{ padding:16px 0; }
+    .tc-section:first-of-type{ padding-top:2px; }
+    .tc-section + .tc-section{ border-top:1px solid var(--border); }
+    .tc-section-head{ font-size:12px; font-weight:700; color:#cbd5e1; margin-bottom:10px; }
+    .tc-field-label{ font-size:12px; font-weight:600; color:var(--muted); margin:14px 0 6px; }
+    .tc-field-label:first-child{ margin-top:0; }
+    .tc-field-label .opt{ font-weight:400; color:#64748b; }
     .tc-input, .tc-textarea{
       width:100%; background:var(--card); border:1px solid var(--border); border-radius:10px;
       color:#e2e8f0; font:inherit; font-size:13px; padding:10px 12px; outline:none; transition:border .15s;
     }
     .tc-input:focus, .tc-textarea:focus{ border-color:var(--blue-hi); }
+    .miq-autocomplete-dropdown{
+      position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:10;
+      background:var(--card); border:1px solid var(--border); border-radius:10px;
+      max-height:260px; overflow-y:auto; box-shadow:0 12px 32px rgba(0,0,0,.5);
+    }
+    .miq-autocomplete-item{
+      padding:8px 12px; font-size:13px; color:#e2e8f0; cursor:pointer;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .miq-autocomplete-item mark{ background:none; color:var(--blue-hi); font-weight:700; }
+    .miq-autocomplete-item.active, .miq-autocomplete-item:hover{ background:rgba(59,130,246,.14); }
     .tc-textarea{ min-height:130px; resize:vertical; line-height:1.55; }
-    .tc-count{ text-align:right; font-size:11px; color:var(--muted); margin-top:4px; }
-    .tc-levels{ display:flex; flex-wrap:wrap; gap:6px; }
+    .tc-jd-wrap{ position:relative; }
+    .tc-jd-wrap .tc-textarea{ padding-bottom:26px; } /* room for the overlaid counter so it never sits on top of typed text */
+    .tc-count{ position:absolute; right:10px; bottom:8px; font-size:10.5px; color:#64748b; pointer-events:none; background:var(--card); }
+    .tc-levels{ display:flex; flex-wrap:wrap; gap:8px; }
     .tc-level{
       background:var(--card); border:1px solid var(--border); color:var(--muted);
-      font:inherit; font-size:11.5px; font-weight:600; padding:5px 11px; border-radius:8px; cursor:pointer; transition:.15s;
+      font:inherit; font-size:11.5px; font-weight:600; padding:6px 12px; border-radius:8px; cursor:pointer;
+      transition:background-color .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease;
     }
-    .tc-level.active{ border-color:var(--blue-hi); color:#bfdbfe; background:rgba(59,130,246,.12); }
+    .tc-level:hover{ background:#182236; border-color:var(--blue-hi); }
+    .tc-level:focus-visible{ outline:2px solid var(--blue-hi); outline-offset:2px; }
+    .tc-level.active{
+      background:var(--blue-hi); border-color:var(--blue-hi); color:#fff;
+      box-shadow:0 0 0 3px rgba(59,130,246,.25);
+    }
+    .tc-level.active:hover{ background:var(--blue-hi); border-color:var(--blue-hi); }
+    .tc-empty-hint{ display:flex; align-items:flex-start; gap:8px; font-size:12px; color:#64748b; line-height:1.5; background:rgba(255,255,255,.02); border:1px dashed var(--border); border-radius:8px; padding:10px 12px; }
     .tc-chips{ display:flex; flex-wrap:wrap; gap:6px; min-height:24px; }
     .tc-chip{
       font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:7px;
@@ -484,13 +512,13 @@
 
     <div class="role-panel visible" id="tab-core">
       <div class="role-grid">
-        <div class="sel-card chip" data-role="Product Manager"><div class="check">✓</div><div class="rc-icon">💼</div><div class="rc-title">Product Manager</div><div class="rc-desc">Drive product strategy and execution</div></div>
-        <div class="sel-card chip" data-role="Software Engineer"><div class="check">✓</div><div class="rc-icon">&lt;/&gt;</div><div class="rc-title">Software Engineer</div><div class="rc-desc">Design, build and scale software systems</div></div>
-        <div class="sel-card chip" data-role="Engineering Manager"><div class="check">✓</div><div class="rc-icon">👥</div><div class="rc-title">Engineering Manager</div><div class="rc-desc">Lead engineering teams and deliver impact</div></div>
-        <div class="sel-card chip" data-role="Solutions Architect"><div class="check">✓</div><div class="rc-icon">🗂</div><div class="rc-title">Solutions Architect</div><div class="rc-desc">Design scalable architectural solutions</div></div>
-        <div class="sel-card chip" data-role="Technical Program Manager"><div class="check">✓</div><div class="rc-icon">🗓</div><div class="rc-title">Technical Program Manager</div><div class="rc-desc">Plan and deliver complex technical programs</div></div>
-        <div class="sel-card chip" data-role="Management Consultant"><div class="check">✓</div><div class="rc-icon">📊</div><div class="rc-title">Management Consultant</div><div class="rc-desc">Solve business problems and drive transformation</div></div>
-        <div class="sel-card chip" data-role="Executive Leadership"><div class="check">✓</div><div class="rc-icon">👑</div><div class="rc-title">Executive Leadership</div><div class="rc-desc">Set vision and lead at the executive level</div></div>
+        <div class="sel-card chip" data-role="Product Manager"><div class="check">✓</div><div class="rc-icon">💼</div><div class="rc-title">Product Manager</div><div class="rc-desc">Strategy • Roadmaps • Delivery</div></div>
+        <div class="sel-card chip" data-role="Software Engineer"><div class="check">✓</div><div class="rc-icon">&lt;/&gt;</div><div class="rc-title">Software Engineer</div><div class="rc-desc">Backend • Frontend • Systems</div></div>
+        <div class="sel-card chip" data-role="Engineering Manager"><div class="check">✓</div><div class="rc-icon">👥</div><div class="rc-title">Engineering Manager</div><div class="rc-desc">People • Delivery • Execution</div></div>
+        <div class="sel-card chip" data-role="Solutions Architect"><div class="check">✓</div><div class="rc-icon">🗂</div><div class="rc-title">Solutions Architect</div><div class="rc-desc">Cloud • Architecture • Integration</div></div>
+        <div class="sel-card chip" data-role="Technical Program Manager"><div class="check">✓</div><div class="rc-icon">🗓</div><div class="rc-title">Technical Program Manager</div><div class="rc-desc">Programs • Delivery • Cross-functional</div></div>
+        <div class="sel-card chip" data-role="Management Consultant"><div class="check">✓</div><div class="rc-icon">📊</div><div class="rc-title">Management Consultant</div><div class="rc-desc">Strategy • Transformation • Advisory</div></div>
+        <div class="sel-card chip" data-role="Executive Leadership"><div class="check">✓</div><div class="rc-icon">👑</div><div class="rc-title">Executive Leadership</div><div class="rc-desc">Vision • Strategy • Leadership</div></div>
 
         <!-- ══ TAILOR FOR A SPECIFIC JOB — replaces the Custom Role tile in
              this grid. NOT a .sel-card: the role-selection handler must never
@@ -530,13 +558,13 @@
 
     <div class="role-panel" id="tab-ai">
       <div class="role-grid">
-        <div class="sel-card chip" data-role="AI Engineer"><div class="check">✓</div><div class="rc-icon">🤖</div><div class="rc-title">AI Engineer</div><div class="rc-desc">Build and deploy AI-powered systems</div></div>
-        <div class="sel-card chip" data-role="AI Product Manager"><div class="check">✓</div><div class="rc-icon">🧭</div><div class="rc-title">AI Product Manager</div><div class="rc-desc">Ship AI products from idea to scale</div></div>
-        <div class="sel-card chip" data-role="Data Engineer"><div class="check">✓</div><div class="rc-icon">🛠</div><div class="rc-title">Data Engineer</div><div class="rc-desc">Build reliable data pipelines and platforms</div></div>
-        <div class="sel-card chip" data-role="ML Engineer"><div class="check">✓</div><div class="rc-icon">📈</div><div class="rc-title">ML Engineer</div><div class="rc-desc">Train, evaluate and productionize models</div></div>
-        <div class="sel-card chip" data-role="MLOps Engineer"><div class="check">✓</div><div class="rc-icon">🔁</div><div class="rc-title">MLOps Engineer</div><div class="rc-desc">Operate ML systems reliably at scale</div></div>
-        <div class="sel-card chip" data-role="Research Scientist"><div class="check">✓</div><div class="rc-icon">🔬</div><div class="rc-title">Research Scientist</div><div class="rc-desc">Advance the state of the art with research</div></div>
-        <div class="sel-card chip" data-role="LLM Engineer"><div class="check">✓</div><div class="rc-icon">💬</div><div class="rc-title">LLM Engineer</div><div class="rc-desc">Build applications on large language models</div></div>
+        <div class="sel-card chip" data-role="AI Engineer"><div class="check">✓</div><div class="rc-icon">🤖</div><div class="rc-title">AI Engineer</div><div class="rc-desc">Models • Systems • Deployment</div></div>
+        <div class="sel-card chip" data-role="AI Product Manager"><div class="check">✓</div><div class="rc-icon">🧭</div><div class="rc-title">AI Product Manager</div><div class="rc-desc">AI Strategy • Roadmaps • Scale</div></div>
+        <div class="sel-card chip" data-role="Data Engineer"><div class="check">✓</div><div class="rc-icon">🛠</div><div class="rc-title">Data Engineer</div><div class="rc-desc">Pipelines • Platforms • Reliability</div></div>
+        <div class="sel-card chip" data-role="ML Engineer"><div class="check">✓</div><div class="rc-icon">📈</div><div class="rc-title">ML Engineer</div><div class="rc-desc">Training • Evaluation • Deployment</div></div>
+        <div class="sel-card chip" data-role="MLOps Engineer"><div class="check">✓</div><div class="rc-icon">🔁</div><div class="rc-title">MLOps Engineer</div><div class="rc-desc">Infrastructure • Reliability • Scale</div></div>
+        <div class="sel-card chip" data-role="Research Scientist"><div class="check">✓</div><div class="rc-icon">🔬</div><div class="rc-title">Research Scientist</div><div class="rc-desc">Research • Experimentation • Innovation</div></div>
+        <div class="sel-card chip" data-role="LLM Engineer"><div class="check">✓</div><div class="rc-icon">💬</div><div class="rc-title">LLM Engineer</div><div class="rc-desc">LLM Apps • Prompting • Integration</div></div>
 
         <!-- ══ TAILOR FOR A SPECIFIC JOB — second instance (AI & Data tab).
              Identical markup to the Core tab card; the shared handler keeps
@@ -547,7 +575,7 @@
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
             </div>
             <div class="tc-title">Tailor for a specific Job</div>
-            <div class="tc-desc">Personalize this interview for a specific role, company, or job opportunity.</div>
+            <div class="tc-desc">Customize using a Job Description or Company Context.</div>
             <button class="tc-add-btn" type="button">＋ Add Context</button>
           </div>
           <div class="tc-state-done" style="display:none">
@@ -617,54 +645,54 @@
       <% if (_personaVisible('alex_chen')) { %>
       <div class="sel-card persona-card" data-persona="alex_chen" data-voice="voice-alex" data-diff="Hard (Rigorous)">
         <div class="check">✓</div>
-        <div class="p-head"><div class="p-avatar">AC</div><div><div class="p-name">Alex Chen <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Senior Principal Engineer · AWS</div></div></div>
+        <div class="p-head"><div class="p-avatar"><img src="/images/personas/alex-chen.png" alt="Alex Chen headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">AC</span></div><div><div class="p-name">Alex Chen <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Senior Principal Engineer · AWS</div></div></div>
         <span class="p-style royal-blue">Technical Excellence</span>
-        <ul class="p-traits"><li>System Design</li><li>Scalability</li><li>Technical Judgment</li><li>Ownership</li></ul>
+       <ul class="p-traits"><li>System Design</li><li>Scalability</li><li>Technical Judgment</li></ul>
       </div>
       <% } %>
 
       <% if (_personaVisible('priya_ramesh')) { %>
       <div class="sel-card persona-card" data-persona="priya_ramesh" data-voice="voice-priya" data-diff="Elite (Rigorous)">
         <div class="check">✓</div>
-        <div class="p-head"><div class="p-avatar emerald">PR</div><div><div class="p-name">Priya Ramesh <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Partner · McKinsey Consulting</div></div></div>
+        <div class="p-head"><div class="p-avatar emerald"><img src="/images/personas/priya-ramesh.png" alt="Priya Ramesh headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">PR</span></div><div><div class="p-name">Priya Ramesh <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Partner · McKinsey Consulting</div></div></div>
         <span class="p-style emerald">Case-Led Strategy</span>
-        <ul class="p-traits"><li>Case Structuring</li><li>Strategic Thinking</li><li>Executive Presence</li><li>Clear Communication</li></ul>
+        <ul class="p-traits"><li>Case Structuring</li><li>Strategic Thinking</li><li>Executive Presence</li></ul>
       </div>
       <% } %>
 
       <% if (_personaVisible('marcus_webb')) { %>
       <div class="sel-card persona-card" data-persona="marcus_webb" data-voice="voice-marcus" data-diff="Medium (Balanced)">
         <div class="check">✓</div>
-        <div class="p-head"><div class="p-avatar gold">MW</div><div><div class="p-name">Marcus Webb <span class="difficulty diff-medium">⚡ Medium</span></div><div class="p-title">VP Product · Series B SaaS</div></div></div>
+        <div class="p-head"><div class="p-avatar gold"><img src="/images/personas/marcus-webb.png" alt="Marcus Webb headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">MW</span></div><div><div class="p-name">Marcus Webb <span class="difficulty diff-medium">⚡ Medium</span></div><div class="p-title">VP Product · Series B SaaS</div></div></div>
         <span class="p-style gold">Product Leadership</span>
-        <ul class="p-traits"><li>Product Strategy</li><li>Prioritization</li><li>Commercial Acumen</li><li>Customer Insight</li></ul>
+        <ul class="p-traits"><li>Product Strategy</li><li>Prioritization</li><li>Customer Insight</li></ul>
       </div>
       <% } %>
 
       <% if (_personaVisible('sanjeev_nair')) { %>
       <div class="sel-card persona-card" data-persona="sanjeev_nair" data-voice="voice-sanjeev" data-diff="Hard (Rigorous)">
         <div class="check">✓</div>
-        <div class="p-head"><div class="p-avatar">SN</div><div><div class="p-name">Sanjeev Nair <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Engineering Director · Global Tech Firm</div></div></div>
+        <div class="p-head"><div class="p-avatar"><img src="/images/personas/sanjeev-nair.png" alt="Sanjeev Nair headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">SN</span></div><div><div class="p-name">Sanjeev Nair <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Engineering Director · Global Tech Firm</div></div></div>
         <span class="p-style royal-blue">Engineering Leadership</span>
-        <ul class="p-traits"><li>Engineering Strategy</li><li>Organizational Leadership</li><li>Delivery Excellence</li><li>Technical Vision</li></ul>
+        <ul class="p-traits"><li>Engineering Strategy</li><li>Organizational Leadership</li><li>Delivery Excellence</li></ul>
       </div>
       <% } %>
 
       <% if (_personaVisible('sarah_kim')) { %>
       <div class="sel-card persona-card" data-persona="sarah_kim" data-voice="voice-sarah" data-diff="Hard (Rigorous)">
         <div class="check">✓</div>
-        <div class="p-head"><div class="p-avatar emerald">SK</div><div><div class="p-name">Sarah Kim <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">CEO · Pre-Series A Startup</div></div></div>
+        <div class="p-head"><div class="p-avatar emerald"><img src="/images/personas/sarah-kim.png" alt="Sarah Kim headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">SK</span></div><div><div class="p-name">Sarah Kim <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">CEO · Pre-Series A Startup</div></div></div>
         <span class="p-style emerald">Founder Mindset</span>
-        <ul class="p-traits"><li>First Principles</li><li>Speed of Execution</li><li>Resilience</li><li>Bias for Action</li></ul>
+        <ul class="p-traits"><li>First Principles</li><li>Bias for Action</li><li>Resilience</li></ul>
       </div>
       <% } %>
 
       <% if (_personaVisible('raj_mehta')) { %>
       <div class="sel-card persona-card" data-persona="raj_mehta" data-voice="voice-raj" data-diff="Elite (Rigorous)">
         <div class="check">✓</div>
-        <div class="p-head"><div class="p-avatar gold">RM</div><div><div class="p-name">Raj Mehta <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Global Director · GCC Enterprise Network</div></div></div>
+        <div class="p-head"><div class="p-avatar gold"><img src="/images/personas/raj-mehta.png" alt="Raj Mehta headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">RM</span></div><div><div class="p-name">Raj Mehta <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Global Director · GCC Enterprise Network</div></div></div>
         <span class="p-style gold">Executive Leadership</span>
-        <ul class="p-traits"><li>Executive Presence</li><li>Strategic Judgment</li><li>Board Readiness</li><li>Stakeholder Influence</li></ul>
+        <ul class="p-traits"><li>Executive Presence</li><li>Strategic Judgment</li><li>Stakeholder Influence</li></ul>
       </div>
       <% } %>
 
@@ -1152,29 +1180,39 @@ function switchTab(tab) {
       <button class="tc-m-close" type="button" id="tcClose" aria-label="Close">✕</button>
     </div>
 
-    <div class="tc-field-label">Target Company</div>
-    <input class="tc-input" id="tcCompanyIn" type="text" maxlength="80"
-           placeholder="e.g. Microsoft, Flipkart, a Series B SaaS…" autocomplete="organization">
+    <div class="tc-section">
+      <div class="tc-field-label" style="margin-top:0">Target Company</div>
+      <input class="tc-input" id="tcCompanyIn" type="text" maxlength="80"
+             placeholder="e.g. Microsoft, Flipkart, a Series B SaaS…" autocomplete="organization">
 
-    <div class="tc-field-label">Target Level <span class="opt">(Optional)</span></div>
-    <div class="tc-levels" id="tcLevels">
-      <button class="tc-level" type="button" data-level="Senior PM">Senior PM</button>
-      <button class="tc-level" type="button" data-level="Principal Engineer">Principal Engineer</button>
-      <button class="tc-level" type="button" data-level="L6">L6</button>
-      <button class="tc-level" type="button" data-level="Staff">Staff</button>
-      <button class="tc-level" type="button" data-level="Director">Director</button>
+      <div class="tc-field-label">Target Level <span class="opt">(Optional)</span></div>
+      <div class="tc-levels" id="tcLevels">
+        <button class="tc-level" type="button" data-level="Senior PM">Senior PM</button>
+        <button class="tc-level" type="button" data-level="Principal Engineer">Principal Engineer</button>
+        <button class="tc-level" type="button" data-level="L6">L6</button>
+        <button class="tc-level" type="button" data-level="Staff">Staff</button>
+        <button class="tc-level" type="button" data-level="Director">Director</button>
+      </div>
     </div>
 
-    <div class="tc-field-label">Paste Job Description <span class="opt">(Optional) — supports markdown</span></div>
-    <textarea class="tc-textarea" id="tcJdIn" maxlength="5000"
-              placeholder="Paste the JD here and MedhaIQ will detect the competencies to probe…"></textarea>
-    <div class="tc-count"><span id="tcCount">0</span> / 5000</div>
+    <div class="tc-section">
+      <div class="tc-field-label" style="margin-top:0">Job Description <span class="opt">(Optional) — supports markdown</span></div>
+      <div class="tc-jd-wrap">
+        <textarea class="tc-textarea" id="tcJdIn" maxlength="5000"
+                  placeholder="Paste the JD here and MedhaIQ will detect the competencies to probe…"></textarea>
+        <div class="tc-count"><span id="tcCount">0</span> / 5000</div>
+      </div>
+    </div>
 
-    <div class="tc-field-label">AI Detected Focus Areas</div>
-    <div class="tc-chips" id="tcChips"><span style="font-size:11px;color:var(--muted)">Paste a JD above to detect focus areas…</span></div>
+    <div class="tc-section">
+      <div class="tc-section-head">AI Intelligence</div>
 
-    <div class="tc-field-label">Resume Intelligence</div>
-    <div id="tcResumeStatus" style="font-size:12.5px; color:var(--muted); margin-bottom:14px;">Checking…</div>
+      <div class="tc-field-label" style="margin-top:0">AI Focus Areas</div>
+      <div class="tc-chips" id="tcChips"><div class="tc-empty-hint"><span>✦</span><span>Focus areas will be detected automatically once you paste a job description above.</span></div></div>
+
+      <div class="tc-field-label">Resume Intelligence</div>
+      <div id="tcResumeStatus"><div class="tc-empty-hint"><span>⏳</span><span>Checking…</span></div></div>
+    </div>
 
     <button class="tc-apply" type="button" id="tcApply">✦ Apply Context</button>
     <div class="tc-privacy">🔒 Private &amp; secure — used only to personalize your interview.</div>
@@ -1196,15 +1234,17 @@ function switchTab(tab) {
     .then(r => r.json())
     .then((data) => {
       if (data && data.hasResume) {
-        el.innerHTML = `✓ Resume on file (${data.competencyCount || 0} competencies detected) — will personalize this interview automatically. <a href="/resume" style="color:var(--blue-hi);">Manage</a>`;
+        el.innerHTML = `<div class="tc-empty-hint"><span>✓</span><span>Resume on file (${data.competencyCount || 0} competencies detected) — will personalize this interview automatically. <a href="/resume" style="color:var(--blue-hi);">Manage</a></span></div>`;
       } else {
-        el.innerHTML = `No resume on file yet. <a href="/resume" style="color:var(--blue-hi);">Add one</a> to personalize your questions.`;
+        el.innerHTML = `<div class="tc-empty-hint"><span>↑</span><span>Upload your resume for sharper, more personalized questions. <a href="/resume" style="color:var(--blue-hi);">Add one</a></span></div>`;
       }
     })
     .catch(() => { el.textContent = 'Resume status unavailable.'; });
 })();
 </script>
 
+<script src="/js/company-dataset.js"></script>
+<script src="/js/company-autocomplete.js"></script>
 <script>
 (function () {
   'use strict';
@@ -1217,6 +1257,13 @@ function switchTab(tab) {
   var cards    = Array.prototype.slice.call(document.querySelectorAll('.tailor-card'));
   var overlay  = document.getElementById('tcOverlay');
   var companyIn= document.getElementById('tcCompanyIn');
+  if (typeof window.MedhaIQCompanyAutocomplete !== 'undefined') {
+    // Purely additive: assists typing, never restricts it. The existing
+    // Apply handler below already reads companyIn.value.trim() as-is,
+    // so a selection from the dropdown needs no separate wiring beyond
+    // setting the input's value, which the component does itself.
+    window.MedhaIQCompanyAutocomplete.attach(companyIn);
+  }
   var jdIn     = document.getElementById('tcJdIn');
   var countEl  = document.getElementById('tcCount');
   var chipsEl  = document.getElementById('tcChips');
@@ -1262,7 +1309,7 @@ function switchTab(tab) {
     var areas = detectAreas(jdIn.value);
     chipsEl.innerHTML = '';
     if (!areas.length) {
-      chipsEl.innerHTML = '<span style="font-size:11px;color:var(--muted)">Paste a JD above to detect focus areas…</span>';
+      chipsEl.innerHTML = '<div class="tc-empty-hint"><span>✦</span><span>Focus areas will be detected automatically once you paste a job description above.</span></div>';
       return;
     }
     areas.forEach(function (a) {

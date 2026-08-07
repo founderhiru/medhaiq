@@ -193,8 +193,17 @@ app.get('/live-terminal',       (_req, res) => res.redirect(301, '/architecture#
 app.get('/ai-engine',           (_req, res) => res.redirect(301, '/architecture#technical-blueprint'));
 app.get('/vision',              (_req, res) => res.redirect(301, '/about'));
 app.get('/comparison',          (_req, res) => res.redirect(301, '/why#why-compare'));
-app.get('/auth/login',  (_req, res) => res.render('auth-login'));
-app.get('/auth/signup', (_req, res) => res.render('auth-signup'));
+app.get('/auth/login',  (req, res) => {
+  // Already-authenticated visitors shouldn't see the login form again —
+  // send them straight to their Workspace. req.capabilities is attached
+  // globally by middleware/capabilities.js above, so this is a read of
+  // already-computed state, not an extra DB round trip.
+  if (req.capabilities && req.capabilities.isAuthenticated) {
+    return res.redirect('/dashboard/history');
+  }
+  res.render('auth-login');
+});
+app.get('/auth/signup', (_req, res) => res.redirect(301, '/auth/login'));
 app.get('/login',       (_req, res) => res.redirect('/auth/login'));
 
  // Defensive 301s — none of these old paths were ever real routes in this
