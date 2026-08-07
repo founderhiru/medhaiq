@@ -248,11 +248,6 @@
     .authv2-cta:hover { background: var(--bright); transform: translateY(-1px); }
     .authv2-cta:disabled { opacity: 0.7; cursor: default; transform: none; }
 
-    .authv2-forgot { text-align: center; margin-top: 10px; }
-    .authv2-forgot a { color: var(--bright); font-size: 13px; text-decoration: none; }
-    .authv2-forgot a:hover { text-decoration: underline; }
-    .authv2-forgot-msg { color: var(--muted); font-size: 13px; margin-top: 6px; display: none; }
-
     /* ── Check-your-email confirmation state ───────────────────── */
     /* Same card shell as the sign-in form; this variant is layered on top
        via a slightly brighter surface + soft glow so it reads as a
@@ -328,15 +323,15 @@
     .authv2-trust {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-top: 28px;
+      gap: 16px;
+      margin-top: 22px;
       padding-top: 18px;
       border-top: 1px solid rgba(255,255,255,0.06);
     }
     .authv2-trust-icon {
       flex: none;
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       border-radius: 10px;
       background: rgba(5,150,105,0.14);
       border: 1px solid rgba(5,150,105,0.25);
@@ -360,7 +355,7 @@
     .authv2-footer-links a:hover { color: var(--muted); }
     .authv2-footer .copyright { color: var(--dim); font-size: 13px; }
 
-    .auth-msg { margin-top: 14px; font-size: 13px; color: var(--muted); text-align: center; }
+    .auth-msg { margin-top: 14px; margin-bottom: 4px; font-size: 13px; color: var(--muted); text-align: center; }
     .auth-msg.error { color: var(--danger); }
     .auth-msg.success { color: #6EE7B7; }
 
@@ -468,11 +463,6 @@
 
         <button class="authv2-cta" id="sendBtn">Continue</button>
         <div class="auth-msg" id="authMsg"></div>
-
-        <div class="authv2-forgot">
-          <a href="#" id="forgotPasswordLink">Forgot password?</a>
-          <div class="authv2-forgot-msg" id="forgotPasswordMsg">Please contact support to reset your password.</div>
-        </div>
       </div>
 
       <!-- ── Check-your-email confirmation state ── -->
@@ -494,7 +484,7 @@
 
       <div class="authv2-trust">
         <div class="authv2-trust-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4z"/><polyline points="9 12 11 14 15 10"/></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4z"/><polyline points="9 12 11 14 15 10"/></svg>
         </div>
         <div class="authv2-trust-text">
           <div class="title">Secure Authentication</div>
@@ -523,8 +513,6 @@
   const emailInput = document.getElementById('emailInput');
   const sendBtn = document.getElementById('sendBtn');
   const msg = document.getElementById('authMsg');
-  const forgotPasswordLink = document.getElementById('forgotPasswordLink');
-  const forgotPasswordMsg = document.getElementById('forgotPasswordMsg');
 
   const formState = document.getElementById('authFormState');
   const checkEmailState = document.getElementById('authCheckEmailState');
@@ -558,11 +546,6 @@
     msg.className = 'auth-msg error';
     msg.textContent = GOOGLE_OAUTH_ERROR_MESSAGES[oauthError];
   }
-
-  forgotPasswordLink.addEventListener('click', function(e) {
-    e.preventDefault();
-    forgotPasswordMsg.style.display = 'block';
-  });
 
   let resendTimer = null;
   function startResendCooldown() {
