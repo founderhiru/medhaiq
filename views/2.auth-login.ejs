@@ -263,68 +263,32 @@
     .authv2-forgot-msg { color: var(--muted); font-size: 13px; margin-top: 6px; display: none; }
 
     /* ── Check-your-email confirmation state ───────────────────── */
-    /* Same card shell as the sign-in form; this variant is layered on top
-       via a slightly brighter surface + soft glow so it reads as a
-       "success" state rather than a different page. Dark theme preserved
-       throughout — no white background anywhere. */
-    .authv2-check-email {
-      text-align: center;
-      position: relative;
-      padding: 12px 4px 4px;
-    }
-    .authv2-check-back {
-      position: absolute;
-      top: -8px;
-      left: -8px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: none;
-      border: none;
-      color: var(--dim);
-      font-size: 13px;
-      font-weight: 500;
-      font-family: 'Inter', system-ui, sans-serif;
-      cursor: pointer;
-      padding: 6px 8px;
-      border-radius: 8px;
-      transition: color 0.2s, background 0.2s;
-    }
-    .authv2-check-back:hover { color: var(--muted); background: rgba(255,255,255,0.04); }
-    .authv2-check-back svg { flex: none; }
-
+    .authv2-check-email { text-align: center; }
     .authv2-check-email-icon {
-      width: 64px;
-      height: 64px;
-      margin: 28px auto 22px;
-      border-radius: 18px;
-      background: radial-gradient(circle at 50% 35%, rgba(59,130,246,0.22), rgba(59,130,246,0.08) 70%);
-      border: 1px solid rgba(59,130,246,0.28);
-      box-shadow: 0 0 0 6px rgba(59,130,246,0.05);
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 16px;
+      border-radius: 14px;
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.2);
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .authv2-check-email h2 { margin-bottom: 10px; }
-    .authv2-check-email .authv2-card-sub {
-      margin-bottom: 6px;
-      max-width: 300px;
-      margin-left: auto;
-      margin-right: auto;
-    }
+    .authv2-check-email .authv2-card-sub { margin-bottom: 4px; }
     .authv2-check-email .authv2-check-email-hint {
       color: var(--dim);
       font-size: 13px;
-      line-height: 1.55;
-      max-width: 300px;
-      margin: 0 auto 28px;
+      line-height: 1.5;
+      margin-bottom: 22px;
     }
     .authv2-resend-btn {
       background: none;
       border: 1px solid rgba(255,255,255,0.12);
       color: var(--muted);
       border-radius: 10px;
-      padding: 10px 20px;
+      padding: 10px 18px;
       font-size: 14px;
       font-weight: 500;
       font-family: 'Inter', system-ui, sans-serif;
@@ -490,17 +454,12 @@
 
       <!-- ── Check-your-email confirmation state ── -->
       <div id="authCheckEmailState" class="authv2-check-email" hidden>
-        <button type="button" class="authv2-check-back" id="checkEmailBackBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          Back
-        </button>
-
         <div class="authv2-check-email-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
         </div>
         <h2>Check your email</h2>
-        <p class="authv2-card-sub">We've sent you a secure sign-in link.</p>
-        <p class="authv2-check-email-hint">Click the link in your inbox to access your MedhaIQ Workspace.</p>
+        <p class="authv2-card-sub">We've sent a secure sign-in link to <strong id="sentEmailDisplay"></strong>.</p>
+        <p class="authv2-check-email-hint">Click the link in your email to continue to your MedhaIQ Workspace.</p>
         <button type="button" class="authv2-resend-btn" id="resendBtn" disabled>Resend email (30s)</button>
         <div class="auth-msg" id="resendMsg"></div>
       </div>
@@ -541,12 +500,9 @@
 
   const formState = document.getElementById('authFormState');
   const checkEmailState = document.getElementById('authCheckEmailState');
-  const checkEmailBackBtn = document.getElementById('checkEmailBackBtn');
+  const sentEmailDisplay = document.getElementById('sentEmailDisplay');
   const resendBtn = document.getElementById('resendBtn');
   const resendMsg = document.getElementById('resendMsg');
-  // Held in memory only — the confirmation screen intentionally no longer
-  // displays the address, but resend still needs it.
-  let lastSentEmail = '';
 
   // Preserve the page the user was originally trying to reach (e.g. clicking
   // "Career Progress" while logged out) through the whole login flow.
@@ -604,7 +560,7 @@
 
     try {
       await sendMagicLink(email);
-      lastSentEmail = email;
+      sentEmailDisplay.textContent = email;
       formState.hidden = true;
       checkEmailState.hidden = false;
       startResendCooldown();
@@ -618,11 +574,12 @@
   });
 
   resendBtn.addEventListener('click', async function() {
+    const email = sentEmailDisplay.textContent;
     resendBtn.disabled = true;
     resendMsg.className = 'auth-msg';
     resendMsg.textContent = '';
     try {
-      await sendMagicLink(lastSentEmail);
+      await sendMagicLink(email);
       resendMsg.className = 'auth-msg success';
       resendMsg.textContent = 'Link resent — check your email.';
       startResendCooldown();
@@ -632,20 +589,6 @@
       resendBtn.disabled = false;
       resendBtn.textContent = 'Resend email';
     }
-  });
-
-  // Back: return to the sign-in form. Stops any in-flight countdown so a
-  // stale timer can't fire after the card has switched away, and clears
-  // any resend feedback so the form doesn't reappear with leftover state.
-  checkEmailBackBtn.addEventListener('click', function() {
-    if (resendTimer) {
-      clearInterval(resendTimer);
-      resendTimer = null;
-    }
-    resendMsg.className = 'auth-msg';
-    resendMsg.textContent = '';
-    checkEmailState.hidden = true;
-    formState.hidden = false;
   });
 })();
 </script>
