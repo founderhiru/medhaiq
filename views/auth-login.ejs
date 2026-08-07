@@ -556,6 +556,22 @@
     googleLink.href = '/auth/google?next=' + encodeURIComponent(returnTo);
   }
 
+  // Surface Google OAuth failures the same way Magic Link failures are
+  // already shown — same #authMsg element, same 'auth-msg error' class, same
+  // spacing. The backend (routes/auth.js google/callback) only ever redirects
+  // here with a short error code, not a message, so the mapping to
+  // user-facing text lives here on the client. No auth/redirect logic changed.
+  const GOOGLE_OAUTH_ERROR_MESSAGES = {
+    'no-invite': 'This email does not have an active private beta invitation.',
+    'google-auth-failed': 'Google sign-in failed. Please try again.',
+    'google-not-configured': 'Google sign-in is not available right now. Please use email instead.',
+  };
+  const oauthError = new URLSearchParams(window.location.search).get('error');
+  if (oauthError && GOOGLE_OAUTH_ERROR_MESSAGES[oauthError]) {
+    msg.className = 'auth-msg error';
+    msg.textContent = GOOGLE_OAUTH_ERROR_MESSAGES[oauthError];
+  }
+
   forgotPasswordLink.addEventListener('click', function(e) {
     e.preventDefault();
     forgotPasswordMsg.style.display = 'block';
