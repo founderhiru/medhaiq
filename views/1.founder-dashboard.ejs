@@ -248,10 +248,7 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
 <div class="fdash-section" id="fdash-users-section">
   <div class="fdash-section-header">
     <div class="fdash-section-title">User Management</div>
-    <div class="fdash-section-header-actions">
-      <input type="text" id="fdash-user-search" class="fdash-search-input" placeholder="Search name or email…">
-      <button type="button" class="fdash-create-user-btn" id="fdash-create-user-open">+ Create User</button>
-    </div>
+    <input type="text" id="fdash-user-search" class="fdash-search-input" placeholder="Search name or email…">
   </div>
   <div class="fdash-activity-card">
     <table class="fdash-activity-table" id="fdash-users-table">
@@ -314,59 +311,6 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
   </div>
 </div>
 
-<!-- Create User modal — Founder-only. Supports both real and demo accounts
-     through one form: Demo Account / Skip Email Verification / Seed Sample
-     Data are independent toggles, not a "different mode." Reuses this
-     page's existing modal pattern, RBAC (requireFounder), package
-     acquisition flow, and profile bootstrap — see routes/founder.js
-     POST /api/founder/users and db/founder-users.js::createUserAsFounder. -->
-<div id="fdash-create-user-modal" class="fdash-modal-overlay" style="display:none;">
-  <div class="fdash-modal">
-    <div class="fdash-modal-header">
-      <div class="fdash-modal-title">Create User</div>
-      <button type="button" class="fdash-modal-close" id="fdash-create-user-close" aria-label="Close">&times;</button>
-    </div>
-    <div class="fdash-modal-sub">Creates a real, immediately-usable account — no invitation or email step required.</div>
-
-    <div class="fdash-modal-field">
-      <label class="fdash-modal-label" for="fdash-create-user-name">Name</label>
-      <input type="text" id="fdash-create-user-name" class="fdash-modal-input" placeholder="Full name">
-    </div>
-    <div class="fdash-modal-field">
-      <label class="fdash-modal-label" for="fdash-create-user-email">Email</label>
-      <input type="email" id="fdash-create-user-email" class="fdash-modal-input" placeholder="name@company.com">
-    </div>
-    <div class="fdash-modal-field">
-      <label class="fdash-modal-label" for="fdash-create-user-package">Package</label>
-      <select id="fdash-create-user-package" class="fdash-modal-select">
-        <% _packageOptions.forEach(function(pkgId) { %>
-        <option value="<%= pkgId %>" <%= pkgId === 'explorer' ? 'selected' : '' %>><%= _pkgBadge(pkgId) %></option>
-        <% }); %>
-      </select>
-    </div>
-    <div class="fdash-modal-field">
-      <label class="fdash-modal-label" for="fdash-create-user-minutes">AI Minutes</label>
-      <input type="number" min="0" step="1" id="fdash-create-user-minutes" class="fdash-modal-input">
-    </div>
-
-    <div class="fdash-modal-checkbox-row">
-      <label><input type="checkbox" id="fdash-create-user-demo" checked> Demo Account</label>
-    </div>
-    <div class="fdash-modal-checkbox-row">
-      <label><input type="checkbox" id="fdash-create-user-skip-verify" checked> Skip Email Verification</label>
-    </div>
-    <div class="fdash-modal-checkbox-row">
-      <label><input type="checkbox" id="fdash-create-user-seed" checked> Seed Sample Data</label>
-    </div>
-
-    <div class="fdash-modal-msg" id="fdash-create-user-msg"></div>
-    <div class="fdash-modal-actions">
-      <button type="button" class="fdash-action-btn" id="fdash-create-user-cancel">Cancel</button>
-      <button type="button" class="fdash-action-btn fdash-modal-save" id="fdash-create-user-save">Create User</button>
-    </div>
-  </div>
-</div>
-
 <!-- Footer -->
 <div class="fdash-footer">
   <div class="fdash-footer-title">MedhaIQ Founder Dashboard</div>
@@ -405,11 +349,6 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
       const meta = PKG_META[packageId] || PKG_META.explorer;
       return meta.dot + ' ' + meta.label;
     }
-    // Same client-side duplication precedent as PKG_META above — mirrors
-    // config/product-packages.js entitlements.includedMinutes. Only used
-    // as the Create User modal's AI Minutes starting suggestion; the
-    // founder can always override it before submitting.
-    const PKG_MINUTES = { explorer: 30, growth: 120, leadership: 300 };
 
     // Formats every server-rendered timestamp using the browser's own local
     // timezone (the server renders in UTC, which would otherwise silently
@@ -599,117 +538,6 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
           packageModalMsg.className = 'fdash-modal-msg error';
         } finally {
           modalSaveBtn.disabled = false;
-        }
-      });
-    }
-
-    // ── Create User modal ──────────────────────────────────────────────
-    const createUserModal = document.getElementById('fdash-create-user-modal');
-    const createUserOpenBtn = document.getElementById('fdash-create-user-open');
-    const createUserNameInput = document.getElementById('fdash-create-user-name');
-    const createUserEmailInput = document.getElementById('fdash-create-user-email');
-    const createUserPackageSelect = document.getElementById('fdash-create-user-package');
-    const createUserMinutesInput = document.getElementById('fdash-create-user-minutes');
-    const createUserDemoCheckbox = document.getElementById('fdash-create-user-demo');
-    const createUserSkipVerifyCheckbox = document.getElementById('fdash-create-user-skip-verify');
-    const createUserSeedCheckbox = document.getElementById('fdash-create-user-seed');
-    const createUserMsg = document.getElementById('fdash-create-user-msg');
-    const createUserSaveBtn = document.getElementById('fdash-create-user-save');
-
-    // AI Minutes auto-fills from the selected package, but only until the
-    // founder manually edits it — a manual value is never silently
-    // overwritten by a later package change.
-    let minutesTouchedByUser = false;
-    if (createUserMinutesInput) {
-      createUserMinutesInput.addEventListener('input', function () { minutesTouchedByUser = true; });
-    }
-    function applyPackageMinutesDefault() {
-      if (minutesTouchedByUser || !createUserPackageSelect || !createUserMinutesInput) return;
-      const pkg = createUserPackageSelect.value;
-      createUserMinutesInput.value = PKG_MINUTES[pkg] != null ? PKG_MINUTES[pkg] : '';
-    }
-    if (createUserPackageSelect) {
-      createUserPackageSelect.addEventListener('change', applyPackageMinutesDefault);
-    }
-
-    function openCreateUserModal() {
-      if (!createUserModal) return;
-      createUserNameInput.value = '';
-      createUserEmailInput.value = '';
-      createUserPackageSelect.value = 'explorer';
-      minutesTouchedByUser = false;
-      applyPackageMinutesDefault();
-      createUserDemoCheckbox.checked = true;
-      createUserSkipVerifyCheckbox.checked = true;
-      createUserSeedCheckbox.checked = true;
-      createUserMsg.textContent = '';
-      createUserMsg.className = 'fdash-modal-msg';
-      createUserModal.style.display = 'flex';
-    }
-    function closeCreateUserModal() {
-      if (createUserModal) createUserModal.style.display = 'none';
-    }
-    if (createUserOpenBtn) createUserOpenBtn.addEventListener('click', openCreateUserModal);
-
-    const createUserCloseBtn = document.getElementById('fdash-create-user-close');
-    const createUserCancelBtn = document.getElementById('fdash-create-user-cancel');
-    if (createUserCloseBtn) createUserCloseBtn.addEventListener('click', closeCreateUserModal);
-    if (createUserCancelBtn) createUserCancelBtn.addEventListener('click', closeCreateUserModal);
-    if (createUserModal) {
-      createUserModal.addEventListener('click', function (e) {
-        if (e.target === createUserModal) closeCreateUserModal();
-      });
-    }
-
-    if (createUserSaveBtn) {
-      createUserSaveBtn.addEventListener('click', async function () {
-        const seedWasRequested = createUserSeedCheckbox.checked;
-        const payload = {
-          fullName: createUserNameInput.value,
-          email: createUserEmailInput.value,
-          packageId: createUserPackageSelect.value,
-          aiMinutes: createUserMinutesInput.value,
-          isDemo: createUserDemoCheckbox.checked,
-          skipEmailVerification: createUserSkipVerifyCheckbox.checked,
-          seedSampleData: seedWasRequested,
-        };
-        if (!payload.fullName.trim() || !payload.email.trim()) {
-          createUserMsg.textContent = 'Name and email are required';
-          createUserMsg.className = 'fdash-modal-msg error';
-          return;
-        }
-        createUserSaveBtn.disabled = true;
-        createUserMsg.textContent = 'Creating…';
-        createUserMsg.className = 'fdash-modal-msg';
-        try {
-          const res = await fetch('/api/founder/users', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            // Same refresh-in-place pattern as Manage Package — this page
-            // doesn't do hard navigations for table updates anywhere else.
-            await searchUsers(searchInput ? searchInput.value : '');
-            if (seedWasRequested && !data.seeded) {
-              createUserMsg.textContent = '✅ User created — sample data seeding did not complete; add a resume for this user separately.';
-            } else if (!seedWasRequested) {
-              createUserMsg.textContent = '✅ User created — no sample data added. Upload a resume for this user once they can sign in.';
-            } else {
-              createUserMsg.textContent = '✅ User created with sample resume data.';
-            }
-            createUserMsg.className = 'fdash-modal-msg success';
-            setTimeout(closeCreateUserModal, 1800);
-          } else {
-            createUserMsg.textContent = data.error || 'Failed to create user';
-            createUserMsg.className = 'fdash-modal-msg error';
-          }
-        } catch (err) {
-          createUserMsg.textContent = 'Failed to create user';
-          createUserMsg.className = 'fdash-modal-msg error';
-        } finally {
-          createUserSaveBtn.disabled = false;
         }
       });
     }
