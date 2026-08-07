@@ -243,8 +243,8 @@
     .p-style.royal-blue { background: rgba(30,64,175,0.3); color: #93c5fd; }
     .p-style.emerald    { background: rgba(5,150,105,0.3);  color: #6ee7b7; }
     .p-style.gold       { background: rgba(217,119,6,0.3);  color: #fcd34d; }
-    .p-traits { display: flex; flex-wrap: wrap; gap: 4px 10px; }
-    .p-traits li { font-size: 10.5px; color: var(--muted); position: relative; padding-left: 9px; }
+    .p-traits { display: flex; flex-wrap: wrap; gap: 3px 8px; }
+    .p-traits li { font-size: 10px; color: rgba(148,163,184,.68); line-height: 1.5; position: relative; padding-left: 9px; }
     .p-traits li::before { content:'•'; position: absolute; left: 0; color: var(--dim); }
 
     /* ── RIGHT: Live Terminal ────────────────────────── */
@@ -486,13 +486,13 @@
 
     <div class="role-panel visible" id="tab-core">
       <div class="role-grid">
-        <div class="sel-card chip" data-role="Product Manager"><div class="check">✓</div><div class="rc-icon">💼</div><div class="rc-title">Product Manager</div><div class="rc-desc">Drive product strategy and execution</div></div>
-        <div class="sel-card chip" data-role="Software Engineer"><div class="check">✓</div><div class="rc-icon">&lt;/&gt;</div><div class="rc-title">Software Engineer</div><div class="rc-desc">Design, build and scale software systems</div></div>
-        <div class="sel-card chip" data-role="Engineering Manager"><div class="check">✓</div><div class="rc-icon">👥</div><div class="rc-title">Engineering Manager</div><div class="rc-desc">Lead engineering teams and deliver impact</div></div>
-        <div class="sel-card chip" data-role="Solutions Architect"><div class="check">✓</div><div class="rc-icon">🗂</div><div class="rc-title">Solutions Architect</div><div class="rc-desc">Design scalable architectural solutions</div></div>
-        <div class="sel-card chip" data-role="Technical Program Manager"><div class="check">✓</div><div class="rc-icon">🗓</div><div class="rc-title">Technical Program Manager</div><div class="rc-desc">Plan and deliver complex technical programs</div></div>
-        <div class="sel-card chip" data-role="Management Consultant"><div class="check">✓</div><div class="rc-icon">📊</div><div class="rc-title">Management Consultant</div><div class="rc-desc">Solve business problems and drive transformation</div></div>
-        <div class="sel-card chip" data-role="Executive Leadership"><div class="check">✓</div><div class="rc-icon">👑</div><div class="rc-title">Executive Leadership</div><div class="rc-desc">Set vision and lead at the executive level</div></div>
+        <div class="sel-card chip" data-role="Product Manager"><div class="check">✓</div><div class="rc-icon">💼</div><div class="rc-title">Product Manager</div><div class="rc-desc">Strategy • Roadmaps • Delivery</div></div>
+        <div class="sel-card chip" data-role="Software Engineer"><div class="check">✓</div><div class="rc-icon">&lt;/&gt;</div><div class="rc-title">Software Engineer</div><div class="rc-desc">Backend • Frontend • Systems</div></div>
+        <div class="sel-card chip" data-role="Engineering Manager"><div class="check">✓</div><div class="rc-icon">👥</div><div class="rc-title">Engineering Manager</div><div class="rc-desc">People • Delivery • Execution</div></div>
+        <div class="sel-card chip" data-role="Solutions Architect"><div class="check">✓</div><div class="rc-icon">🗂</div><div class="rc-title">Solutions Architect</div><div class="rc-desc">Cloud • Architecture • Integration</div></div>
+        <div class="sel-card chip" data-role="Technical Program Manager"><div class="check">✓</div><div class="rc-icon">🗓</div><div class="rc-title">Technical Program Manager</div><div class="rc-desc">Programs • Delivery • Cross-functional</div></div>
+        <div class="sel-card chip" data-role="Management Consultant"><div class="check">✓</div><div class="rc-icon">📊</div><div class="rc-title">Management Consultant</div><div class="rc-desc">Strategy • Transformation • Advisory</div></div>
+        <div class="sel-card chip" data-role="Executive Leadership"><div class="check">✓</div><div class="rc-icon">👑</div><div class="rc-title">Executive Leadership</div><div class="rc-desc">Vision • Strategy • Leadership</div></div>
 
         <!-- ══ TAILOR FOR A SPECIFIC JOB — replaces the Custom Role tile in
              this grid. NOT a .sel-card: the role-selection handler must never
@@ -532,13 +532,13 @@
 
     <div class="role-panel" id="tab-ai">
       <div class="role-grid">
-        <div class="sel-card chip" data-role="AI Engineer"><div class="check">✓</div><div class="rc-icon">🤖</div><div class="rc-title">AI Engineer</div><div class="rc-desc">Build and deploy AI-powered systems</div></div>
-        <div class="sel-card chip" data-role="AI Product Manager"><div class="check">✓</div><div class="rc-icon">🧭</div><div class="rc-title">AI Product Manager</div><div class="rc-desc">Ship AI products from idea to scale</div></div>
-        <div class="sel-card chip" data-role="Data Engineer"><div class="check">✓</div><div class="rc-icon">🛠</div><div class="rc-title">Data Engineer</div><div class="rc-desc">Build reliable data pipelines and platforms</div></div>
-        <div class="sel-card chip" data-role="ML Engineer"><div class="check">✓</div><div class="rc-icon">📈</div><div class="rc-title">ML Engineer</div><div class="rc-desc">Train, evaluate and productionize models</div></div>
-        <div class="sel-card chip" data-role="MLOps Engineer"><div class="check">✓</div><div class="rc-icon">🔁</div><div class="rc-title">MLOps Engineer</div><div class="rc-desc">Operate ML systems reliably at scale</div></div>
-        <div class="sel-card chip" data-role="Research Scientist"><div class="check">✓</div><div class="rc-icon">🔬</div><div class="rc-title">Research Scientist</div><div class="rc-desc">Advance the state of the art with research</div></div>
-        <div class="sel-card chip" data-role="LLM Engineer"><div class="check">✓</div><div class="rc-icon">💬</div><div class="rc-title">LLM Engineer</div><div class="rc-desc">Build applications on large language models</div></div>
+        <div class="sel-card chip" data-role="AI Engineer"><div class="check">✓</div><div class="rc-icon">🤖</div><div class="rc-title">AI Engineer</div><div class="rc-desc">Models • Systems • Deployment</div></div>
+        <div class="sel-card chip" data-role="AI Product Manager"><div class="check">✓</div><div class="rc-icon">🧭</div><div class="rc-title">AI Product Manager</div><div class="rc-desc">AI Strategy • Roadmaps • Scale</div></div>
+        <div class="sel-card chip" data-role="Data Engineer"><div class="check">✓</div><div class="rc-icon">🛠</div><div class="rc-title">Data Engineer</div><div class="rc-desc">Pipelines • Platforms • Reliability</div></div>
+        <div class="sel-card chip" data-role="ML Engineer"><div class="check">✓</div><div class="rc-icon">📈</div><div class="rc-title">ML Engineer</div><div class="rc-desc">Training • Evaluation • Deployment</div></div>
+        <div class="sel-card chip" data-role="MLOps Engineer"><div class="check">✓</div><div class="rc-icon">🔁</div><div class="rc-title">MLOps Engineer</div><div class="rc-desc">Infrastructure • Reliability • Scale</div></div>
+        <div class="sel-card chip" data-role="Research Scientist"><div class="check">✓</div><div class="rc-icon">🔬</div><div class="rc-title">Research Scientist</div><div class="rc-desc">Research • Experimentation • Innovation</div></div>
+        <div class="sel-card chip" data-role="LLM Engineer"><div class="check">✓</div><div class="rc-icon">💬</div><div class="rc-title">LLM Engineer</div><div class="rc-desc">LLM Apps • Prompting • Integration</div></div>
 
         <!-- ══ TAILOR FOR A SPECIFIC JOB — second instance (AI & Data tab).
              Identical markup to the Core tab card; the shared handler keeps
@@ -549,7 +549,7 @@
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
             </div>
             <div class="tc-title">Tailor for a specific Job</div>
-            <div class="tc-desc">Personalize this interview for a specific role, company, or job opportunity.</div>
+            <div class="tc-desc">Customize using a Job Description or Company Context.</div>
             <button class="tc-add-btn" type="button">＋ Add Context</button>
           </div>
           <div class="tc-state-done" style="display:none">
@@ -621,7 +621,7 @@
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar"><img src="/images/personas/alex-chen.png" alt="Alex Chen headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">AC</span></div><div><div class="p-name">Alex Chen <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Senior Principal Engineer · AWS</div></div></div>
         <span class="p-style royal-blue">Technical Excellence</span>
-        <ul class="p-traits"><li>System Design</li><li>Scalability</li><li>Technical Judgment</li><li>Ownership</li></ul>
+       <ul class="p-traits"><li>System Design</li><li>Scalability</li><li>Technical Judgment</li></ul>
       </div>
       <% } %>
 
@@ -630,7 +630,7 @@
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar emerald"><img src="/images/personas/priya-ramesh.png" alt="Priya Ramesh headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">PR</span></div><div><div class="p-name">Priya Ramesh <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Partner · McKinsey Consulting</div></div></div>
         <span class="p-style emerald">Case-Led Strategy</span>
-        <ul class="p-traits"><li>Case Structuring</li><li>Strategic Thinking</li><li>Executive Presence</li><li>Clear Communication</li></ul>
+        <ul class="p-traits"><li>Case Structuring</li><li>Strategic Thinking</li><li>Executive Presence</li></ul>
       </div>
       <% } %>
 
@@ -639,7 +639,7 @@
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar gold"><img src="/images/personas/marcus-webb.png" alt="Marcus Webb headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">MW</span></div><div><div class="p-name">Marcus Webb <span class="difficulty diff-medium">⚡ Medium</span></div><div class="p-title">VP Product · Series B SaaS</div></div></div>
         <span class="p-style gold">Product Leadership</span>
-        <ul class="p-traits"><li>Product Strategy</li><li>Prioritization</li><li>Commercial Acumen</li><li>Customer Insight</li></ul>
+        <ul class="p-traits"><li>Product Strategy</li><li>Prioritization</li><li>Customer Insight</li></ul>
       </div>
       <% } %>
 
@@ -648,7 +648,7 @@
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar"><img src="/images/personas/sanjeev-nair.png" alt="Sanjeev Nair headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">SN</span></div><div><div class="p-name">Sanjeev Nair <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">Engineering Director · Global Tech Firm</div></div></div>
         <span class="p-style royal-blue">Engineering Leadership</span>
-        <ul class="p-traits"><li>Engineering Strategy</li><li>Organizational Leadership</li><li>Delivery Excellence</li><li>Technical Vision</li></ul>
+        <ul class="p-traits"><li>Engineering Strategy</li><li>Organizational Leadership</li><li>Delivery Excellence</li></ul>
       </div>
       <% } %>
 
@@ -657,7 +657,7 @@
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar emerald"><img src="/images/personas/sarah-kim.png" alt="Sarah Kim headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">SK</span></div><div><div class="p-name">Sarah Kim <span class="difficulty diff-hard">🔥 Hard</span></div><div class="p-title">CEO · Pre-Series A Startup</div></div></div>
         <span class="p-style emerald">Founder Mindset</span>
-        <ul class="p-traits"><li>First Principles</li><li>Speed of Execution</li><li>Resilience</li><li>Bias for Action</li></ul>
+        <ul class="p-traits"><li>First Principles</li><li>Bias for Action</li><li>Resilience</li></ul>
       </div>
       <% } %>
 
@@ -666,7 +666,7 @@
         <div class="check">✓</div>
         <div class="p-head"><div class="p-avatar gold"><img src="/images/personas/raj-mehta.png" alt="Raj Mehta headshot" width="38" height="38" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><span class="fallback-initials">RM</span></div><div><div class="p-name">Raj Mehta <span class="difficulty diff-elite">💎 Elite</span></div><div class="p-title">Global Director · GCC Enterprise Network</div></div></div>
         <span class="p-style gold">Executive Leadership</span>
-        <ul class="p-traits"><li>Executive Presence</li><li>Strategic Judgment</li><li>Board Readiness</li><li>Stakeholder Influence</li></ul>
+        <ul class="p-traits"><li>Executive Presence</li><li>Strategic Judgment</li><li>Stakeholder Influence</li></ul>
       </div>
       <% } %>
 
