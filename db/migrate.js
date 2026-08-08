@@ -636,6 +636,40 @@ async function runMigrations() {
           await c.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_by INTEGER REFERENCES users(id) ON DELETE SET NULL`);
         },
       },
+      {
+        name: '020_prompt_cache_metrics',
+        up: async (c) => {
+          // Phase 2F-A — prompt caching instrumentation. Purely additive:
+          // nothing in the interview engine reads this table, it only
+          // records what db/prompt-cache-metrics.js writes (fire-and-forget
+          // from services/interview.js::generateNextQuestion). One row per
+          // AI call opted into tracking — turn-by-turn, not pre-aggregated,
+          // so the founder can see Q1..Qn evidence, not just an average.
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS prompt_cache_metrics (
+              id SERIAL PRIMARY KEY,
+              session_id INTEGER REFERENCES interview_sessions(id) ON DELETE CASCADE,
+              turn_label VARCHAR(50),
+              capability VARCHAR(100),
+              input_tokens INTEGER DEFAULT 0,
+              cache_creation_input_tokens INTEGER DEFAULT 0,
+              cache_read_input_tokens INTEGER DEFAULT 0,
+              output_tokens INTEGER DEFAULT 0,
+              latency_ms INTEGER,
+              estimated_cost_usd DOUBLE PRECISION,
+              created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`
+            CREATE INDEX IF NOT EXISTS prompt_cache_metrics_session_idx
+              ON prompt_cache_metrics (session_id)
+          `);
+          await c.query(`
+            CREATE INDEX IF NOT EXISTS prompt_cache_metrics_created_at_idx
+              ON prompt_cache_metrics (created_at)
+          `);
+        },
+      },
     ];
 
     for (const m of migrations) {
