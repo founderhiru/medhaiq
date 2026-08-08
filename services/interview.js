@@ -1923,7 +1923,7 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     }).catch((e) => console.error('[cache-metrics] persist failed:', e.message));
   };
 
-  let parsed = await chatJSON(prompt, { system: { static: staticPrompt, dynamic: dynamicPrompt + jsonSchemaInstruction }, maxTokens: 512, onUsage });
+  let parsed = await chatJSON(prompt, { system: { static: staticPrompt, dynamic: dynamicPrompt + jsonSchemaInstruction }, maxTokens: 512, onUsage, capability: 'generateNextQuestion' });
   let text = sanitizeQuestionOutput(parsed && parsed.question, competency, roleKey, levelKey);
 
   // Deterministic word-count ceiling — a bit of headroom above the prompt's
@@ -2032,6 +2032,7 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
       system: { static: staticPrompt, dynamic: dynamicPrompt + jsonSchemaInstruction + '\n\n' + warnings.join('\n\n') },
       maxTokens: 512,
       onUsage,
+      capability: 'generateNextQuestion',
     });
     text = sanitizeQuestionOutput(retryParsed && retryParsed.question, competency, roleKey, levelKey);
     attempts++;
