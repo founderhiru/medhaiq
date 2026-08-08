@@ -33,8 +33,14 @@
   }
 
   /**
-   * @param {{ voice: string, language: string, streaming: boolean }} options
-   *   Sourced from VoiceConfig (defaultVoice, language, streaming).
+   * @param {{ voiceProfile: string, language: string, streaming: boolean }} options
+   *   Persona-Based Dynamic Voice Profiles, Step 1: voiceProfile is a
+   *   provider-agnostic NAME (e.g. 'alex'), resolved once per question
+   *   page from personaId via public/js/voice/persona-voice-map.js --
+   *   never a provider voice ID. This adapter (and everything above it)
+   *   stays exactly as provider-agnostic as its name implies; only
+   *   services/voice-tts-proxy.js, server-side, ever resolves this name
+   *   to a real ElevenLabs voice ID (config/voice-profiles.js).
    * @param {{ proxyUrl: string, timeoutMs: number }} [httpOptions]
    *   Not part of VoiceConfig -- these are adapter-internal wiring details
    *   (which local/staging/prod path to call, how long to wait), injected
@@ -67,7 +73,7 @@
   ElevenLabsTTSAdapter.prototype.synthesize = function (text) {
     var self = this;
     var startedAt = Date.now();
-    log('synthesize:start', { textLength: (text || '').length, voice: this._options.voice, language: this._options.language });
+    log('synthesize:start', { textLength: (text || '').length, voiceProfile: this._options.voiceProfile, language: this._options.language });
     log('request:start', { elapsedMs: 0 }); // Phase 2B latency instrumentation -- "TTS Request Start"
 
     if (!text || typeof text !== 'string') {
@@ -113,7 +119,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         text: text,
-        voice: this._options.voice,
+        voiceProfile: this._options.voiceProfile,
         language: this._options.language,
       }),
     };
@@ -167,7 +173,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         text: text,
-        voice: this._options.voice,
+        voiceProfile: this._options.voiceProfile,
         language: this._options.language,
         streaming: this._options.streaming,
       }),

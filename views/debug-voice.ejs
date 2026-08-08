@@ -17,11 +17,20 @@
   <h1>MedhaIQ Voice Diagnostic (internal only)</h1>
   <p>Exercises the exact same QuestionSpeechService -> ElevenLabsTTSAdapter -> BrowserAudioPlayer chain used in a live interview when VOICE_PLAYBACK_PROVIDER=tts_pipeline. Not linked from any nav.</p>
 
-  <label>Voice:
+  <label>Voice Profile:
+    <!-- Persona-Based Dynamic Voice Profiles, Step 1: this now selects a
+         provider-agnostic voiceProfile NAME (matching config/voice-profiles.js
+         keys server-side), not a raw ElevenLabs voice name -- the adapter no
+         longer accepts the latter. All profiles currently resolve to the
+         same underlying ElevenLabs voice until Step 3 assigns distinct IDs. -->
     <select id="voiceSelect">
-      <option value="Rachel">Rachel</option>
-      <option value="Adam">Adam</option>
-      <option value="Domi">Domi</option>
+      <option value="defaultProfile">defaultProfile</option>
+      <option value="alex">alex</option>
+      <option value="priya">priya</option>
+      <option value="marcus">marcus</option>
+      <option value="sanjeev">sanjeev</option>
+      <option value="sarah">sarah</option>
+      <option value="raj">raj</option>
     </select>
   </label>
   <br>
@@ -55,10 +64,10 @@
     var currentAdapter = null;
     var qss = null;
 
-    function rebuildForVoice(voice) {
+    function rebuildForVoice(voiceProfile) {
       var cfg = window.MedhaIQVoice.VOICE_CLIENT_CONFIG || {};
       currentAdapter = new window.MedhaIQVoice.ElevenLabsTTSAdapter(
-        { voice: voice, language: cfg.language, streaming: cfg.streaming },
+        { voiceProfile: voiceProfile, language: cfg.language, streaming: cfg.streaming },
         { proxyUrl: '/api/voice/synthesize' }
       );
       qss = new window.MedhaIQVoice.QuestionSpeechService({ ttsAdapter: currentAdapter, audioPlayer: audioPlayer, config: cfg });

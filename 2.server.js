@@ -346,7 +346,6 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
   isFinalQuestion,
   sessionDurationMinutes,
   sessionStartedAtMs,
-  personaId:        persona.id,
   personaName:      persona.name,
   personaTitle:     persona.title + ' @ ' + persona.org,
   personaInitials:  initials,

@@ -37,14 +37,19 @@ const ERROR_STATUS_BY_CODE = {
 };
 
 router.post('/synthesize', requireAuth, async (req, res) => {
-  const { text, voice, language, streaming } = req.body || {};
+  // Persona-Based Dynamic Voice Profiles, Step 1: the request now carries
+  // voiceProfile (a provider-agnostic name, e.g. 'alex') instead of a raw
+  // provider voice ID. Resolution to an actual ElevenLabs ID happens
+  // entirely inside services/voice-tts-proxy.js via config/voice-profiles.js
+  // -- this route stays a thin passthrough, unchanged in shape.
+  const { text, voiceProfile, language, streaming } = req.body || {};
 
   if (!text || typeof text !== 'string') {
     return res.status(400).json({ error: 'text is required' });
   }
 
   try {
-    const { buffer, contentType } = await synthesizeViaElevenLabs({ text, voice, language, streaming });
+    const { buffer, contentType } = await synthesizeViaElevenLabs({ text, voiceProfile, language, streaming });
     res.set('Content-Type', contentType);
     res.send(buffer);
   } catch (err) {
@@ -59,13 +64,13 @@ router.post('/synthesize', requireAuth, async (req, res) => {
 // exactly like the existing /synthesize route above -- never in a URL.
 // Only an opaque, single-use, short-lived token is ever exposed via GET.
 router.post('/synthesize/prepare', requireAuth, async (req, res) => {
-  const { text, voice, language } = req.body || {};
+  const { text, voiceProfile, language } = req.body || {};
 
   if (!text || typeof text !== 'string') {
     return res.status(400).json({ error: 'text is required' });
   }
 
-  const token = prepareStream({ text, voice, language, userId: req.user.id });
+  const token = prepareStream({ text, voiceProfile, language, userId: req.user.id });
   res.json({ streamUrl: '/api/voice/stream/' + encodeURIComponent(token) });
 });
 

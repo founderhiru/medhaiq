@@ -219,7 +219,6 @@
 <script src="/js/voice/player/browser-audio-player.js"></script>
 <script src="/js/voice/services/question-speech-service.js"></script>
 <script src="/js/voice/voice-client-config.js"></script>
-<script src="/js/voice/persona-voice-map.js"></script>
 <script>
   window.VOICE_PLAYBACK_PROVIDER = '<%= voicePlaybackProvider %>';
   // Resolved ONCE, here, as a genuine global. This page has multiple
@@ -1622,19 +1621,8 @@
   if (window.VOICE_PIPELINE_MODE === 'tts_pipeline') {
     try {
       var _voiceClientConfig = (window.MedhaIQVoice && window.MedhaIQVoice.VOICE_CLIENT_CONFIG) || {};
-      // Persona-Based Dynamic Voice Profiles, Step 1: resolved ONCE here,
-      // at page load, from the real personaId this question belongs to
-      // (see server.js's res.render('interview-session', ...), personaId
-      // field) -- not re-resolved per synthesis call. The result is a
-      // provider-agnostic NAME (e.g. 'alex'), never a provider voice ID --
-      // see public/js/voice/persona-voice-map.js and, server-side,
-      // config/voice-profiles.js for where that name is finally resolved
-      // to an actual ElevenLabs ID.
-      var _voiceProfile = (window.MedhaIQVoice && window.MedhaIQVoice.resolveVoiceProfile)
-        ? window.MedhaIQVoice.resolveVoiceProfile('<%= personaId %>')
-        : _voiceClientConfig.defaultProfile;
       var _ttsAdapter = new window.MedhaIQVoice.ElevenLabsTTSAdapter(
-        { voiceProfile: _voiceProfile, language: _voiceClientConfig.language, streaming: _voiceClientConfig.streaming },
+        { voice: _voiceClientConfig.defaultVoice, language: _voiceClientConfig.language, streaming: _voiceClientConfig.streaming },
         { proxyUrl: '/api/voice/synthesize', timeoutMs: 20000 } // matches Render's VOICE_TTS_TIMEOUT_MS -- keep these two in sync
       );
       var _audioPlayer = new window.MedhaIQVoice.BrowserAudioPlayer();

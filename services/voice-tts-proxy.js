@@ -22,6 +22,12 @@
 // Remove in PR5 along with the client-side equivalents.
 
 const { VOICE_SERVER_CONFIG } = require('../config/voice-server-config');
+// Persona-Based Dynamic Voice Profiles, Step 1: this file is now the ONLY
+// place a provider voice ID is ever resolved. Everything upstream of here
+// (routes/voice-tts.js, and every browser file) only ever knows a
+// voiceProfile NAME -- see config/voice-profiles.js's own header for the
+// full rationale and the 3-step rollout.
+const { resolveVoiceProfile } = require('../config/voice-profiles');
 
 function logTTS(event, detail) {
   // eslint-disable-next-line no-console
@@ -95,7 +101,11 @@ function normalizeSpokenCurrency(text) {
 }
 
 /**
- * @param {{ text: string, voice: string, language: string, streaming: boolean }} params
+ * @param {{ text: string, voiceProfile: string, language: string, streaming: boolean }} params
+ *   voiceProfile is a provider-agnostic NAME (e.g. 'alex'), never a raw
+ *   provider voice ID -- resolved to one right here, via
+ *   config/voice-profiles.js, the only place in the codebase that touches
+ *   both a voiceProfile name and a real ElevenLabs ID.
  * @returns {Promise<{ buffer: Buffer, contentType: string }>}
  * @throws {Error} with a `.code` of 'CONFIG_MISSING' | 'UPSTREAM_AUTH' | 'UPSTREAM_ERROR' | 'TIMEOUT' | 'NETWORK_ERROR'
  */
@@ -105,7 +115,8 @@ async function synthesizeViaElevenLabs(params) {
   if (spokenText !== params.text) {
     logTTS('currency-normalized', { original: params.text, spoken: spokenText });
   }
-  logTTS('synthesize:start', { textLength: (params.text || '').length, voice: params.voice, language: params.language });
+  const resolvedVoice = resolveVoiceProfile(params.voiceProfile);
+  logTTS('synthesize:start', { textLength: (params.text || '').length, voiceProfile: params.voiceProfile, language: params.language });
 
   if (!VOICE_SERVER_CONFIG.elevenLabsApiKey) {
     const err = new Error('VOICE_SERVER_CONFIG.elevenLabsApiKey is not set');
@@ -117,7 +128,12 @@ async function synthesizeViaElevenLabs(params) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), VOICE_SERVER_CONFIG.requestTimeoutMs);
 
-  const voiceId = params.voice || 'Rachel';
+  // Step 1 note: resolvedVoice.providerVoice is the SAME literal ID
+  // ('Rachel'-equivalent default) every profile points at today -- the
+  // fallback here only ever triggers if resolveVoiceProfile() itself
+  // somehow returned an incomplete object, which it never does by
+  // construction (see config/voice-profiles.js's defaultProfile entry).
+  const voiceId = resolvedVoice.providerVoice || 'Rachel';
   const url = VOICE_SERVER_CONFIG.elevenLabsApiBaseUrl.replace(/\/$/, '') + '/v1/text-to-speech/' + encodeURIComponent(voiceId);
 
   let response;
@@ -208,7 +224,7 @@ async function synthesizeViaElevenLabs(params) {
 const crypto = require('crypto');
 
 const PENDING_TOKEN_TTL_MS = 30000; // generous vs. the realistic <1s gap between prepare() and the browser's GET, not a real usage window
-const pendingSyntheses = new Map(); // token -> { text, voice, language, userId, expiresAt }
+const pendingSyntheses = new Map(); // token -> { text, voiceProfile, language, userId, expiresAt }
 
 // Lazy sweep, not a hard requirement for correctness (expired tokens are
 // also rejected on lookup below) -- this just bounds memory if a prepared
@@ -221,19 +237,22 @@ setInterval(() => {
 }, 60000).unref(); // unref: never keeps the process alive on its own
 
 /**
- * @param {{ text: string, voice: string, language: string, userId: string|number }} params
+ * @param {{ text: string, voiceProfile: string, language: string, userId: string|number }} params
+ *   voiceProfile is a provider-agnostic NAME, stored as-is here -- the
+ *   provider ID resolution happens later, in streamViaElevenLabsToken,
+ *   at the point the actual ElevenLabs call is made.
  * @returns {string} an opaque, single-use, short-lived token -- never the text itself
  */
 function prepareStream(params) {
   const token = crypto.randomBytes(24).toString('base64url');
   pendingSyntheses.set(token, {
     text: params.text,
-    voice: params.voice,
+    voiceProfile: params.voiceProfile,
     language: params.language,
     userId: params.userId,
     expiresAt: Date.now() + PENDING_TOKEN_TTL_MS,
   });
-  logTTS('stream:prepared', { token, textLength: (params.text || '').length, voice: params.voice });
+  logTTS('stream:prepared', { token, textLength: (params.text || '').length, voiceProfile: params.voiceProfile });
   return token;
 }
 
@@ -275,7 +294,8 @@ async function streamViaElevenLabsToken(params) {
 
   const startedAt = Date.now();
   const spokenText = normalizeSpokenCurrency(entry.text); // same currency-normalization fix as the non-streaming path
-  logTTS('stream:start', { textLength: (entry.text || '').length, voice: entry.voice, language: entry.language });
+  const resolvedVoice = resolveVoiceProfile(entry.voiceProfile);
+  logTTS('stream:start', { textLength: (entry.text || '').length, voiceProfile: entry.voiceProfile, language: entry.language });
 
   if (!VOICE_SERVER_CONFIG.elevenLabsApiKey) {
     const err = new Error('VOICE_SERVER_CONFIG.elevenLabsApiKey is not set');
@@ -284,7 +304,7 @@ async function streamViaElevenLabsToken(params) {
     throw err;
   }
 
-  const voiceId = entry.voice || 'Rachel';
+  const voiceId = resolvedVoice.providerVoice || 'Rachel';
   const url = VOICE_SERVER_CONFIG.elevenLabsApiBaseUrl.replace(/\/$/, '')
     + '/v1/text-to-speech/' + encodeURIComponent(voiceId) + '/stream';
 
