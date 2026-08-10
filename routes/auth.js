@@ -4,12 +4,47 @@ const passport = require('passport');
 const {
   findOrCreateUser, getUserById, getUserByEmail, getUserByEmailAndPassword,
   createUserWithPassword, hashPassword, createToken, validateToken,
+  markEmailVerified,
 } = require('../db/auth');
 const { getValidInvitation, acceptInvitation } = require('../db/invitations');
 const { ensureUserBootstrap } = require('../db/profile-bootstrap');
 const { logUserActivity } = require('../services/activity-logger');
-const { sendMagicLinkEmail } = require('../services/email');
+const { sendMagicLinkEmail, sendVerificationEmail } = require('../services/email');
+// Anti-Abuse & Free-Offer Guardrail
+const { grantWelcomeOfferIfEligible } = require('../services/free-offer-guardrail');
+const { authLimiter } = require('../middleware/rate-limit');
 const router = express.Router();
+
+// Shared by /auth/verify and the Google callback below — the ONE place
+// the one-time Welcome Offer grant is triggered from. Safe to call after
+// any successful auth event; markEmailVerified()'s return value (true
+// only on the actual false->true flip) keeps this a no-op DB hit for
+// every subsequent login by an already-verified user, not a query on
+// every single login forever.
+async function handleFirstVerification(req, userId) {
+  try {
+    const firstTimeVerified = await markEmailVerified(userId);
+    if (!firstTimeVerified) return;
+    const result = await grantWelcomeOfferIfEligible({
+      userId,
+      deviceHash: req.deviceHash,
+      ipHash: req.ipHash,
+    });
+    logUserActivity({
+      userId,
+      action: result.granted ? 'welcome_offer_granted' : 'welcome_offer_restricted',
+      page: '/auth/verify',
+      req,
+    });
+  } catch (err) {
+    // Never let a guardrail failure block login — the account and
+    // session are already valid at this point regardless of whether the
+    // promotional credit lands. Worst case: a legitimate user needs a
+    // manual grant from the Founder Dashboard, which is a much smaller
+    // problem than locking someone out of their own account.
+    console.error('[auth] welcome-offer grant error:', err);
+  }
+}
 
 // Validates a "next" redirect target so it can only ever point somewhere
 // internal — never an external site or protocol-relative URL (open-redirect
@@ -22,7 +57,7 @@ function safeReturnTo(value) {
 }
 
 // GET /auth/google — initiate Google OAuth
-router.get('/google', (req, res, next) => {
+router.get('/google', authLimiter, (req, res, next) => {
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     return res.redirect('/auth/login?error=google-not-configured');
   }
@@ -40,20 +75,24 @@ router.get('/google/callback',
       next();
     })(req, res, next);
   },
-  (req, res) => {
+  async (req, res) => {
     res.cookie('user_id', req.user.id, {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
       sameSite: 'lax',
     });
     logUserActivity({ userId: req.user.id, action: 'login_google', page: '/auth/google/callback', req });
+    // Google has already confirmed this address — this call flips
+    // email_verified and, on a first-time flip, attempts the Welcome
+    // Offer grant. See handleFirstVerification's own comment.
+    await handleFirstVerification(req, req.user.id);
     const returnTo = safeReturnTo(req.query.state);
     res.redirect(returnTo || '/dashboard/history');
   }
 );
 
 // POST /auth/login — send magic link
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   const { email, name, next: nextParam } = req.body;
   const returnTo = safeReturnTo(nextParam);
   const trimmed = (email || '').trim();
@@ -94,7 +133,7 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /auth/password-login — login with email + password
-router.post('/password-login', async (req, res) => {
+router.post('/password-login', authLimiter, async (req, res) => {
   const { email, password, next: nextParam } = req.body;
   const returnTo = safeReturnTo(nextParam);
   const trimmed = (email || '').trim();
@@ -127,7 +166,7 @@ router.post('/password-login', async (req, res) => {
 });
 
 // POST /auth/signup — create account with password
-router.post('/signup', async (req, res) => {
+router.post('/signup', authLimiter, async (req, res) => {
   const { email, password, name } = req.body;
   const trimmed = (email || '').trim();
   if (!trimmed || !/^[^\n\r@]+@[^\n\r@]+\.[^\n\r@]+$/.test(trimmed)) {
@@ -158,6 +197,25 @@ router.post('/signup', async (req, res) => {
 
     logUserActivity({ userId: user.id, action: 'signup_password', page: '/auth/signup', req });
 
+    // Unchanged: the user is logged in immediately (cookie set above),
+    // same as before. What's new: this account is NOT yet email_verified
+    // (db/auth.js::createUserWithPassword), so it has zero Welcome Offer
+    // minutes until they verify — the password path previously had no
+    // verification step at all, which meant instant, unlimited-by-
+    // account-creation Explorer access. This sends the same magic-link
+    // email/token machinery /auth/login already uses; clicking it hits
+    // /auth/verify, which both confirms the address and (first time only)
+    // grants the Welcome Offer. A failure here is logged, not fatal —
+    // the account still exists and works, exactly as if this line didn't
+    // run; the user can always request a fresh link via /auth/login.
+    try {
+      const token = await createToken(user.id, 24);
+      const verifyUrl = `${process.env.APP_URL || 'https://www.medhaiq.ai'}/auth/verify?token=${token}`;
+      await sendVerificationEmail(cleanEmail, verifyUrl);
+    } catch (verifyErr) {
+      console.error('[auth] signup verification email error:', verifyErr);
+    }
+
     return res.json({ success: true });
   } catch (err) {
     console.error('[auth] signup error:', err);
@@ -185,6 +243,13 @@ router.get('/verify', async (req, res) => {
     });
 
     logUserActivity({ userId, action: 'login_magic_link_verified', page: '/auth/verify', req });
+
+    // Proof of email ownership (the token could only have been received
+    // at that address) — this is the actual verification moment for both
+    // the magic-link path and the password-signup verification email
+    // sent from /auth/signup above. First time only, this also attempts
+    // the one-time Welcome Offer grant.
+    await handleFirstVerification(req, userId);
 
     return res.redirect(returnTo || '/dashboard/history');
   } catch (err) {

@@ -515,6 +515,37 @@
   sendHeartbeat();
   var heartbeatInt = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS);
 
+  /* ── bfcache-restored ended session (2026-08-10 fix) ──
+     Browser Back can restore this exact page (with its stale JS state)
+     from bfcache after the session already ended and the page navigated
+     to /interview/report/. Detected via pageshow's event.persisted --
+     the standard, purpose-built signal for exactly this case, not a new
+     mechanism. On a persisted restore, reuse the EXISTING heartbeat
+     endpoint (already polled every 60s elsewhere in this file, fire-
+     and-forget) to ask the server directly whether this session is
+     still active -- the server-side check (routes/interview.js,
+     checkSessionActiveAndNotIdle) is untouched, we're just reading its
+     existing 400 response here instead of ignoring it. If inactive,
+     disable the controls and redirect via the exact same URL pattern
+     already used by a normal session end (reportId === SID, see
+     routes/interview.js's finalizeSessionAndRespond) -- no new
+     endpoint, no new destination. */
+  window.addEventListener('pageshow', function (event) {
+    if (!event.persisted) return; // normal load/navigation -- not a bfcache restore, nothing to check
+    fetch('/api/interview/sessions/' + SID + '/heartbeat', { method: 'POST' })
+      .then(function (resp) {
+        if (resp.status === 400) {
+          var _submitBtn = document.getElementById('submitBtn');
+          var _skipBtn = document.getElementById('skipBtn');
+          if (_submitBtn) _submitBtn.disabled = true;
+          if (_skipBtn) _skipBtn.disabled = true;
+          isSubmitting = true; // belt-and-suspenders: also blocks submitAnswer() directly if anything else fires first
+          window.location.href = '/interview/report/' + SID;
+        }
+      })
+      .catch(function (e) { console.warn('[pageshow] session-status check failed (non-fatal):', e); });
+  });
+
   /* Browser-closing signal: sent via sendBeacon (works reliably during
      page unload, unlike a normal fetch which browsers may cancel) so a
      candidate closing the tab mid-interview is recorded with a specific,
@@ -973,6 +1004,24 @@
     logStarDetection(this.value, 'typed');
   });
 
+  // Enter-to-submit (regression fix, restored 2026-08-11 — this exact
+  // listener was deleted whole by an unrelated commit and never
+  // restored). Shift+Enter still inserts a newline. Shift+Enter is
+  // native textarea behavior already; only plain Enter needs
+  // intercepting. Reuses window.MedhaIQ_requestSubmit(), the exact same
+  // entry point voice auto-submit already calls (see
+  // CandidateTurnComplete handler below) — submitAnswer() itself is not
+  // touched by this listener.
+  answerInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      var _btn = document.getElementById('submitBtn');
+      if (_btn && !_btn.disabled && typeof window.MedhaIQ_requestSubmit === 'function') {
+        window.MedhaIQ_requestSubmit();
+      }
+    }
+  });
+
   // TEMPORARY INSTRUMENTATION (Priority 0.5 validation request) --
   // remove after validation is complete. Logs exactly the requested
   // fields for every significant transcript update. "Confidence" is
@@ -1027,8 +1076,21 @@
     });
   }
 
-  document.getElementById('submitBtn').addEventListener('click', function(){ submitAnswer(false); });
-  document.getElementById('skipBtn').addEventListener('click', function(){ submitAnswer(true); });
+  document.getElementById('submitBtn').addEventListener('click', function(){
+    // 2026-08-10 fix: manual clicks previously never armed this guard --
+    // only the auto-submit (CandidateTurnComplete) and spoken-command
+    // paths did. Same guard, same assignment already used in both of
+    // those call sites (see window._turnClosedForQuestionId elsewhere in
+    // this file) -- just extended to cover a manual click too, so a late
+    // transcript fragment for this question is discarded same as it
+    // already is for the other two trigger paths.
+    window._turnClosedForQuestionId = QID;
+    submitAnswer(false);
+  });
+  document.getElementById('skipBtn').addEventListener('click', function(){
+    window._turnClosedForQuestionId = QID;
+    submitAnswer(true);
+  });
 
   /* Hard re-entrancy guard. Previously only submitBtn was disabled while a
      request was in flight — skipBtn had no lock at all, so an impatient
@@ -1134,8 +1196,14 @@
             // backend's actual completion decision (e.g. during a
             // Leadership Executive Extension).
             var isFinalQuestion = CURRENT_QUESTION_IS_FINAL;
+            // 2026-08-10: final-question SKIP now gets its own wording --
+            // previously identical to the final-question ANSWER case
+            // below ("That's the final question..."), which meant a
+            // skipped/passed final question still sounded like a normal
+            // completion. Matches the same canonical skip-closing string
+            // used server-side (routes/interview.js's finalizeSessionAndRespond).
             var ackText = isFinalQuestion
-              ? "That's the final question. I'll prepare your report now."
+              ? "No problem. That completes the interview. I'll now prepare your report."
               : pickSkipAcknowledgement();
             // TEMPORARY DEBUG FIELD (ElevenLabs usage investigation):
             // 'reason' is pure diagnostic metadata for the console logs
@@ -1151,8 +1219,10 @@
           // answer also deserves the wrap-up rather than "Got it."
           try {
             var _isFinalAnswer = CURRENT_QUESTION_IS_FINAL; // see isFinalQuestion above — same direct read, same reasoning
+            // 2026-08-10: matches the canonical answer-closing string
+            // used server-side (routes/interview.js's finalizeSessionAndRespond).
             var _answerAckText = _isFinalAnswer
-              ? "That's the final question. I'll prepare your report now."
+              ? "Thank you. That completes your interview. I'll now prepare your report."
               : pickAnswerAcknowledgement();
             window.questionSpeechService.speak({ text: _answerAckText, questionId: 'answer-ack', turnId: null, reason: _isFinalAnswer ? 'closing' : 'acknowledgement' });
           } catch (e) { console.warn('[VoicePipeline] answer acknowledgement failed (non-fatal):', e); }
@@ -1264,6 +1334,26 @@
           setTimeout(_redirectNow, 15000); // safety backstop -- should not normally fire
         }
       } else {
+        // 2026-08-10: the closing text (data.text, now populated by
+        // routes/interview.js's finalizeSessionAndRespond -- previously
+        // always null) is spoken here via the SAME single entry point
+        // every other question already uses (InterviewVoiceController.
+        // notify() -- Invariant 3, see MedhaIQSync.hold() above and the
+        // Q1/reconnect greetings further down, both of which call this
+        // exact function directly for the same reason: no on-screen
+        // "next question" card applies here, so hold() itself -- which
+        // also calls showQuestion() -- is not used). Previously this
+        // branch called nothing at all: the fixed delay below existed
+        // (sized for "Vapi to say goodbye" per the comment above) but
+        // nothing was ever asked to say it. No new mechanism, no new
+        // timing -- same delay, same redirect, now with the one call
+        // that actually makes use of the wait.
+        try {
+          var _vc = window.InterviewVoiceController;
+          if (_vc && _vc.isLive && _vc.isLive() && data.text) {
+            _vc.notify({ questionId: null, text: data.text, turnId: data.turnId, wasSkipped: !!data.wasSkipped });
+          }
+        } catch (e) { console.warn('[Vapi] closing speech failed (non-fatal):', e); }
         // Legacy path: unchanged fixed-delay behavior.
         var redirectDelay = window.MedhaIQVoiceLive ? 5500 : 2200;
         setTimeout(function(){ window.location.href='/interview/report/'+data.reportId; }, redirectDelay);
@@ -1326,8 +1416,18 @@
       document.getElementById('skipBtn').disabled = false;
       alert('Error: '+err.message);
     } finally {
-      isSubmitting = false;
-      document.getElementById('skipBtn').disabled = false;
+      // 2026-08-10 fix: previously reset unconditionally, which silently
+      // undid the sessionEnded branch's own intent above ("isSubmitting
+      // intentionally stays true — page is navigating away") — finally
+      // always runs after a return in try, so that comment was never
+      // actually true. data is declared with var inside the try block
+      // above, so it's safely readable here via normal hoisting (it's
+      // simply undefined if the fetch itself threw before assignment,
+      // which correctly falls through to the original reset below).
+      if (!(typeof data !== 'undefined' && data && data.sessionEnded)) {
+        isSubmitting = false;
+        document.getElementById('skipBtn').disabled = false;
+      }
     }
   }
 
@@ -1656,26 +1756,23 @@
 
   var STATES={ IDLE:'IDLE',REQUESTING:'REQUESTING',CONNECTING:'CONNECTING',LIVE:'LIVE',STOPPING:'STOPPING' };
 
-  // ROOT CAUSE FIX (P0 "navigating back generates Question 6"): the
-  // backend's session.status !== 'active' guard (routes/interview.js)
-  // is already correct and rejects any stray request against a
-  // completed session -- confirmed directly in that file, not touched
-  // here. The actual mechanism is the browser's back-forward cache
-  // (bfcache): navigating back can restore this EXACT page's prior,
-  // pre-completion JS state (mic still "live", question 5 still
-  // showing as current) without a fresh network request at all. Any
-  // client-side event firing against that stale state (e.g. a lingering
-  // Vapi connection, or the auto-submit-on-speech-start behavior)
-  // reaches a session the backend has already ended. This uses the
-  // browser's native pageshow/persisted event -- not a timer or poll --
-  // to detect exactly that restore and force a genuinely fresh page
-  // load instead of resuming stale state.
-  window.addEventListener('pageshow', function (event) {
-    if (event.persisted) {
-      console.log('[BFCACHE] page restored from back-forward cache -- forcing reload to avoid resuming a stale, possibly-completed session state');
-      window.location.reload();
-    }
-  });
+  // 2026-08-11 fix: removed a second, competing pageshow/persisted
+  // handler that lived here (unconditional window.location.reload()
+  // with no session-status check). It raced against the earlier,
+  // heartbeat-verified pageshow handler (see ~line 533, "bfcache-
+  // restored ended session (2026-08-10 fix)") and, because that
+  // handler's fetch() is async while this one's reload() was
+  // synchronous, this one usually won the race and tore the page down
+  // before the verified check ever got to run -- reproducing exactly
+  // the "Back restores an old question, Skip then 400s" bug even
+  // though the correct fix was already present earlier in this same
+  // file. The single, authoritative handler at ~line 533 already
+  // covers this case (checks the live session status via the existing
+  // /heartbeat endpoint, disables controls, and redirects to the
+  // report -- no blind reload involved). server.js's GET route for
+  // this page also independently redirects on session.status !==
+  // 'active' for the general fresh-navigation case, so removing this
+  // duplicate loses no coverage, only the race.
   var state=STATES.IDLE, vapi=null;
   var assistantTranscriptBuf = '';
   window.aiIsSpeaking = false; // true between vapi 'speech-start' and 'speech-end' — guards verbal skip/submit commands. Genuine global (not a bare var) because submitAnswer(), in a separate sibling IIFE, needs to read this too (see Item 3 fix).
@@ -1915,7 +2012,7 @@
     window.questionSpeechService.onFinished(function () {
       slog('[LIFECYCLE-TRACE] QuestionSpeechService onFinished fired at ' + Date.now(), 'info');
       window.aiIsSpeaking = false;
-      sub.textContent = 'Your turn — speak clearly';
+      sub.textContent = '🎤 Click mic to speak';
       if (currentSpokenTurnId) slog('[turn-trace] TURN_ID='+currentSpokenTurnId+' Speech finished: QuestionId='+currentSpokenQuestionId, 'info');
       InterviewVoiceController.onSpeechEnd();
       if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.unlockInput();

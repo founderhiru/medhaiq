@@ -19,6 +19,14 @@ process.on('unhandledRejection', (reason) => {
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Render sits in front of this app behind a proxy/load balancer — without
+// this, req.ip is always Render's internal address, not the real client
+// IP, which would make the Anti-Abuse Guardrail's IP-based signal
+// (middleware/device-id.js, services/free-offer-guardrail.js) and the
+// rate limiters (middleware/rate-limit.js) meaningless. `1` trusts
+// exactly one hop, matching Render's architecture.
+app.set('trust proxy', 1);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const passport = require('passport');
@@ -34,6 +42,13 @@ app.use((req, _res, next) => {
   });
   next();
 });
+
+// Anti-Abuse & Free-Offer Guardrail — attaches req.deviceHash/req.ipHash
+// (salted hashes only, see middleware/device-id.js). Must run after the
+// cookie parser (reads/sets req.cookies) and after trust proxy is set
+// above (reads req.ip), and before routes/auth.js so both are populated
+// by the time a signup/verify request reaches it.
+app.use(require('./middleware/device-id').attachDeviceSignal);
 
 // Capability Engine — resolves visitor/free/pro tier for every request and
 // attaches req.capabilities + res.locals.capabilities/megaMenuItems/headerCTA.

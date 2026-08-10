@@ -114,13 +114,7 @@ router.post('/vapi-webhook', async (req, res) => {
       // backend decided, never anything Vapi comes up with on its own.
       let spokenText;
       if (result.body.sessionEnded) {
-        // 2026-08-10: now reads the backend's own closing text (see
-        // routes/interview.js's finalizeSessionAndRespond) instead of a
-        // second, separately-hardcoded string here -- that text is
-        // already skip-aware (Explorer/Growth/Leadership share the same
-        // canonical completion path). The literal string below only
-        // fires in the genuinely-unexpected case that text is missing.
-        spokenText = result.body.text || "That completes our interview — thank you for your time today. Your report is being prepared now.";
+        spokenText = "That completes our interview — thank you for your time today. Your report is being prepared now.";
       } else if (result.body.text) {
         // Covers all three real cases identically: a genuine next question,
         // a follow-up, or the sparse-answer reprompt — whichever the

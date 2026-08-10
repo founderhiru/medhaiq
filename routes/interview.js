@@ -45,6 +45,9 @@ const sessionController = require('../controllers/sessionController');
 // requireAuth + requireInterviewEntitlement now live in middleware/guards.js
 // — single shared implementation built on the Capability Engine.
 const { requireAuth, requireInterviewEntitlement } = require('../middleware/guards');
+// Anti-Abuse & Free-Offer Guardrail — burst protection on session START
+// only (never on in-progress endpoints: answer/heartbeat/next-question).
+const { interviewStartLimiter } = require('../middleware/rate-limit');
 // Discovery Profile (Phase 2, additive) — decides ONLY whether Discovery or
 // the existing generateNextQuestion() supplies the next question on turn
 // 2+. Never modifies, wraps, or duplicates generateNextQuestion() itself.
@@ -82,8 +85,8 @@ const IDLE_TIMEOUT_MINUTES = 10;
 // creation if the user already has an active session (409) or has
 // exhausted their plan's interview minutes (403) — the action-level gate
 // per spec Section 5, not a page-level one.
-router.post('/sessions', requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
-router.post('/session/initialize', requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
+router.post('/sessions', interviewStartLimiter, requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
+router.post('/session/initialize', interviewStartLimiter, requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
 
 // ── Primary vs follow-up question type helper ───────────────────────────────
 // 'opening' and 'primary' are the current values; 'drill_down' is the legacy
@@ -636,6 +639,7 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
         sessionEnded: false,
         validationFailed: true,
         turnId,
+        wasSkipped: effectiveSkip,
         scores: { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 },
         star_progress: { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 },
         intelligence_scores: { overallScore: 0, vectors: { structure: 0, technicalDepth: 0, executivePresence: 0, gccReadiness: 0, communicationClarity: 0 } },
@@ -804,6 +808,18 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
       console.error('[email] report setup failed (non-fatal):', emailErr.message);
     }
 
+    // Conversational closing (UX fix, 2026-08-10): previously always
+    // null here -- the interview ended with no spoken/displayed closing
+    // at all, for every plan. effectiveSkip is the SAME signal already
+    // computed above (deterministic skip/pass intent detector +
+    // explicit Skip button) -- not a new detector, just read here too.
+    // Two canonical strings, shared by Explorer/Growth/Leadership alike
+    // since finalizeSessionAndRespond() is already their one shared
+    // completion path.
+    const closingText = effectiveSkip
+      ? "No problem. That completes the interview. I'll now prepare your report."
+      : "Thank you. That completes your interview. I'll now prepare your report.";
+
     console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (SESSION ENDED): reportId=${sessionId}`);
     return {
       httpStatus: 200,
@@ -811,10 +827,11 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
         sessionEnded: true,
         reportId: sessionId,
         turnId,
+        wasSkipped: effectiveSkip,
         scores,
         star_progress: starProgress,
         intelligence_scores: intelligenceScores,
-        text: null,
+        text: closingText,
         audio_url: null,
         competency_tag: null,
       },
@@ -889,6 +906,7 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     body: {
       sessionEnded: false,
       turnId,
+      wasSkipped: effectiveSkip,
       scores,
       star_progress: starProgress,
       intelligence_scores: intelligenceScores,
