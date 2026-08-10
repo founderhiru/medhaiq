@@ -664,10 +664,140 @@ async function runMigrations() {
             CREATE INDEX IF NOT EXISTS prompt_cache_metrics_session_idx
               ON prompt_cache_metrics (session_id)
           `);
-          await c.query(`
+       await c.query(`
             CREATE INDEX IF NOT EXISTS prompt_cache_metrics_created_at_idx
               ON prompt_cache_metrics (created_at)
           `);
+        },
+      },
+      {
+        name: '021_free_offer_guardrail',
+        up: async (c) => {
+          // Anti-Abuse & Free-Offer Guardrail. Two purely additive pieces:
+          //
+          // 1. A partial UNIQUE index on the EXISTING package_acquisitions
+          //    table — no new credit/entitlement system, just a database-
+          //    level guarantee that a user can never hold two source='welcome'
+          //    rows, even under a race (two concurrent /auth/verify hits).
+          //    This is the real idempotency guarantee; the application-level
+          //    check in services/free-offer-guardrail.js is just the fast
+          //    path that avoids hitting this in normal operation.
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_package_acquisitions_one_welcome_per_user
+              ON package_acquisitions (user_id)
+              WHERE source = 'welcome'
+          `);
+
+          // 2. free_offer_claims — the one genuinely new table this feature
+          //    adds. An append-only abuse-signal log (device/IP hashes only,
+          //    never raw values), consumed by db/free-offer-claims.js for
+          //    risk assessment and by Founder Dashboard visibility. This is
+          //    NOT the source of truth for credits — that remains
+          //    package_acquisitions + credit_ledger, untouched.
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS free_offer_claims (
+              id SERIAL PRIMARY KEY,
+              user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+              device_hash VARCHAR(64),
+              ip_hash VARCHAR(64),
+              status VARCHAR(20) NOT NULL,
+              risk_reason VARCHAR(50),
+              claimed_at TIMESTAMPTZ DEFAULT NOW(),
+              created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`
+            CREATE INDEX IF NOT EXISTS free_offer_claims_device_hash_idx
+              ON free_offer_claims (device_hash)
+          `);
+          await c.query(`
+            CREATE INDEX IF NOT EXISTS free_offer_claims_ip_hash_idx
+              ON free_offer_claims (ip_hash)
+          `);
+          await c.query(`
+            CREATE INDEX IF NOT EXISTS free_offer_claims_status_idx
+              ON free_offer_claims (status)
+          `);
+
+          // Safety backfill — same precedent as migration 016's pro-tier
+          // backfill above, but SCOPED more tightly than a plain "no
+          // acquisition row" check. Under the current model (ADR-013),
+          // no-acquisition already means Explorer by definition — but to
+          // remove any ambiguity: this explicitly re-checks each user's
+          // legacy subscription_status/subscription_plan columns (the
+          // same fields migration 016 already reads) before treating
+          // them as Explorer, so a Growth/Leadership user can NEVER
+          // receive a source='welcome' acquisition just because they
+          // happen to be missing a package_acquisitions row for some
+          // other reason (e.g. a plan-name migration 016 didn't map).
+          //
+          // Step A: catch any such straggler — legacy-paid, but still
+          // missing an acquisition row for any reason — into their REAL
+          // paid tier, using migration 016's exact mapping. This must
+          // run before Step B, and Step B explicitly excludes anyone
+          // this step touches.
+          const stragglerBackfill = await c.query(`
+            INSERT INTO package_acquisitions (user_id, package_id, expires_at, source)
+            SELECT id,
+                   CASE WHEN LOWER(subscription_plan) = 'leadership' THEN 'leadership' ELSE 'growth' END,
+                   NULL,
+                   'migration_backfill'
+            FROM users
+            WHERE LOWER(subscription_status) = 'active'
+              AND subscription_plan IS NOT NULL
+              AND NOT EXISTS (
+                SELECT 1 FROM package_acquisitions pa WHERE pa.user_id = users.id
+              )
+            RETURNING id, user_id, package_id
+          `);
+          for (const row of stragglerBackfill.rows) {
+            const minutes = row.package_id === 'leadership' ? 300 : 120;
+            await c.query(
+              `INSERT INTO credit_ledger (user_id, package_acquisition_id, minutes, reason)
+               VALUES ($1, $2, $3, 'migration_backfill')`,
+              [row.user_id, row.id, minutes]
+            );
+          }
+          if (stragglerBackfill.rows.length) {
+            console.log(`[migrate] 021: caught ${stragglerBackfill.rows.length} legacy-paid straggler(s) into their real paid tier (not Explorer)`);
+          }
+
+          // Step B: Explorer welcome backfill — everyone STILL left with
+          // no acquisition row after Step A above is, by definition,
+          // Explorer under the current model (lib/capability-engine.js
+          // reads package_acquisitions exclusively; there is no other
+          // path to a paid tier). The subscription_status/subscription_plan
+          // re-check here is technically redundant with Step A's NOT
+          // EXISTS scoping (Step A already removed every legacy-paid row
+          // from contention) — kept anyway as an explicit, self-
+          // documenting guarantee rather than relying on ordering alone.
+          //
+          // acquired_at is deliberately backdated to the user's own
+          // created_at, NOT NOW() — capability-engine.js scopes credit
+          // consumption to sessions started at/after an acquisition's
+          // acquired_at, so a NOW() timestamp would wrongly reset a
+          // partway-through user's minutesUsed to 0 and hand them a full
+          // fresh 30. Backdating to created_at means every session they
+          // already had counts against the pool exactly as it always did
+          // — this backfill preserves current state, it doesn't reset it.
+          const explorerBackfill = await c.query(`
+            INSERT INTO package_acquisitions (user_id, package_id, expires_at, source, acquired_at)
+            SELECT id, 'explorer', NULL, 'welcome', created_at
+            FROM users u
+            WHERE NOT EXISTS (
+              SELECT 1 FROM package_acquisitions pa WHERE pa.user_id = u.id
+            )
+            AND NOT (LOWER(u.subscription_status) = 'active' AND u.subscription_plan IS NOT NULL)
+            RETURNING id, user_id
+          `);
+          for (const row of explorerBackfill.rows) {
+            await c.query(
+              `INSERT INTO credit_ledger (user_id, package_acquisition_id, minutes, reason)
+               VALUES ($1, $2, 30, 'migration_backfill')`,
+              [row.user_id, row.id]
+            );
+          }
+          console.log(`[migrate] 021: backfilled ${explorerBackfill.rows.length} existing Explorer user(s) with a welcome acquisition (no behavior change for them)`);
         },
       },
     ];
