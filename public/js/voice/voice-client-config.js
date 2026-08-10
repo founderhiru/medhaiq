@@ -20,7 +20,17 @@
   var VOICE_CLIENT_CONFIG = {
     sttProvider: 'vapi',
     ttsProvider: 'elevenlabseleven_flash_v2.5', // NOT fixed here on purpose -- unused (see grep: nothing reads ttsProvider), and out of this phase's approved scope. Flagging separately rather than bundling an unrequested change.
-    defaultVoice: 'hpp4J3VqNfWAUOO0d1Us', // TEMP TEST 2: "Bella" (premade) -- decisive test for whether this is plan-level API restriction vs voice-specific
+    // Persona-Based Dynamic Voice Profiles, Step 1: defaultVoice (a raw
+    // ElevenLabs voice ID) removed from here entirely -- it was travelling
+    // client -> server on the wire in every synthesize()/prepare() call,
+    // which is exactly the provider leak the Speech Layer redesign closes.
+    // defaultProfile is a NAME only (must match a key in the server-side
+    // config/voice-profiles.js), used solely as the fallback when a
+    // question-page load has no resolvable personaId (e.g. debug-voice.ejs).
+    // The normal path never touches this -- see
+    // public/js/voice/persona-voice-map.js, resolved once per question
+    // page from the real personaId.
+    defaultProfile: 'defaultProfile',
     // Phase 2B: modelId removed. It was dead configuration -- never read by
     // anything (see the ElevenLabs Model Usage Audit) -- and model selection
     // is now server-side only (VOICE_SERVER_CONFIG.ttsModelId), the single

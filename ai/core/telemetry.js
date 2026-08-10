@@ -26,19 +26,32 @@
  */
 
 async function withTelemetry(fn, meta = {}) {
-  const { capability, provider, model } = meta;
+  const { capability, provider, model, onUsage } = meta;
   const startedAt = Date.now();
 
   try {
     const response = await fn();
+    const latencyMs = Date.now() - startedAt;
     logEvent({
       capability,
       provider,
       model,
       success: true,
-      latencyMs: Date.now() - startedAt,
+      latencyMs,
       usage: response && response.usage ? response.usage : undefined,
     });
+    // Additive, optional hook (Phase 2F-A prompt-cache metrics). Only
+    // fires when a caller explicitly passes onUsage in options — every
+    // existing call site is unaffected. Never allowed to throw into the
+    // main response path; a metrics-persistence failure must never
+    // affect interview behavior.
+    if (typeof onUsage === 'function' && response && response.usage) {
+      try {
+        onUsage(response.usage, latencyMs);
+      } catch (hookErr) {
+        console.error('[ai:telemetry] onUsage hook failed:', hookErr.message);
+      }
+    }
     return response;
   } catch (err) {
     logEvent({

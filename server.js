@@ -346,6 +346,7 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
   isFinalQuestion,
   sessionDurationMinutes,
   sessionStartedAtMs,
+  personaId:        persona.id,
   personaName:      persona.name,
   personaTitle:     persona.title + ' @ ' + persona.org,
   personaInitials:  initials,
@@ -874,6 +875,12 @@ runMigrations()
       console.log(`[server] Running on port ${port}`);
       console.log(`[server] NODE_ENV=${process.env.NODE_ENV || 'development'}`);
       console.log(`[server] ANTHROPIC_API_KEY=${process.env.ANTHROPIC_API_KEY ? 'SET ✓' : 'MISSING ✗'}`);
+      // Phase 2F-A visibility — prints once per boot so a deploy can be
+      // confirmed instantly from the log tail, without waiting for an
+      // interview turn. Read-only: does not affect either flag's actual
+      // default behavior (see ai/providers/anthropic.js).
+      console.log(`[server] ANTHROPIC_PROMPT_CACHE=${process.env.ANTHROPIC_PROMPT_CACHE || '(unset, default: enabled)'}`);
+      console.log(`[server] ANTHROPIC_PROMPT_CACHE_DEBUG=${process.env.ANTHROPIC_PROMPT_CACHE_DEBUG || '(unset, default: disabled)'}`);
     });
   })
   .catch(err => {

@@ -2,6 +2,10 @@
 
 
 const { chat, chatJSON } = require('../lib/polsia-ai');
+// Phase 2F-A — prompt cache metrics persistence (additive, instrumentation
+// only). Fire-and-forget from the call sites below; never awaited inline
+// with question generation and never allowed to throw into that path.
+const { recordPromptCacheMetrics } = require('../db/prompt-cache-metrics');
 // ── STAR Engine (Phase 2A extraction, 2026-07-24) ──────────────────────
 // computeStarProgress and its constants moved verbatim to
 // services/star/star-engine.js. STAR_TRIVIAL_RE is required back here
@@ -1459,7 +1463,37 @@ function buildSystemPrompt({
   // down (see composePrompt output below) — Layer 10 intentionally no
   // longer exposes the raw list at all.
 
-  return `[1 · SYSTEM PERSONA]
+  // ── PHASE 2F-A — PROMPT CACHE BOUNDARY ────────────────────────────────────
+  // Split at the end of Layer 7, immediately before Layer 8 begins. Layers
+  // 1-7 are session-stable for the full lifetime of an interview session —
+  // verified by tracing every field back to its source (see audit notes
+  // below) — so this text is byte-identical across every turn of the same
+  // session and is a valid, safe cache prefix. Layers 8+ (history, current
+  // answer, resume context, evaluation directive, competency routing,
+  // calibration blueprint, rules) change every turn and must never be
+  // included in the cached block.
+  //
+  // Verified session-stable (frozen at session INSERT, no UPDATE path
+  // touches these columns — confirmed against every UPDATE interview_sessions
+  // statement in db/interview.js):
+  //   - persona (session.persona_id -> static PERSONAS[] lookup)
+  //   - roleTitle, experienceLevel, orgPreset (session.role_title /
+  //     .experience_level / .org_preset)
+  //   - competencyMatrix (session.competency_matrix — computed once at
+  //     session creation, never recomputed mid-session)
+  //   - jdText (session.jd_text)
+  // Deliberately NOT pulled into the cached prefix even though its source
+  // data is also session-stable: resumeContext/storyLibrary (Layer 10).
+  // Layer 10 sits after the dynamic Layers 8-9 in the existing prompt
+  // ordering — moving it earlier would reorder prompt content, which is a
+  // prompt-construction change outside Phase 2F-A's scope. It stays in the
+  // dynamic (uncached) tail exactly where it already was.
+  //
+  // staticPrompt + dynamicPrompt below concatenates to BYTE-IDENTICAL text
+  // to what this function used to return as a single string — no prompt
+  // content is added, removed, or reordered. Only how it's packaged for
+  // the API (one cacheable block vs one non-cacheable block) changes.
+  const staticPrompt = `[1 · SYSTEM PERSONA]
 ${SYSTEM_PERSONA_CHARTER}
 
 [2 · TARGET ROLE BASELINE]
@@ -1480,7 +1514,9 @@ The weighted top competencies for THIS session (merged from the job description,
 ${matrix}
 
 [7 · RAW JOB DESCRIPTION REFERENCE]
-${jdBlock}
+${jdBlock}`;
+
+  const dynamicPrompt = `
 
 [8 · CONVERSATIONAL HISTORY MATRIX BUFFER]
 Session transcript so far:
@@ -1518,6 +1554,8 @@ Rules:
 ${isFollowup ? `- THIS TURN IS A FOLLOW-UP (does not count toward the 5-question progress counter): deepen the candidate's PREVIOUS answer specifically — reference something they actually said, don't just re-ask the same question in different words. Do not introduce a new competency or a new story. Target 10-18 words — stay flexible and go a bit longer only if the situation genuinely calls for it — ONE focused probe (resistance encountered, a tradeoff made, what they'd change with hindsight, or a specific detail they glossed over). You do not need to re-establish the scenario, it's already on the table. Open naturally with a transition like "Let's stay with that example — ...", "I'm curious about...", "Tell me more about...", or "You mentioned X — what about...". Leave story_key null on a follow-up — the story is already fixed to the primary it's deepening.` : (questionCount > 0 ? `- THIS IS A NEW PRIMARY QUESTION on a fresh competency and, where possible, a fresh story — it counts toward the 5-question progress counter. Open with a brief, natural transition when moving on from a follow-up or shifting topic — a short acknowledgment plus a pivot, e.g. "That's helpful. Let's switch gears — I'd like to ask about your Deloitte work." Don't force a transition if there's nothing to bridge from (e.g. this is only the 2nd question overall); a clean new question is fine too.` : '')}
 ${hasResumeContext ? `- This candidate has a resume on file (Layer 10). Unless you already used a resume anchor in the immediately preceding question, this question SHOULD reference the story selected in the Resume-Aware Question Planning above — do not default to a generic phrasing when a real story fits. That anchor (company, programme, customer, transformation, or measurable achievement) must open the question as its first clause, per the Executive Interviewer Voice contract above — not be mentioned mid-sentence or at the end.` : ''}
 ${questionCount === 0 ? `- This is the OPENING question. Generate a FRESH, session-specific opening question grounded in competency node #1 of layer 6, calibrated to the target role, experience tier, and company context — and to the job description in layer 7 when present. Do NOT use canned or template openings. Style calibration example only — never reuse or lightly reword it: "${openingQ}"` : ''}`;
+
+  return { staticPrompt, dynamicPrompt };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1798,7 +1836,7 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   const calibrationBlueprint = composePrompt({ competency, calibrationState, evidenceProfile, strategy, candidateModel, difficulty, hasResumeContext, isFollowup: !!isFollowup, questionBlueprint });
 
   // 4. Assemble the ordered production prompt (see buildSystemPrompt above)
-  const system = buildSystemPrompt({
+  const { staticPrompt, dynamicPrompt } = buildSystemPrompt({
     persona,
     roleTitle,
     experienceLevel,
@@ -1861,16 +1899,31 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
   // Automated check for "does the actual prompt text contain the resolved
   // story/hook, or not" — answers requirement #7 directly instead of
   // requiring a manual read of the full (very long) system prompt string.
+  const fullSystemForDiagnostics = staticPrompt + dynamicPrompt; // Phase 2F-A: same check as before, just against the two-part text
   if (questionBlueprint && questionBlueprint.story) {
-    console.log('[FINAL-PRE-LLM-CHECK] prompt actually contains story company:', system.includes(questionBlueprint.story.company));
+    console.log('[FINAL-PRE-LLM-CHECK] prompt actually contains story company:', fullSystemForDiagnostics.includes(questionBlueprint.story.company));
     if (questionBlueprint.hook) {
-      console.log('[FINAL-PRE-LLM-CHECK] prompt actually contains hook detail:', system.includes(questionBlueprint.hook.detail));
+      console.log('[FINAL-PRE-LLM-CHECK] prompt actually contains hook detail:', fullSystemForDiagnostics.includes(questionBlueprint.hook.detail));
     }
   } else {
     console.log('[FINAL-PRE-LLM-CHECK] no story in blueprint — nothing to verify, this turn WILL be generic by design');
   }
 
-  let parsed = await chatJSON(prompt, { system: system + jsonSchemaInstruction, maxTokens: 512 });
+  // Phase 2F-A: cache metrics hook — fire-and-forget, never blocks or
+  // throws into question generation. turnLabel matches what the
+  // benchmark script and founder analytics group by.
+  const cacheTurnLabel = isFollowup ? `Q${questionPosition || questionCount}-followup` : `Q${questionPosition || (questionCount + 1)}`;
+  const onUsage = (usage, latencyMs) => {
+    recordPromptCacheMetrics({
+      sessionId,
+      turnLabel: cacheTurnLabel,
+      capability: 'generateNextQuestion',
+      usage,
+      latencyMs,
+    }).catch((e) => console.error('[cache-metrics] persist failed:', e.message));
+  };
+
+  let parsed = await chatJSON(prompt, { system: { static: staticPrompt, dynamic: dynamicPrompt + jsonSchemaInstruction }, maxTokens: 512, onUsage, capability: 'generateNextQuestion' });
   let text = sanitizeQuestionOutput(parsed && parsed.question, competency, roleKey, levelKey);
 
   // Deterministic word-count ceiling — a bit of headroom above the prompt's
@@ -1976,8 +2029,10 @@ async function generateNextQuestion({ sessionId, personaId, roleTitle, experienc
     }
 
     const retryParsed = await chatJSON(prompt, {
-      system: system + jsonSchemaInstruction + '\n\n' + warnings.join('\n\n'),
+      system: { static: staticPrompt, dynamic: dynamicPrompt + jsonSchemaInstruction + '\n\n' + warnings.join('\n\n') },
       maxTokens: 512,
+      onUsage,
+      capability: 'generateNextQuestion',
     });
     text = sanitizeQuestionOutput(retryParsed && retryParsed.question, competency, roleKey, levelKey);
     attempts++;

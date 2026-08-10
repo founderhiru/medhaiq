@@ -64,66 +64,6 @@ const anthropic = new Anthropic({
 // `cache` option as before).
 const PROMPT_CACHE_ENV_ENABLED = process.env.ANTHROPIC_PROMPT_CACHE !== 'false';
 
-// PHASE 2F-A — CACHE BOUNDARY DIAGNOSTIC (2026-08-09):
-// Off by default. Set ANTHROPIC_PROMPT_CACHE_DEBUG=true to log the exact,
-// server-measured token count of the static prefix vs. the dynamic tail
-// for every split-form chatJSON call, using Anthropic's own
-// /v1/messages/count_tokens endpoint (not a local estimate) — so it's
-// directly comparable to the 4,096-token minimum cacheable length Haiku
-// 4.5 requires. Adds 3 extra read-only API calls per turn while enabled;
-// never touches prompt content, never affects the real request. Meant to
-// be turned on for a diagnostic run only, then back off.
-const CACHE_DEBUG_ENABLED = process.env.ANTHROPIC_PROMPT_CACHE_DEBUG === 'true';
-
-async function logCacheBoundaryDiagnostics({ model, system, message, capability }) {
-  if (!CACHE_DEBUG_ENABLED) return;
-  if (!system || typeof system !== 'object' || Array.isArray(system)) return; // only meaningful for the split form
-
-  try {
-    const [staticCount, dynamicCount, messageOnlyCount] = await Promise.all([
-      system.static
-        ? anthropic.messages.countTokens({
-            model,
-            system: [{ type: 'text', text: system.static }],
-            messages: [{ role: 'user', content: message }],
-          })
-        : Promise.resolve({ input_tokens: 0 }),
-      system.dynamic
-        ? anthropic.messages.countTokens({
-            model,
-            system: [{ type: 'text', text: system.dynamic }],
-            messages: [{ role: 'user', content: message }],
-          })
-        : Promise.resolve({ input_tokens: 0 }),
-      // countTokens always counts a full request (system + messages), so
-      // the user message itself is counted in both calls above. Subtract
-      // it once, measured on its own, to isolate the system text alone.
-      anthropic.messages.countTokens({
-        model,
-        messages: [{ role: 'user', content: message }],
-      }),
-    ]);
-
-    const staticPrefixTokens = system.static ? Math.max(0, staticCount.input_tokens - messageOnlyCount.input_tokens) : 0;
-    const dynamicTailTokens = system.dynamic ? Math.max(0, dynamicCount.input_tokens - messageOnlyCount.input_tokens) : 0;
-    const HAIKU_4_5_CACHE_MIN_TOKENS = 4096;
-
-    console.log(
-      `[CACHE-DIAG] capability=${capability || 'n/a'} ` +
-      `static_prefix_tokens=${staticPrefixTokens} ` +
-      `dynamic_tail_tokens=${dynamicTailTokens} ` +
-      `message_only_tokens=${messageOnlyCount.input_tokens} ` +
-      `haiku_4_5_cache_min=${HAIKU_4_5_CACHE_MIN_TOKENS} ` +
-      `meets_threshold=${staticPrefixTokens >= HAIKU_4_5_CACHE_MIN_TOKENS}`
-    );
-  } catch (err) {
-    // Diagnostic-only — must never affect the real request or throw
-    // upstream. Errors here (e.g. count_tokens rate limit) are logged and
-    // swallowed.
-    console.error('[CACHE-DIAG] countTokens diagnostic failed (real request unaffected):', err.message);
-  }
-}
-
 function buildSystemBlock(systemText, cacheEnabled) {
   const shouldCache = !!cacheEnabled && PROMPT_CACHE_ENV_ENABLED;
 
@@ -211,11 +151,6 @@ async function chatJSON(message, options = {}) {
   const systemPrompt = (system && typeof system === 'object' && !Array.isArray(system))
     ? { static: system.static || '', dynamic: `${system.dynamic || ''}${JSON_INSTRUCTION}` }
     : `${system}${JSON_INSTRUCTION}`;
-
-  // Diagnostic-only, fire-and-forget — never blocks or delays the real
-  // call. Measures exactly what's being sent (systemPrompt, post
-  // JSON_INSTRUCTION), not the raw input.
-  logCacheBoundaryDiagnostics({ model, system: systemPrompt, message, capability });
 
   const call = () =>
     anthropic.messages.create({
