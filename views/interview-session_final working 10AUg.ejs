@@ -1134,14 +1134,8 @@
             // backend's actual completion decision (e.g. during a
             // Leadership Executive Extension).
             var isFinalQuestion = CURRENT_QUESTION_IS_FINAL;
-            // 2026-08-10: final-question SKIP now gets its own wording --
-            // previously identical to the final-question ANSWER case
-            // below ("That's the final question..."), which meant a
-            // skipped/passed final question still sounded like a normal
-            // completion. Matches the same canonical skip-closing string
-            // used server-side (routes/interview.js's finalizeSessionAndRespond).
             var ackText = isFinalQuestion
-              ? "No problem. That completes the interview. I'll now prepare your report."
+              ? "That's the final question. I'll prepare your report now."
               : pickSkipAcknowledgement();
             // TEMPORARY DEBUG FIELD (ElevenLabs usage investigation):
             // 'reason' is pure diagnostic metadata for the console logs
@@ -1157,10 +1151,8 @@
           // answer also deserves the wrap-up rather than "Got it."
           try {
             var _isFinalAnswer = CURRENT_QUESTION_IS_FINAL; // see isFinalQuestion above — same direct read, same reasoning
-            // 2026-08-10: matches the canonical answer-closing string
-            // used server-side (routes/interview.js's finalizeSessionAndRespond).
             var _answerAckText = _isFinalAnswer
-              ? "Thank you. That completes your interview. I'll now prepare your report."
+              ? "That's the final question. I'll prepare your report now."
               : pickAnswerAcknowledgement();
             window.questionSpeechService.speak({ text: _answerAckText, questionId: 'answer-ack', turnId: null, reason: _isFinalAnswer ? 'closing' : 'acknowledgement' });
           } catch (e) { console.warn('[VoicePipeline] answer acknowledgement failed (non-fatal):', e); }
@@ -1272,26 +1264,6 @@
           setTimeout(_redirectNow, 15000); // safety backstop -- should not normally fire
         }
       } else {
-        // 2026-08-10: the closing text (data.text, now populated by
-        // routes/interview.js's finalizeSessionAndRespond -- previously
-        // always null) is spoken here via the SAME single entry point
-        // every other question already uses (InterviewVoiceController.
-        // notify() -- Invariant 3, see MedhaIQSync.hold() above and the
-        // Q1/reconnect greetings further down, both of which call this
-        // exact function directly for the same reason: no on-screen
-        // "next question" card applies here, so hold() itself -- which
-        // also calls showQuestion() -- is not used). Previously this
-        // branch called nothing at all: the fixed delay below existed
-        // (sized for "Vapi to say goodbye" per the comment above) but
-        // nothing was ever asked to say it. No new mechanism, no new
-        // timing -- same delay, same redirect, now with the one call
-        // that actually makes use of the wait.
-        try {
-          var _vc = window.InterviewVoiceController;
-          if (_vc && _vc.isLive && _vc.isLive() && data.text) {
-            _vc.notify({ questionId: null, text: data.text, turnId: data.turnId, wasSkipped: !!data.wasSkipped });
-          }
-        } catch (e) { console.warn('[Vapi] closing speech failed (non-fatal):', e); }
         // Legacy path: unchanged fixed-delay behavior.
         var redirectDelay = window.MedhaIQVoiceLive ? 5500 : 2200;
         setTimeout(function(){ window.location.href='/interview/report/'+data.reportId; }, redirectDelay);
