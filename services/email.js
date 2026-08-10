@@ -52,6 +52,36 @@ async function sendMagicLinkEmail(toEmail, magicUrl) {
   await _send({ to: toEmail, subject, html });
 }
 
+/* ── Email verification (password signup → Welcome Offer) ───────────────── */
+// Reuses the same token (routes/auth.js's /auth/verify) and the exact
+// same styling as the sign-in email above — this is deliberately a
+// SIBLING function, not a shared template, so the sign-in email's copy
+// (used on every subsequent login) is never touched by this. Only fires
+// once, right after password-based signup.
+async function sendVerificationEmail(toEmail, verifyUrl) {
+  const subject = 'Verify your email — activate your MedhaIQ account';
+  const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>${subject}</title></head>
+<body style="margin:0;padding:0;background:#0A0F1E;font-family:'Inter',system-ui,sans-serif;">
+  <div style="max-width:480px;margin:40px auto;background:#111827;border-radius:16px;overflow:hidden;border:1px solid #1E3A6E;">
+    <div style="background:#1E40AF;padding:32px 40px;">
+      <h1 style="color:#fff;margin:0;font-size:24px;font-weight:700;letter-spacing:-0.3px;">MedhaIQ</h1>
+    </div>
+    <div style="padding:40px;">
+      <h2 style="color:#F9FAFB;margin:0 0 16px;font-size:20px;font-weight:600;">Verify your email to activate your account</h2>
+      <p style="color:#94A3B8;margin:0 0 32px;font-size:15px;line-height:1.6;">Click the button below to verify your email and receive your 30 Welcome AI Minutes. This link expires in 24 hours.</p>
+      <a href="${verifyUrl}" style="display:inline-block;background:#3B82F6;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:600;letter-spacing:-0.2px;">Verify Email &amp; Activate Account</a>
+      <p style="color:#64748B;margin:32px 0 8px;font-size:13px;">Or copy this link into your browser:</p>
+      <p style="color:#3B82F6;margin:0;font-size:13px;word-break:break-all;line-height:1.5;">${verifyUrl}</p>
+    </div>
+    <div style="padding:24px 40px;border-top:1px solid #1F2937;">
+      <p style="color:#475569;margin:0;font-size:12px;">If you did not create this account, you can safely ignore this email.</p>
+    </div>
+  </div>
+</body></html>`;
+  await _send({ to: toEmail, subject, html });
+}
+
 /* ── Career Intelligence Report email ───────────────────────────────────── */
 async function sendInterviewReportEmail({
   toEmail, userName, reportId,
@@ -158,4 +188,4 @@ async function sendInterviewReportEmail({
   await _send({ to: toEmail, subject, html });
 }
 
-module.exports = { sendMagicLinkEmail, sendInterviewReportEmail };
+module.exports = { sendMagicLinkEmail, sendVerificationEmail, sendInterviewReportEmail };

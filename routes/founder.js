@@ -13,6 +13,11 @@ const { listUsers, createUserAsFounder } = require('../db/founder-users');
 const { reassignPackage } = require('../db/package-acquisitions');
 const { PRODUCT_PACKAGES } = require('../config/product-packages');
 const { createInvitation } = require('../db/invitations');
+// Anti-Abuse & Free-Offer Guardrail — lightweight visibility only, per
+// spec ("do not build a large fraud dashboard"). The 3 headline counters
+// are merged into /overview (db/founder-stats.js); this drill-down route
+// is the only genuinely new endpoint here.
+const { getRecentRestrictedClaims } = require('../db/free-offer-claims');
 
 // Same shape as requireAuth in routes/dashboard.js, plus a founder check.
 // Never trusts anything from the client except the cookie's user id —
@@ -36,6 +41,19 @@ router.get('/overview', requireFounder, async (_req, res) => {
   } catch (err) {
     console.error('[founder] overview error:', err);
     return res.status(500).json({ error: 'Failed to load overview stats' });
+  }
+});
+
+// GET /api/founder/free-offer-claims — "why was this restricted" drill-
+// down, most recent first, capped at 20 (no pagination — lightweight per
+// spec, not a full fraud dashboard).
+router.get('/free-offer-claims', requireFounder, async (_req, res) => {
+  try {
+    const claims = await getRecentRestrictedClaims(20);
+    return res.json({ claims });
+  } catch (err) {
+    console.error('[founder] free-offer-claims error:', err);
+    return res.status(500).json({ error: 'Failed to load restricted claims' });
   }
 });
 

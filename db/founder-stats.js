@@ -2,8 +2,13 @@
 // Read-only aggregate queries for the Founder Dashboard. Never writes.
 // Reuses existing tables only — no new tables besides founder_access.
 const { pool } = require('./index');
+// Anti-Abuse & Free-Offer Guardrail — merged into this same KPI object
+// (rather than a separate dashboard section) so the 3 new counters reuse
+// the existing config-driven kpiConfig array, fetch, and auto-refresh in
+// views/founder-dashboard.ejs with zero new front-end code.
+const { getFreeOfferOverview } = require('./free-offer-claims');
 
-// Section 1 — Executive Snapshot (6 KPI cards).
+// Section 1 — Executive Snapshot (6 KPI cards + 3 free-offer guardrail counters).
 async function getOverviewStats() {
   const [
     totalUsers,
@@ -12,6 +17,7 @@ async function getOverviewStats() {
     paidSubscribers,
     interviewsCompleted,
     reportsGenerated,
+    freeOffer,
   ] = await Promise.all([
     pool.query('SELECT COUNT(*)::int AS count FROM users'),
     pool.query(
@@ -30,6 +36,7 @@ async function getOverviewStats() {
       `SELECT COUNT(*)::int AS count FROM interview_sessions WHERE status = 'completed'`
     ),
     pool.query('SELECT COUNT(*)::int AS count FROM interview_reports'),
+    getFreeOfferOverview(),
   ]);
 
   return {
@@ -39,6 +46,9 @@ async function getOverviewStats() {
     paidSubscribers: paidSubscribers.rows[0].count,
     interviewsCompleted: interviewsCompleted.rows[0].count,
     reportsGenerated: reportsGenerated.rows[0].count,
+    welcomeOffersGranted: freeOffer.welcomeOffersGranted,
+    restrictedClaims: freeOffer.restrictedClaims,
+    suspiciousDevices: freeOffer.suspiciousDevices,
   };
 }
 
