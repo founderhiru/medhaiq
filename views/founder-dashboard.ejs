@@ -10,6 +10,14 @@ const kpiConfig = [
   { key: 'paidSubscribers', title: 'Paid Subscribers', icon: 'check', accent: 'gold' },
   { key: 'interviewsCompleted', title: 'Interviews Completed', icon: 'mic', accent: 'purple' },
   { key: 'reportsGenerated', title: 'Reports Generated', icon: 'document', accent: 'indigo' },
+  // Anti-Abuse & Free-Offer Guardrail — lightweight visibility per spec
+  // ("do not build a large fraud dashboard"): 3 more entries in this same
+  // array, backed by db/founder-stats.js's getOverviewStats() merging in
+  // db/free-offer-claims.js's getFreeOfferOverview(). No new fetch, no
+  // new refresh logic, no new layout — this array is the whole change.
+  { key: 'welcomeOffersGranted', title: 'Welcome Offers Granted', icon: 'sparkle', accent: 'green' },
+  { key: 'restrictedClaims', title: 'Restricted Claims', icon: 'check', accent: 'gold' },
+  { key: 'suspiciousDevices', title: 'Suspicious Devices', icon: 'person', accent: 'purple' },
 ];
 const _stats = typeof stats !== 'undefined' && stats ? stats : {};
 const _activity = typeof activity !== 'undefined' && activity ? activity : [];

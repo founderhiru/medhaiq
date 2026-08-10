@@ -20,6 +20,10 @@ const express = require('express');
 const router = express.Router();
 const { Readable } = require('stream');
 const { requireAuth } = require('../middleware/guards');
+// Anti-Abuse & Free-Offer Guardrail — applied to the two initialization
+// endpoints only, never to /stream/:token (the actual audio GET, which
+// fires continuously during playback and must never be throttled).
+const { voiceInitLimiter } = require('../middleware/rate-limit');
 const { synthesizeViaElevenLabs, prepareStream, streamViaElevenLabsToken } = require('../services/voice-tts-proxy');
 
 const ERROR_STATUS_BY_CODE = {
@@ -36,7 +40,7 @@ const ERROR_STATUS_BY_CODE = {
   TOKEN_FORBIDDEN: 403,
 };
 
-router.post('/synthesize', requireAuth, async (req, res) => {
+router.post('/synthesize', voiceInitLimiter, requireAuth, async (req, res) => {
   // Persona-Based Dynamic Voice Profiles, Step 1: the request now carries
   // voiceProfile (a provider-agnostic name, e.g. 'alex') instead of a raw
   // provider voice ID. Resolution to an actual ElevenLabs ID happens
@@ -63,7 +67,7 @@ router.post('/synthesize', requireAuth, async (req, res) => {
 // full rationale. In short: the question TEXT travels here, in a POST body,
 // exactly like the existing /synthesize route above -- never in a URL.
 // Only an opaque, single-use, short-lived token is ever exposed via GET.
-router.post('/synthesize/prepare', requireAuth, async (req, res) => {
+router.post('/synthesize/prepare', voiceInitLimiter, requireAuth, async (req, res) => {
   const { text, voiceProfile, language } = req.body || {};
 
   if (!text || typeof text !== 'string') {
