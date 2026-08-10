@@ -45,6 +45,9 @@ const sessionController = require('../controllers/sessionController');
 // requireAuth + requireInterviewEntitlement now live in middleware/guards.js
 // — single shared implementation built on the Capability Engine.
 const { requireAuth, requireInterviewEntitlement } = require('../middleware/guards');
+// Anti-Abuse & Free-Offer Guardrail — burst protection on session START
+// only (never on in-progress endpoints: answer/heartbeat/next-question).
+const { interviewStartLimiter } = require('../middleware/rate-limit');
 // Discovery Profile (Phase 2, additive) — decides ONLY whether Discovery or
 // the existing generateNextQuestion() supplies the next question on turn
 // 2+. Never modifies, wraps, or duplicates generateNextQuestion() itself.
@@ -82,8 +85,8 @@ const IDLE_TIMEOUT_MINUTES = 10;
 // creation if the user already has an active session (409) or has
 // exhausted their plan's interview minutes (403) — the action-level gate
 // per spec Section 5, not a page-level one.
-router.post('/sessions', requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
-router.post('/session/initialize', requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
+router.post('/sessions', interviewStartLimiter, requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
+router.post('/session/initialize', interviewStartLimiter, requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
 
 // ── Primary vs follow-up question type helper ───────────────────────────────
 // 'opening' and 'primary' are the current values; 'drill_down' is the legacy
