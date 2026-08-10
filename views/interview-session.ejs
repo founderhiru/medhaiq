@@ -1004,6 +1004,24 @@
     logStarDetection(this.value, 'typed');
   });
 
+  // Enter-to-submit (regression fix, restored 2026-08-11 — this exact
+  // listener was deleted whole by an unrelated commit and never
+  // restored). Shift+Enter still inserts a newline. Shift+Enter is
+  // native textarea behavior already; only plain Enter needs
+  // intercepting. Reuses window.MedhaIQ_requestSubmit(), the exact same
+  // entry point voice auto-submit already calls (see
+  // CandidateTurnComplete handler below) — submitAnswer() itself is not
+  // touched by this listener.
+  answerInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      var _btn = document.getElementById('submitBtn');
+      if (_btn && !_btn.disabled && typeof window.MedhaIQ_requestSubmit === 'function') {
+        window.MedhaIQ_requestSubmit();
+      }
+    }
+  });
+
   // TEMPORARY INSTRUMENTATION (Priority 0.5 validation request) --
   // remove after validation is complete. Logs exactly the requested
   // fields for every significant transcript update. "Confidence" is
@@ -1994,7 +2012,7 @@
     window.questionSpeechService.onFinished(function () {
       slog('[LIFECYCLE-TRACE] QuestionSpeechService onFinished fired at ' + Date.now(), 'info');
       window.aiIsSpeaking = false;
-      sub.textContent = 'Your turn — speak clearly';
+      sub.textContent = '🎤 Click mic to speak';
       if (currentSpokenTurnId) slog('[turn-trace] TURN_ID='+currentSpokenTurnId+' Speech finished: QuestionId='+currentSpokenQuestionId, 'info');
       InterviewVoiceController.onSpeechEnd();
       if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.unlockInput();
