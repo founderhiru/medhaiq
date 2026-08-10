@@ -12,6 +12,7 @@
 // called from signup itself, and never trusts anything the client sends.
 const { createPackageAcquisition } = require('../db/package-acquisitions');
 const { assessWelcomeOfferRisk, recordFreeOfferClaim } = require('../db/free-offer-claims');
+const { isFounder } = require('../db/founder-access');
 const { PRODUCT_PACKAGES } = require('../config/product-packages');
 
 const WELCOME_MINUTES = PRODUCT_PACKAGES.explorer.entitlements.includedMinutes;
@@ -23,10 +24,23 @@ const WELCOME_MINUTES = PRODUCT_PACKAGES.explorer.entitlements.includedMinutes;
  * guarantee; the checks here just avoid a wasted query/insert attempt
  * and produce a clean, specific result for logging.
  *
+ * Founder accounts (founder_access table — a completely separate RBAC
+ * concern, untouched by this) are exempt from the device/IP risk check
+ * below: founders are the ones most likely to test repeatedly from the
+ * same browser, which would otherwise trip the device signal on their
+ * own account. They are NOT exempt from the one-per-account idempotency
+ * guarantee — that unique index applies unconditionally to every user,
+ * founders included, since "one-time" is a promotional-integrity rule,
+ * not an abuse-signal one.
+ *
  * @returns {Promise<{granted: boolean, reason: string|null}>}
  */
 async function grantWelcomeOfferIfEligible({ userId, deviceHash, ipHash }) {
-  const risk = await assessWelcomeOfferRisk({ deviceHash, ipHash });
+  const founder = await isFounder(userId);
+  const risk = founder
+    ? { suspicious: false, reason: null }
+    : await assessWelcomeOfferRisk({ deviceHash, ipHash });
+
   if (risk.suspicious) {
     // Restricted, not blocked: the account still exists and still works
     // (per spec — never auto-delete/suspend on a promotional-eligibility
