@@ -1738,26 +1738,23 @@
 
   var STATES={ IDLE:'IDLE',REQUESTING:'REQUESTING',CONNECTING:'CONNECTING',LIVE:'LIVE',STOPPING:'STOPPING' };
 
-  // ROOT CAUSE FIX (P0 "navigating back generates Question 6"): the
-  // backend's session.status !== 'active' guard (routes/interview.js)
-  // is already correct and rejects any stray request against a
-  // completed session -- confirmed directly in that file, not touched
-  // here. The actual mechanism is the browser's back-forward cache
-  // (bfcache): navigating back can restore this EXACT page's prior,
-  // pre-completion JS state (mic still "live", question 5 still
-  // showing as current) without a fresh network request at all. Any
-  // client-side event firing against that stale state (e.g. a lingering
-  // Vapi connection, or the auto-submit-on-speech-start behavior)
-  // reaches a session the backend has already ended. This uses the
-  // browser's native pageshow/persisted event -- not a timer or poll --
-  // to detect exactly that restore and force a genuinely fresh page
-  // load instead of resuming stale state.
-  window.addEventListener('pageshow', function (event) {
-    if (event.persisted) {
-      console.log('[BFCACHE] page restored from back-forward cache -- forcing reload to avoid resuming a stale, possibly-completed session state');
-      window.location.reload();
-    }
-  });
+  // 2026-08-11 fix: removed a second, competing pageshow/persisted
+  // handler that lived here (unconditional window.location.reload()
+  // with no session-status check). It raced against the earlier,
+  // heartbeat-verified pageshow handler (see ~line 533, "bfcache-
+  // restored ended session (2026-08-10 fix)") and, because that
+  // handler's fetch() is async while this one's reload() was
+  // synchronous, this one usually won the race and tore the page down
+  // before the verified check ever got to run -- reproducing exactly
+  // the "Back restores an old question, Skip then 400s" bug even
+  // though the correct fix was already present earlier in this same
+  // file. The single, authoritative handler at ~line 533 already
+  // covers this case (checks the live session status via the existing
+  // /heartbeat endpoint, disables controls, and redirects to the
+  // report -- no blind reload involved). server.js's GET route for
+  // this page also independently redirects on session.status !==
+  // 'active' for the general fresh-navigation case, so removing this
+  // duplicate loses no coverage, only the race.
   var state=STATES.IDLE, vapi=null;
   var assistantTranscriptBuf = '';
   window.aiIsSpeaking = false; // true between vapi 'speech-start' and 'speech-end' — guards verbal skip/submit commands. Genuine global (not a bare var) because submitAnswer(), in a separate sibling IIFE, needs to read this too (see Item 3 fix).
