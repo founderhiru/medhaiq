@@ -515,37 +515,6 @@
   sendHeartbeat();
   var heartbeatInt = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS);
 
-  /* ── bfcache-restored ended session (2026-08-10 fix) ──
-     Browser Back can restore this exact page (with its stale JS state)
-     from bfcache after the session already ended and the page navigated
-     to /interview/report/. Detected via pageshow's event.persisted --
-     the standard, purpose-built signal for exactly this case, not a new
-     mechanism. On a persisted restore, reuse the EXISTING heartbeat
-     endpoint (already polled every 60s elsewhere in this file, fire-
-     and-forget) to ask the server directly whether this session is
-     still active -- the server-side check (routes/interview.js,
-     checkSessionActiveAndNotIdle) is untouched, we're just reading its
-     existing 400 response here instead of ignoring it. If inactive,
-     disable the controls and redirect via the exact same URL pattern
-     already used by a normal session end (reportId === SID, see
-     routes/interview.js's finalizeSessionAndRespond) -- no new
-     endpoint, no new destination. */
-  window.addEventListener('pageshow', function (event) {
-    if (!event.persisted) return; // normal load/navigation -- not a bfcache restore, nothing to check
-    fetch('/api/interview/sessions/' + SID + '/heartbeat', { method: 'POST' })
-      .then(function (resp) {
-        if (resp.status === 400) {
-          var _submitBtn = document.getElementById('submitBtn');
-          var _skipBtn = document.getElementById('skipBtn');
-          if (_submitBtn) _submitBtn.disabled = true;
-          if (_skipBtn) _skipBtn.disabled = true;
-          isSubmitting = true; // belt-and-suspenders: also blocks submitAnswer() directly if anything else fires first
-          window.location.href = '/interview/report/' + SID;
-        }
-      })
-      .catch(function (e) { console.warn('[pageshow] session-status check failed (non-fatal):', e); });
-  });
-
   /* Browser-closing signal: sent via sendBeacon (works reliably during
      page unload, unlike a normal fetch which browsers may cancel) so a
      candidate closing the tab mid-interview is recorded with a specific,
@@ -1058,21 +1027,8 @@
     });
   }
 
-  document.getElementById('submitBtn').addEventListener('click', function(){
-    // 2026-08-10 fix: manual clicks previously never armed this guard --
-    // only the auto-submit (CandidateTurnComplete) and spoken-command
-    // paths did. Same guard, same assignment already used in both of
-    // those call sites (see window._turnClosedForQuestionId elsewhere in
-    // this file) -- just extended to cover a manual click too, so a late
-    // transcript fragment for this question is discarded same as it
-    // already is for the other two trigger paths.
-    window._turnClosedForQuestionId = QID;
-    submitAnswer(false);
-  });
-  document.getElementById('skipBtn').addEventListener('click', function(){
-    window._turnClosedForQuestionId = QID;
-    submitAnswer(true);
-  });
+  document.getElementById('submitBtn').addEventListener('click', function(){ submitAnswer(false); });
+  document.getElementById('skipBtn').addEventListener('click', function(){ submitAnswer(true); });
 
   /* Hard re-entrancy guard. Previously only submitBtn was disabled while a
      request was in flight — skipBtn had no lock at all, so an impatient
@@ -1398,18 +1354,8 @@
       document.getElementById('skipBtn').disabled = false;
       alert('Error: '+err.message);
     } finally {
-      // 2026-08-10 fix: previously reset unconditionally, which silently
-      // undid the sessionEnded branch's own intent above ("isSubmitting
-      // intentionally stays true — page is navigating away") — finally
-      // always runs after a return in try, so that comment was never
-      // actually true. data is declared with var inside the try block
-      // above, so it's safely readable here via normal hoisting (it's
-      // simply undefined if the fetch itself threw before assignment,
-      // which correctly falls through to the original reset below).
-      if (!(typeof data !== 'undefined' && data && data.sessionEnded)) {
-        isSubmitting = false;
-        document.getElementById('skipBtn').disabled = false;
-      }
+      isSubmitting = false;
+      document.getElementById('skipBtn').disabled = false;
     }
   }
 
