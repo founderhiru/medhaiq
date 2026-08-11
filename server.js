@@ -421,17 +421,54 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
     const report = await loadAuthorizedReport(req.params.id, req.user);
     if (!report) return res.status(404).send('Report not found');
 
-    const { getSessionScores } = require('./db/interview');
+    const { getSessionScores, getSessionQuestions } = require('./db/interview');
 
     const { PERSONAS } = require('./services/interview');
+    const { buildCareerIntelligenceReport } = require('./lib/career-intelligence-report');
     const persona = PERSONAS[report.persona_id] || PERSONAS.alex_chen;
     const scoresData = await getSessionScores(req.params.id);
+    // Added for Step 3 (docs/MEDHAIQ_REPORTING_DESIGN_V1.md) — the canonical
+    // builder needs questions for its STAR/questionEvidence computation
+    // even though this route's template doesn't render those sections yet.
+    // Same query the PDF route already runs; not a new data source.
+    const questions = await getSessionQuestions(req.params.id);
 
-    const avg = (key) => scoresData.length
-      ? scoresData.reduce((s, x) => s + parseFloat(x[key] || 0), 0) / scoresData.length : 0;
+    // ── Canonical Career Intelligence Report (Step 3) — single source for
+    // the five vectors, replacing the route-local avg() that was previously
+    // duplicated here and in the PDF route (see docs/MEDHAIQ_REPORTING_DESIGN_V1.md
+    // §1/§9 for why that divergence existed). No AI call, no scoring change.
+    const cir = buildCareerIntelligenceReport({ report, scoresData, questions, persona });
+
+    // Legacy variable names preserved on purpose — the template's
+    // scoreboardRows array (views/interview-report.ejs) already builds
+    // its five rows from exactly these names with the correct locked
+    // labels (Structure/Domain Expertise/Strategic Thinking/Communication/
+    // Leadership & Execution); only the SOURCE of the numbers changed,
+    // from a route-local avg() recompute to the canonical builder's
+    // fiveVectors. No template edit required.
+    const starAvg = cir.fiveVectors.structure;
+    const technicalAvg = cir.fiveVectors.domainExpertise;
+    const executiveAvg = cir.fiveVectors.strategicThinking;
+    const gccAvg = cir.fiveVectors.leadershipExecution;
+    const frictionAvg = cir.fiveVectors.communication;
 
     const circumference = 2 * Math.PI * 60;
     const circumferenceOffset = circumference - ((report.overall_score || 0) / 100) * circumference;
+
+    // STEP 3 SCOPE NOTE: report.improvements_json (Section 5, "Top 3
+    // Development Priorities" in views/interview-report.ejs) is
+    // intentionally NOT swapped to cir.developmentPriorities in this step.
+    // Per the locked Decision 1 (docs/MEDHAIQ_REPORTING_DESIGN_V1.md),
+    // canonical developmentPriorities should derive from the five vectors
+    // "combined with the existing improvement/coaching narrative where
+    // appropriate" — that combination is a content decision, not a pure
+    // data-source consolidation, and Step 3 is explicitly scoped to
+    // consolidation only ("do not redesign the Web Report UI... do not
+    // change the existing visual layout"). report.improvements_json is
+    // real, populated AI content (unlike the PDF's dead vector_breakdown
+    // path) — swapping it would change what the candidate sees, not just
+    // where the number comes from. Left as-is; flagged for an explicit
+    // decision, not made silently.
 
     res.render('interview-report', {
       report,
@@ -442,11 +479,11 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
       formattedDate: new Date(report.created_at || report.started_at).toLocaleDateString('en-US', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
       }),
-      starAvg: avg('star_score'),
-      technicalAvg: avg('technical_depth'),
-      executiveAvg: avg('executive_presence'),
-      gccAvg: avg('gcc_readiness'),
-      frictionAvg: avg('core_friction'),
+      starAvg,
+      technicalAvg,
+      executiveAvg,
+      gccAvg,
+      frictionAvg,
       circumference,
       circumferenceOffset,
     });
@@ -488,8 +525,9 @@ function renderView(view, data) {
 app.get('/interview/report/:id/pdf', requireAuthPage, async (req, res) => {
   try {
     const { getSessionScores, getSessionQuestions } = require('./db/interview');
-    const { PERSONAS, computeStarProgress } = require('./services/interview');
+    const { PERSONAS } = require('./services/interview');
     const { renderReportPdf } = require('./services/pdf-report');
+    const { buildCareerIntelligenceReport } = require('./lib/career-intelligence-report');
 
     const report = await loadAuthorizedReport(req.params.id, req.user);
     if (!report) return res.status(404).send('Report not found');
@@ -498,39 +536,81 @@ app.get('/interview/report/:id/pdf', requireAuthPage, async (req, res) => {
     const scoresData = await getSessionScores(req.params.id);
     const questions = await getSessionQuestions(req.params.id);
 
-    const avg = (key) => scoresData.length
-      ? scoresData.reduce((s, x) => s + parseFloat(x[key] || 0), 0) / scoresData.length : 0;
+    // ── Canonical Career Intelligence Report (Step 2A, see
+    // docs/MEDHAIQ_REPORTING_DESIGN_V1.md) — single source for the five
+    // vectors, STAR intelligence, and question evidence below. Replaces the
+    // local avg()/computeStarProgress()/qaCards logic that used to be
+    // duplicated here (and separately in the web report route, and again
+    // via a third AI-generated path in the email scoreboard — see the
+    // design doc §1/§9 for why that divergence existed). No AI call, no DB
+    // call, no scoring change — see lib/career-intelligence-report.js
+    // header for the full list of what this function does NOT do.
+    const cir = buildCareerIntelligenceReport({ report, scoresData, questions, persona });
 
-    const starAvg = avg('star_score');
-    const technicalAvg = avg('technical_depth');
-    const executiveAvg = avg('executive_presence');
-    const gccAvg = avg('gcc_readiness');
-    const frictionAvg = avg('core_friction');
+    // Legacy variable names preserved on purpose so the radar geometry,
+    // STAR ring markup, and threshold labels further down (and in the
+    // template) are untouched — only the SOURCE of these five numbers
+    // changed, from a route-local avg() recompute to the canonical
+    // builder's fiveVectors, not their names, order, or values. Order here
+    // must stay Structure/Technical/Executive/GCC/Communication to match
+    // buildRadarPolygon()'s point order and the SVG's fixed axis labels.
+    const starAvg = cir.fiveVectors.structure;
+    const technicalAvg = cir.fiveVectors.domainExpertise;
+    const executiveAvg = cir.fiveVectors.strategicThinking;
+    const gccAvg = cir.fiveVectors.leadershipExecution;
+    const frictionAvg = cir.fiveVectors.communication;
 
     const radar = buildRadarPolygon([starAvg, technicalAvg, executiveAvg, gccAvg, frictionAvg]);
 
-    const scoreByQuestionId = new Map(scoresData.map(s => [s.question_id, s]));
-    const qaCards = questions
-      .filter(q => q.answer_text !== null && q.answer_text !== undefined)
-      .map((q, i) => ({
-        index: i + 1,
-        questionText: q.question_text,
-        scores: scoreByQuestionId.get(q.id) || null,
-      }));
+    // Question evidence — now the canonical builder's questionEvidence[]
+    // instead of a route-local scoreByQuestionId Map. Same answered-only
+    // filter, same per-question numbers; see the qa-table template edit for
+    // the corresponding field-name change (qa.scores.star_score →
+    // qa.vectors.structure, etc. — values unchanged, only the property
+    // names moved to the canonical object's shape).
+    const qaCards = cir.questionEvidence;
 
-    // Deterministic thresholds, not stored fields — adjust here if you
-    // want different cutoffs. Documented in the template too.
+    // Deterministic thresholds, not stored fields — unchanged logic,
+    // now reading the canonical five-vector values instead of local avg()
+    // vars of the same name.
     const promotionReadiness  = report.overall_score >= 80 ? 'High' : report.overall_score >= 60 ? 'Medium' : 'Low';
     const leadershipPotential = executiveAvg >= 80 ? 'Strong' : executiveAvg >= 60 ? 'Developing' : 'Emerging';
     const confidenceLevel     = frictionAvg >= 80 ? 'High' : frictionAvg >= 55 ? 'Medium' : 'Low';
 
-    const nextSteps = Array.isArray(report.next_steps_json) ? report.next_steps_json : [];
+    // Career roadmap — now sourced from the canonical builder. Same
+    // underlying report.next_steps_json value; cir.careerRoadmap is a
+    // pass-through (via safeParse), not a recalculation.
+    const nextSteps = cir.careerRoadmap;
 
     // scoreboard may come back already-parsed (JSONB column) or as a raw
     // string (TEXT column) depending on your actual DB schema — this
     // repo's migrations file doesn't show how the scoreboard/executive_
     // summary/etc columns were added (only the original 4-column table is
     // present), so handling both defensively rather than assuming.
+    //
+    // STEP 2A SCOPE NOTE — read before touching this block: scoreboard.
+    // vector_breakdown is intentionally NOT part of the canonical
+    // CareerIntelligenceReport (see docs/MEDHAIQ_REPORTING_DESIGN_V1.md
+    // §3 — scoreboard's numeric fields are retired as a source; this
+    // narrative array was never in that field list either). It is left
+    // wired exactly as it was before this change, because:
+    //   (a) REPORT_SYSTEM (services/interview.js) does not currently
+    //       instruct the AI to return a vector_breakdown field at all, so
+    //       this array is empty for every session today — confirmed by
+    //       reading the prompt, not assumed from session 226 alone.
+    //   (b) Consequently "Top 3 Strengths" / "Development Areas" / "Next
+    //       Recommended Practice Focus" on this PDF render empty for every
+    //       session already, independent of this reporting-consolidation
+    //       project — this is a pre-existing content gap, not something
+    //       introduced here.
+    //   (c) Switching these three sections to the canonical builder's
+    //       cir.strengths / cir.developmentPriorities ranking (which IS
+    //       populated, since it only depends on interview_scores, not
+    //       scoreboard) would change this PDF's visible output — from
+    //       blank to populated — which is a content change, not a pure
+    //       data-consolidation change, and is explicitly out of scope for
+    //       Step 2A ("preserve current PDF content"). Left as a flagged
+    //       decision, not made silently.
     let scoreboard = report.scoreboard || {};
     if (typeof scoreboard === 'string') {
       try { scoreboard = JSON.parse(scoreboard); } catch (e) { scoreboard = {}; }
@@ -540,25 +620,8 @@ app.get('/interview/report/:id/pdf', requireAuthPage, async (req, res) => {
     const evidenceMaturity = scoreboard.evidence_maturity || null;
     const leadershipReadiness = scoreboard.leadership_readiness;
 
-    // ── STAR Assessment — reuses computeStarProgress() EXACTLY as the live
-    // interview does (same function, same regex patterns, same order), just
-    // called again at report time on the stored answer text. Per-question
-    // star_components were never persisted (a pre-existing gap, not a new
-    // one), so this recomputes the keyword-detection half of that same
-    // function rather than inventing a different STAR representation.
-    const answeredQs = questions.filter(q => q.answer_text !== null && q.answer_text !== undefined);
-    const starResults = answeredQs.map(q => computeStarProgress(q.answer_text));
-    const starCounts = { situation: 0, task: 0, action: 0, result: 0 };
-    starResults.forEach(r => { ['situation', 'task', 'action', 'result'].forEach(k => { if (r[k]) starCounts[k]++; }); });
-    const starTotal = starResults.length;
-
-    // ── Top 3 Strengths / Development Areas — ranked from the real 5-vector
-    // scores + the real vector_breakdown text (no new AI call, no
-    // fabrication). NOTE: report.strengths_json and report.improvements_json
-    // both derive from the same underlying "priorities" array in
-    // generateReport() and would show identical content twice if both were
-    // used here — ranking vectorBreakdown by actual score avoids that
-    // duplication and ties directly to the 5-Vector scores shown on page 1.
+    // Unchanged from before this step — still ranks vectorBreakdown (see
+    // scope note above; currently always empty, not touched here).
     const vectorScoreMap = { structure: starAvg, technical: technicalAvg, executive: executiveAvg, gcc: gccAvg, communication: frictionAvg };
     const rankedVectors = vectorBreakdown
       .map(vb => ({ ...vb, score: vectorScoreMap[vb.vector] || 0 }))
@@ -595,8 +658,20 @@ app.get('/interview/report/:id/pdf', requireAuthPage, async (req, res) => {
       candidateModel,
       evidenceMaturity,
       leadershipReadiness,
-      starCounts,
-      starTotal,
+      // STAR counts — now sourced from the canonical builder's
+      // starIntelligence (same computeStarProgress() call, same regex
+      // patterns, same order; the loop itself now lives once in
+      // lib/career-intelligence-report.js instead of being duplicated
+      // here). Reshaped to the template's existing {situation,task,
+      // action,result} + starTotal shape so the STAR ring markup below
+      // needs no changes.
+      starCounts: {
+        situation: cir.starIntelligence.situation.detected,
+        task: cir.starIntelligence.task.detected,
+        action: cir.starIntelligence.action.detected,
+        result: cir.starIntelligence.result.detected,
+      },
+      starTotal: cir.starIntelligence.totalAnswered,
       topStrengths,
       topDevelopmentAreas,
       practiceFocus,

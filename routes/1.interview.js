@@ -793,54 +793,17 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     try {
       const persona = PERSONAS[session.persona_id];
       if (userEmail) {
-        // ── Canonical Career Intelligence Report (Step 4, see
-        // docs/MEDHAIQ_REPORTING_DESIGN_V1.md) — the SAME builder already
-        // used by the Web Report and PDF routes. allScores and
-        // updatedQuestions are already fetched above (lines ~740/759) for
-        // generateReport() and saveReport() — no new DB query is added
-        // here, this just reuses them a second time. `session` +
-        // `reportData` together provide everything buildCareerIntelligenceReport()
-        // needs for sessionContext; ended_at is intentionally omitted (the
-        // session is completing in this same request, so there is no
-        // reliable "session end" timestamp yet) — the builder handles a
-        // missing ended_at gracefully (durationMinutes becomes null,
-        // unused by the email template).
-        const { buildCareerIntelligenceReport } = require('../lib/career-intelligence-report');
-        const cirReport = {
-          session_id: sessionId,
-          overall_score: reportData.overall_score,
-          recommendation: reportData.recommendation,
-          executive_summary: reportData.executive_summary,
-          role_title: session.role_title,
-          experience_level: session.experience_level,
-          org_preset: session.org_preset,
-          started_at: session.started_at || null,
-          ended_at: null,
-          created_at: new Date().toISOString(),
-          structural_flow: reportData.structural_flow,
-          linguistic_nuances: reportData.linguistic_nuances,
-          persona_verdict: reportData.persona_verdict,
-          strongest_response: reportData.strongest_response,
-          weakest_response: reportData.weakest_response,
-          next_steps_json: reportData.next_steps_json,
-          // Approved narrow correction (post-Step-4): passed through so the
-          // canonical builder can carry the existing coaching sentence into
-          // developmentPriorities[0].narrative for the email's Priority
-          // section. Not a new data source — reportData.improvements_json
-          // was already produced by the generateReport() call above.
-          improvements_json: reportData.improvements_json,
-        };
-        const cir = buildCareerIntelligenceReport({
-          report: cirReport, scoresData: allScores, questions: updatedQuestions, persona,
-        });
-
         sendInterviewReportEmail({
-          toEmail:     userEmail,
-          userName:    userName || '',
-          reportId:    sessionId,
-          personaName: persona ? persona.name : 'Expert Interviewer',
-          roleTitle:   session.role_title || 'Professional',
-          cir,
+          toEmail:          userEmail,
+          userName:         userName || '',
+          reportId:         sessionId,
+          personaName:      persona ? persona.name : 'Expert Interviewer',
+          roleTitle:        session.role_title || 'Professional',
+          overallScore:     reportData.overall_score,
+          recommendation:   reportData.recommendation,
+          executiveSummary: reportData.executive_summary,
+          scoreboard:       reportData.scoreboard,
+          topPriorities:    reportData.improvements_json || [],
         }).catch(e => console.error('[email] report delivery failed (non-fatal):', e.message));
       }
     } catch (emailErr) {

@@ -12,58 +12,82 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <!--
-  REDESIGNED v2 — 3-page executive report (was 7 pages). Rendered by
-  /interview/report/:id/pdf in server.js, converted to PDF by
-  services/pdf-report.js. views/interview-report.ejs (on-screen report)
-  and all scoring/backend logic are untouched — this is a template +
-  route-level data-shaping change only.
+  STEP 2B — WHITE EXECUTIVE VISUAL REDESIGN (docs/MEDHAIQ_REPORTING_DESIGN_V1.md §7).
+  Presentation only. Same 3-page structure, same section order, same data
+  variables as Step 2A (server.js's PDF route was not touched in this step).
 
-  PAGE 1 — Executive Career Intelligence Summary: score, recommendation,
-    Leadership Potential, Confidence Level, executive summary, 5-Vector
-    radar, Top 3 Strengths, Top 3 Development Areas.
-  PAGE 2 — Interview Intelligence: STAR Assessment (reuses
-    computeStarProgress() exactly — see server.js comment) + a condensed
-    all-questions score table + two REAL highlighted callouts
-    (strongest_response / weakest_response) instead of fabricated
-    per-question feedback (no backend change = no way to generate real
-    per-question text yet; flagged explicitly, not invented).
-  PAGE 3 — Career Roadmap: simplified Candidate Model (5 of 8 dimensions
-    shown — the other 3 still power the engine internally, per spec),
-    30/60/90 roadmap, quick-reference Key Strengths / Development
-    Priorities, and a single Practice Focus.
+  WHAT CHANGED (visual):
+   - Page 1's dark gradient cover → plain white page, matching pages 2–3.
+   - 5-Vector radar/spider SVG → horizontal bar cards (white-executive spec
+     explicitly asked for bars/segmented cards over a radar chart).
+   - All "on-dark" text/badge/card treatments replaced with light
+     surfaces + a single restrained accent color (no rainbow, no gradients
+     beyond the original two-stop brand mark, which is now a flat accent
+     color instead).
+   - Vector labels updated to the LOCKED terminology (Structure / Domain
+     Expertise / Strategic Thinking / Communication / Leadership &
+     Execution) — Step 2A deliberately kept the legacy raw-field labels
+     (Structure/Technical/Executive/GCC/Comm.) because that step was
+     data-consolidation-only and explicitly preserved existing wording;
+     this is the step the design doc designates for terminology to catch
+     up to the locked model. The underlying VALUES are unchanged — same
+     starAvg/technicalAvg/executiveAvg/gccAvg/frictionAvg passed in by
+     server.js, same locked mapping (design doc §2), just displayed under
+     their final names.
+   - qa-table column order reordered to match the locked vector order
+     (Structure, Domain Expertise, Strategic Thinking, Communication,
+     Leadership & Execution) now that it's no longer constrained by radar
+     geometry. Same qa.vectors.* values as Step 2A, different column
+     arrangement only.
+   - vectorLabel(key) (used for topStrengths/topDevelopmentAreas/
+     practiceFocus, which key off the LEGACY scoreboard.vector_breakdown
+     'vector' field: structure/technical/executive/gcc/communication) now
+     maps to the locked labels too, for whenever that array is populated —
+     see the Step 2A note further down; vector_breakdown is still always
+     empty today (REPORT_SYSTEM never generates it), so these three
+     sections still render empty. Not fixed in this step — flagged again,
+     not touched, per the Step 2A decision.
 
-  DATA CONTRACT: candidateName, report, personaName, roleTitle,
-  experienceLevel, formattedDate, starAvg/technicalAvg/executiveAvg/
-  gccAvg/frictionAvg, radarPolygonPoints, radarPoints, qaCards,
-  promotionReadiness/leadershipPotential/confidenceLevel, nextSteps,
-  vectorBreakdown, candidateModel, evidenceMaturity, leadershipReadiness,
-  starCounts ({situation,task,action,result} counts), starTotal,
-  topStrengths, topDevelopmentAreas (both ranked vectorBreakdown slices),
-  practiceFocus (single item)
+  WHAT DID NOT CHANGE:
+   - Page structure/order, section headings and body copy (executive
+     summary text, recommendation label, STAR framework copy, callout
+     copy, roadmap copy) are byte-identical to Step 2A.
+   - No server.js changes — same data contract, same variable names
+     (starAvg, technicalAvg, executiveAvg, gccAvg, frictionAvg, qaCards,
+     starCounts, starTotal, topStrengths, topDevelopmentAreas,
+     practiceFocus, candidateModel, evidenceMaturity, nextSteps, report).
+   - radarPolygonPoints/radarPoints are still computed and passed by
+     server.js (buildRadarPolygon() call, unchanged) but are no longer
+     consumed by this template now that the radar is gone — harmless
+     unused data, left for a future cleanup pass rather than touched here
+     (touching server.js was out of scope for a template-only step).
+   - No scoring, STAR, interview-engine, DB, or renderer-internals changes.
 -->
 
 <style>
   @page { size: 8.5in 11in; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 8.5in; background: #E7E9EE; }
-  body { font-family: 'Inter', -apple-system, sans-serif; color: #1E2433; -webkit-font-smoothing: antialiased; }
+  body { font-family: 'Inter', -apple-system, sans-serif; color: #1B2130; -webkit-font-smoothing: antialiased; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 
   .page { width: 8.5in; height: 11in; background: #FFFFFF; position: relative; overflow: hidden; page-break-after: always; break-after: page; }
   .page:last-of-type { page-break-after: auto; break-after: auto; }
   .avoid-break { page-break-inside: avoid; break-inside: avoid; }
   @media print { html, body { background: #FFFFFF; } .page { box-shadow: none !important; } }
-  @media screen { body { padding: 24px 0; } .page { margin: 0 auto 24px; box-shadow: 0 4px 24px rgba(15,23,42,0.12); } }
+  @media screen { body { padding: 24px 0; } .page { margin: 0 auto 24px; box-shadow: 0 4px 24px rgba(15,23,42,0.08); } }
 
+  /* Single restrained accent (--signal) + two muted semantic tones for
+     strength/development states — no rainbow, no gradients. */
   :root {
-    --ink: #0A0F1E; --slate-900: #0F172A; --signal: #3B82F6; --signal-dark:#2563EB;
-    --emerald: #10B981; --amber: #F59E0B; --paper: #FAFAF9; --line: #E2E5EC;
-    --gray-500: #64748B; --gray-700: #334155;
+    --ink: #1B2130; --paper: #FFFFFF; --surface: #F7F8FA;
+    --signal: #2554C7; --signal-dark: #1E40AF; --signal-soft: #EEF3FC;
+    --emerald: #0F7B4E; --emerald-soft: #EAF7F1; --emerald-line: #CDEBDD;
+    --amber: #9A5B14; --amber-soft: #FBF1E4; --amber-line: #F0DBB8;
+    --line: #E3E6EC; --gray-500: #64748B; --gray-700: #3A4150;
   }
   .font-display { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
   .eyebrow { font-family:'Inter'; font-size:9.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--signal); }
-  .eyebrow.on-dark { color:#8FB3FF; }
-  h1.report-title { font-size:28px; font-weight:800; line-height:1.1; color:#fff; }
   h2.page-title { font-size:19px; font-weight:800; color:var(--ink); }
   h3.card-title { font-size:12.5px; font-weight:700; color:var(--ink); }
   .text-body { font-size:11.5px; line-height:1.55; color:var(--gray-700); }
@@ -75,32 +99,39 @@
   .gap-8{gap:8px;} .gap-12{gap:12px;} .gap-16{gap:16px;} .gap-24{gap:24px;}
   .grid-2 { display:grid; grid-template-columns:1fr 1fr; }
   .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; }
-  .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); }
   .rounded-lg{border-radius:10px;} .rounded-xl{border-radius:14px;}
   .p-16{padding:16px;} .p-20{padding:20px;} .px-48{padding-left:48px;padding-right:48px;}
 
-  .cover { background: linear-gradient(160deg, var(--ink) 0%, var(--slate-900) 62%, #101B33 100%); }
   .cover-topbar { display:flex; align-items:center; justify-content:space-between; padding:26px 48px 0; }
   .brand-mark { display:flex; align-items:center; gap:8px; }
   .brand-mark img { height:20px; display:block; }
-  .brand-name { font-family:'Plus Jakarta Sans'; font-weight:700; letter-spacing:-0.04em; font-size:16px; color:#fff; }
-  .brand-name .iq {
-    background: linear-gradient(135deg, #3D8BFF 0%, #4F74FF 38%, #6D5CF5 72%, #8B5CF6 100%);
-    background-clip: text; -webkit-background-clip: text;
-    color: transparent; -webkit-text-fill-color: transparent;
-  }
-  .badge { display:inline-flex; align-items:center; gap:5px; padding:5px 11px; border-radius:999px; font-size:9.5px; font-weight:700; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); color:#E7ECFB; }
+  .brand-name { font-family:'Plus Jakarta Sans'; font-weight:700; letter-spacing:-0.04em; font-size:16px; color:var(--ink); }
+  .brand-name .iq { color: var(--signal); }
+  .badge { display:inline-flex; align-items:center; gap:5px; padding:5px 11px; border-radius:999px; font-size:9.5px; font-weight:700; background:var(--surface); border:1px solid var(--line); color:var(--gray-700); }
   .badge-dot { width:6px; height:6px; border-radius:999px; flex-shrink:0; }
-  .exec-summary-box { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-left:3px solid var(--signal); }
+  .exec-summary-box { background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--signal); }
   .rec-pill { display:inline-block; padding:6px 14px; border-radius:999px; font-weight:800; font-size:11px; font-family:'Plus Jakarta Sans'; }
 
   .page-header { display:flex; align-items:center; justify-content:space-between; padding:22px 48px 14px; border-bottom:1px solid var(--line); }
   .page-footer { position:absolute; bottom:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between; padding:12px 48px; border-top:1px solid var(--line); font-size:8.5px; color:var(--gray-500); }
 
+  /* 5-Vector — horizontal bar cards (replaces the radar/spider chart). */
+  .vector-card { border:1px solid var(--line); border-radius:12px; padding:16px 18px; background:#fff; }
+  .vector-row { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--line); }
+  .vector-row:last-child { border-bottom:none; }
+  .vector-label { width:150px; flex-shrink:0; font-size:11px; font-weight:600; color:var(--ink); }
+  .vector-track { flex:1; height:8px; background:var(--surface); border-radius:4px; overflow:hidden; }
+  .vector-fill { height:100%; background:var(--signal); border-radius:4px; }
+  .vector-score { width:26px; flex-shrink:0; text-align:right; font-family:'Plus Jakarta Sans'; font-weight:800; font-size:13px; color:var(--ink); }
+
   .sw-card { border:1px solid var(--line); border-radius:12px; padding:14px; }
   .sw-card + .sw-card { margin-top:10px; }
-  .sw-vector { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--signal-dark); margin-bottom:3px; }
+  .sw-vector { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; margin-bottom:3px; }
   .sw-text { font-size:11px; line-height:1.5; color:var(--gray-700); }
+  .sw-card.strength { background:var(--emerald-soft); border-color:var(--emerald-line); }
+  .sw-card.strength .sw-vector { color:var(--emerald); }
+  .sw-card.development { background:var(--amber-soft); border-color:var(--amber-line); }
+  .sw-card.development .sw-vector { color:var(--amber); }
 
   .star-ring { width:64px; height:64px; border-radius:999px; border:5px solid var(--line); display:flex; align-items:center; justify-content:center; position:relative; }
   .star-ring.is-filled { border-color: var(--signal); }
@@ -113,8 +144,8 @@
   .qa-table td.num { text-align:center; font-weight:700; color:var(--signal-dark); font-family:'Plus Jakarta Sans'; }
 
   .callout { border-radius:10px; padding:14px; }
-  .callout.strong { background:#F0FDF4; border-left:3px solid var(--emerald); }
-  .callout.weak { background:#FFFBEB; border-left:3px solid var(--amber); }
+  .callout.strong { background:var(--emerald-soft); border-left:3px solid var(--emerald); }
+  .callout.weak { background:var(--amber-soft); border-left:3px solid var(--amber); }
 
   .cm-card { border:1px solid var(--line); border-radius:10px; padding:10px; text-align:center; }
   .cm-num { font-family:'Plus Jakarta Sans'; font-weight:800; font-size:19px; color:var(--signal-dark); }
@@ -125,7 +156,7 @@
   .timeline-item { position:relative; padding-bottom:16px; }
   .timeline-item:last-child { padding-bottom:0; }
   .timeline-dot { position:absolute; left:-28px; top:1px; width:16px; height:16px; border-radius:999px; background:#fff; border:3px solid var(--signal); }
-  .practice-focus-box { background:#EFF6FF; border:1px solid #BFDBFE; border-radius:10px; padding:14px; }
+  .practice-focus-box { background:var(--signal-soft); border:1px solid var(--line); border-radius:10px; padding:14px; }
 </style>
 </head>
 <body>
@@ -137,110 +168,119 @@
     return { bg: '#FEE2E2', fg: '#B91C1C' };
   }
   var recStyle = recColor(report.recommendation);
-  var vectors = [
-    { key: 'structure', label: 'Structure (STAR)', score: starAvg },
-    { key: 'technical', label: 'Technical Depth', score: technicalAvg },
-    { key: 'executive', label: 'Executive Presence', score: executiveAvg },
-    { key: 'gcc', label: 'GCC Readiness', score: gccAvg },
-    { key: 'communication', label: 'Communication Clarity', score: frictionAvg },
+
+  // Locked product-facing vector labels (docs/MEDHAIQ_REPORTING_DESIGN_V1.md
+  // §2) — same underlying values as Step 2A, same locked mapping, just
+  // displayed under their final names and in the locked display order.
+  var pageVectors = [
+    { label: 'Structure', score: starAvg },
+    { label: 'Domain Expertise', score: technicalAvg },
+    { label: 'Strategic Thinking', score: executiveAvg },
+    { label: 'Communication', score: frictionAvg },
+    { label: 'Leadership & Execution', score: gccAvg },
   ];
-  function vectorLabel(key) { var m = vectors.filter(function(v){ return v.key === key; }); return m.length ? m[0].label : key; }
+
+  // Maps the LEGACY scoreboard.vector_breakdown 'vector' key (still
+  // structure/technical/executive/gcc/communication — that AI JSON schema
+  // is untouched, out of scope) to the locked display labels, for
+  // topStrengths/topDevelopmentAreas/practiceFocus below. vector_breakdown
+  // is confirmed always empty today (see comment above and the Step 2A
+  // note in server.js), so these three sections still render empty — this
+  // mapping is here so the labels are correct the moment that changes,
+  // not because it changes anything visible right now.
+  var legacyKeyToLabel = {
+    structure: 'Structure',
+    technical: 'Domain Expertise',
+    executive: 'Strategic Thinking',
+    communication: 'Communication',
+    gcc: 'Leadership & Execution',
+  };
+  function vectorLabel(key) { return legacyKeyToLabel[key] || key; }
 %>
 
 <!-- ══════════════════ PAGE 1 — EXECUTIVE CAREER INTELLIGENCE SUMMARY ══════════════════ -->
-<section class="page cover">
+<section class="page">
   <div class="cover-topbar">
-  <div class="brand-mark">
+    <div class="brand-mark">
       <img src="/assets/branding/medhaiq-icon.png" alt="MedhaIQ">
       <span class="brand-name">Medha<span class="iq">IQ</span></span>
     </div>
-    <div class="eyebrow on-dark">EXECUTIVE CAREER INTELLIGENCE REPORT</div>
+    <div class="eyebrow">EXECUTIVE CAREER INTELLIGENCE REPORT</div>
   </div>
 
   <div style="padding:16px 48px 0;">
-    <div class="text-caption" style="color:#8291B3;"><%= candidateName %> · <%= roleTitle %> · <%= formattedDate %> · Interviewed by <%= personaName %></div>
+    <div class="text-caption"><%= candidateName %> · <%= roleTitle %> · <%= formattedDate %> · Interviewed by <%= personaName %></div>
   </div>
 
   <div class="flex items-center gap-24" style="padding:16px 48px 0;">
     <div style="position:relative; width:150px; height:150px; flex-shrink:0;">
       <svg width="150" height="150" viewBox="0 0 150 150">
-        <circle cx="75" cy="75" r="63" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="11"/>
+        <circle cx="75" cy="75" r="63" fill="none" stroke="var(--line)" stroke-width="11"/>
         <% var circumference = 2 * Math.PI * 63; var dash = circumference * (Math.max(0, Math.min(100, report.overall_score)) / 100); %>
-        <circle cx="75" cy="75" r="63" fill="none" stroke="#3B82F6" stroke-width="11" stroke-linecap="round"
+        <circle cx="75" cy="75" r="63" fill="none" stroke="#2554C7" stroke-width="11" stroke-linecap="round"
                 stroke-dasharray="<%= dash.toFixed(1) %> <%= circumference.toFixed(1) %>" transform="rotate(-90 75 75)"/>
       </svg>
       <div class="flex-col items-center" style="position:absolute; top:0; left:0; width:150px; height:150px; justify-content:center;">
-        <div style="font-family:'Plus Jakarta Sans'; font-weight:800; font-size:42px; color:#fff; line-height:1;"><%= Math.round(report.overall_score) %></div>
-        <div style="font-size:11px; color:#93A3C4; font-weight:600;">out of 100</div>
+        <div style="font-family:'Plus Jakarta Sans'; font-weight:800; font-size:42px; color:var(--ink); line-height:1;"><%= Math.round(report.overall_score) %></div>
+        <div style="font-size:11px; color:var(--gray-500); font-weight:600;">out of 100</div>
       </div>
     </div>
 
     <div class="flex-col gap-8" style="flex:1;">
-      <div class="eyebrow on-dark">OVERALL CAREER INTELLIGENCE SCORE</div>
+      <div class="eyebrow">OVERALL CAREER INTELLIGENCE SCORE</div>
       <div><span class="rec-pill" style="background:<%= recStyle.bg %>; color:<%= recStyle.fg %>;">HIRING RECOMMENDATION: <%= report.recommendation %></span></div>
       <div class="flex gap-8" style="flex-wrap:wrap; margin-top:2px;">
-        <span class="badge"><span class="badge-dot" style="background:#3B82F6;"></span>Leadership Potential: <%= leadershipPotential %></span>
-        <span class="badge"><span class="badge-dot" style="background:#F59E0B;"></span>Confidence Level: <%= confidenceLevel %></span>
+        <span class="badge"><span class="badge-dot" style="background:var(--signal);"></span>Leadership Potential: <%= leadershipPotential %></span>
+        <span class="badge"><span class="badge-dot" style="background:var(--amber);"></span>Confidence Level: <%= confidenceLevel %></span>
       </div>
     </div>
   </div>
 
   <div style="padding:16px 48px 0;">
     <div class="exec-summary-box rounded-lg p-16">
-      <div class="eyebrow on-dark" style="margin-bottom:6px;">EXECUTIVE SUMMARY</div>
-      <p style="font-size:11.5px; line-height:1.6; color:#D6DEF2;"><%= report.executive_summary %></p>
+      <div class="eyebrow" style="margin-bottom:6px;">EXECUTIVE SUMMARY</div>
+      <p style="font-size:11.5px; line-height:1.6; color:var(--gray-700);"><%= report.executive_summary %></p>
     </div>
   </div>
 
   <div class="flex gap-16" style="padding:16px 48px 0;">
     <div style="flex:1;">
-      <div class="eyebrow on-dark" style="margin-bottom:8px;">5-VECTOR INTELLIGENCE</div>
-      <div class="rounded-xl" style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); padding:14px; display:flex; justify-content:center;">
-        <svg width="200" height="192" viewBox="0 0 300 290">
-          <polygon points="150,62 226,111 198,199 102,199 74,111" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-          <polygon points="150,84 205,122 184,187 116,187 95,122" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-          <polygon points="150,106 183,133 170,175 130,175 117,133" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-          <polygon points="150,128 162,144 156,163 144,163 138,144" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-          <line x1="150" y1="150" x2="150" y2="40" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-          <line x1="150" y1="150" x2="234" y2="107" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-          <line x1="150" y1="150" x2="203" y2="204" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-          <line x1="150" y1="150" x2="97" y2="204" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-          <line x1="150" y1="150" x2="66" y2="107" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-          <polygon points="<%= radarPolygonPoints %>" fill="rgba(59,130,246,0.25)" stroke="#60A5FA" stroke-width="2.5" stroke-linejoin="round"/>
-          <% radarPoints.forEach(function(pt) { %><circle cx="<%= pt.x %>" cy="<%= pt.y %>" r="3.5" fill="#60A5FA"/><% }); %>
-          <text x="150" y="30" text-anchor="middle" font-size="10" font-family="Inter" fill="#B9C4E0">Structure</text>
-          <text x="250" y="104" text-anchor="start" font-size="10" font-family="Inter" fill="#B9C4E0">Technical</text>
-          <text x="215" y="222" text-anchor="middle" font-size="10" font-family="Inter" fill="#B9C4E0">Executive</text>
-          <text x="85" y="222" text-anchor="middle" font-size="10" font-family="Inter" fill="#B9C4E0">GCC</text>
-          <text x="50" y="104" text-anchor="end" font-size="10" font-family="Inter" fill="#B9C4E0">Communication</text>
-        </svg>
+      <div class="eyebrow" style="margin-bottom:8px;">5-VECTOR INTELLIGENCE</div>
+      <div class="vector-card">
+        <% pageVectors.forEach(function(v) { %>
+          <div class="vector-row">
+            <div class="vector-label"><%= v.label %></div>
+            <div class="vector-track"><div class="vector-fill" style="width:<%= Math.max(0, Math.min(100, Math.round(v.score))) %>%;"></div></div>
+            <div class="vector-score"><%= Math.round(v.score) %></div>
+          </div>
+        <% }); %>
       </div>
     </div>
 
     <div style="flex:1;">
-      <div class="eyebrow on-dark" style="margin-bottom:8px;">TOP 3 STRENGTHS</div>
+      <div class="eyebrow" style="margin-bottom:8px;">TOP 3 STRENGTHS</div>
       <% topStrengths.forEach(function(s) { %>
-        <div class="sw-card avoid-break" style="background:rgba(16,185,129,.08); border-color:rgba(16,185,129,.25);">
-          <div class="sw-vector" style="color:#6EE7B7;"><%= vectorLabel(s.vector) %></div>
-          <div class="sw-text" style="color:#D6DEF2;"><%= s.strength %></div>
+        <div class="sw-card strength avoid-break">
+          <div class="sw-vector"><%= vectorLabel(s.vector) %></div>
+          <div class="sw-text"><%= s.strength %></div>
         </div>
       <% }); %>
     </div>
   </div>
 
   <div style="padding:14px 48px 0;">
-    <div class="eyebrow on-dark" style="margin-bottom:8px;">DEVELOPMENT AREAS</div>
+    <div class="eyebrow" style="margin-bottom:8px;">DEVELOPMENT AREAS</div>
     <div class="<%= topDevelopmentAreas.length >= 3 ? 'grid-3' : 'grid-2' %> gap-8" style="max-width:<%= topDevelopmentAreas.length >= 3 ? '100%' : '66%' %>;">
       <% topDevelopmentAreas.forEach(function(d) { %>
-        <div class="sw-card avoid-break" style="background:rgba(245,158,11,.08); border-color:rgba(245,158,11,.25); margin-top:0;">
-          <div class="sw-vector" style="color:#FCD34D;"><%= vectorLabel(d.vector) %></div>
-          <div class="sw-text" style="color:#D6DEF2;"><%= d.recommendation %></div>
+        <div class="sw-card development avoid-break" style="margin-top:0;">
+          <div class="sw-vector"><%= vectorLabel(d.vector) %></div>
+          <div class="sw-text"><%= d.recommendation %></div>
         </div>
       <% }); %>
     </div>
   </div>
 
-  <div class="page-footer" style="border-top-color:rgba(255,255,255,0.1); color:#7E8FB5;">
+  <div class="page-footer">
     <span>MedhaIQ.ai · Confidential Career Intelligence Report</span>
     <span>Page 1 of 3</span>
   </div>
@@ -251,7 +291,7 @@
 <section class="page">
   <div class="page-header">
     <div><div class="eyebrow">SECTION 02</div><h2 class="page-title font-display">Interview Intelligence</h2></div>
-    <svg width="22" height="22" viewBox="0 0 100 100" style="opacity:.35;"><polygon points="50,4 95,36 78,90 22,90 5,36" fill="none" stroke="#3B82F6" stroke-width="4"/></svg>
+    <svg width="22" height="22" viewBox="0 0 100 100" style="opacity:.35;"><polygon points="50,4 95,36 78,90 22,90 5,36" fill="none" stroke="#2554C7" stroke-width="4"/></svg>
   </div>
 
   <div class="px-48" style="padding-top:18px;">
@@ -278,20 +318,25 @@
       </div>
     </div>
 
-    <!-- Condensed question table — one page, no per-question cards -->
+    <!-- Condensed question table — one page, no per-question cards. Column
+         order matches the locked vector order (Structure, Domain
+         Expertise, Strategic Thinking, Communication, Leadership &
+         Execution) — Step 2A used the old radar-geometry order since the
+         radar was still on page 1 then; now that it's gone, this table
+         and the page-1 bars use the same order. -->
     <h3 class="card-title" style="margin-top:20px; margin-bottom:8px;">Key Interview Questions &amp; Scores</h3>
     <table class="qa-table avoid-break">
-      <tr><th>#</th><th>Question</th><th>Structure</th><th>Technical</th><th>Executive</th><th>GCC</th><th>Comm.</th></tr>
+      <tr><th>#</th><th>Question</th><th>Structure</th><th>Domain Exp.</th><th>Strategic Think.</th><th>Comm.</th><th>Leadership</th></tr>
       <% qaCards.forEach(function(qa) { %>
         <tr>
           <td><%= qa.index %></td>
           <td><%= qa.questionText.length > 70 ? qa.questionText.slice(0, 70) + '…' : qa.questionText %></td>
-          <% if (qa.scores) { %>
-            <td class="num"><%= Math.round(qa.scores.star_score) %></td>
-            <td class="num"><%= Math.round(qa.scores.technical_depth) %></td>
-            <td class="num"><%= Math.round(qa.scores.executive_presence) %></td>
-            <td class="num"><%= Math.round(qa.scores.gcc_readiness) %></td>
-            <td class="num"><%= Math.round(qa.scores.core_friction) %></td>
+          <% if (qa.vectors) { %>
+            <td class="num"><%= qa.vectors.structure %></td>
+            <td class="num"><%= qa.vectors.domainExpertise %></td>
+            <td class="num"><%= qa.vectors.strategicThinking %></td>
+            <td class="num"><%= qa.vectors.communication %></td>
+            <td class="num"><%= qa.vectors.leadershipExecution %></td>
           <% } else { %>
             <td class="num" colspan="5" style="color:var(--gray-500); font-weight:400;">Skipped</td>
           <% } %>
@@ -329,7 +374,7 @@
 <section class="page">
   <div class="page-header">
     <div><div class="eyebrow">SECTION 03</div><h2 class="page-title font-display">Career Roadmap</h2></div>
-    <svg width="22" height="22" viewBox="0 0 100 100" style="opacity:.35;"><polygon points="50,4 95,36 78,90 22,90 5,36" fill="none" stroke="#3B82F6" stroke-width="4"/></svg>
+    <svg width="22" height="22" viewBox="0 0 100 100" style="opacity:.35;"><polygon points="50,4 95,36 78,90 22,90 5,36" fill="none" stroke="#2554C7" stroke-width="4"/></svg>
   </div>
 
   <div class="px-48" style="padding-top:16px;">
