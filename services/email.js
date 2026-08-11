@@ -6,23 +6,29 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const FROM_EMAIL     = process.env.EMAIL_FROM    || 'noreply@medhaiq.ai';
 const APP_URL        = process.env.APP_URL       || 'https://www.medhaiq.ai';
 
-async function _send({ to, subject, html }) {
+async function _send({ to, subject, html, attachments }) {
   if (!RESEND_API_KEY) {
     // Graceful fallback: log instead of crash so dev mode still works
     console.warn('[email] RESEND_API_KEY not configured — email not sent to', to);
     return;
   }
+  const body = { from: FROM_EMAIL, to, subject, html };
+  // Resend's JSON API expects base64-encoded attachment content — additive
+  // field, only included when the caller actually has an attachment
+  // (Leadership PDF). The two other callers of _send() (magic link,
+  // verification) never pass this, so their request body is unchanged.
+  if (attachments && attachments.length) body.attachments = attachments;
   const resp = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${RESEND_API_KEY}`,
     },
-    body: JSON.stringify({ from: FROM_EMAIL, to, subject, html }),
+    body: JSON.stringify(body),
   });
   if (!resp.ok) {
-    const body = await resp.text();
-    console.error(`[email] Resend ${resp.status}:`, body);
+    const respBody = await resp.text();
+    console.error(`[email] Resend ${resp.status}:`, respBody);
     throw new Error(`Email delivery failed: ${resp.status}`);
   }
 }
@@ -107,6 +113,14 @@ async function sendInterviewReportEmail({
   toEmail, userName, reportId,
   personaName, roleTitle,
   cir,
+  // Report guardrail additions (additive — existing callers that don't
+  // pass these get identical behavior to before this change):
+  // depth: 'snapshot' (Explorer — short notification, no vector table, no
+  //   executive summary) or 'full' (Growth/Leadership — unchanged from
+  //   before). pdfBuffer/pdfFilename: Leadership only, base64-encoded and
+  //   attached via Resend's attachments field (added to _send() above).
+  depth = 'full',
+  pdfBuffer, pdfFilename,
 }) {
   const score = Math.round(cir.overallScore);
   const rec   = cir.recommendation || 'Lean Hire';
@@ -181,6 +195,11 @@ async function sendInterviewReportEmail({
     ? INSUFFICIENT_EVIDENCE_TEXT
     : `Across ${starTotal} answered question${starTotal === 1 ? '' : 's'}, Situation was identified in ${cir.starIntelligence.situation.pct}%, Task in ${cir.starIntelligence.task.pct}%, Action in ${cir.starIntelligence.action.pct}%, and Result in ${cir.starIntelligence.result.pct}%.`;
 
+  const isSnapshot = depth === 'snapshot';
+  const introLine = isSnapshot
+    ? `Hi ${name}, your MedhaIQ interview session is complete. Here's a quick look at your signal.`
+    : `Hi ${name}, your MedhaIQ interview session is complete. Here is your Career Intelligence Report.`;
+
   const html = `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><title>${subject}</title></head>
 <body style="margin:0;padding:0;background:#E7E9EE;font-family:'Inter',system-ui,sans-serif;">
@@ -203,12 +222,15 @@ async function sendInterviewReportEmail({
   <!-- Body -->
   <div style="padding:32px 40px;">
 
-    <p style="color:#3A4150;font-size:14px;line-height:1.7;margin:0 0 26px;">
-      Hi ${name}, your MedhaIQ interview session is complete. Here is your Career Intelligence Report.
-    </p>
+    <p style="color:#3A4150;font-size:14px;line-height:1.7;margin:0 0 26px;">${introLine}</p>
 
+    ${isSnapshot ? '' : `
     <!-- 5-Vector Profile — locked terminology, same as the live interview,
-         Web Report, and PDF. Values come ONLY from cir.fiveVectors. -->
+         Web Report, and PDF. Values come ONLY from cir.fiveVectors.
+         Explorer (isSnapshot) does not receive this table — matches the
+         Web Report's Explorer snapshot, which also shows only the overall
+         score plus one strength/priority/STAR insight, not the full
+         breakdown. -->
     <div style="margin-bottom:26px;">
       <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#2554C7;margin-bottom:12px;">5-Vector Profile</div>
       <table style="width:100%;border-collapse:collapse;">
@@ -218,13 +240,15 @@ async function sendInterviewReportEmail({
         ${vectorRow('Communication', cir.fiveVectors.communication)}
         ${vectorRow('Leadership &amp; Execution', cir.fiveVectors.leadershipExecution)}
       </table>
-    </div>
+    </div>`}
 
     <!-- Strongest Signal / Priority — ranked from the real five-vector
          data (cir.strengths / cir.developmentPriorities), not the legacy
          strengths_json/improvements_json (confirmed to be the same
          underlying array under two labels). Honest insufficient-evidence
-         text when even the top vector is below the low-evidence ceiling. -->
+         text when even the top vector is below the low-evidence ceiling.
+         Shown at BOTH depths — Explorer's "1 strength + 1 priority" is
+         exactly these two blocks, nothing added for Growth/Leadership. -->
     <div style="margin-bottom:22px;">
       <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#0F7B4E;margin-bottom:6px;">Strongest Signal</div>
       <p style="color:#3A4150;font-size:13px;line-height:1.6;margin:0;">${strongestSignalText}</p>
@@ -235,22 +259,37 @@ async function sendInterviewReportEmail({
       <p style="color:#3A4150;font-size:13px;line-height:1.6;margin:0;">${priorityText}</p>
     </div>
 
-    <div style="margin-bottom:26px;">
+    <div style="margin-bottom:${isSnapshot ? '8px' : '26px'};">
       <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#2554C7;margin-bottom:6px;">STAR Signal</div>
       <p style="color:#3A4150;font-size:13px;line-height:1.6;margin:0;">${starLine}</p>
     </div>
 
-    <!-- Executive Summary — existing report narrative, unchanged. -->
+    ${isSnapshot ? '' : `
+    <!-- Executive Summary — existing report narrative, unchanged. Not
+         shown at Explorer depth (matches "do not send the full Growth
+         report content to Explorer"). -->
     <div style="background:#F7F8FA;border:1px solid #E3E6EC;border-left:3px solid #2554C7;border-radius:8px;padding:18px;margin-bottom:28px;">
       <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#2554C7;margin-bottom:8px;">Executive Summary</div>
       <p style="color:#3A4150;font-size:13px;line-height:1.7;margin:0;">${cir.executiveSummary || 'Your interview session has been evaluated across the five MedhaIQ Career Intelligence vectors.'}</p>
-    </div>
+    </div>`}
+
+    ${pdfBuffer ? `
+    <!-- Leadership only — PDF is attached to this email, not linked. -->
+    <div style="background:#EEF3FC;border:1px solid #E3E6EC;border-radius:8px;padding:14px 18px;margin-bottom:22px;text-align:center;">
+      <p style="color:#1B2130;font-size:13px;margin:0;font-weight:600;">📄 Your premium Career Intelligence Report PDF is attached to this email.</p>
+    </div>` : ''}
 
     <!-- CTA -->
     <div style="text-align:center;padding:8px 0 4px;">
       <a href="${url}" style="display:inline-block;background:#2554C7;color:#fff;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:14px;font-weight:700;">View Your Full Career Intelligence Report &rarr;</a>
       <p style="color:#9AA3B2;font-size:11px;margin-top:14px;word-break:break-all;">${url}</p>
     </div>
+
+    ${isSnapshot ? `
+    <!-- Upgrade note — Explorer only, restrained, not aggressive. -->
+    <div style="text-align:center;margin-top:24px;padding-top:20px;border-top:1px solid #E3E6EC;">
+      <p style="color:#64748B;font-size:12px;line-height:1.6;margin:0;">Want the full picture? Unlock your complete interview analysis, evidence, and personalized improvement guidance with Growth.</p>
+    </div>` : ''}
   </div>
 
   <!-- Footer -->
@@ -261,7 +300,11 @@ async function sendInterviewReportEmail({
 </div>
 </body></html>`;
 
-  await _send({ to: toEmail, subject, html });
+  const attachments = (pdfBuffer && pdfFilename)
+    ? [{ filename: pdfFilename, content: pdfBuffer.toString('base64') }]
+    : undefined;
+
+  await _send({ to: toEmail, subject, html, attachments });
 }
 
 module.exports = { sendMagicLinkEmail, sendVerificationEmail, sendInterviewReportEmail };

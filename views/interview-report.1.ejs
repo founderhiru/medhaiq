@@ -32,11 +32,9 @@
       <div class="score-num"><%= Math.round(report.overall_score) %></div>
     </div>
    <div class="score-label">Overall Career Intelligence Score</div>
-<% if (hasPdfAccess) { %>
 <a href="/interview/report/<%= report.session_id %>/pdf" style="display:inline-block; margin-top:12px; padding:10px 20px; background:#3B82F6; color:#fff; border-radius:999px; font-weight:700; font-size:13px; text-decoration:none;" download>
   ↓ Download PDF Report
 </a>
-<% } %>
   </div>
 
   <!-- v0.5 MEDHAIQ CAREER INTELLIGENCE SCOREBOARD -->
@@ -87,7 +85,6 @@
     <p class="hiring-justification"><%= report.persona_verdict || 'Based on aggregate performance across all five evaluation vectors.' %></p>
   </div>
 
-  <% if (hasFullReport) { %>
   <!-- Section 3: Technical & Behavioral Evidence Summary -->
   <div class="report-section">
     <h3>3. Technical &amp; Behavioral Evidence Summary</h3>
@@ -138,40 +135,6 @@
       <% } %>
     </ol>
   </div>
-  <% } else { %>
-  <!-- Explorer snapshot — same ranked canonical data as Growth/Leadership,
-       just the top-1 slice (server.js passes topStrength/topPriority/
-       starIntelligence from the same cir object). Reuses existing
-       report-section/evidence-block/priority-list classes rather than
-       introducing new styling — not a redesign. -->
-  <div class="report-section">
-    <h3>3. Your Strongest Signal</h3>
-    <div class="evidence-block evidence-strong">
-      <div class="evidence-label"><%= topStrength.label %> — <%= topStrength.score %>/100</div>
-    </div>
-  </div>
-
-  <div class="report-section">
-    <h3>4. Your Development Priority</h3>
-    <div class="evidence-block evidence-weak">
-      <div class="evidence-label"><%= topPriority.label %> — <%= topPriority.score %>/100</div>
-    </div>
-  </div>
-
-  <% if (starIntelligence.totalAnswered > 0) { %>
-  <div class="report-section">
-    <h3>5. Your STAR Insight</h3>
-    <p class="exec-summary">Across <%= starIntelligence.totalAnswered %> answered question<%= starIntelligence.totalAnswered === 1 ? '' : 's' %>, Situation was identified in <%= starIntelligence.situation.pct %>%, Task in <%= starIntelligence.task.pct %>%, Action in <%= starIntelligence.action.pct %>%, and Result in <%= starIntelligence.result.pct %>%.</p>
-  </div>
-  <% } %>
-
-  <div class="report-section" style="text-align:center; background:#F7F8FA; border-radius:12px; padding:24px;">
-    <h3 style="margin-bottom:8px;">Want the full picture?</h3>
-    <p class="exec-summary" style="margin-bottom:16px;">Unlock your complete interview analysis, evidence, and personalized improvement guidance with Growth.</p>
-    <a href="/dashboard" class="cta-btn primary">Upgrade to Growth</a>
-  </div>
-  <% } %>
-
 
   <!-- CTAs -->
   <div class="report-ctas">

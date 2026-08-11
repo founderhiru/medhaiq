@@ -452,6 +452,19 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
     const gccAvg = cir.fiveVectors.leadershipExecution;
     const frictionAvg = cir.fiveVectors.communication;
 
+    // ── Package depth gating (report guardrail) ─────────────────────────
+    // req.capabilities is already attached by requireAuthPage (middleware/
+    // guards.js) for every request to this route — zero additional DB
+    // calls needed. 'reports.full' is the new permission distinguishing
+    // Growth/Leadership from Explorer (config/product-packages.js);
+    // 'reports.executive' (existing, previously unused by any code) gates
+    // the PDF download link's visibility here — the actual PDF route
+    // enforces this server-side too, this is just UI-appropriateness, not
+    // the real guard.
+    const permissions = (req.capabilities && req.capabilities.permissions) || [];
+    const hasFullReport = permissions.includes('reports.full');
+    const hasPdfAccess = permissions.includes('reports.executive');
+
     const circumference = 2 * Math.PI * 60;
     const circumferenceOffset = circumference - ((report.overall_score || 0) / 100) * circumference;
 
@@ -486,6 +499,15 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
       frictionAvg,
       circumference,
       circumferenceOffset,
+      hasFullReport,
+      hasPdfAccess,
+      // Explorer snapshot fields — same ranked data Growth/Leadership get,
+      // just the top-1 slice (see lib/career-intelligence-report.js;
+      // strengths/developmentPriorities are already ranked lists, this
+      // isn't a second calculation).
+      topStrength: cir.strengths[0],
+      topPriority: cir.developmentPriorities[0],
+      starIntelligence: cir.starIntelligence,
     });
   } catch (err) {
     console.error('[interview/report]', err);
@@ -500,21 +522,10 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
 // all computed from real data already in interview_reports/interview_scores,
 // nothing fabricated. See views/interview-report-pdf.ejs for the data
 // contract this passes in.
-function buildRadarPolygon(scores) {
-  // scores order must match the vector bar order: Structure, Technical,
-  // Executive, GCC, Communication. cx/cy/maxR match the SVG's own
-  // viewBox (300x290, center 150,150) in interview-report-pdf.ejs.
-  const cx = 150, cy = 150, maxR = 110;
-  const points = scores.map((score, i) => {
-    const angleRad = (-90 + 72 * i) * Math.PI / 180;
-    const r = maxR * (Math.max(0, Math.min(100, score)) / 100);
-    return {
-      x: Math.round((cx + r * Math.cos(angleRad)) * 10) / 10,
-      y: Math.round((cy + r * Math.sin(angleRad)) * 10) / 10,
-    };
-  });
-  return { polygonPoints: points.map(p => `${p.x},${p.y}`).join(' '), points };
-}
+// buildRadarPolygon extracted to lib/radar-polygon.js (also used by
+// routes/interview.js's Leadership PDF email attachment) — same function,
+// not duplicated.
+const { buildRadarPolygon } = require('./lib/radar-polygon');
 
 function renderView(view, data) {
   return new Promise((resolve, reject) => {
@@ -531,6 +542,22 @@ app.get('/interview/report/:id/pdf', requireAuthPage, async (req, res) => {
 
     const report = await loadAuthorizedReport(req.params.id, req.user);
     if (!report) return res.status(404).send('Report not found');
+
+    // ── PDF entitlement guard (report guardrail) — checked BEFORE any
+    // further DB queries or PDF rendering, so an unentitled request never
+    // reaches Puppeteer (or even the scores/questions queries). This is a
+    // cost guard as much as an access guard — Chromium launch is the
+    // expensive part of this route. req.capabilities is already attached
+    // by requireAuthPage; 'reports.executive' is the existing,
+    // previously-unused Leadership-only permission (config/product-
+    // packages.js), reused here rather than inventing a new one.
+    const pdfPermissions = (req.capabilities && req.capabilities.permissions) || [];
+    if (!pdfPermissions.includes('reports.executive')) {
+      return res.status(403).render('error-boundary', {
+        url: req.url,
+        errorMessage: 'The downloadable Career Intelligence Report is a Leadership feature. Upgrade to unlock your premium PDF.',
+      });
+    }
 
     const persona = PERSONAS[report.persona_id] || PERSONAS.alex_chen;
     const scoresData = await getSessionScores(req.params.id);
