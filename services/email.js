@@ -211,12 +211,13 @@ async function sendInterviewReportEmail({
       <span style="font-size:19px;font-weight:800;color:#1B2130;">Medha<span style="color:#2554C7;">IQ</span></span>
       <span style="color:#64748B;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-left:8px;">Career Intelligence Report</span>
     </div>
-    <div style="font-size:12px;color:#64748B;margin-bottom:14px;">${personaName || 'Expert Interviewer'} &nbsp;·&nbsp; ${role}</div>
+    <div style="font-size:13px;color:#1B2130;font-weight:600;margin-bottom:14px;">${name} &nbsp;·&nbsp; ${role}</div>
     <div style="display:flex;align-items:baseline;gap:10px;">
       <span style="font-size:44px;font-weight:800;color:#1B2130;line-height:1;">${score}</span>
       <span style="color:#64748B;font-size:14px;font-weight:600;">/100</span>
       <span style="display:inline-block;background:${recBg};color:${recColor};font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;margin-left:6px;">${rec}</span>
     </div>
+    <div style="font-size:11px;color:#9AA3B2;margin-top:10px;">Interviewed by ${personaName || 'Expert Interviewer'}</div>
   </div>
 
   <!-- Body -->

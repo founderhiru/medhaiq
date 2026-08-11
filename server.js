@@ -666,6 +666,24 @@ app.get('/interview/report/:id/pdf', requireAuthPage, async (req, res) => {
       .reverse();
     const practiceFocus = topDevelopmentAreas[0] || null;
 
+    // ── Development Areas empty-state fix ───────────────────────────────
+    // topDevelopmentAreas (above) is derived from scoreboard.vector_
+    // breakdown, which — confirmed by reading REPORT_SYSTEM directly — is
+    // never populated by any session, low-evidence or not. That means this
+    // heading has rendered blank for every PDF since the template shipped,
+    // not just for insufficient-evidence sessions. cir.developmentPriorities
+    // (already computed above, real per-question data, always populated)
+    // is the fallback source when topDevelopmentAreas is empty — but only
+    // treated as genuine content when there's a reliable signal to report;
+    // for a genuinely low-evidence session it would be misleading to rank
+    // one near-zero vector above four other near-zero vectors and present
+    // it as a real development area, so the template shows an honest
+    // "insufficient evidence" message instead in that case. Same 25-point
+    // ceiling already used by generateReport()'s own low-evidence handling
+    // and by the email's Strongest Signal/Priority gate — not a new number.
+    const hasReliableSignal = cir.strengths[0] && cir.strengths[0].score >= 25;
+    const canonicalDevelopmentAreas = cir.developmentPriorities;
+
     const html = await renderView('interview-report-pdf', {
       candidateName: (req.user && req.user.name) || 'Candidate',
       report,
@@ -685,6 +703,8 @@ app.get('/interview/report/:id/pdf', requireAuthPage, async (req, res) => {
       candidateModel,
       evidenceMaturity,
       leadershipReadiness,
+      hasReliableSignal,
+      canonicalDevelopmentAreas,
       // STAR counts — now sourced from the canonical builder's
       // starIntelligence (same computeStarProgress() call, same regex
       // patterns, same order; the loop itself now lives once in

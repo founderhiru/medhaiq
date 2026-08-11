@@ -45,6 +45,7 @@ const sessionController = require('../controllers/sessionController');
 // requireAuth + requireInterviewEntitlement now live in middleware/guards.js
 // — single shared implementation built on the Capability Engine.
 const { requireAuth, requireInterviewEntitlement } = require('../middleware/guards');
+const { buildRadarPolygon } = require('../lib/radar-polygon');
 // Anti-Abuse & Free-Offer Guardrail — burst protection on session START
 // only (never on in-progress endpoints: answer/heartbeat/next-question).
 const { interviewStartLimiter } = require('../middleware/rate-limit');
@@ -529,7 +530,7 @@ async function checkSessionActiveAndNotIdle(session, sessionId, opts) {
   return null;
 }
 
-async function processInterviewAnswer({ sessionId, questionId, answerText, skip, voiceMode, micLive, userId, userEmail, userName }) {
+async function processInterviewAnswer({ sessionId, questionId, answerText, skip, voiceMode, micLive, userId, userEmail, userName, app }) {
   // One turnId per invocation — the single correlating value threaded
   // through every log line for this request/response round-trip, so
   // backend generation, frontend receipt, UI render, and vapi.say() can
@@ -756,6 +757,38 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   // it were a real next question, and the report/session-complete state
   // never actually got written.
   async function finalizeSessionAndRespond() {
+    // ── Idempotency guard (report guardrail) ─────────────────────────────
+    // A fresh re-fetch (NOT the outer `session` var, which was read at the
+    // start of this request and is stale by the time we reach here) — if
+    // another request already completed this session first (retry,
+    // double-submit, or a race), skip straight to a normal-looking
+    // response instead of re-running generateReport()/saveReport()/
+    // completeSession()/email/PDF a second time. This closes the realistic
+    // case (retry after the response already returned, double-click) —
+    // it is not a database-level lock, so a true sub-millisecond
+    // simultaneous race is not fully closed by this alone; a stronger
+    // guarantee would need a DB transaction/constraint, which is out of
+    // scope for "smallest possible guard."
+    const freshSession = await getSession(sessionId);
+    if (freshSession && freshSession.status === 'completed') {
+      console.warn(`[finalize] session ${sessionId} already completed — skipping duplicate finalize (idempotency guard)`);
+      return {
+        httpStatus: 200,
+        body: {
+          sessionEnded: true,
+          reportId: sessionId,
+          turnId,
+          wasSkipped: effectiveSkip,
+          scores,
+          star_progress: starProgress,
+          intelligence_scores: intelligenceScores,
+          text: "That completes your interview. Your report is ready.",
+          audio_url: null,
+          competency_tag: null,
+        },
+      };
+    }
+
     const allScores = await getSessionScores(sessionId);
     const qaPairs = updatedQuestions
       .filter(q => q.answer_text !== null && q.answer_text !== undefined)
@@ -834,6 +867,87 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
           report: cirReport, scoresData: allScores, questions: updatedQuestions, persona,
         });
 
+        // ── Package resolution (report guardrail) ──────────────────────
+        // The lightweight lookup capability-engine.js itself uses
+        // internally — NOT the full resolveCapabilities(req), which this
+        // function has no req to call anyway (it's shared with the Vapi
+        // path) and which does several extra DB lookups (careerProfile,
+        // up to 1000 sessions) irrelevant to just resolving a package_id.
+        const { getActivePackageAcquisition } = require('../db/package-acquisitions');
+        const { PRODUCT_PACKAGES, DEFAULT_PACKAGE_ID } = require('../config/product-packages');
+        const activeAcquisition = await getActivePackageAcquisition(userId);
+        const packageId = (activeAcquisition && PRODUCT_PACKAGES[activeAcquisition.package_id])
+          ? activeAcquisition.package_id
+          : DEFAULT_PACKAGE_ID;
+        const permissions = PRODUCT_PACKAGES[packageId].permissions;
+        const hasFullReport = permissions.includes('reports.full');
+        const hasPdfAccess = permissions.includes('reports.executive');
+
+        // ── Leadership PDF — generated ONLY if entitled, checked before
+        // any rendering/Puppeteer work (same cost-guard principle as the
+        // PDF route in server.js). A PDF failure must never break the
+        // report or the email — caught locally, logged, and the email
+        // still sends without the attachment.
+        let pdfBuffer = null;
+        let pdfFilename = null;
+        if (hasPdfAccess) {
+          try {
+            const { renderReportPdf } = require('../services/pdf-report');
+            const starAvg = cir.fiveVectors.structure;
+            const technicalAvg = cir.fiveVectors.domainExpertise;
+            const executiveAvg = cir.fiveVectors.strategicThinking;
+            const gccAvg = cir.fiveVectors.leadershipExecution;
+            const frictionAvg = cir.fiveVectors.communication;
+            const radar = buildRadarPolygon([starAvg, technicalAvg, executiveAvg, gccAvg, frictionAvg]);
+            const promotionReadiness  = reportData.overall_score >= 80 ? 'High' : reportData.overall_score >= 60 ? 'Medium' : 'Low';
+            const leadershipPotential = executiveAvg >= 80 ? 'Strong' : executiveAvg >= 60 ? 'Developing' : 'Emerging';
+            const confidenceLevel     = frictionAvg >= 80 ? 'High' : frictionAvg >= 55 ? 'Medium' : 'Low';
+            let scoreboard = reportData.scoreboard || {};
+            if (typeof scoreboard === 'string') { try { scoreboard = JSON.parse(scoreboard); } catch (e) { scoreboard = {}; } }
+            const vectorBreakdown = Array.isArray(scoreboard.vector_breakdown) ? scoreboard.vector_breakdown : [];
+            const vectorScoreMap = { structure: starAvg, technical: technicalAvg, executive: executiveAvg, gcc: gccAvg, communication: frictionAvg };
+            const rankedVectors = vectorBreakdown.map(vb => ({ ...vb, score: vectorScoreMap[vb.vector] || 0 })).sort((a, b) => b.score - a.score);
+            const topStrengths = rankedVectors.slice(0, 3);
+            const strengthKeys = topStrengths.map(s => s.vector);
+            const topDevelopmentAreas = rankedVectors.filter(v => strengthKeys.indexOf(v.vector) === -1).slice().reverse();
+            const practiceFocus = topDevelopmentAreas[0] || null;
+
+            const pdfHtml = await new Promise((resolve, reject) => {
+              app.render('interview-report-pdf', {
+                candidateName: userName || 'Candidate',
+                report: cirReport,
+                personaName: persona.name,
+                roleTitle: session.role_title || 'General Professional',
+                experienceLevel: session.experience_level || 'Mid-Career',
+                formattedDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                starAvg, technicalAvg, executiveAvg, gccAvg, frictionAvg,
+                radarPolygonPoints: radar.polygonPoints,
+                radarPoints: radar.points,
+                qaCards: cir.questionEvidence,
+                promotionReadiness, leadershipPotential, confidenceLevel,
+                nextSteps: cir.careerRoadmap,
+                vectorBreakdown, candidateModel: scoreboard.candidate_model || null,
+                evidenceMaturity: scoreboard.evidence_maturity || null,
+                leadershipReadiness: scoreboard.leadership_readiness,
+                starCounts: {
+                  situation: cir.starIntelligence.situation.detected,
+                  task: cir.starIntelligence.task.detected,
+                  action: cir.starIntelligence.action.detected,
+                  result: cir.starIntelligence.result.detected,
+                },
+                starTotal: cir.starIntelligence.totalAnswered,
+                topStrengths, topDevelopmentAreas, practiceFocus,
+              }, (err, html) => (err ? reject(err) : resolve(html)));
+            });
+            pdfBuffer = await renderReportPdf(pdfHtml);
+            pdfFilename = `MedhaIQ-Report-${sessionId}.pdf`;
+          } catch (pdfErr) {
+            console.error('[email] Leadership PDF generation failed (non-fatal — email sends without attachment):', pdfErr.message);
+            pdfBuffer = null;
+            pdfFilename = null;
+          }
+        }
+
         sendInterviewReportEmail({
           toEmail:     userEmail,
           userName:    userName || '',
@@ -841,6 +955,9 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
           personaName: persona ? persona.name : 'Expert Interviewer',
           roleTitle:   session.role_title || 'Professional',
           cir,
+          depth:       hasFullReport ? 'full' : 'snapshot',
+          pdfBuffer,
+          pdfFilename,
         }).catch(e => console.error('[email] report delivery failed (non-fatal):', e.message));
       }
     } catch (emailErr) {
@@ -982,6 +1099,7 @@ router.post('/sessions/:id/answer', requireAuth, async (req, res) => {
       userId: req.user.id,
       userEmail: req.user.email || null,
       userName: req.user.name || '',
+      app: req.app,
     });
     return res.status(result.httpStatus).json(result.body);
   } catch (err) {

@@ -937,6 +937,11 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
                 },
                 starTotal: cir.starIntelligence.totalAnswered,
                 topStrengths, topDevelopmentAreas, practiceFocus,
+                // Same empty-state fix as the PDF route in server.js — see
+                // that route's comment for the full explanation. cir is
+                // already computed above for this same PDF.
+                hasReliableSignal: cir.strengths[0] && cir.strengths[0].score >= 25,
+                canonicalDevelopmentAreas: cir.developmentPriorities,
               }, (err, html) => (err ? reject(err) : resolve(html)));
             });
             pdfBuffer = await renderReportPdf(pdfHtml);

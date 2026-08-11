@@ -209,7 +209,7 @@
   </div>
 
   <div style="padding:16px 48px 0;">
-    <div class="text-caption"><%= candidateName %> · <%= roleTitle %> · <%= formattedDate %> · Interviewed by <%= personaName %></div>
+    <div class="text-caption"><%= candidateName %> · <%= roleTitle %> · <%= formattedDate %></div>
   </div>
 
   <div class="flex items-center gap-24" style="padding:16px 48px 0;">
@@ -233,6 +233,7 @@
         <span class="badge"><span class="badge-dot" style="background:var(--signal);"></span>Leadership Potential: <%= leadershipPotential %></span>
         <span class="badge"><span class="badge-dot" style="background:var(--amber);"></span>Confidence Level: <%= confidenceLevel %></span>
       </div>
+      <div class="text-caption" style="margin-top:2px;">Interviewed by <%= personaName %></div>
     </div>
   </div>
 
@@ -270,14 +271,27 @@
 
   <div style="padding:14px 48px 0;">
     <div class="eyebrow" style="margin-bottom:8px;">DEVELOPMENT AREAS</div>
-    <div class="<%= topDevelopmentAreas.length >= 3 ? 'grid-3' : 'grid-2' %> gap-8" style="max-width:<%= topDevelopmentAreas.length >= 3 ? '100%' : '66%' %>;">
-      <% topDevelopmentAreas.forEach(function(d) { %>
-        <div class="sw-card development avoid-break" style="margin-top:0;">
-          <div class="sw-vector"><%= vectorLabel(d.vector) %></div>
-          <div class="sw-text"><%= d.recommendation %></div>
-        </div>
-      <% }); %>
-    </div>
+    <% if (topDevelopmentAreas.length > 0) { %>
+      <div class="<%= topDevelopmentAreas.length >= 3 ? 'grid-3' : 'grid-2' %> gap-8" style="max-width:<%= topDevelopmentAreas.length >= 3 ? '100%' : '66%' %>;">
+        <% topDevelopmentAreas.forEach(function(d) { %>
+          <div class="sw-card development avoid-break" style="margin-top:0;">
+            <div class="sw-vector"><%= vectorLabel(d.vector) %></div>
+            <div class="sw-text"><%= d.recommendation %></div>
+          </div>
+        <% }); %>
+      </div>
+    <% } else if (!hasReliableSignal) { %>
+      <p class="text-body" style="max-width:66%;">Insufficient evidence for capability assessment. The interview contained no substantive responses, so specific development priorities could not be reliably determined.</p>
+    <% } else { %>
+      <div class="grid-3 gap-8">
+        <% canonicalDevelopmentAreas.forEach(function(d) { %>
+          <div class="sw-card development avoid-break" style="margin-top:0;">
+            <div class="sw-vector"><%= d.label %></div>
+            <div class="sw-text"><%= d.score %>/100</div>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
   </div>
 
   <div class="page-footer">
@@ -405,9 +419,17 @@
       </div>
       <div>
         <h3 class="card-title" style="margin-bottom:8px;">Development Priorities</h3>
-        <% topDevelopmentAreas.forEach(function(d) { %>
-          <div class="text-body" style="margin-bottom:4px;">→ <%= vectorLabel(d.vector) %></div>
-        <% }); %>
+        <% if (topDevelopmentAreas.length > 0) { %>
+          <% topDevelopmentAreas.forEach(function(d) { %>
+            <div class="text-body" style="margin-bottom:4px;">→ <%= vectorLabel(d.vector) %></div>
+          <% }); %>
+        <% } else if (!hasReliableSignal) { %>
+          <p class="text-body">Insufficient evidence for capability assessment. The interview contained no substantive responses, so specific development priorities could not be reliably determined.</p>
+        <% } else { %>
+          <% canonicalDevelopmentAreas.forEach(function(d) { %>
+            <div class="text-body" style="margin-bottom:4px;">→ <%= d.label %> (<%= d.score %>/100)</div>
+          <% }); %>
+        <% } %>
       </div>
     </div>
 
