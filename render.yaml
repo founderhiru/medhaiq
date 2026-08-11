@@ -2,7 +2,7 @@ services:
   - type: web
     runtime: node
     name: medhaiq-backend
-    buildCommand: npm install && npm run migrate
+    buildCommand: npm install && npx puppeteer browsers install chrome && npm run migrate
     startCommand: npm start
     healthCheckPath: /health
     envVars:
