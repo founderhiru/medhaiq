@@ -69,7 +69,7 @@ async function renderReportPdf(html) {
       printBackground: true,     // required — otherwise the dark cover page prints white
       preferCSSPageSize: true,
     });
-    return pdfBuffer;
+    return Buffer.from(pdfBuffer);
   } finally {
     await page.close();
   }
