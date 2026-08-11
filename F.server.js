@@ -464,21 +464,6 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
     const permissions = (req.capabilities && req.capabilities.permissions) || [];
     const hasFullReport = permissions.includes('reports.full');
     const hasPdfAccess = permissions.includes('reports.executive');
-    // ── Leadership rendering checkpoint ──────────────────────────────────
-    // 'leadership.insights' was declared in config/product-packages.js
-    // (Leadership package only) but consumed by zero code until now. This
-    // gates the three new narrative sections (executive_interpretation,
-    // role_readiness, next_level_direction) — Growth has 'reports.full'
-    // but NOT 'leadership.insights', so Growth's existing content (Sections
-    // 1-5) is completely unaffected by this check.
-    //
-    // Nulled out server-side (not just hidden in the template) when the
-    // permission is absent — belt-and-suspenders: even if a future template
-    // edit accidentally moved this outside its current `if` guard, a
-    // non-entitled request still never receives the data in its render
-    // payload at all.
-    const hasLeadershipInsights = permissions.includes('leadership.insights');
-    const leadershipInsights = hasLeadershipInsights ? cir.leadershipInsights : null;
 
     const circumference = 2 * Math.PI * 60;
     const circumferenceOffset = circumference - ((report.overall_score || 0) / 100) * circumference;
@@ -521,8 +506,6 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
       circumferenceOffset,
       hasFullReport,
       hasPdfAccess,
-      hasLeadershipInsights,
-      leadershipInsights,
       // Explorer snapshot fields — same ranked data Growth/Leadership get,
       // just the top-1 slice (see lib/career-intelligence-report.js;
       // strengths/developmentPriorities are already ranked lists, this
@@ -718,6 +701,7 @@ app.get('/interview/report/:id/pdf', requireAuthPage, async (req, res) => {
       starAvg, technicalAvg, executiveAvg, gccAvg, frictionAvg,
       radarPolygonPoints: radar.polygonPoints,
       radarPoints: radar.points,
+      qaCards,
       promotionReadiness, leadershipPotential, confidenceLevel,
       nextSteps,
       vectorBreakdown,
@@ -726,36 +710,23 @@ app.get('/interview/report/:id/pdf', requireAuthPage, async (req, res) => {
       leadershipReadiness,
       hasReliableSignal,
       canonicalDevelopmentAreas,
-
-      // ── Leadership PDF redesign checkpoint ──────────────────────────
-      // Passed STRAIGHT from `cir` (already computed above by the SAME
-      // buildCareerIntelligenceReport() call this route has used since
-      // Step 2A) — no new calculation, no new AI call, no new DB query.
-      // This replaces topStrengths / topDevelopmentAreas / practiceFocus /
-      // starCounts / starTotal / qaCards as the template's data source for
-      // these sections, because those were all derived from
-      // scoreboard.vector_breakdown, which — confirmed by reading
-      // REPORT_SYSTEM directly (services/interview.js) — is never
-      // populated by any AI report call. Key Strengths, Development
-      // Priorities, and Next Practice Focus have rendered BLANK on every
-      // PDF since this route shipped (see the Step 2A/2B scope notes
-      // above, left flagged and untouched at the time); this fixes that
-      // using data the canonical builder already computes from real
-      // interview_scores, not new or invented content. The old variables
-      // (topStrengths, topDevelopmentAreas, practiceFocus, starCounts,
-      // starTotal, qaCards, and the vectorBreakdown/candidateModel/
-      // evidenceMaturity/leadershipReadiness/hasReliableSignal/
-      // canonicalDevelopmentAreas block above) are left computed exactly
-      // as before — unused by the redesigned template, same precedent as
-      // radarPolygonPoints/radarPoints above — not deleted, to keep this
-      // checkpoint's diff to template data-wiring only.
-      sessionContext: cir.sessionContext,
-      strengths: cir.strengths,
-      developmentPriorities: cir.developmentPriorities,
-      starIntelligence: cir.starIntelligence,
-      coachingInsights: cir.coachingInsights,
-      nextPracticeFocus: cir.nextPracticeFocus,
-      leadershipInsights: cir.leadershipInsights,
+      // STAR counts — now sourced from the canonical builder's
+      // starIntelligence (same computeStarProgress() call, same regex
+      // patterns, same order; the loop itself now lives once in
+      // lib/career-intelligence-report.js instead of being duplicated
+      // here). Reshaped to the template's existing {situation,task,
+      // action,result} + starTotal shape so the STAR ring markup below
+      // needs no changes.
+      starCounts: {
+        situation: cir.starIntelligence.situation.detected,
+        task: cir.starIntelligence.task.detected,
+        action: cir.starIntelligence.action.detected,
+        result: cir.starIntelligence.result.detected,
+      },
+      starTotal: cir.starIntelligence.totalAnswered,
+      topStrengths,
+      topDevelopmentAreas,
+      practiceFocus,
     });
 
     const pdfBuffer = await renderReportPdf(html);

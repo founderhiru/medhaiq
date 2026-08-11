@@ -800,29 +800,6 @@ async function runMigrations() {
           console.log(`[migrate] 021: backfilled ${explorerBackfill.rows.length} existing Explorer user(s) with a welcome acquisition (no behavior change for them)`);
         },
       },
-      {
-        name: '022_leadership_narrative_fields',
-        up: async (c) => {
-          // Leadership-tier narrative fields — additive only. Produced by
-          // the SAME generateReport() AI call that already produces
-          // executive_summary/persona_verdict/etc (services/interview.js,
-          // REPORT_SYSTEM items 11-13). No second AI call, no scoring
-          // change, no interview-flow change.
-          //
-          // NULL for every report row that existed before this migration —
-          // no backfill is possible (there is no transcript-free way to
-          // generate these retroactively without a second AI call, which is
-          // explicitly out of scope for this migration). Consuming code
-          // (lib/career-intelligence-report.js) must treat NULL as "not
-          // available for this report", never invent a substitute value.
-          await c.query(`
-            ALTER TABLE interview_reports
-              ADD COLUMN IF NOT EXISTS executive_interpretation TEXT,
-              ADD COLUMN IF NOT EXISTS role_readiness TEXT,
-              ADD COLUMN IF NOT EXISTS next_level_direction TEXT
-          `);
-        },
-      },
     ];
 
     for (const m of migrations) {

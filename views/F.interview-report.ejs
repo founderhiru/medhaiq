@@ -137,41 +137,6 @@
       <% } %>
     </ol>
   </div>
-
-  <% if (hasLeadershipInsights && leadershipInsights) { %>
-  <!-- Leadership-only narrative layer (rendering checkpoint). Sourced
-       exclusively from cir.leadershipInsights (lib/career-intelligence-report.js),
-       itself a pass-through of the SAME generateReport() AI call that
-       produces executive_summary above — no second AI call, no new
-       calculation. Each field is rendered only if non-null: pre-migration-022
-       report rows have these as null, and this block simply doesn't print
-       that section rather than inventing placeholder text. Growth never
-       reaches this block — hasLeadershipInsights requires the
-       'leadership.insights' permission, which Growth's package does not
-       grant (config/product-packages.js). -->
-  <div class="report-divider"></div>
-
-  <% if (leadershipInsights.executiveInterpretation) { %>
-  <div class="report-section">
-    <h3>6. Executive Interpretation</h3>
-    <p class="exec-summary"><%= leadershipInsights.executiveInterpretation %></p>
-  </div>
-  <% } %>
-
-  <% if (leadershipInsights.roleReadiness) { %>
-  <div class="report-section">
-    <h3>7. Role Readiness</h3>
-    <p class="exec-summary"><%= leadershipInsights.roleReadiness %></p>
-  </div>
-  <% } %>
-
-  <% if (leadershipInsights.nextLevelDirection) { %>
-  <div class="report-section">
-    <h3>8. Next-Level Direction</h3>
-    <p class="exec-summary"><%= leadershipInsights.nextLevelDirection %></p>
-  </div>
-  <% } %>
-  <% } %>
   <% } else { %>
   <!-- Explorer snapshot — same ranked canonical data as Growth/Leadership,
        just the top-1 slice (server.js passes topStrength/topPriority/
