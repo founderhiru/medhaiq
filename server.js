@@ -485,6 +485,11 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
 
     res.render('interview-report', {
       report,
+      // Web report header simplification — candidate identity, sourced
+      // exactly like the PDF route already does (req.user.name = the
+      // logged-in candidate's own account, never persona data). PDF and
+      // email routes/templates are untouched by this change.
+      candidateName: (req.user && req.user.name) || 'Candidate',
       personaName: persona.name,
       personaTitle: persona.title + ' @ ' + persona.org,
       roleTitle: report.role_title || 'General Professional',

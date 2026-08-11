@@ -19,8 +19,9 @@
   <!-- Header -->
   <div class="report-header">
     <div class="report-date"><%= formattedDate %></div>
-    <div style="font-size:20px; font-weight:700; color:var(--white); margin-bottom:6px;"><%= candidateName %> · <%= roleTitle %></div>
-    <div class="persona-info">Interviewed by <%= personaName %></div>
+    <div class="persona-info">
+      Interviewed by <strong><%= personaName %></strong> · <%= personaTitle %> · <%= roleTitle %> · <%= experienceLevel %>
+    </div>
     <div class="score-ring">
       <svg width="140" height="140" viewBox="0 0 140 140">
         <circle class="bg" cx="70" cy="70" r="60" />
