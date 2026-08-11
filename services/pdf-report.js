@@ -62,14 +62,14 @@ async function renderReportPdf(html) {
     // networkidle0 waits for the Google Fonts request to finish loading
     // before the snapshot is taken, so text doesn't render in a fallback
     // font on the first paint.
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
+    await page.setContent(html, { waitUntil: 'load', timeout: 30000 });
     const pdfBuffer = await page.pdf({
       width: '8.5in',
       height: '11in',
       printBackground: true,     // required — otherwise the dark cover page prints white
       preferCSSPageSize: true,
     });
-    return pdfBuffer;
+    return Buffer.from(pdfBuffer);
   } finally {
     await page.close();
   }

@@ -218,7 +218,8 @@ async function pickAndPersistNextQuestion(session) {
       type: pending.question_type,
       isFollowup: pending.question_type === 'follow_up',
       order: pending.question_order,
-      isFinalQuestion: (pending.question_order + 1) >= totalQuestionCeiling,
+      isFinalQuestion: isPrimaryQuestionType(pending.question_type) &&
+  (_guard1AnsweredPrimaries + 1) >= totalQuestionCeiling,
       competency: pending.competency || null,
       audio_url: null,
       question: {
@@ -227,7 +228,8 @@ async function pickAndPersistNextQuestion(session) {
         type: pending.question_type,
         isFollowup: pending.question_type === 'follow_up',
         order: pending.question_order,
-        isFinalQuestion: (pending.question_order + 1) >= totalQuestionCeiling,
+        isFinalQuestion: isPrimaryQuestionType(pending.question_type) &&
+  (_guard1AnsweredPrimaries + 1) >= totalQuestionCeiling,
         competency: pending.competency || null
       }
     };
@@ -458,7 +460,7 @@ async function pickAndPersistNextQuestion(session) {
   // the NEXT response instead. Replaces the client's own QN>=MAXQ guess
   // (views/interview-session.ejs), which used the visible budget instead
   // of the real ceiling and could be wrong during a Leadership extension.
-  const isFinalQuestion = (savedQuestion.question_order + 1) >= totalQuestionCeiling;
+  const isFinalQuestion = !isFollowupTurn && (answeredPrimaryCount + 1) >= totalQuestionCeiling;
 
   return {
     done: false,

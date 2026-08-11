@@ -334,7 +334,12 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
     // interview-session.ejs, which previously computed QN >= MAXQ
     // (the visible budget) instead of the real ceiling, and could be
     // wrong during a Leadership Executive Extension.
-    const isFinalQuestion = (answeredCount + 1) >= (visibleQuestionBudget + executiveExtensionBudget);
+    const { isPrimaryQuestionType } = require('./routes/interview');
+   const answeredPrimaryCount = questions.filter(q =>
+     isPrimaryQuestionType(q.question_type) && q.answer_text !== null && q.answer_text !== undefined
+   ).length;
+   const isFinalQuestion = isPrimaryQuestionType(currentQ.question_type) &&
+     (answeredPrimaryCount + 1) >= (visibleQuestionBudget + executiveExtensionBudget);
     // Progress-counter denominator — REVERTED per explicit product
     // direction: the sidebar/progress-bar always shows "X of 5", frozen,
     // never exposing the total ceiling or that an extension occurred.
