@@ -519,8 +519,8 @@
   // <script> block at the top of pricing-section.ejs. No prices are
   // hardcoded here; this file only knows how to *display* them.
   var currency = PRICING_DATA.defaultCurrency;
-  var PLAN_PRICES = PRICING_DATA.plans;       // [{ id, price: { INR, USD, EUR } }, ...]
-  var CURRENCY_SYMBOLS = PRICING_DATA.symbols; // { INR, USD, EUR }
+  var PLAN_PRICES = PRICING_DATA.plans;       // [{ id, price: { INR, USD } }, ...]
+  var CURRENCY_SYMBOLS = PRICING_DATA.symbols; // { INR, USD }
 
   // ── Helpers ─────────────────────────────────────────────
   function fmt(n) {

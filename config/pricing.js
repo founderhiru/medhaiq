@@ -10,11 +10,26 @@
 // and isFeatured are included now (per Phase 2 scope) even though the current
 // card template does not render all of them yet. This lets top-up packs,
 // promo badges, and reordering ship later as data-only changes.
+//
+// NOTE ON PRICING-MARKET (india/international): INR and USD below are
+// independent approved commercial prices, NOT a forex conversion of one
+// from the other — do not "fix" USD by recalculating it from the INR
+// value or vice versa. Which currency displays by default is resolved
+// per-request in lib/landing-context.js (lib/pricing-market.js), not
+// here — this file stays a plain, request-independent data module.
+//
+// EUR was deliberately removed (not just hidden) from CURRENCY_SYMBOLS,
+// section.currencies, and every plan's price object — launch is two
+// markets only (india/international), and there's no approved European
+// price to show. If/when a Europe market is approved, add it back the
+// same way INR/USD already exist: an approved commercial price (not a
+// forex conversion), a MARKET_TO_CURRENCY entry in lib/landing-context.js,
+// and a third value in section.currencies. Do not reintroduce EUR as
+// just a dropdown option with no market behind it.
 
 const CURRENCY_SYMBOLS = {
   INR: '\u20B9', // ₹
   USD: '$',
-  EUR: '\u20AC', // €
 };
 
 const plans = [
@@ -29,7 +44,7 @@ const plans = [
     title: 'Explorer',
     tagline: 'Discover before you practice.',
     description: null,
-    price: { INR: 0, USD: 0, EUR: 0 },
+    price: { INR: 0, USD: 0 },
     priceSubtext: 'Forever Free',
     minutes: 30,
     approxInterviews: 1,
@@ -84,7 +99,7 @@ const plans = [
     title: 'Growth',
     tagline: 'Practice with purpose.',
     description: null,
-    price: { INR: 999, USD: 12, EUR: 11 },
+    price: { INR: 999, USD: 19 },
     priceSubtext: '120 AI Minutes Included',
     minutes: 120,
     approxInterviews: 4,
@@ -134,7 +149,7 @@ const plans = [
     title: 'Leadership',
     tagline: 'Lead with impact.',
     description: null,
-    price: { INR: 2999, USD: 39, EUR: 36 },
+    price: { INR: 2999, USD: 49 },
     priceSubtext: '300 AI Minutes Included',
     minutes: 300,
     approxInterviews: 10,
@@ -205,7 +220,7 @@ const section = {
   eyebrow: 'PRICING',
   title: 'Choose the Right Plan for Your Career Journey',
   subtitle: 'Start free. Upgrade only when you need more AI interview minutes.<br>No subscriptions. No surprises.',
-  currencies: ['INR', 'USD', 'EUR'],
+  currencies: ['INR', 'USD'],
   defaultCurrency: 'INR',
 };
 
