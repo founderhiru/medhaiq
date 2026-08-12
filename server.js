@@ -112,6 +112,9 @@ app.get('/architecture', (_req, res) => res.render('architecture'));
 app.get('/about',        (_req, res) => res.render('about'));
 app.get('/why',     (_req, res) => res.render('why'));
 app.get('/experience', (_req, res) => res.render('experience'));
+app.get('/sample-report', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'sample-report', 'index.html'));
+});
 // Explore MedhaIQ — UI-shell-only sprint. Placeholder data lives in
 // data/explore-data.js; no DB/Supabase yet (see data file header comment)
 // Explore MedhaIQ — now a pure navigation gateway (4 cards + Recently
