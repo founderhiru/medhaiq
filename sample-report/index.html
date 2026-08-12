@@ -1,1 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SAMPLE — MedhaIQ Leadership Career Intelligence Report (Fictional Data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+<!--
+  STANDALONE PROTOTYPE — NOT PRODUCTION CODE.
+
+  This file is a self-contained visual mock of the approved Leadership PDF
+  redesign (checkpoint approved 2026-08-11). It exists ONLY so the design
+  can be reviewed as a static artifact, independent of the live app.
+
+  What this file is:
+    - A single static HTML file with its OWN copy of the CSS design tokens
+      (visually matching views/interview-report-pdf.ejs's approved
+      white-executive style) and a hardcoded fictional data object.
+    - Openable directly in a browser. Use the browser's Print → Save as PDF
+      to get an actual PDF for review — this avoids needing Puppeteer or
+      any part of the production PDF pipeline just to look at the design.
+
+  What this file is NOT and does NOT do:
+    - Does not import, require, or reference any file under the medhaiq
+      repo (views/, server.js, services/, lib/, config/, db/) — this file
+      has zero code-level connection to the application.
+    - Does not touch any production route, database table, package
+      entitlement, email service, scoring logic, interview logic, or the
+      real services/pdf-report.js renderer.
+    - Is not required or imported BY any production file — nothing in the
+      app references this mock directory. Grep the repo for
+      "mock-standalone" or "leadership-pdf-sample" and you will find
+      nothing, by design.
+    - Every value below is fictional. "Priya Sharma," her scores, her
+      quoted answers, and her interviewer are all invented for this mock.
+
+  Removal: delete the mock-standalone/ directory. Nothing else changes.
+-->
+
+<style>
+  @page { size: 8.5in 11in; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 8.5in; background: #E7E9EE; }
+  body { font-family: 'Inter', -apple-system, sans-serif; color: #1B2130; -webkit-font-smoothing: antialiased; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+
+  .page { width: 8.5in; min-height: 11in; background: #FFFFFF; position: relative; page-break-after: always; break-after: page; }
+  .page:last-of-type { page-break-after: auto; break-after: auto; }
+  .avoid-break { page-break-inside: avoid; break-inside: avoid; }
+  @media print { html, body { background: #FFFFFF; } .page { box-shadow: none !important; } .sample-banner { display: none !important; } }
+  @media screen { body { padding: 24px 0; } .page { margin: 0 auto 24px; box-shadow: 0 4px 24px rgba(15,23,42,0.08); } }
+
+  :root {
+    --ink: #1B2130; --paper: #FFFFFF; --surface: #F7F8FA;
+    --signal: #2554C7; --signal-dark: #1E40AF; --signal-soft: #EEF3FC;
+    --emerald: #0F7B4E; --emerald-soft: #EAF7F1; --emerald-line: #CDEBDD;
+    --amber: #9A5B14; --amber-soft: #FBF1E4; --amber-line: #F0DBB8;
+    --line: #E3E6EC; --gray-500: #64748B; --gray-700: #3A4150;
+  }
+  .font-display { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
+  .eyebrow { font-family:'Inter'; font-size:9.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--signal); }
+  h2.page-title { font-size:19px; font-weight:800; color:var(--ink); }
+  h3.card-title { font-size:12.5px; font-weight:700; color:var(--ink); }
+  .text-body { font-size:11.5px; line-height:1.55; color:var(--gray-700); }
+  .text-caption { font-size:9.5px; color:var(--gray-500); }
+
+  .flex { display:flex; } .flex-col { display:flex; flex-direction:column; }
+  .items-center { align-items:center; }
+  .gap-8{gap:8px;} .gap-16{gap:16px;} .gap-24{gap:24px;}
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; }
+  .rounded-lg{border-radius:10px;}
+  .p-16{padding:16px;} .px-48{padding-left:48px;padding-right:48px;}
+
+  .cover-topbar { display:flex; align-items:center; justify-content:space-between; padding:26px 48px 0; }
+  .brand-mark { display:flex; align-items:center; gap:8px; }
+  .brand-dot { width:20px; height:20px; border-radius:6px; background:var(--signal); display:inline-block; }
+  .brand-name { font-family:'Plus Jakarta Sans'; font-weight:700; letter-spacing:-0.04em; font-size:16px; color:var(--ink); }
+  .brand-name .iq { color: var(--signal); }
+  .exec-summary-box { background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--signal); }
+
+  .page-header { display:flex; align-items:center; justify-content:space-between; padding:22px 48px 14px; border-bottom:1px solid var(--line); }
+  .page-footer { position:relative; margin-top:24px; display:flex; align-items:center; justify-content:space-between; padding:12px 48px; border-top:1px solid var(--line); font-size:8.5px; color:var(--gray-500); }
+
+  .vector-card { border:1px solid var(--line); border-radius:12px; padding:16px 18px; background:#fff; }
+  .vector-row { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--line); }
+  .vector-row:last-child { border-bottom:none; }
+  .vector-label { width:150px; flex-shrink:0; font-size:11px; font-weight:600; color:var(--ink); }
+  .vector-track { flex:1; height:8px; background:var(--surface); border-radius:4px; overflow:hidden; }
+  .vector-fill { height:100%; background:var(--signal); border-radius:4px; }
+  .vector-score { width:26px; flex-shrink:0; text-align:right; font-family:'Plus Jakarta Sans'; font-weight:800; font-size:13px; color:var(--ink); }
+
+  .sw-card { border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .sw-card + .sw-card { margin-top:10px; }
+  .sw-vector { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; margin-bottom:3px; }
+  .sw-text { font-size:11px; line-height:1.5; color:var(--gray-700); }
+  .sw-card.strength { background:var(--emerald-soft); border-color:var(--emerald-line); }
+  .sw-card.strength .sw-vector { color:var(--emerald); }
+  .sw-card.development { background:var(--amber-soft); border-color:var(--amber-line); }
+  .sw-card.development .sw-vector { color:var(--amber); }
+
+  .star-ring { width:64px; height:64px; border-radius:999px; border:5px solid var(--line); display:flex; align-items:center; justify-content:center; }
+  .star-ring.is-filled { border-color: var(--signal); }
+  .star-ring-label { font-size:20px; font-weight:800; font-family:'Plus Jakarta Sans'; color:var(--ink); }
+  .star-letter { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--gray-500); margin-top:6px; text-align:center; }
+
+  .callout { border-radius:10px; padding:14px; }
+  .callout.strong { background:var(--emerald-soft); border-left:3px solid var(--emerald); }
+  .callout.weak { background:var(--amber-soft); border-left:3px solid var(--amber); }
+
+  .timeline-rail { position:relative; padding-left:28px; }
+  .timeline-rail::before { content:''; position:absolute; left:7px; top:4px; bottom:4px; width:2px; background:var(--line); }
+  .timeline-item { position:relative; padding-bottom:16px; }
+  .timeline-item:last-child { padding-bottom:0; }
+  .timeline-dot { position:absolute; left:-28px; top:1px; width:16px; height:16px; border-radius:999px; background:#fff; border:3px solid var(--signal); }
+  .practice-focus-box { background:var(--signal-soft); border:1px solid var(--line); border-radius:10px; padding:14px; }
+
+  .sample-banner { background:#B91C1C; color:#fff; text-align:center; font-family:'Plus Jakarta Sans'; font-weight:800; font-size:11px; letter-spacing:.08em; padding:8px; text-transform:uppercase; }
+  .sample-stamp { position:absolute; top:14px; right:14px; font-size:8px; font-weight:800; letter-spacing:.06em; color:#B91C1C; border:1.5px solid #B91C1C; border-radius:4px; padding:3px 8px; text-transform:uppercase; background:#FEF2F2; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ PAGE 1 — CAREER INTELLIGENCE PROFILE ══════════════════ -->
+<section class="page">
+  <div class="sample-banner">SAMPLE REPORT — FICTIONAL DATA — NOT A REAL CANDIDATE</div>
+  <div class="sample-stamp">FICTIONAL</div>
+
+  <div class="cover-topbar">
+    <div class="brand-mark">
+      <span class="brand-dot"></span>
+      <span class="brand-name">Medha<span class="iq">IQ</span></span>
+    </div>
+    <div class="eyebrow">CAREER INTELLIGENCE PROFILE</div>
+  </div>
+
+  <div style="padding:16px 48px 0;">
+    <div class="text-caption">Priya Sharma (fictional) · Senior Product Manager · August 11, 2026</div>
+    <div class="text-caption" style="margin-top:3px;">Senior · Interviewed by Marcus Webb (fictional persona) · 8 questions answered · 34 min session</div>
+  </div>
+
+  <div class="flex items-center gap-24" style="padding:18px 48px 0;">
+    <div style="position:relative; width:150px; height:150px; flex-shrink:0;">
+      <svg width="150" height="150" viewBox="0 0 150 150">
+        <circle cx="75" cy="75" r="63" fill="none" stroke="#E3E6EC" stroke-width="11"/>
+        <circle cx="75" cy="75" r="63" fill="none" stroke="#2554C7" stroke-width="11" stroke-linecap="round"
+                stroke-dasharray="320.4 395.8" transform="rotate(-90 75 75)"/>
+      </svg>
+      <div class="flex-col items-center" style="position:absolute; top:0; left:0; width:150px; height:150px; justify-content:center;">
+        <div style="font-family:'Plus Jakarta Sans'; font-weight:800; font-size:42px; color:var(--ink); line-height:1;">81</div>
+        <div style="font-size:11px; color:var(--gray-500); font-weight:600;">out of 100</div>
+      </div>
+    </div>
+    <div class="flex-col gap-8" style="flex:1;">
+      <div class="eyebrow">OVERALL CAREER INTELLIGENCE SCORE</div>
+      <div style="font-family:'Plus Jakarta Sans'; font-weight:700; font-size:14px; color:var(--ink);">Senior · Senior Product Manager</div>
+      <div class="text-caption" style="max-width:340px;">A single structured interview session, evaluated across five career-intelligence dimensions.</div>
+    </div>
+  </div>
+
+  <div style="padding:18px 48px 0;">
+    <div class="exec-summary-box rounded-lg p-16">
+      <div class="eyebrow" style="margin-bottom:6px;">EXECUTIVE SUMMARY</div>
+      <p style="font-size:11.5px; line-height:1.6; color:var(--gray-700);">Priya demonstrated strong strategic framing across the session, with structured answers throughout. Communication ran long in several places, and one conflict-related answer lacked resolution.</p>
+    </div>
+  </div>
+
+  <div style="padding:18px 48px 0;">
+    <div class="eyebrow" style="margin-bottom:8px;">FIVE-VECTOR PROFILE</div>
+    <div class="vector-card">
+      <div class="vector-row"><div class="vector-label">Structure</div><div class="vector-track"><div class="vector-fill" style="width:84%;"></div></div><div class="vector-score">84</div></div>
+      <div class="vector-row"><div class="vector-label">Domain Expertise</div><div class="vector-track"><div class="vector-fill" style="width:79%;"></div></div><div class="vector-score">79</div></div>
+      <div class="vector-row"><div class="vector-label">Strategic Thinking</div><div class="vector-track"><div class="vector-fill" style="width:88%;"></div></div><div class="vector-score">88</div></div>
+      <div class="vector-row"><div class="vector-label">Communication</div><div class="vector-track"><div class="vector-fill" style="width:72%;"></div></div><div class="vector-score">72</div></div>
+      <div class="vector-row"><div class="vector-label">Leadership &amp; Execution</div><div class="vector-track"><div class="vector-fill" style="width:76%;"></div></div><div class="vector-score">76</div></div>
+    </div>
+  </div>
+
+  <div class="grid-2 gap-16" style="padding:16px 48px 0;">
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px;">KEY STRENGTHS</div>
+      <div class="sw-card strength avoid-break"><div class="sw-vector">Strategic Thinking — 88/100</div></div>
+      <div class="sw-card strength avoid-break"><div class="sw-vector">Structure — 84/100</div></div>
+    </div>
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px;">KEY DEVELOPMENT PRIORITIES</div>
+      <div class="sw-card development avoid-break">
+        <div class="sw-vector">Communication — 72/100</div>
+        <div class="sw-text" style="margin-top:2px;">Tighten answers to land the takeaway in the first two sentences.</div>
+      </div>
+      <div class="sw-card development avoid-break"><div class="sw-vector">Leadership &amp; Execution — 76/100</div></div>
+      <div class="sw-card development avoid-break"><div class="sw-vector">Domain Expertise — 79/100</div></div>
+    </div>
+  </div>
+
+  <div class="page-footer"><span>MedhaIQ.ai · SAMPLE — Fictional Data, Not a Real Report</span><span>Page 1 of 3</span></div>
+</section>
+
+
+<!-- ══════════════════ PAGE 2 — EVIDENCE & INTERPRETATION ══════════════════ -->
+<section class="page">
+  <div class="sample-banner">SAMPLE REPORT — FICTIONAL DATA — NOT A REAL CANDIDATE</div>
+  <div class="sample-stamp">FICTIONAL</div>
+
+  <div class="page-header">
+    <div><div class="eyebrow">SECTION 02</div><h2 class="page-title font-display">Evidence &amp; Interpretation</h2></div>
+  </div>
+
+  <div class="px-48" style="padding-top:18px;">
+    <h3 class="card-title" style="margin-bottom:2px;">STAR Intelligence</h3>
+    <div class="text-caption" style="margin-bottom:12px;">Same Situation / Task / Action / Result framework used during Interview Setup and the Live Interview.</div>
+    <div class="flex items-center" style="justify-content:space-between;">
+      <div class="flex-col items-center"><div class="star-ring is-filled"><div class="star-ring-label">88%</div></div><div class="star-letter">situation</div><div class="text-caption">7/8 answers</div></div>
+      <div class="flex-col items-center"><div class="star-ring is-filled"><div class="star-ring-label">75%</div></div><div class="star-letter">task</div><div class="text-caption">6/8 answers</div></div>
+      <div class="flex-col items-center"><div class="star-ring is-filled"><div class="star-ring-label">100%</div></div><div class="star-letter">action</div><div class="text-caption">8/8 answers</div></div>
+      <div class="flex-col items-center"><div class="star-ring"><div class="star-ring-label">63%</div></div><div class="star-letter">result</div><div class="text-caption">5/8 answers</div></div>
+      <div class="flex-col items-center" style="border-left:1px solid var(--line); padding-left:24px;">
+        <div style="font-family:'Plus Jakarta Sans'; font-weight:800; font-size:30px; color:var(--signal-dark);">84</div>
+        <div class="star-letter">Overall STAR Score</div>
+      </div>
+    </div>
+
+    <h3 class="card-title" style="margin-top:22px; margin-bottom:10px;">Representative Question Evidence</h3>
+    <div class="grid-2 gap-16">
+      <div class="callout strong avoid-break">
+        <h3 class="card-title" style="margin-bottom:4px;">Highlighted Response</h3>
+        <div class="text-caption" style="margin-bottom:6px;">Stakeholder prioritization</div>
+        <div class="text-body">"Quantified a delayed feature impact avoided — modeled a two-sprint slip and proposed a phased alternative instead."</div>
+      </div>
+      <div class="callout weak avoid-break">
+        <h3 class="card-title" style="margin-bottom:4px;">Growth Opportunity</h3>
+        <div class="text-caption" style="margin-bottom:6px;">Engineering conflict</div>
+        <div class="text-body">"Described the disagreement in detail but did not state how it was resolved."</div>
+      </div>
+    </div>
+
+    <div class="exec-summary-box rounded-lg p-16 avoid-break" style="margin-top:20px;">
+      <div class="eyebrow" style="margin-bottom:6px;">EXECUTIVE INTERPRETATION</div>
+      <p class="text-body">Priya presents as a candidate whose strategic judgment outpaces her delivery discipline right now. The combination of strong trade-off reasoning with inconsistent outcome-closure is the single pattern a panel would most want resolved before extending an offer.</p>
+    </div>
+
+    <div class="vector-card avoid-break" style="margin-top:14px;">
+      <div class="eyebrow" style="margin-bottom:6px;">ROLE READINESS</div>
+      <p class="text-body">Strong evidence of strategic thinking, but developing evidence of execution ownership at the target level — particularly under interpersonal friction.</p>
+    </div>
+  </div>
+
+  <div class="page-footer"><span>MedhaIQ.ai · SAMPLE — Fictional Data, Not a Real Report</span><span>Page 2 of 3</span></div>
+</section>
+
+
+<!-- ══════════════════ PAGE 3 — NEXT-LEVEL DIRECTION ══════════════════ -->
+<section class="page">
+  <div class="sample-banner">SAMPLE REPORT — FICTIONAL DATA — NOT A REAL CANDIDATE</div>
+  <div class="sample-stamp">FICTIONAL</div>
+
+  <div class="page-header">
+    <div><div class="eyebrow">SECTION 03</div><h2 class="page-title font-display">Next-Level Direction</h2></div>
+  </div>
+
+  <div class="px-48" style="padding-top:18px;">
+    <div class="exec-summary-box rounded-lg p-16 avoid-break">
+      <div class="eyebrow" style="margin-bottom:6px;">NEXT-LEVEL DIRECTION</div>
+      <p class="text-body">The highest-leverage focus is converting existing strategic strength into visibly measurable outcomes and ownership-forward language when under pressure, not acquiring a new skill.</p>
+    </div>
+
+    <h3 class="card-title" style="margin-top:20px; margin-bottom:8px;">Practical Improvement Guidance</h3>
+    <div class="grid-2 gap-16">
+      <div class="vector-card avoid-break">
+        <div class="text-caption" style="margin-bottom:4px; text-transform:uppercase; letter-spacing:.03em;">Structural Layout &amp; Flow</div>
+        <div class="text-body">Logical and easy to follow throughout.</div>
+      </div>
+      <div class="vector-card avoid-break">
+        <div class="text-caption" style="margin-bottom:4px; text-transform:uppercase; letter-spacing:.03em;">Linguistic Nuances &amp; Fillers</div>
+        <div class="text-body">Some hedging language in weaker answers.</div>
+      </div>
+    </div>
+
+    <h3 class="card-title" style="margin-top:22px; margin-bottom:10px;">30 / 60 / 90-Day Career Roadmap</h3>
+    <div class="timeline-rail">
+      <div class="timeline-item avoid-break"><div class="timeline-dot"></div><div class="eyebrow" style="margin-bottom:2px;">0–30 DAYS</div><p class="text-body">Practice STAR Result framing on 3 recent projects, ending each with a specific quantified outcome.</p></div>
+      <div class="timeline-item avoid-break"><div class="timeline-dot"></div><div class="eyebrow" style="margin-bottom:2px;">30–60 DAYS</div><p class="text-body">Rehearse conflict-resolution answers using the STAR format, focused on stating the resolution explicitly.</p></div>
+      <div class="timeline-item avoid-break"><div class="timeline-dot"></div><div class="eyebrow" style="margin-bottom:2px;">60–90 DAYS</div><p class="text-body">Tighten opening sentences across all answer types to land the takeaway before elaborating.</p></div>
+    </div>
+
+    <div class="practice-focus-box avoid-break" style="margin-top:18px;">
+      <div class="eyebrow" style="margin-bottom:4px;">NEXT RECOMMENDED PRACTICE FOCUS</div>
+      <h3 class="card-title" style="margin-bottom:4px;">Communication</h3>
+      <div class="text-body">Current signal: 72/100 — the lowest of the five vectors this session, and the highest-leverage place to focus before the next interview.</div>
+    </div>
+
+    <div class="text-caption avoid-break" style="margin-top:20px; padding-top:14px; border-top:1px solid var(--line); line-height:1.6;">
+      This report reflects a single structured interview session and is intended to support career development and interview preparation — not as a standalone hiring, promotion, or compensation decision.
+    </div>
+  </div>
+
+  <div class="page-footer"><span>MedhaIQ.ai · SAMPLE — Fictional Data, Not a Real Report</span><span>Page 3 of 3</span></div>
+</section>
+
+</body>
+</html>
