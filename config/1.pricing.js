@@ -49,6 +49,15 @@ const plans = [
           { text: 'AI Interview Experience', bold: false },
         ],
       },
+      {
+        header: { text: 'Career Intelligence', icon: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
+        items: [
+          { text: 'Interview Report — Snapshot', bold: false },
+          { text: 'Five-Vector Score', bold: false },
+          { text: 'Strength & Priority Signals', bold: false },
+          { text: 'STAR Signal', bold: false },
+        ],
+      },
     ],
     infoBox: {
       icon: '<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
@@ -85,15 +94,16 @@ const plans = [
         header: { text: 'AI Practice', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
         items: [
           { text: '120 AI Interview Minutes', bold: true },
+          { text: '3 Interview Personas', bold: false },
           { text: 'Resume Intelligence', bold: false },
           { text: 'JD Intelligence', bold: false },
           { text: 'Adaptive AI Interviews', bold: false },
         ],
       },
       {
-        header: { text: 'Insights', icon: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
+        header: { text: 'Career Intelligence', icon: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
         items: [
-          { text: 'AI Interview Reports', bold: false },
+          { text: 'Full Career Intelligence Reports', bold: false },
           { text: 'Progress Dashboard', bold: false },
           { text: 'Interview History', bold: false },
         ],
@@ -135,9 +145,16 @@ const plans = [
         items: [
           { text: 'Everything in Growth', bold: true },
           { text: '300 AI Interview Minutes', bold: true },
-          { text: 'Leadership Personas', bold: false },
+          { text: '6 Interview Personas', bold: false },
           { text: 'Advanced Follow-up Questions', bold: false },
           { text: 'Longer Practice Sessions', bold: false },
+        ],
+      },
+      {
+        header: { text: 'Executive Intelligence', icon: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
+        items: [
+          { text: 'Executive Career Intelligence', bold: false },
+          { text: 'Premium PDF Report', bold: false },
         ],
       },
       {

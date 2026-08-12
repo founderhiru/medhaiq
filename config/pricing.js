@@ -41,21 +41,13 @@ const plans = [
       {
         header: null,
         items: [
+          { text: '30 Welcome AI Minutes', bold: true },
           { text: 'Company Interview Library', bold: false },
           { text: 'Role Library', bold: false },
           { text: 'Sample Interview Reports', bold: false },
           { text: 'Resume + JD Upload', bold: false },
-          { text: '30 Welcome AI Minutes', bold: true },
           { text: 'AI Interview Experience', bold: false },
-        ],
-      },
-      {
-        header: { text: 'Career Intelligence', icon: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
-        items: [
           { text: 'Interview Report — Snapshot', bold: false },
-          { text: 'Five-Vector Score', bold: false },
-          { text: 'Strength & Priority Signals', bold: false },
-          { text: 'STAR Signal', bold: false },
         ],
       },
     ],
