@@ -33,6 +33,32 @@ async function requireFounder(req, res, next) {
   next();
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// Staging-only pricing-market override (Founder testing).
+// GET  /api/founder/market-override  — read current override state
+// POST /api/founder/market-override  — set AUTO | INDIA | INTERNATIONAL
+//
+// Structurally unreachable in production: both routes 404 (not just
+// "forbidden") when NODE_ENV === 'production', before requireFounder even
+// runs, so there is no code path in production that reads, sets, or acts
+// on this cookie at all — same pattern already used elsewhere in this
+// codebase for staging-only behavior (see server.js's isProdEnv-gated
+// voice-override logging).
+// ─────────────────────────────────────────────────────────────────────────
+const { OVERRIDE_COOKIE } = require('../lib/pricing-market');
+
+function blockInProduction(_req, res, next) {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  next();
+}
+
+router.get('/market-override', blockInProduction, requireFounder, (req, res) => {
+  const current = (req.cookies && req.cookies[OVERRIDE_COOKIE]) || 'AUTO';
+  return res.json({ override: current });
+});
+
 // GET /api/founder/overview — Section 1 KPI cards
 router.get('/overview', requireFounder, async (_req, res) => {
   try {
@@ -232,6 +258,30 @@ router.post('/waitlist-approve', requireFounder, async (req, res) => {
     console.error('[founder] waitlist approve error:', err);
     return res.status(500).json({ error: 'Failed to approve request' });
   }
+});
+
+router.post('/market-override', blockInProduction, requireFounder, (req, res) => {
+  const { override } = req.body || {};
+  const value = String(override || '').toUpperCase();
+  if (!['AUTO', 'INDIA', 'INTERNATIONAL'].includes(value)) {
+    return res.status(400).json({ error: 'override must be AUTO, INDIA, or INTERNATIONAL' });
+  }
+
+  if (value === 'AUTO') {
+    res.clearCookie(OVERRIDE_COOKIE);
+  } else {
+    // Not marked secure: staging may not terminate HTTPS at this layer.
+    // httpOnly so client JS can't read/tamper with it; sameSite='lax' is
+    // sufficient since this is a same-site Founder-only testing toggle,
+    // not a cross-site-sensitive credential.
+    res.cookie(OVERRIDE_COOKIE, value, {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24h — a testing convenience, not meant to be permanent
+    });
+  }
+
+  return res.json({ success: true, override: value });
 });
 
 module.exports = router;

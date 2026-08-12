@@ -38,17 +38,23 @@ async function requireFounder(req, res, next) {
 // GET  /api/founder/market-override  — read current override state
 // POST /api/founder/market-override  — set AUTO | INDIA | INTERNATIONAL
 //
-// Structurally unreachable in production: both routes 404 (not just
-// "forbidden") when NODE_ENV === 'production', before requireFounder even
-// runs, so there is no code path in production that reads, sets, or acts
-// on this cookie at all — same pattern already used elsewhere in this
-// codebase for staging-only behavior (see server.js's isProdEnv-gated
-// voice-override logging).
+// Structurally unreachable on real production: both routes 404 (not just
+// "forbidden") when IS_LIVE_PRODUCTION === 'true', before requireFounder
+// even runs, so there is no code path in production that reads, sets, or
+// acts on this cookie at all. Deliberately not NODE_ENV — see
+// blockInProduction below for why.
 // ─────────────────────────────────────────────────────────────────────────
 const { OVERRIDE_COOKIE } = require('../lib/pricing-market');
 
 function blockInProduction(_req, res, next) {
-  if (process.env.NODE_ENV === 'production') {
+  // Deliberately NOT process.env.NODE_ENV — staging also runs with
+  // NODE_ENV=production (see render.yaml), which made this route 404
+  // on staging too. IS_LIVE_PRODUCTION is a separate, purpose-built flag
+  // that means exactly one thing: "this is the real customer-facing
+  // deployment" — set to 'true' only on the actual production Render
+  // service's env vars, never in render.yaml (so it can't accidentally
+  // propagate to staging), and left unset/false everywhere else.
+  if (process.env.IS_LIVE_PRODUCTION === 'true') {
     return res.status(404).json({ error: 'Not found' });
   }
   next();
