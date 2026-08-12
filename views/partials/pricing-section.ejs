@@ -553,5 +553,39 @@
       modal.style.display = 'none';
     }
   });
+
+  // ── Stripe Sandbox Checkout (Growth only) ──────────────────────────
+  // Staging pilot, approved scope. Anchors carrying data-stripe-checkout
+  // (set only on the Growth card — see pricing-card.ejs) are intercepted
+  // here; every other CTA (Explorer, Leadership) is untouched and keeps
+  // its plain href behavior.
+  var stripeCheckoutLinks = document.querySelectorAll('[data-stripe-checkout]');
+  stripeCheckoutLinks.forEach(function(link) {
+    link.addEventListener('click', async function(e) {
+      var packageId = link.getAttribute('data-stripe-checkout');
+      if (packageId !== 'growth') return; // only Growth is wired up in this pass
+      e.preventDefault();
+      var originalText = link.textContent;
+      link.textContent = 'Redirecting to checkout...';
+      try {
+        var res = await fetch('/api/stripe/checkout/growth', { method: 'POST' });
+        if (res.status === 401) {
+          // Not logged in — fall back to the card's existing '/login' href.
+          window.location.href = link.getAttribute('href');
+          return;
+        }
+        var json = await res.json();
+        if (res.ok && json.url) {
+          window.location.href = json.url;
+        } else {
+          alert(json.error || 'Could not start checkout. Please try again.');
+          link.textContent = originalText;
+        }
+      } catch (err) {
+        alert('Network error. Please try again.');
+        link.textContent = originalText;
+      }
+    });
+  });
 })();
 </script>

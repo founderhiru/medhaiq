@@ -132,7 +132,13 @@ const plans = [
       title: 'Need more practice?',
       desc: 'Purchase additional AI Minutes anytime.',
     },
-    cta: { text: 'Get Growth', href: '/login' },
+    // action: 'stripe-checkout' — Growth ONLY, per the approved Sandbox
+    // pilot scope. href stays as the existing '/login' destination: it's
+    // the fallback for logged-out visitors and for any surface that
+    // doesn't run the checkout click-handler script (see pricing-card.ejs
+    // + pricing-section.ejs). Explorer and Leadership are deliberately
+    // untouched — still plain '/login' links, no checkout wiring.
+    cta: { text: 'Get Growth', href: '/login', action: 'stripe-checkout' },
     footer: 'Credits valid for 12 months',
   },
   {

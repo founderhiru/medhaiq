@@ -843,6 +843,32 @@ async function runMigrations() {
           `);
         },
       },
+      {
+        name: '024_stripe_purchase_idempotency',
+        up: async (c) => {
+          // Stripe Sandbox checkout (routes/stripe.js) — staging only.
+          // Purely additive: a partial UNIQUE index on the EXISTING
+          // package_acquisitions.purchase_reference column (already
+          // present since migration 016, previously unused by any
+          // caller). No new table, no parallel credit system — this is
+          // the exact same idempotency pattern migration 021 already
+          // established for the welcome offer (one partial unique index
+          // = the real guarantee; the webhook's own duplicate check,
+          // routes/stripe.js, is just the fast path).
+          //
+          // The Stripe Checkout Session ID (e.g. "cs_test_...") is
+          // stored as purchase_reference — Stripe guarantees this is
+          // unique per session, so a retried/duplicated webhook delivery
+          // for the same session can never grant the Growth package
+          // twice, even under a race between two near-simultaneous
+          // deliveries.
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_package_acquisitions_purchase_reference_unique
+              ON package_acquisitions (purchase_reference)
+              WHERE purchase_reference IS NOT NULL
+          `);
+        },
+      },
     ];
 
     for (const m of migrations) {
