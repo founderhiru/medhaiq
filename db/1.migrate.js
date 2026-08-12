@@ -823,26 +823,6 @@ async function runMigrations() {
           `);
         },
       },
-      {
-        name: '023_users_market',
-        up: async (c) => {
-          // Pricing-market resolution (india vs. international commercial
-          // pricing — see config/pricing.js). Nullable by design: existing
-          // users are not backfilled to a guessed market. lib/pricing-market.js
-          // treats NULL exactly like an unauthenticated visitor — it falls
-          // through to IP/geo resolution — so no user is ever broken by
-          // this migration; they just don't have a "sticky" market yet
-          // until it's set (on next login-context resolution, or manually).
-          // Deliberately a two-value market string, not a full country
-          // column — see Phase [pricing-market] audit: the immediate
-          // business requirement is India vs. International pricing, not
-          // country-level data for any other purpose.
-          await c.query(`
-            ALTER TABLE users
-              ADD COLUMN IF NOT EXISTS market VARCHAR(20)
-          `);
-        },
-      },
     ];
 
     for (const m of migrations) {
