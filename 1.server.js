@@ -486,24 +486,20 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
     const circumference = 2 * Math.PI * 60;
     const circumferenceOffset = circumference - ((report.overall_score || 0) / 100) * circumference;
 
-    // STEP 4 (Web IA restructure, approved 2026-08-12): report.improvements_json
-    // is now read via cir.developmentPriorities[0].narrative instead of
-    // directly in the template — this is the SAME underlying value (the
-    // canonical builder attaches report.improvements_json[0].fix onto the
-    // top-ranked development-priority entry, see rankVectors() in
-    // lib/career-intelligence-report.js), just consumed through cir like
-    // every other field now, resolving the Step-3-deferred decision noted
-    // above. Not a new calculation, not a new data source.
-
-    // Decision 1 (Web IA restructure) — report.recommendation is NOT
-    // deleted, NOT recalculated, and services/interview.js is untouched.
-    // Only its *presentation* changes: instead of a standalone colored
-    // "Hiring Recommendation" badge/section, its meaning is folded into a
-    // small subtitle line under the Career Intelligence overview. Plain
-    // string composition here, zero new AI content.
-    const recommendationContext = report.recommendation
-      ? `Interview assessment context: ${report.recommendation}`
-      : null;
+    // STEP 3 SCOPE NOTE: report.improvements_json (Section 5, "Top 3
+    // Development Priorities" in views/interview-report.ejs) is
+    // intentionally NOT swapped to cir.developmentPriorities in this step.
+    // Per the locked Decision 1 (docs/MEDHAIQ_REPORTING_DESIGN_V1.md),
+    // canonical developmentPriorities should derive from the five vectors
+    // "combined with the existing improvement/coaching narrative where
+    // appropriate" — that combination is a content decision, not a pure
+    // data-source consolidation, and Step 3 is explicitly scoped to
+    // consolidation only ("do not redesign the Web Report UI... do not
+    // change the existing visual layout"). report.improvements_json is
+    // real, populated AI content (unlike the PDF's dead vector_breakdown
+    // path) — swapping it would change what the candidate sees, not just
+    // where the number comes from. Left as-is; flagged for an explicit
+    // decision, not made silently.
 
     res.render('interview-report', {
       report,
@@ -530,18 +526,6 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
       hasPdfAccess,
       hasLeadershipInsights,
       leadershipInsights,
-      recommendationContext,
-      // ── Web IA restructure (Step 2, structural only — no visual change,
-      // no new AI call) — every value below is a direct field already
-      // computed by the SAME buildCareerIntelligenceReport() call above.
-      // Nothing here is recalculated or newly derived; this route was
-      // simply not asking `cir` for these fields before.
-      strengths: cir.strengths,
-      developmentPriorities: cir.developmentPriorities,
-      coachingInsights: cir.coachingInsights,
-      careerRoadmap: cir.careerRoadmap,
-      nextPracticeFocus: cir.nextPracticeFocus,
-      sessionContext: cir.sessionContext,
       // Explorer snapshot fields — same ranked data Growth/Leadership get,
       // just the top-1 slice (see lib/career-intelligence-report.js;
       // strengths/developmentPriorities are already ranked lists, this
