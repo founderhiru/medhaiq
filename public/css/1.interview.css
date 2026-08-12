@@ -955,3 +955,139 @@ h1, h2, h3, h4, h5 {
     display: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   WEB REPORT — WHITE EXECUTIVE VISUAL SYSTEM (Step 3, approved 2026-08-12)
+   ══════════════════════════════════════════════════════════════════════
+   Visual benchmark: public/sample-report/index.html.
+
+   CRITICAL SCOPING NOTE — read before editing anything below:
+   This stylesheet (interview.css) is NOT exclusive to the Web Report. It
+   is also loaded by login, signup, the workspace shell top nav, the
+   brand-logo/user-avatar partials, dashboard-history, and the error
+   boundary page (confirmed by grep across every .ejs file before writing
+   this block). Several class names the report uses — .cta-btn,
+   .report-section, .exec-summary, .brand-logo__text — are SHARED with
+   those other pages, which remain dark-navy and are explicitly out of
+   scope for this task.
+
+   Every rule below is therefore scoped under `.report-page` (or
+   `body.report-page-body`, a class added to <body> in
+   views/interview-report.ejs specifically to make this possible) as a
+   descendant selector. NOTHING above this block was edited or deleted —
+   this is a pure addition. Because these are descendant selectors added
+   AFTER the base rules earlier in this file, normal CSS cascade order
+   means they win for anything inside .report-page without needing
+   !important anywhere.
+
+   Colors match the approved sample-report benchmark exactly:
+     ink (text):      #1B2130
+     paper (bg):       #FFFFFF
+     surface (cards):  #F7F8FA
+     signal (accent):  #2554C7  — single restrained blue, replaces the
+                                   old --gold ring/score accent AND the
+                                   red/amber/green "rainbow" scoreboard
+                                   coloring (explicitly ruled out).
+     line (borders):   #E3E6EC
+     emerald/amber:    kept ONLY for the strong/weak semantic evidence
+                        distinction (matches the sample's callout.strong/
+                        callout.weak) — this is not score-rainbow
+                        coloring, it's a two-state semantic marker also
+                        present in the approved benchmark.
+
+   No scoring, no data, no structure changed by this block — visual only.
+   ══════════════════════════════════════════════════════════════════════ */
+
+body.report-page-body {
+  background: #F5F6F8;
+}
+
+/* Brand logo — .brand-logo__text is white by default (correct for the
+   dark shell it's normally used in); on the report page specifically it
+   needs to read on a light background. Icon PNG is a blue gradient mark
+   on transparent, already legible on white, untouched. */
+.report-page .brand-logo__text { color: #1B2130; }
+
+/* ── Header — score ring, identity ── */
+.report-page .report-header .report-date { color: #64748B; }
+.report-page .report-header .persona-info { color: #64748B; }
+.report-page .report-header div[style*="color:var(--white)"] { color: #1B2130 !important; }
+.report-page .score-ring .bg { stroke: #E3E6EC; }
+.report-page .score-ring .fill { stroke: #2554C7; }
+.report-page .score-num { color: #1B2130; }
+.report-page .score-label { color: #64748B; }
+
+/* ── Report sections — light cards instead of dark cards ── */
+.report-page .report-section {
+  background: #FFFFFF;
+  border: 1px solid #E3E6EC;
+  box-shadow: 0 1px 2px rgba(15,23,42,0.03);
+}
+.report-page .report-section h3 {
+  color: #2554C7;
+  font-size: 11px;
+  letter-spacing: 1.4px;
+}
+.report-page .report-divider { background: #E3E6EC; }
+
+/* ── Five-Vector Profile — single restrained accent, no rainbow ── */
+.report-page .scoreboard-label { color: #1B2130; }
+.report-page .scoreboard-track { background: #F0F1F4; }
+.report-page .scoreboard-fill.high,
+.report-page .scoreboard-fill.mid,
+.report-page .scoreboard-fill.low { background: #2554C7; }
+.report-page .scoreboard-val.high,
+.report-page .scoreboard-val.mid,
+.report-page .scoreboard-val.low { color: #1B2130; }
+
+/* ── Overview text ── */
+.report-page .exec-summary { color: #3A4150; }
+.report-page .persona-verdict { color: #3A4150; }
+.report-page .score-attribution { color: #64748B; }
+
+/* ── Evidence — strong/weak is a semantic pair, kept intentionally (see
+       note above), just softened to match the sample's card treatment. ── */
+.report-page .evidence-block {
+  background: #F7F8FA;
+  border-radius: 10px;
+  padding: 16px;
+  border-left: 3px solid #E3E6EC;
+}
+.report-page .evidence-strong { background: #EAF7F1; border-left-color: #0F7B4E; }
+.report-page .evidence-weak   { background: #FBF1E4; border-left-color: #9A5B14; }
+.report-page .evidence-strong .evidence-label { color: #0F7B4E; }
+.report-page .evidence-weak .evidence-label { color: #9A5B14; }
+.report-page .evidence-meta { color: #64748B; }
+.report-page .evidence-quote { color: #3A4150; }
+
+/* ── How to Improve — diagnostics ── */
+.report-page .diag-label { color: #64748B; }
+.report-page .diag-value { color: #3A4150; }
+
+/* ── Development Focus — remaining priorities list ── */
+.report-page .strength-list li { color: #3A4150; border-left-color: #0F7B4E; }
+.report-page .improve-list li { color: #3A4150; border-left-color: #9A5B14; }
+
+/* ── Development Path — 30/60/90 numbered steps, single blue accent ── */
+.report-page .next-steps li { color: #3A4150; }
+.report-page .next-steps li::before { background: #2554C7; color: #FFFFFF; }
+.report-page .priority-list li { color: #3A4150; }
+.report-page .priority-list li::before { background: #2554C7; color: #FFFFFF; }
+
+/* ── CTAs — mostly work unchanged on a light background (blue/emerald
+       already contrast fine on white); .text-link is the one variant
+       that needs a readable color swap here specifically. ── */
+.report-page .cta-btn.text-link { color: #64748B; }
+.report-page .cta-btn.text-link:hover { color: #1B2130; }
+
+/* ── Responsive — screen only. Existing .report-page max-width (800px)
+       and padding already collapse reasonably on their own; this adds
+       the few adjustments the new white card layout specifically needs
+       at small widths (report-section padding, scoreboard label width). ── */
+@media screen and (max-width: 600px) {
+  .report-page { padding: 32px 16px; }
+  .report-page .report-section { padding: 20px; }
+  .report-page .scoreboard-label { min-width: 110px; font-size: 12px; }
+  .report-page .report-ctas { flex-direction: column; }
+  .report-page .cta-btn { min-width: 0; }
+}
