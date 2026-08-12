@@ -323,19 +323,21 @@ async function addScore({ sessionId, questionId, star, technical, executive, gcc
   return result.rows[0];
 }
 
-async function saveReport({ sessionId, overallScore, strengthsJson, improvementsJson, personaVerdict, nextStepsJson, reportMarkdown, executiveSummary, recommendation, strongestResponse, weakestResponse, structuralFlow, linguisticNuances, scoreboard }) {
+async function saveReport({ sessionId, overallScore, strengthsJson, improvementsJson, personaVerdict, nextStepsJson, reportMarkdown, executiveSummary, recommendation, strongestResponse, weakestResponse, structuralFlow, linguisticNuances, scoreboard, executiveInterpretation, roleReadiness, nextLevelDirection }) {
   const result = await pool.query(
     `INSERT INTO interview_reports (
        session_id, overall_score, strengths_json, improvements_json, persona_verdict,
        next_steps_json, report_markdown, executive_summary, recommendation,
-       strongest_response, weakest_response, structural_flow, linguistic_nuances, scoreboard
+       strongest_response, weakest_response, structural_flow, linguistic_nuances, scoreboard,
+       executive_interpretation, role_readiness, next_level_direction
      )
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
      ON CONFLICT (session_id) DO UPDATE SET
        overall_score = $2, strengths_json = $3, improvements_json = $4, persona_verdict = $5,
        next_steps_json = $6, report_markdown = $7, executive_summary = $8, recommendation = $9,
        strongest_response = $10, weakest_response = $11, structural_flow = $12,
-       linguistic_nuances = $13, scoreboard = $14
+       linguistic_nuances = $13, scoreboard = $14,
+       executive_interpretation = $15, role_readiness = $16, next_level_direction = $17
      RETURNING *`,
     [
       sessionId, overallScore,
@@ -346,6 +348,7 @@ async function saveReport({ sessionId, overallScore, strengthsJson, improvements
       weakestResponse ? JSON.stringify(weakestResponse) : null,
       structuralFlow || null, linguisticNuances || null,
       scoreboard ? JSON.stringify(scoreboard) : null,
+      executiveInterpretation || null, roleReadiness || null, nextLevelDirection || null,
     ]
   );
   return result.rows[0];

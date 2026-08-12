@@ -819,6 +819,9 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
       structuralFlow: reportData.structural_flow,
       linguisticNuances: reportData.linguistic_nuances,
       scoreboard: reportData.scoreboard,
+      executiveInterpretation: reportData.executive_interpretation,
+      roleReadiness: reportData.role_readiness,
+      nextLevelDirection: reportData.next_level_direction,
     });
 
     await completeSession(sessionId, reportData.overall_score);
@@ -856,6 +859,12 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
           strongest_response: reportData.strongest_response,
           weakest_response: reportData.weakest_response,
           next_steps_json: reportData.next_steps_json,
+          // Leadership-only narrative layer — from this same in-memory
+          // generateReport() result, not a DB re-read. See
+          // lib/career-intelligence-report.js's leadershipInsights field.
+          executive_interpretation: reportData.executive_interpretation,
+          role_readiness: reportData.role_readiness,
+          next_level_direction: reportData.next_level_direction,
           // Approved narrow correction (post-Step-4): passed through so the
           // canonical builder can carry the existing coaching sentence into
           // developmentPriorities[0].narrative for the email's Priority

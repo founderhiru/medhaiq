@@ -162,16 +162,8 @@
 <body>
 
 <%
-  function recColor(rec) {
-    if (/strong hire|^hire$/i.test(rec || '')) return { bg: '#DCFCE7', fg: '#15803D' };
-    if (/lean hire/i.test(rec || '')) return { bg: '#FEF9C3', fg: '#A16207' };
-    return { bg: '#FEE2E2', fg: '#B91C1C' };
-  }
-  var recStyle = recColor(report.recommendation);
-
   // Locked product-facing vector labels (docs/MEDHAIQ_REPORTING_DESIGN_V1.md
-  // §2) — same underlying values as Step 2A, same locked mapping, just
-  // displayed under their final names and in the locked display order.
+  // §2) — same underlying values as before, same locked mapping.
   var pageVectors = [
     { label: 'Structure', score: starAvg },
     { label: 'Domain Expertise', score: technicalAvg },
@@ -179,40 +171,51 @@
     { label: 'Communication', score: frictionAvg },
     { label: 'Leadership & Execution', score: gccAvg },
   ];
-
-  // Maps the LEGACY scoreboard.vector_breakdown 'vector' key (still
-  // structure/technical/executive/gcc/communication — that AI JSON schema
-  // is untouched, out of scope) to the locked display labels, for
-  // topStrengths/topDevelopmentAreas/practiceFocus below. vector_breakdown
-  // is confirmed always empty today (see comment above and the Step 2A
-  // note in server.js), so these three sections still render empty — this
-  // mapping is here so the labels are correct the moment that changes,
-  // not because it changes anything visible right now.
-  var legacyKeyToLabel = {
-    structure: 'Structure',
-    technical: 'Domain Expertise',
-    executive: 'Strategic Thinking',
-    communication: 'Communication',
-    gcc: 'Leadership & Execution',
-  };
-  function vectorLabel(key) { return legacyKeyToLabel[key] || key; }
 %>
 
-<!-- ══════════════════ PAGE 1 — EXECUTIVE CAREER INTELLIGENCE SUMMARY ══════════════════ -->
+<!-- ══════════════════ PAGE 1 — CAREER INTELLIGENCE PROFILE ══════════════════
+     Leadership PDF redesign checkpoint. All data below comes from `report`
+     and the canonical `cir` fields already computed by
+     buildCareerIntelligenceReport() (server.js) — no new calculation, no
+     second AI call. See server.js's PDF route for the full data-contract
+     comment on what changed and why.
+
+     REMOVED from this page vs. the prior version: the "HIRING
+     RECOMMENDATION" pill and the Leadership Potential / Confidence Level
+     badges. Flagged deliberate decision, not a silent one: (1) the page-1
+     content list given for this checkpoint does not include them: (2) the
+     checkpoint's own instruction that Role Readiness (page 2) "must remain
+     independent of Hire/No Hire" reads more cleanly when a stark
+     hire/no-hire badge isn't sitting directly beside the score on page 1,
+     competing with the qualitative developmental read on page 2; and
+     (3) Confidence Level was a re-labeling of the Communication vector
+     already shown in the Five-Vector Profile immediately below it — same
+     information, different name, which is exactly the kind of duplication
+     this checkpoint asked to avoid. report.recommendation itself is
+     completely unchanged in the data layer — only its prominent placement
+     here is removed. Flagged for founder review, not deleted from the data
+     model. -->
 <section class="page">
   <div class="cover-topbar">
     <div class="brand-mark">
       <img src="/assets/branding/medhaiq-icon.png" alt="MedhaIQ">
       <span class="brand-name">Medha<span class="iq">IQ</span></span>
     </div>
-    <div class="eyebrow">EXECUTIVE CAREER INTELLIGENCE REPORT</div>
+    <div class="eyebrow">CAREER INTELLIGENCE PROFILE</div>
   </div>
 
   <div style="padding:16px 48px 0;">
     <div class="text-caption"><%= candidateName %> · <%= roleTitle %> · <%= formattedDate %></div>
+    <!-- Interview context — sessionContext is the canonical builder's own
+         field (lib/career-intelligence-report.js), already computed, just
+         not previously surfaced on the PDF. Guarded per-field since
+         durationMinutes/questionCount can be null/0 for edge-case sessions. -->
+    <div class="text-caption" style="margin-top:3px;">
+      <%= experienceLevel %> · Interviewed by <%= personaName %><% if (sessionContext && sessionContext.questionCount) { %> · <%= sessionContext.questionCount %> question<%= sessionContext.questionCount === 1 ? '' : 's' %> answered<% } %><% if (sessionContext && sessionContext.durationMinutes) { %> · <%= sessionContext.durationMinutes %> min session<% } %>
+    </div>
   </div>
 
-  <div class="flex items-center gap-24" style="padding:16px 48px 0;">
+  <div class="flex items-center gap-24" style="padding:18px 48px 0;">
     <div style="position:relative; width:150px; height:150px; flex-shrink:0;">
       <svg width="150" height="150" viewBox="0 0 150 150">
         <circle cx="75" cy="75" r="63" fill="none" stroke="var(--line)" stroke-width="11"/>
@@ -228,70 +231,60 @@
 
     <div class="flex-col gap-8" style="flex:1;">
       <div class="eyebrow">OVERALL CAREER INTELLIGENCE SCORE</div>
-      <div><span class="rec-pill" style="background:<%= recStyle.bg %>; color:<%= recStyle.fg %>;">HIRING RECOMMENDATION: <%= report.recommendation %></span></div>
-      <div class="flex gap-8" style="flex-wrap:wrap; margin-top:2px;">
-        <span class="badge"><span class="badge-dot" style="background:var(--signal);"></span>Leadership Potential: <%= leadershipPotential %></span>
-        <span class="badge"><span class="badge-dot" style="background:var(--amber);"></span>Confidence Level: <%= confidenceLevel %></span>
+      <div style="font-family:'Plus Jakarta Sans'; font-weight:700; font-size:14px; color:var(--ink);">
+        <%= experienceLevel %> · <%= roleTitle %>
       </div>
-      <div class="text-caption" style="margin-top:2px;">Interviewed by <%= personaName %></div>
+      <div class="text-caption" style="max-width:340px;">A single structured interview session, evaluated across five career-intelligence dimensions.</div>
     </div>
   </div>
 
-  <div style="padding:16px 48px 0;">
+  <div style="padding:18px 48px 0;">
     <div class="exec-summary-box rounded-lg p-16">
       <div class="eyebrow" style="margin-bottom:6px;">EXECUTIVE SUMMARY</div>
       <p style="font-size:11.5px; line-height:1.6; color:var(--gray-700);"><%= report.executive_summary %></p>
     </div>
   </div>
 
-  <div class="flex gap-16" style="padding:16px 48px 0;">
-    <div style="flex:1;">
-      <div class="eyebrow" style="margin-bottom:8px;">5-VECTOR INTELLIGENCE</div>
-      <div class="vector-card">
-        <% pageVectors.forEach(function(v) { %>
-          <div class="vector-row">
-            <div class="vector-label"><%= v.label %></div>
-            <div class="vector-track"><div class="vector-fill" style="width:<%= Math.max(0, Math.min(100, Math.round(v.score))) %>%;"></div></div>
-            <div class="vector-score"><%= Math.round(v.score) %></div>
-          </div>
-        <% }); %>
-      </div>
-    </div>
-
-    <div style="flex:1;">
-      <div class="eyebrow" style="margin-bottom:8px;">TOP 3 STRENGTHS</div>
-      <% topStrengths.forEach(function(s) { %>
-        <div class="sw-card strength avoid-break">
-          <div class="sw-vector"><%= vectorLabel(s.vector) %></div>
-          <div class="sw-text"><%= s.strength %></div>
+  <div style="padding:18px 48px 0;">
+    <div class="eyebrow" style="margin-bottom:8px;">FIVE-VECTOR PROFILE</div>
+    <div class="vector-card">
+      <% pageVectors.forEach(function(v) { %>
+        <div class="vector-row">
+          <div class="vector-label"><%= v.label %></div>
+          <div class="vector-track"><div class="vector-fill" style="width:<%= Math.max(0, Math.min(100, Math.round(v.score))) %>%;"></div></div>
+          <div class="vector-score"><%= Math.round(v.score) %></div>
         </div>
       <% }); %>
     </div>
   </div>
 
-  <div style="padding:14px 48px 0;">
-    <div class="eyebrow" style="margin-bottom:8px;">DEVELOPMENT AREAS</div>
-    <% if (topDevelopmentAreas.length > 0) { %>
-      <div class="<%= topDevelopmentAreas.length >= 3 ? 'grid-3' : 'grid-2' %> gap-8" style="max-width:<%= topDevelopmentAreas.length >= 3 ? '100%' : '66%' %>;">
-        <% topDevelopmentAreas.forEach(function(d) { %>
-          <div class="sw-card development avoid-break" style="margin-top:0;">
-            <div class="sw-vector"><%= vectorLabel(d.vector) %></div>
-            <div class="sw-text"><%= d.recommendation %></div>
-          </div>
-        <% }); %>
-      </div>
-    <% } else if (!hasReliableSignal) { %>
-      <p class="text-body" style="max-width:66%;">Insufficient evidence for capability assessment. The interview contained no substantive responses, so specific development priorities could not be reliably determined.</p>
-    <% } else { %>
-      <div class="grid-3 gap-8">
-        <% canonicalDevelopmentAreas.forEach(function(d) { %>
-          <div class="sw-card development avoid-break" style="margin-top:0;">
-            <div class="sw-vector"><%= d.label %></div>
-            <div class="sw-text"><%= d.score %>/100</div>
-          </div>
-        <% }); %>
-      </div>
-    <% } %>
+  <!-- Key Strengths / Key Development Priorities — now sourced from
+       cir.strengths / cir.developmentPriorities (already ranked by the
+       canonical builder from real interview_scores), not the legacy
+       scoreboard.vector_breakdown path, which is confirmed never populated
+       by REPORT_SYSTEM and rendered this section blank on every PDF before
+       this checkpoint. developmentPriorities[0].narrative, when present,
+       is an existing pass-through of report.improvements_json[0].fix — the
+       same AI-authored coaching sentence already used elsewhere (e.g. the
+       Growth/Leadership email) — not new text. -->
+  <div class="grid-2 gap-16" style="padding:16px 48px 0;">
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px;">KEY STRENGTHS</div>
+      <% (strengths || []).forEach(function(s) { %>
+        <div class="sw-card strength avoid-break">
+          <div class="sw-vector"><%= s.label %> — <%= s.score %>/100</div>
+        </div>
+      <% }); %>
+    </div>
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px;">KEY DEVELOPMENT PRIORITIES</div>
+      <% (developmentPriorities || []).forEach(function(d) { %>
+        <div class="sw-card development avoid-break">
+          <div class="sw-vector"><%= d.label %> — <%= d.score %>/100</div>
+          <% if (d.narrative) { %><div class="sw-text" style="margin-top:2px;"><%= d.narrative %></div><% } %>
+        </div>
+      <% }); %>
+    </div>
   </div>
 
   <div class="page-footer">
@@ -301,29 +294,28 @@
 </section>
 
 
-<!-- ══════════════════ PAGE 2 — INTERVIEW INTELLIGENCE ══════════════════ -->
+<!-- ══════════════════ PAGE 2 — EVIDENCE & INTERPRETATION ══════════════════ -->
 <section class="page">
   <div class="page-header">
-    <div><div class="eyebrow">SECTION 02</div><h2 class="page-title font-display">Interview Intelligence</h2></div>
+    <div><div class="eyebrow">SECTION 02</div><h2 class="page-title font-display">Evidence &amp; Interpretation</h2></div>
     <svg width="22" height="22" viewBox="0 0 100 100" style="opacity:.35;"><polygon points="50,4 95,36 78,90 22,90 5,36" fill="none" stroke="#2554C7" stroke-width="4"/></svg>
   </div>
 
   <div class="px-48" style="padding-top:18px;">
-    <!-- STAR Assessment — same 4-component framework (Situation/Task/Action/
-         Result) and same detection function used during the live interview.
-         Each ring shows % of answered questions where that component was
-         present; overall STAR score is the same Structure vector average
-         shown on page 1, not a separately invented number. -->
-    <h3 class="card-title" style="margin-bottom:2px;">STAR Assessment</h3>
+    <!-- STAR Intelligence — same Situation/Task/Action/Result framework and
+         same computeStarProgress() call used during the live interview and
+         on the Web Report; starIntelligence is now read directly from
+         cir.starIntelligence (already computed) instead of a route-local
+         reshaping of the same values — display logic unchanged. -->
+    <h3 class="card-title" style="margin-bottom:2px;">STAR Intelligence</h3>
     <div class="text-caption" style="margin-bottom:12px;">Same Situation / Task / Action / Result framework used during Interview Setup and the Live Interview.</div>
     <div class="flex items-center" style="justify-content:space-between;">
       <% ['situation','task','action','result'].forEach(function(letter) {
-           var count = starCounts[letter]; var pct = starTotal ? Math.round((count / starTotal) * 100) : 0;
-           var filled = pct >= 60; %>
+           var s = starIntelligence[letter]; var filled = s.pct >= 60; %>
         <div class="flex-col items-center">
-          <div class="star-ring<%= filled ? ' is-filled' : '' %>"><div class="star-ring-label"><%= pct %>%</div></div>
+          <div class="star-ring<%= filled ? ' is-filled' : '' %>"><div class="star-ring-label"><%= s.pct %>%</div></div>
           <div class="star-letter"><%= letter %></div>
-          <div class="text-caption"><%= count %>/<%= starTotal %> answers</div>
+          <div class="text-caption"><%= s.detected %>/<%= s.of %> answers</div>
         </div>
       <% }); %>
       <div class="flex-col items-center" style="border-left:1px solid var(--line); padding-left:24px;">
@@ -332,116 +324,98 @@
       </div>
     </div>
 
-    <!-- Condensed question table — one page, no per-question cards. Column
-         order matches the locked vector order (Structure, Domain
-         Expertise, Strategic Thinking, Communication, Leadership &
-         Execution) — Step 2A used the old radar-geometry order since the
-         radar was still on page 1 then; now that it's gone, this table
-         and the page-1 bars use the same order. -->
-    <h3 class="card-title" style="margin-top:20px; margin-bottom:8px;">Key Interview Questions &amp; Scores</h3>
-    <table class="qa-table avoid-break">
-      <tr><th>#</th><th>Question</th><th>Structure</th><th>Domain Exp.</th><th>Strategic Think.</th><th>Comm.</th><th>Leadership</th></tr>
-      <% qaCards.forEach(function(qa) { %>
-        <tr>
-          <td><%= qa.index %></td>
-          <td><%= qa.questionText.length > 70 ? qa.questionText.slice(0, 70) + '…' : qa.questionText %></td>
-          <% if (qa.vectors) { %>
-            <td class="num"><%= qa.vectors.structure %></td>
-            <td class="num"><%= qa.vectors.domainExpertise %></td>
-            <td class="num"><%= qa.vectors.strategicThinking %></td>
-            <td class="num"><%= qa.vectors.communication %></td>
-            <td class="num"><%= qa.vectors.leadershipExecution %></td>
-          <% } else { %>
-            <td class="num" colspan="5" style="color:var(--gray-500); font-weight:400;">Skipped</td>
-          <% } %>
-        </tr>
-      <% }); %>
-    </table>
-
-    <!-- Real AI feedback that already exists — NOT fabricated per-question
-         text. strongest_response/weakest_response are genuine outputs from
-         the same report-generation AI call, each with an actual quote from
-         the transcript. -->
-    <div class="grid-2 gap-16" style="margin-top:18px;">
-      <% if (report.strongest_response) { %>
+    <!-- Representative Question Evidence — the AI's own selection of the
+         session's standout moments (report.strongest_response /
+         .weakest_response, surfaced here via cir.coachingInsights), each
+         with an actual quote from the transcript. Same fields already used
+         elsewhere in this report — not a new selection, not fabricated
+         per-question text. Replaces the prior full per-question score
+         table: an exhaustive table repeats the same five-vector numbers
+         already shown on page 1, just per-question, which is exactly the
+         kind of redundant section this checkpoint asked to avoid. -->
+    <h3 class="card-title" style="margin-top:22px; margin-bottom:10px;">Representative Question Evidence</h3>
+    <div class="grid-2 gap-16">
+      <% if (coachingInsights && coachingInsights.strongestResponse) { %>
         <div class="callout strong avoid-break">
           <h3 class="card-title" style="margin-bottom:4px;">Highlighted Response</h3>
-          <div class="text-caption" style="margin-bottom:6px;"><%= report.strongest_response.context %></div>
-          <div class="text-body">"<%= report.strongest_response.evidence %>"</div>
+          <div class="text-caption" style="margin-bottom:6px;"><%= coachingInsights.strongestResponse.context %></div>
+          <div class="text-body">"<%= coachingInsights.strongestResponse.evidence %>"</div>
         </div>
       <% } %>
-      <% if (report.weakest_response) { %>
+      <% if (coachingInsights && coachingInsights.weakestResponse) { %>
         <div class="callout weak avoid-break">
           <h3 class="card-title" style="margin-bottom:4px;">Growth Opportunity</h3>
-          <div class="text-caption" style="margin-bottom:6px;"><%= report.weakest_response.context %></div>
-          <div class="text-body">"<%= report.weakest_response.evidence %>"</div>
+          <div class="text-caption" style="margin-bottom:6px;"><%= coachingInsights.weakestResponse.context %></div>
+          <div class="text-body">"<%= coachingInsights.weakestResponse.evidence %>"</div>
         </div>
       <% } %>
     </div>
+
+    <!-- Leadership Intelligence, part 1 of 2 — Executive Interpretation +
+         Role Readiness. Sourced exclusively from leadershipInsights (=
+         cir.leadershipInsights), itself a pass-through of the SAME
+         generateReport() AI call that produces the Executive Summary on
+         page 1 — no second AI call, no new calculation. Every field is
+         null-safe: pre-migration-022 report rows simply have these as
+         null, and this block prints nothing rather than inventing
+         placeholder text — consistent with the existing low-evidence
+         handling used throughout this report. -->
+    <% if (leadershipInsights && leadershipInsights.executiveInterpretation) { %>
+      <div class="exec-summary-box rounded-lg p-16 avoid-break" style="margin-top:20px;">
+        <div class="eyebrow" style="margin-bottom:6px;">EXECUTIVE INTERPRETATION</div>
+        <p class="text-body"><%= leadershipInsights.executiveInterpretation %></p>
+      </div>
+    <% } %>
+
+    <% if (leadershipInsights && leadershipInsights.roleReadiness) { %>
+      <div class="vector-card avoid-break" style="margin-top:14px;">
+        <div class="eyebrow" style="margin-bottom:6px;">ROLE READINESS</div>
+        <p class="text-body"><%= leadershipInsights.roleReadiness %></p>
+      </div>
+    <% } %>
   </div>
 
   <div class="page-footer"><span>MedhaIQ.ai · Confidential Career Intelligence Report</span><span>Page 2 of 3</span></div>
 </section>
 
 
-<!-- ══════════════════ PAGE 3 — CAREER ROADMAP ══════════════════ -->
+<!-- ══════════════════ PAGE 3 — NEXT-LEVEL DIRECTION ══════════════════ -->
 <section class="page">
   <div class="page-header">
-    <div><div class="eyebrow">SECTION 03</div><h2 class="page-title font-display">Career Roadmap</h2></div>
+    <div><div class="eyebrow">SECTION 03</div><h2 class="page-title font-display">Next-Level Direction</h2></div>
     <svg width="22" height="22" viewBox="0 0 100 100" style="opacity:.35;"><polygon points="50,4 95,36 78,90 22,90 5,36" fill="none" stroke="#2554C7" stroke-width="4"/></svg>
   </div>
 
-  <div class="px-48" style="padding-top:16px;">
-    <!-- Simplified Candidate Model — only the 5 most meaningful dimensions
-         are shown here. Ownership, Learning Agility, and Technical Depth
-         are still computed and still power the interview engine's
-         Difficulty Controller / question routing — they're just not
-         displayed in this report by design. -->
-    <% if (candidateModel) { %>
-      <h3 class="card-title" style="margin-bottom:8px;">Candidate Model</h3>
-      <div class="grid-3 gap-8" style="margin-bottom:6px;">
-        <div class="cm-card"><div class="cm-num"><%= candidateModel.confidence %></div><div class="cm-label">Confidence</div></div>
-        <div class="cm-card"><div class="cm-num"><%= candidateModel.communication %></div><div class="cm-label">Communication</div></div>
-        <div class="cm-card"><div class="cm-num"><%= candidateModel.leadership %></div><div class="cm-label">Leadership</div></div>
-      </div>
-      <div class="grid-2 gap-8">
-        <div class="cm-card"><div class="cm-num"><%= candidateModel.decisionMaking %></div><div class="cm-label">Decision-Making</div></div>
-        <div class="cm-card"><div class="cm-num"><%= candidateModel.businessThinking %></div><div class="cm-label">Business Thinking</div></div>
+  <div class="px-48" style="padding-top:18px;">
+    <!-- Leadership Intelligence, part 2 of 2 — Next-Level Direction. Same
+         null-safety and same single-AI-call sourcing as page 2's Executive
+         Interpretation / Role Readiness above. -->
+    <% if (leadershipInsights && leadershipInsights.nextLevelDirection) { %>
+      <div class="exec-summary-box rounded-lg p-16 avoid-break">
+        <div class="eyebrow" style="margin-bottom:6px;">NEXT-LEVEL DIRECTION</div>
+        <p class="text-body"><%= leadershipInsights.nextLevelDirection %></p>
       </div>
     <% } %>
 
-    <div class="grid-2 gap-16" style="margin-top:18px;">
-      <div>
-        <h3 class="card-title" style="margin-bottom:8px;">Key Strengths</h3>
-        <% topStrengths.forEach(function(s) { %>
-          <div class="text-body" style="margin-bottom:4px;">✓ <%= vectorLabel(s.vector) %></div>
-        <% }); %>
+    <!-- Practical Improvement Guidance — report.structural_flow /
+         .linguistic_nuances via cir.coachingInsights, the same existing AI
+         narrative fields already generated by generateReport() (the
+         Communication & Delivery Diagnostics content from the prior PDF
+         version), relabeled and repositioned here rather than duplicated
+         as a separate section. -->
+    <h3 class="card-title" style="margin-top:20px; margin-bottom:8px;">Practical Improvement Guidance</h3>
+    <div class="grid-2 gap-16">
+      <div class="vector-card avoid-break">
+        <div class="text-caption" style="margin-bottom:4px; text-transform:uppercase; letter-spacing:.03em;">Structural Layout &amp; Flow</div>
+        <div class="text-body"><%= (coachingInsights && coachingInsights.structuralFlow) || 'Moderate — logical structure present but could be tightened.' %></div>
       </div>
-      <div>
-        <h3 class="card-title" style="margin-bottom:8px;">Development Priorities</h3>
-        <% if (topDevelopmentAreas.length > 0) { %>
-          <% topDevelopmentAreas.forEach(function(d) { %>
-            <div class="text-body" style="margin-bottom:4px;">→ <%= vectorLabel(d.vector) %></div>
-          <% }); %>
-        <% } else if (!hasReliableSignal) { %>
-          <p class="text-body">Insufficient evidence for capability assessment. The interview contained no substantive responses, so specific development priorities could not be reliably determined.</p>
-        <% } else { %>
-          <% canonicalDevelopmentAreas.forEach(function(d) { %>
-            <div class="text-body" style="margin-bottom:4px;">→ <%= d.label %> (<%= d.score %>/100)</div>
-          <% }); %>
-        <% } %>
+      <div class="vector-card avoid-break">
+        <div class="text-caption" style="margin-bottom:4px; text-transform:uppercase; letter-spacing:.03em;">Linguistic Nuances &amp; Fillers</div>
+        <div class="text-body"><%= (coachingInsights && coachingInsights.linguisticNuances) || 'Developing executive vocabulary and filler frequency.' %></div>
       </div>
     </div>
 
-    <% if (practiceFocus) { %>
-      <div class="practice-focus-box avoid-break" style="margin-top:16px;">
-        <div class="eyebrow" style="margin-bottom:4px;">NEXT RECOMMENDED PRACTICE FOCUS</div>
-        <h3 class="card-title" style="margin-bottom:4px;"><%= vectorLabel(practiceFocus.vector) %></h3>
-        <div class="text-body"><%= practiceFocus.recommendation %></div>
-      </div>
-    <% } %>
-
-    <h3 class="card-title" style="margin-top:20px; margin-bottom:10px;">Growth Roadmap</h3>
+    <h3 class="card-title" style="margin-top:22px; margin-bottom:10px;">30 / 60 / 90-Day Career Roadmap</h3>
     <div class="timeline-rail">
       <% var windows = ['0–30 Days', '30–60 Days', '60–90 Days']; %>
       <% windows.forEach(function(label, i) { %>
@@ -453,6 +427,22 @@
           </div>
         <% } %>
       <% }); %>
+    </div>
+
+    <!-- Next Practice Focus — now cir.nextPracticeFocus (already computed:
+         the lowest-ranked of the five vectors, derived, not stored) rather
+         than the legacy vectorBreakdown-derived practiceFocus, which was
+         confirmed always empty. -->
+    <% if (nextPracticeFocus) { %>
+      <div class="practice-focus-box avoid-break" style="margin-top:18px;">
+        <div class="eyebrow" style="margin-bottom:4px;">NEXT RECOMMENDED PRACTICE FOCUS</div>
+        <h3 class="card-title" style="margin-bottom:4px;"><%= nextPracticeFocus.label %></h3>
+        <div class="text-body">Current signal: <%= nextPracticeFocus.score %>/100 — the lowest of the five vectors this session, and the highest-leverage place to focus before the next interview.</div>
+      </div>
+    <% } %>
+
+    <div class="text-caption avoid-break" style="margin-top:20px; padding-top:14px; border-top:1px solid var(--line); line-height:1.6;">
+      This report reflects a single structured interview session and is intended to support career development and interview preparation — not as a standalone hiring, promotion, or compensation decision.
     </div>
   </div>
 

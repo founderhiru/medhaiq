@@ -63,33 +63,6 @@
     margin: 0 auto;
   }
 
-  /* Currency Control Bar */
-  .mh-pricing-control-bar {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 28px;
-  }
-
-  .mh-currency-selector select {
-    appearance: none;
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
-    border-radius: 999px;
-    padding: 4px 28px 4px 10px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #1E293B;
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-    transition: border-color 0.15s ease;
-  }
-  .mh-currency-selector select:hover {
-    border-color: #CBD5E1;
-  }
-
   /* Cards Grid */
  .mh-pricing-cards {
   display: grid;
@@ -419,17 +392,6 @@
       <p class="mh-section-sub"><%- pricing.section.subtitle %></p>
     </div>
 
-    <!-- Currency Selector -->
-    <div class="mh-pricing-control-bar reveal">
-      <div class="mh-currency-selector">
-        <select id="currency-select" aria-label="Select currency">
-          <% pricing.section.currencies.forEach(function(code) { %>
-            <option value="<%= code %>" <%= code === pricing.section.defaultCurrency ? 'selected' : '' %>><%- pricing.currencySymbols[code] %> <%= code %></option>
-          <% }); %>
-        </select>
-      </div>
-    </div>
-
   <!-- Cards Container -->
     <div class="mh-pricing-cards">
       <% pricing.plans.forEach(function(plan) { %>
@@ -505,56 +467,14 @@
 </div>
 
 <script>
-  // Server-rendered from config/pricing.js — the only place these numbers live.
-  var PRICING_DATA = {
-    defaultCurrency: <%- JSON.stringify(pricing.section.defaultCurrency) %>,
-    symbols: <%- JSON.stringify(pricing.currencySymbols) %>,
-    plans: <%- JSON.stringify(pricing.plans.map(function(p) { return { id: p.id, price: p.price }; })) %>
-  };
-</script>
-<script>
 (function() {
-  // ── State ─────────────────────────────────────────────
-  // PRICING_DATA is rendered server-side from config/pricing.js — see the
-  // <script> block at the top of pricing-section.ejs. No prices are
-  // hardcoded here; this file only knows how to *display* them.
-  var currency = PRICING_DATA.defaultCurrency;
-  var PLAN_PRICES = PRICING_DATA.plans;       // [{ id, price: { INR, USD, EUR } }, ...]
-  var CURRENCY_SYMBOLS = PRICING_DATA.symbols; // { INR, USD, EUR }
-
-  // ── Helpers ─────────────────────────────────────────────
-  function fmt(n) {
-    if (currency === 'INR') {
-      return n.toLocaleString('en-IN');
-    }
-    return n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-  }
-
-  // ── Update Prices ──────────────────────────────
-  function updatePrices() {
-    var sym = CURRENCY_SYMBOLS[currency];
-
-    PLAN_PRICES.forEach(function(plan) {
-      var priceEl = document.querySelector('[data-plan-id="' + plan.id + '"]');
-      if (!priceEl) return;
-
-      priceEl.textContent = fmt(plan.price[currency] || 0);
-
-      var symEl = priceEl.parentElement.querySelector('.mh-price-sym');
-      if (symEl) symEl.innerHTML = sym;
-    });
-  }
-
-  // ── Currency Selector Listener ──────────────────────────
-  var currencySelect = document.getElementById('currency-select');
-  if (currencySelect) {
-    currencySelect.addEventListener('change', function() {
-      currency = currencySelect.value;
-      updatePrices();
-    });
-  }
-
   // ── Modal Logic ───────────────────────────────
+  // Price display is entirely server-rendered now (see pricing-card.ejs,
+  // which reads plan.price[pricing.section.defaultCurrency] — that
+  // defaultCurrency is resolved server-side per-request by
+  // lib/pricing-market.js, not chosen by the visitor). This script only
+  // handles the waitlist-signup modal below; it has no currency logic
+  // left to do, on purpose.
   var ctas = document.querySelectorAll('[data-plan]');
   var modal = document.getElementById('mh-email-modal');
   var form = document.getElementById('mh-modal-form');
@@ -633,8 +553,5 @@
       modal.style.display = 'none';
     }
   });
-
-  // Initial render
-  updatePrices();
 })();
 </script>

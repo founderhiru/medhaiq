@@ -96,10 +96,10 @@ app.get('/', async (req, res) => {
     // DB round-trip on every homepage visit, safe only because of the
     // reconciliation.
     const homeCapabilities = req.capabilities;
-    res.render('layout', { ...buildLandingContext(req), homeCapabilities });
+    res.render('layout', { ...buildLandingContext(), homeCapabilities });
   } catch (err) {
     console.error('[homepage] capabilities resolution failed, rendering as visitor:', err.message);
-    res.render('layout', buildLandingContext(req));
+    res.render('layout', buildLandingContext());
   }
 });
 app.get('/privacy', (_req, res) => res.render('privacy'));

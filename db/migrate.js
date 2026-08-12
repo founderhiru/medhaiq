@@ -800,6 +800,49 @@ async function runMigrations() {
           console.log(`[migrate] 021: backfilled ${explorerBackfill.rows.length} existing Explorer user(s) with a welcome acquisition (no behavior change for them)`);
         },
       },
+      {
+        name: '022_leadership_narrative_fields',
+        up: async (c) => {
+          // Leadership-tier narrative fields — additive only. Produced by
+          // the SAME generateReport() AI call that already produces
+          // executive_summary/persona_verdict/etc (services/interview.js,
+          // REPORT_SYSTEM items 11-13). No second AI call, no scoring
+          // change, no interview-flow change.
+          //
+          // NULL for every report row that existed before this migration —
+          // no backfill is possible (there is no transcript-free way to
+          // generate these retroactively without a second AI call, which is
+          // explicitly out of scope for this migration). Consuming code
+          // (lib/career-intelligence-report.js) must treat NULL as "not
+          // available for this report", never invent a substitute value.
+          await c.query(`
+            ALTER TABLE interview_reports
+              ADD COLUMN IF NOT EXISTS executive_interpretation TEXT,
+              ADD COLUMN IF NOT EXISTS role_readiness TEXT,
+              ADD COLUMN IF NOT EXISTS next_level_direction TEXT
+          `);
+        },
+      },
+      {
+        name: '023_users_market',
+        up: async (c) => {
+          // Pricing-market resolution (india vs. international commercial
+          // pricing — see config/pricing.js). Nullable by design: existing
+          // users are not backfilled to a guessed market. lib/pricing-market.js
+          // treats NULL exactly like an unauthenticated visitor — it falls
+          // through to IP/geo resolution — so no user is ever broken by
+          // this migration; they just don't have a "sticky" market yet
+          // until it's set (on next login-context resolution, or manually).
+          // Deliberately a two-value market string, not a full country
+          // column — see Phase [pricing-market] audit: the immediate
+          // business requirement is India vs. International pricing, not
+          // country-level data for any other purpose.
+          await c.query(`
+            ALTER TABLE users
+              ADD COLUMN IF NOT EXISTS market VARCHAR(20)
+          `);
+        },
+      },
     ];
 
     for (const m of migrations) {

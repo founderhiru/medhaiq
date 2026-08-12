@@ -2262,7 +2262,17 @@ Return ONLY valid JSON with these keys:
 
 9. persona_verdict: string — first-person voice of the interviewer rendering a final holistic judgment.
 
-10. next_steps: array of 3 strings — specific next actions for the candidate.`;
+10. next_steps: array of 3 strings — specific next actions for the candidate.
+
+11. executive_interpretation: string, 3-4 sentences — a single interpretive read of what this candidate's overall profile means at an executive level. Synthesize the scoreboard, strongest_response, weakest_response, structural_flow, and linguistic_nuances into one interpretation. This is NOT a second executive_summary — do not restate it; go one level deeper into what the pattern across those signals means.
+
+12. role_readiness: string, 2-3 sentences — an INDEPENDENT developmental readiness assessment for the stated target role and experience level, based on the interview evidence itself. Use ONLY qualitative language: "strong evidence", "developing evidence", "limited evidence", "consistent", "mixed", "needs stronger demonstration", or similar. NEVER state or imply a hiring probability, a percentage, or a new numeric readiness score.
+    CRITICAL — role_readiness is NOT a restatement of "recommendation". "recommendation" is a hiring judgment (Strong Hire / Hire / Lean Hire / Lean No Hire / No Hire) about this session in isolation; role_readiness is a developmental read of specific capability evidence against the target role, and the two are allowed and expected to diverge. A "No Hire" session can still show strong evidence on some dimensions (e.g. strategic thinking) alongside developing evidence on others (e.g. execution ownership) — assess each dimension on its own evidence, do not derive role_readiness FROM recommendation, and do not simply reword recommendation in softer language.
+    Example of correct divergence: recommendation="No Hire" with role_readiness="Strong evidence of strategic thinking, but developing evidence of execution ownership at the target level." is a valid, expected output — not a contradiction to resolve.
+
+13. next_level_direction: string, 2-3 sentences — forward-looking guidance synthesizing the priorities array, weakest_response, and structural/linguistic notes into what this candidate should focus on to move toward the next level. Must name the underlying pattern connecting the priorities, not restate the priorities list.
+
+LOW-EVIDENCE RULE (applies to 11-13 too): if half or more of the answers are non-answers, these three fields must say plainly that there isn't enough evidence in this session to assess this — consistent with the executive_summary rule above. Do not write generic encouragement, and do not write a confident role_readiness or executive_interpretation, over a low-evidence session.`;
 
 async function generateReport({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, qaPairs, scores, candidateName }) {
   const persona = PERSONAS[personaId];
@@ -2357,6 +2367,19 @@ Produce the structured debrief in valid JSON format.`;
       next_steps: honest
         ? ['Retake the session and answer all questions in full', 'Practice STAR framing with quantified results', 'Aim for 60+ second answers with concrete examples']
         : ['Practice STAR framing with quantified results', 'Review technical trade-off patterns', 'Audit your answers for personal ownership language'],
+      // Fallback-only path (AI call itself failed/unparseable) — same honest/
+      // non-honest split as the fields above. These must never assert a
+      // confident read when the call didn't succeed, independent of the
+      // low-evidence clamp below.
+      executive_interpretation: honest
+        ? 'There is not enough substantive evidence in this session to form an executive-level interpretation. Complete a full session with substantive answers to generate this.'
+        : 'Raw scores are more encouraging than the underlying evidence detail — worth validating key claims with a fuller session before treating this as a definitive executive read.',
+      role_readiness: honest
+        ? 'Readiness cannot be assessed from this session — too few substantive answers were provided.'
+        : 'Limited evidence overall; a fuller session would be needed before drawing confident conclusions about readiness for the target role.',
+      next_level_direction: honest
+        ? 'Retake the session with complete answers before next-level guidance can be generated.'
+        : 'Focus on providing more complete, evidence-rich answers in future sessions — this session does not contain enough detail to identify a specific next-level pattern.',
     };
   }
 
@@ -2383,6 +2406,16 @@ Produce the structured debrief in valid JSON format.`;
     if (!(result.executive_summary || '').includes('substantive')) {
       result.executive_summary = notice + (result.executive_summary || '');
     }
+
+    // Same deterministic guard, extended to the three new narrative fields.
+    // The prompt instructs the model to self-limit on low evidence, but per
+    // the existing Bug 3 guard principle, a low-evidence session must never
+    // be allowed to publish a confident-sounding interpretation just
+    // because the model didn't fully follow that instruction. Enforced in
+    // code, every time — overwrite whatever the AI returned.
+    result.executive_interpretation = 'There is not enough substantive evidence in this session to form an executive-level interpretation. ' + notice;
+    result.role_readiness = 'Readiness cannot be assessed from this session — too few substantive answers were provided. ' + notice;
+    result.next_level_direction = 'Retake the session with complete answers before next-level guidance can be generated. ' + notice;
   }
 
   const sb = result.scoreboard || {};
@@ -2443,6 +2476,13 @@ ${(result.priorities || []).slice(0, 3).map((p, i) => `${i + 1}. **${p.theme}:**
     structural_flow: result.structural_flow || '',
     linguistic_nuances: result.linguistic_nuances || '',
     next_steps_json: result.next_steps || [],
+    // Leadership-only narrative layer — produced by this SAME AI call
+    // (REPORT_SYSTEM items 11-13), not a second call. See
+    // docs/MEDHAIQ_REPORTING_DESIGN_V1.md and the 2026-08-11 Leadership
+    // data-layer addendum.
+    executive_interpretation: result.executive_interpretation || '',
+    role_readiness: result.role_readiness || '',
+    next_level_direction: result.next_level_direction || '',
     scoreboard: sb,
     report_markdown: reportMarkdown,
   };
