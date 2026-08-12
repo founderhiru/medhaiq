@@ -69,7 +69,7 @@
               stroke-dasharray="<%= circumference %>"
               stroke-dashoffset="<%= circumferenceOffset %>" />
           </svg>
-          <div class="score-num"><%= Math.round(report.overall_score) %></div>
+          <div class="score-num"><%= Math.round(report.overall_score) %><span class="score-num-sub">out of 100</span></div>
         </div>
         <div class="score-label">Overall Career Intelligence Score</div>
         <% if (hasPdfAccess) { %>

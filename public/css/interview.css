@@ -1204,3 +1204,61 @@ body.report-page-body {
   .report-page .report-grid { grid-template-columns: 1fr; }
   .report-page .evidence-pair { grid-template-columns: 1fr; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   FIX — Score ring rendering as a solid black disk with a stray "0"
+   (bug found 2026-08-12, introduced by Step 4's hero restructuring)
+   ══════════════════════════════════════════════════════════════════════
+   Root cause: the base .score-ring/.score-num rules further up this file
+   (search ".report-header .score-ring") are scoped to require an
+   ancestor with class .report-header. Step 4 removed that wrapper from
+   views/interview-report.ejs and replaced it with .report-hero-score —
+   so those base rules (position:relative sizing, the -90deg SVG
+   rotation, and critically `fill: none` on the circles) silently
+   stopped matching anything. Without `fill: none`, an SVG <circle> falls
+   back to its default fill (solid black) — that's the black disk. And
+   without .score-num's `position: absolute; inset: 0`, the score number
+   renders in normal document flow instead of centered inside the ring,
+   which is the "stray 0" landing near the label below.
+
+   .score-ring / .score-num are confirmed SHARED with several other
+   templates (live-terminal.ejs, hero.ejs, proof.ejs,
+   explore-scorecard-card.ejs, interview-setup.ejs) — checked each one;
+   none of them rely on the now-orphaned `.report-header .score-ring`
+   rule (they use different wrapper classes or their own local styles),
+   so nothing else is affected by that rule going unused. The fix below
+   does NOT touch those base rules or any shared selector — it adds a
+   new, scoped rule set for the CURRENT ancestor, .report-hero-score
+   (confirmed exclusive to this template), providing exactly the
+   structural CSS the ring needs. This is additive only.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.report-page .report-hero-score .score-ring {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+.report-page .report-hero-score .score-ring svg { transform: rotate(-90deg); }
+.report-page .report-hero-score .score-ring circle { fill: none; stroke-width: 8; }
+.report-page .report-hero-score .score-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 800;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  letter-spacing: -1px;
+  color: #1B2130;
+}
+.report-page .report-hero-score .score-num-sub {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Inter', system-ui, sans-serif;
+  letter-spacing: 0;
+  color: #64748B;
+  margin-top: 2px;
+}

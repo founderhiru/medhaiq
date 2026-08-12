@@ -437,7 +437,15 @@ h1, h2, h3, h4, h5 {
 
 /* ── Interview Report ──────────────────────────────────────── */
 .report-page {
-  max-width: 800px;
+  /* Widened for Step 4 (executive 2-column grid layout, approved
+     2026-08-12) — was 800px. .report-page itself is confirmed exclusive
+     to views/interview-report.ejs (grep across every .ejs file finds no
+     other user), so this base rule is safe to edit directly, unlike
+     .report-section/.cta-btn/.exec-summary etc. below, which remain
+     shared with other pages and stay scoped under .report-page as
+     descendant selectors (see the Step 3 block near the end of this
+     file, and the new Step 4 block right after it). */
+  max-width: 1160px;
   margin: 0 auto;
   padding: 60px 24px;
 }
@@ -1090,4 +1098,109 @@ body.report-page-body {
   .report-page .scoreboard-label { min-width: 110px; font-size: 12px; }
   .report-page .report-ctas { flex-direction: column; }
   .report-page .cta-btn { min-width: 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   WEB REPORT — EXECUTIVE 2-COLUMN GRID LAYOUT (Step 4, approved
+   2026-08-12)
+   ══════════════════════════════════════════════════════════════════════
+   Layout-only refinement on top of Step 3's visual system above. Same
+   scoping discipline: .report-page's own base rule (max-width) was
+   edited directly above since it's confirmed exclusive to this template
+   (grep confirmed, see comment there); every class below is either new
+   (report-grid, report-hero, evidence-pair) or an existing shared class
+   (.report-section, .score-ring, etc.) restyled via a `.report-page`
+   descendant selector, same pattern as Step 3.
+
+   Two deliberate deviations from the prompt's literal "half-width
+   sections" list, both flagged here and in the summary rather than
+   applied silently:
+     - Your Career Intelligence Overview → kept FULL-WIDTH. The prompt's
+       own §6 says this section "should have enough width for the
+       narrative to breathe... do not make it a tiny narrow card" — a
+       half-width column of prose at this max-width would run
+       noticeably shorter per line than the report's other full-width
+       narrative sections (STAR note, evidence quotes), which reads as
+       inconsistent rather than intentional.
+     - STAR Intelligence → kept FULL-WIDTH. It has no natural pairing
+       partner in the prompt's explicit examples (Strongest Signal pairs
+       with Development Focus; How to Improve pairs with the roadmap;
+       Representative Evidence is its own full-width section). Forcing
+       it against an unrelated section was explicitly ruled out ("Do not
+       force two unrelated sections together merely to fill space").
+       Full width also gives its 4 STAR rings + overall score room to
+       stay legible, matching §8's "intelligence signal" visual goal.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Generic 2-column grid row. Any two .report-section (or similar)
+       elements placed inside one of these sit side by side on desktop/
+       tablet and stack to one column on mobile. ── */
+.report-page .report-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.report-page .report-grid > .report-section { margin-bottom: 0; }
+
+/* ── Hero — score ring + five-vector profile combined into one
+       full-width section, side by side, replacing the previous stacked
+       report-header + separate scoreboard-section. Identity/context
+       stays centered above; the ring and the vectors then sit in a row
+       so the vectors get real horizontal room for readable bars, per
+       §4/§5's explicit requirement. ── */
+.report-page .report-hero {
+  background: #FFFFFF;
+  border: 1px solid #E3E6EC;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15,23,42,0.03);
+  padding: 32px 36px;
+  margin-bottom: 20px;
+}
+.report-page .report-hero-identity {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.report-page .report-hero-identity .report-date { font-size: 12px; color: #64748B; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.report-page .report-hero-identity .report-hero-name { font-size: 20px; font-weight: 700; color: #1B2130; margin-bottom: 6px; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+.report-page .report-hero-identity .persona-info { font-size: 14px; color: #64748B; }
+.report-page .report-hero-row {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+.report-page .report-hero-score {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.report-page .report-hero-score .score-ring { position: relative; width: 140px; height: 140px; margin: 0 0 12px; }
+.report-page .report-hero-score .score-label { font-size: 13px; color: #64748B; font-weight: 500; max-width: 150px; }
+.report-page .report-hero-vectors { flex: 1; min-width: 0; }
+.report-page .report-hero-vectors .scoreboard-title { margin-bottom: 14px; }
+.report-page .report-hero-pdf { margin-top: 14px; }
+
+/* ── Representative Evidence — full-width outer section, 2-column grid
+       for the strongest/development evidence pair inside it, per §9's
+       explicit example. ── */
+.report-page .evidence-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.report-page .evidence-pair .evidence-block { margin-top: 0 !important; }
+
+/* ── Responsive — desktop uses the 2-column grid throughout; tablet
+       keeps 2 columns where practical (same grid, just narrower);
+       mobile collapses everything to one column, including inside the
+       hero and the evidence pair. ── */
+@media screen and (max-width: 860px) {
+  .report-page .report-hero-row { flex-direction: column; align-items: stretch; }
+  .report-page .report-hero-score { align-self: center; }
+}
+@media screen and (max-width: 700px) {
+  .report-page .report-grid { grid-template-columns: 1fr; }
+  .report-page .evidence-pair { grid-template-columns: 1fr; }
 }
