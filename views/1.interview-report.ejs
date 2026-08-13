@@ -409,23 +409,12 @@
   <% } %>
 
 
-  <!-- CTA hierarchy (cleaned up — reapplied 2026-08-14, previously
-       delivered but never merged): Return Home removed — for an
-       authenticated user, Return to Workspace already covers that exit
-       path, so a separate Return Home link was redundant. Primary +
-       secondary stay as equal-width buttons in .report-ctas; the
-       tertiary "Try a different persona" link moved to its own small
-       centered row below rather than stretching to match the button
-       row's width, so it reads as a lightweight secondary action, not a
-       fourth equal button. Destinations/functionality unchanged for all
-       three — only the Return Home link and the DOM position of "Try a
-       different persona" changed. -->
+  <!-- CTAs — unchanged -->
   <div class="report-ctas">
     <a href="/interview" class="cta-btn primary">Practice Again</a>
-    <a href="/dashboard/history" class="cta-btn emerald">Return to Workspace</a>
-  </div>
-  <div class="report-ctas-tertiary">
-    <a href="/interview">Try a different persona →</a>
+    <a href="/interview" class="cta-btn outline">Try a Different Persona</a>
+  <a href="/dashboard/history" class="cta-btn emerald">Return to Workspace</a>
+    <a href="/" class="cta-btn text-link">Return Home</a>
   </div>
 
   <% if (typeof showFeedbackPrompt !== 'undefined' && showFeedbackPrompt) { %>
