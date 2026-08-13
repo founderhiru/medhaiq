@@ -554,6 +554,12 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
       careerRoadmap: cir.careerRoadmap,
       nextPracticeFocus: cir.nextPracticeFocus,
       sessionContext: cir.sessionContext,
+      // Response-intent formalization (approved 2026-08-13) — both
+      // already computed by the same buildCareerIntelligenceReport()
+      // call above; nothing new calculated here, same pattern as the
+      // fields directly above.
+      hasSubstantiveEvidence: cir.hasSubstantiveEvidence,
+      responsePattern: cir.responsePattern,
       // Explorer snapshot fields — same ranked data Growth/Leadership get,
       // just the top-1 slice (see lib/career-intelligence-report.js;
       // strengths/developmentPriorities are already ranked lists, this

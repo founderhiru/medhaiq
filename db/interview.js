@@ -239,7 +239,7 @@ async function findRecoverableSession(userId, graceMinutes, recoveryWindowMinute
 
 async function getSessionQuestions(sessionId) {
   const result = await pool.query(
-    `SELECT DISTINCT ON (q.id) q.*, a.answer_text, a.submitted_at as answer_time
+    `SELECT DISTINCT ON (q.id) q.*, a.answer_text, a.submitted_at as answer_time, a.response_intent
      FROM interview_questions q
      LEFT JOIN interview_answers a ON a.question_id = q.id
      WHERE q.session_id = $1
@@ -299,17 +299,25 @@ async function addQuestion({ sessionId, questionText, personaId, questionType, q
   return result.rows[0];
 }
 
-async function addAnswer({ sessionId, questionId, answerText }) {
+async function addAnswer({ sessionId, questionId, answerText, responseIntent }) {
   // ON CONFLICT + the unique index from migration 002: if a question has
   // already been answered (including by a concurrent duplicate request
   // that lost the race), this returns no row instead of inserting a
   // second answer. Callers must check for a falsy return.
+  //
+  // responseIntent (migration 025, approved 2026-08-13): one of 'ANSWER',
+  // 'SKIP', 'DONT_KNOW' — passed explicitly by every NEW call site in
+  // routes/interview.js's processInterviewAnswer(). Defaults to null only
+  // if a caller omits it, which should not happen for any live code path
+  // after this change; null is reserved for rows that predate this
+  // migration and must never be treated as an implicit ANSWER by any
+  // downstream consumer.
   const result = await pool.query(
-    `INSERT INTO interview_answers (session_id, question_id, answer_text)
-     VALUES ($1, $2, $3)
+    `INSERT INTO interview_answers (session_id, question_id, answer_text, response_intent)
+     VALUES ($1, $2, $3, $4)
      ON CONFLICT (question_id) DO NOTHING
      RETURNING *`,
-    [sessionId, questionId, answerText]
+    [sessionId, questionId, answerText, responseIntent || null]
   );
   return result.rows[0] || null;
 }

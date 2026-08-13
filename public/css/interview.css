@@ -1262,3 +1262,23 @@ body.report-page-body {
   color: #64748B;
   margin-top: 2px;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   RESPONSE INTENT FORMALIZATION — Response Summary line (2026-08-13)
+   ══════════════════════════════════════════════════════════════════════
+   One small scoped addition: the "RESPONSE SUMMARY" eyebrow label reuses
+   the exact same color/size/letter-spacing as .report-page .report-section
+   h3 above (same visual language, not a new pattern) — .eyebrow didn't
+   exist as its own class in this file before, so it's defined narrowly
+   scoped here rather than introduced globally.
+   ══════════════════════════════════════════════════════════════════════ */
+.report-page .response-summary {
+  margin: 18px 0 8px;
+  text-align: center;
+}
+.report-page .response-summary .eyebrow {
+  color: #2554C7;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
