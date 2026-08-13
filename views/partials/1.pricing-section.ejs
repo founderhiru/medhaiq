@@ -562,11 +562,6 @@
   var stripeCheckoutLinks = document.querySelectorAll('[data-stripe-checkout]');
   var SUPPORTED_CHECKOUT_PACKAGES = ['growth', 'leadership'];
   stripeCheckoutLinks.forEach(function(link) {
-    // Captured ONCE, before any click can ever mutate it — this is
-    // exactly the label config/pricing.js's cta.text already rendered
-    // into the DOM (e.g. "Get Growth"), reused on bfcache restore below
-    // rather than any new hardcoded copy.
-    link.setAttribute('data-original-label', link.textContent);
     link.addEventListener('click', async function(e) {
       var packageId = link.getAttribute('data-stripe-checkout');
       if (SUPPORTED_CHECKOUT_PACKAGES.indexOf(packageId) === -1) return;
@@ -591,24 +586,6 @@
         alert('Network error. Please try again.');
         link.textContent = originalText;
       }
-    });
-  });
-
-  // Browsers restore the DOM exactly as it was at the moment of
-  // navigating away (including the "Redirecting to checkout..." text
-  // mutation above) when a page is served from the back-forward cache
-  // after Back/Forward — this is what leaves the stale label after a
-  // Stripe Checkout -> Back round trip. DOMContentLoaded does NOT fire
-  // again on a bfcache restore, which is why this can't be handled
-  // there; pageshow with event.persisted === true is the correct signal
-  // for specifically this case. Purely a label reset — does not touch
-  // checkout creation, price selection, market resolution, or trigger
-  // any request of its own.
-  window.addEventListener('pageshow', function(e) {
-    if (!e.persisted) return;
-    stripeCheckoutLinks.forEach(function(link) {
-      var original = link.getAttribute('data-original-label');
-      if (original) link.textContent = original;
     });
   });
 })();
