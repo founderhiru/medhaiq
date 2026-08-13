@@ -57,13 +57,15 @@
     .authv2-left-content { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%; }
 
     .authv2-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
-    .authv2-logo span {
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      font-weight: 800;
-      font-size: 22px;
-      color: var(--white);
-      letter-spacing: -0.3px;
-    }
+    /* Legacy .authv2-logo span typography override removed (2026-08-13) —
+       it was written for an old manually-typed <span>MedhaIQ</span>
+       before this page switched to the canonical partials/brand-logo
+       include. Its specificity (0,1,1) was silently beating
+       .brand-logo__text (0,1,0) from medhaiq.css, forcing the wordmark
+       to 800/22px/-0.3px instead of the canonical --md size's
+       700/20px/-0.04em — the source of the login-vs-header mismatch.
+       Removing it lets the same brand-logo--md rules that govern the
+       main nav govern this page too, with no markup change needed. */
 
     .authv2-eyebrow {
       display: inline-flex;
