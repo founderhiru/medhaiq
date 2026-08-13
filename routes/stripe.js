@@ -22,22 +22,17 @@
 // expiry/entitlement resolution, same idempotency path).
 //
 // Deliberately NOT implemented here (still out of scope): Explorer
-// checkout, the entitlement-exhausted modal's checkout wiring, currency
-// awareness on the two FULL package prices (STRIPE_GROWTH_PRICE_ID /
-// STRIPE_LEADERSHIP_PRICE_ID remain single-price, exactly as already
-// real-Sandbox-tested — this was a deliberate scoping decision, not an
-// oversight; lib/pricing-market.js's own header comment flags this as
-// the thing to "re-review" before wiring currency into payment logic,
-// and that re-review has so far only been done for the two top-up
-// prices below, not the full package prices).
+// checkout, the entitlement-exhausted modal's checkout wiring.
 //
-// The two top-up prices (growth_topup, leadership_topup) ARE currency-
-// aware, via lib/pricing-market.js's existing resolveMarket() — see the
-// resolveTopupPriceEnvVar() helper below. This is the first real use of
-// that function in a payment path. Four total top-up routes/prices:
-// POST /checkout/growth-topup (growth OR leadership eligible) and
-// POST /checkout/leadership-topup (leadership-only), each resolving one
-// of two currency-specific Price IDs (INR/USD) per request.
+// ALL FOUR purchase types below (growth, leadership, growth_topup,
+// leadership_topup) are market-aware, via lib/pricing-market.js's
+// existing resolveMarket() — see resolvePriceEnvVar() below. This used
+// to be two different systems (a single-price lookup for the two full
+// packages, a market-aware lookup for the two top-ups); they are now
+// ONE unified lookup, keyed by price_kind + market, covering all four —
+// the "old: package → one Price ID, new: package + market → correct
+// Price ID" generalization applied uniformly rather than leaving an
+// inconsistency between package and top-up checkout.
 
 const express = require('express');
 const router = express.Router();
@@ -54,42 +49,37 @@ const { resolveMarket } = require('../lib/pricing-market');
 // request can influence in any way.
 const SUPPORTED_PACKAGE_IDS = ['growth', 'leadership'];
 
-// Which env var holds each FULL-PACKAGE price kind's Sandbox/Test Price
-// ID. These two are single-price, NOT currency-aware — a deliberate,
-// unchanged scoping decision (see file header). Never read from
-// anywhere else, never accepted from the client.
-const PRICE_ENV_VAR_BY_KIND = {
-  growth: 'STRIPE_GROWTH_PRICE_ID',
-  leadership: 'STRIPE_LEADERSHIP_PRICE_ID',
-};
-
-// Top-up prices are commercially DIFFERENT products from the full
-// packages above (confirmed: ₹699/$12 top-up vs ₹999/$19 full Growth;
-// ₹1,999/$29 top-up vs ₹2,999/$49 full Leadership — the numbers don't
-// match, so these are never allowed to fall back to or be confused with
-// the full-package price IDs) — and, unlike the two above, ARE
-// currency-aware, resolved per-request via lib/pricing-market.js's
-// resolveMarket(). Four distinct Sandbox Price IDs total.
-const TOPUP_PRICE_ENV_VAR = {
-  growth: { india: 'STRIPE_GROWTH_TOPUP_PRICE_ID_INR', international: 'STRIPE_GROWTH_TOPUP_PRICE_ID_USD' },
-  leadership: { india: 'STRIPE_LEADERSHIP_TOPUP_PRICE_ID_INR', international: 'STRIPE_LEADERSHIP_TOPUP_PRICE_ID_USD' },
+// Which env var holds the Sandbox/Test Price ID for a given price_kind +
+// market combination. Four price_kinds × two markets = the 8 Stripe
+// Prices this app now uses (4 Products — Growth, Leadership, +120,
+// +300 — × 2 currencies each). Never read from anywhere else, never
+// accepted from the client. The two full-package kinds ('growth',
+// 'leadership') and the two top-up kinds ('growth_topup',
+// 'leadership_topup') are commercially distinct products (confirmed:
+// ₹699/$12 top-up vs ₹999/$19 full Growth; ₹1,999/$29 top-up vs
+// ₹2,999/$49 full Leadership) — never allowed to fall back to or be
+// confused with each other.
+const MARKET_PRICE_ENV_VAR = {
+  growth: { india: 'STRIPE_GROWTH_PRICE_ID_INR', international: 'STRIPE_GROWTH_PRICE_ID_USD' },
+  leadership: { india: 'STRIPE_LEADERSHIP_PRICE_ID_INR', international: 'STRIPE_LEADERSHIP_PRICE_ID_USD' },
+  growth_topup: { india: 'STRIPE_GROWTH_TOPUP_PRICE_ID_INR', international: 'STRIPE_GROWTH_TOPUP_PRICE_ID_USD' },
+  leadership_topup: { india: 'STRIPE_LEADERSHIP_TOPUP_PRICE_ID_INR', international: 'STRIPE_LEADERSHIP_TOPUP_PRICE_ID_USD' },
 };
 
 /**
- * Resolves which env var holds the correct top-up Price ID for this
- * package + market. Market is resolved ONCE, at checkout-creation time,
- * from the real inbound request (lib/pricing-market.js's resolveMarket
- * — logged-in user's stable market, then geo header, then safe default)
- * and stored in the Checkout Session's metadata; the webhook (which has
- * no HTTP request of its own — it's a server-to-server call from
- * Stripe, with no geo header to read) reads that stored market back
- * rather than re-resolving it, so the price the webhook validates
- * against is always the exact same one actually shown/charged at
- * checkout time, never a value that could have drifted between request
- * and webhook delivery.
+ * Resolves which env var holds the correct Price ID for this price_kind
+ * + market. Market is resolved ONCE, at checkout-creation time, from the
+ * real inbound request (lib/pricing-market.js's resolveMarket — logged-
+ * in user's stable market, then geo header, then safe default) and
+ * stored in the Checkout Session's metadata; the webhook (which has no
+ * HTTP request of its own — it's a server-to-server call from Stripe,
+ * with no geo header to read) reads that stored market back rather than
+ * re-resolving it, so the price the webhook validates against is always
+ * the exact same one actually shown/charged at checkout time, never a
+ * value that could have drifted between request and webhook delivery.
  */
-function resolveTopupPriceEnvVar(packageId, market) {
-  const byMarket = TOPUP_PRICE_ENV_VAR[packageId];
+function resolvePriceEnvVar(priceKind, market) {
+  const byMarket = MARKET_PRICE_ENV_VAR[priceKind];
   return byMarket && byMarket[market];
 }
 
@@ -148,7 +138,7 @@ router.post('/checkout/growth-topup', requireAuth, async (req, res) => {
   // the session metadata so the webhook validates against the exact
   // same price actually shown/charged, never re-resolving it later.
   const market = resolveMarket(req, req.user);
-  const priceEnvVarName = resolveTopupPriceEnvVar('growth', market);
+  const priceEnvVarName = resolvePriceEnvVar('growth_topup', market);
   const priceId = priceEnvVarName && process.env[priceEnvVarName];
   if (!priceId || !priceId.startsWith('price_')) {
     console.error(`[stripe] ${priceEnvVarName || 'growth top-up price env var'} missing or malformed (market=${market})`);
@@ -204,7 +194,7 @@ router.post('/checkout/leadership-topup', requireAuth, async (req, res) => {
   }
 
   const market = resolveMarket(req, req.user);
-  const priceEnvVarName = resolveTopupPriceEnvVar('leadership', market);
+  const priceEnvVarName = resolvePriceEnvVar('leadership_topup', market);
   const priceId = priceEnvVarName && process.env[priceEnvVarName];
   if (!priceId || !priceId.startsWith('price_')) {
     console.error(`[stripe] ${priceEnvVarName || 'leadership top-up price env var'} missing or malformed (market=${market})`);
@@ -222,7 +212,7 @@ router.post('/checkout/leadership-topup', requireAuth, async (req, res) => {
         // entitlement as the full-price route (300 minutes, leadership
         // tier), merged into the user's existing pool. price_kind +
         // market together are what tell the webhook which exact price
-        // to cross-check against — see TOPUP_PRICE_ENV_VAR above.
+        // to cross-check against — see MARKET_PRICE_ENV_VAR above.
         package_id: 'leadership',
         price_kind: 'leadership_topup',
         market,
@@ -250,9 +240,16 @@ router.post('/checkout/:packageId', requireAuth, async (req, res) => {
     return res.status(503).json({ error: 'Payments are temporarily unavailable' });
   }
 
-  const priceId = process.env[PRICE_ENV_VAR_BY_KIND[packageId]];
+  // Market-aware as of this change (previously single-price, see file
+  // header) — resolved the same way as the two top-up routes, so a
+  // visitor sees and is charged the exact currency the Pricing page
+  // itself already showed them (both now read from the same
+  // resolveMarket() call shape).
+  const market = resolveMarket(req, req.user);
+  const priceEnvVarName = resolvePriceEnvVar(packageId, market);
+  const priceId = priceEnvVarName && process.env[priceEnvVarName];
   if (!priceId || !priceId.startsWith('price_')) {
-    console.error(`[stripe] ${PRICE_ENV_VAR_BY_KIND[packageId]} missing or malformed`);
+    console.error(`[stripe] ${priceEnvVarName || 'price env var'} missing or malformed (packageId=${packageId}, market=${market})`);
     return res.status(503).json({ error: 'Payments are temporarily unavailable' });
   }
 
@@ -269,6 +266,7 @@ router.post('/checkout/:packageId', requireAuth, async (req, res) => {
         medhaiq_user_id: String(req.user.id),
         package_id: packageId,
         price_kind: packageId,
+        market,
       },
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?${packageId}_purchase=cancelled#pricing`,
@@ -357,35 +355,31 @@ async function handleCheckoutCompleted(session) {
   }
 
   // Defense-in-depth: confirm the Stripe Price actually charged on this
-  // session matches the env-configured price for the price_kind (and,
-  // for top-ups, market/currency) claimed in metadata. Metadata is
-  // server-set at session creation and never client-writable, so this
-  // can't be forged by a browser — but this check still guards against
-  // the metadata and the price ever silently drifting apart (e.g. a
-  // future bug in checkout creation), which would otherwise grant the
-  // wrong package for what was actually paid.
+  // session matches the env-configured price for the price_kind + market
+  // claimed in metadata. Metadata is server-set at session creation and
+  // never client-writable, so this can't be forged by a browser — but
+  // this check still guards against the metadata and the price ever
+  // silently drifting apart (e.g. a future bug in checkout creation),
+  // which would otherwise grant the wrong package for what was actually
+  // paid.
   //
-  // Full-package kinds ('growth', 'leadership') resolve via
-  // PRICE_ENV_VAR_BY_KIND, single-price, unchanged. Top-up kinds
-  // ('growth_topup', 'leadership_topup') resolve via
-  // TOPUP_PRICE_ENV_VAR, keyed by market — the market is read back from
-  // metadata (set once, at checkout-creation time, from the real
-  // request) rather than re-resolved here, since a webhook delivery has
-  // no HTTP request/geo header of its own to resolve from, and must
-  // validate against the exact price that was actually shown/charged.
+  // ALL FOUR price kinds ('growth', 'leadership', 'growth_topup',
+  // 'leadership_topup') now resolve through the same market-aware
+  // MARKET_PRICE_ENV_VAR lookup — this used to be two different systems
+  // (full packages single-price, top-ups market-aware); unified here so
+  // there is exactly one price-resolution code path to validate against,
+  // not two. Market is read back from metadata (set once, at checkout-
+  // creation time, from the real request) rather than re-resolved here,
+  // since a webhook delivery has no HTTP request/geo header of its own
+  // to resolve from, and must validate against the exact price that was
+  // actually shown/charged.
   const priceKind = (session.metadata && session.metadata.price_kind) || packageId;
-  let priceEnvVar;
-  if (priceKind === 'growth_topup' || priceKind === 'leadership_topup') {
-    const topupPackageId = priceKind === 'growth_topup' ? 'growth' : 'leadership';
-    const market = session.metadata && session.metadata.market;
-    if (!market || !['india', 'international'].includes(market)) {
-      console.error(`[stripe] session ${session.id} top-up has missing/invalid market metadata (market=${market}) — not granting entitlement`);
-      return;
-    }
-    priceEnvVar = resolveTopupPriceEnvVar(topupPackageId, market);
-  } else {
-    priceEnvVar = PRICE_ENV_VAR_BY_KIND[priceKind];
+  const market = session.metadata && session.metadata.market;
+  if (!market || !['india', 'international'].includes(market)) {
+    console.error(`[stripe] session ${session.id} has missing/invalid market metadata (market=${market}) — not granting entitlement`);
+    return;
   }
+  const priceEnvVar = resolvePriceEnvVar(priceKind, market);
   if (!priceEnvVar) {
     console.error(`[stripe] session ${session.id} has unrecognized price_kind=${priceKind} — not granting entitlement`);
     return;
