@@ -3654,7 +3654,7 @@ button { cursor: pointer; }
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 16px;
-  padding: 16px 36px;
+  padding: 13px 30px;
   border-radius: 40px;
   border: none;
   cursor: pointer;
