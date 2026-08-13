@@ -342,12 +342,29 @@ const _initialGreeting = (_srvHour >= 5 && _srvHour < 12) ? `Good morning, ${_fi
        exhausted modal in views/interview-setup.ejs, kept page-local
        rather than extracted into a shared component per "smallest safe
        change." This is a credit top-up selector only — it never offers
-       package switching/downgrade, and both buttons below route through
-       the EXISTING Growth/Leadership Stripe checkout (routes/stripe.js),
-       unchanged and unduplicated. Placed HERE, inside this else-block,
+       package switching/downgrade. The two option buttons route through
+       the DEDICATED, currency-aware top-up checkout routes
+       (/checkout/growth-topup, /checkout/leadership-topup —
+       routes/stripe.js), commercially distinct prices from the full
+       Growth/Leadership package purchase; the "Upgrade to Leadership"
+       button in the locked state below routes through the EXISTING
+       full-price /checkout/leadership route instead — see its own
+       comment further down for why. Placed HERE, inside this else-block,
        because it reads _ent (current balance) which is scoped to this
        block — see the const _ent declaration near the top of this
        branch. -->
+  <%
+  // Local, currency-appropriate top-up prices — resolved server-side
+  // (server.js's /dashboard/history route, using the SAME
+  // lib/pricing-market.js resolveMarket() the checkout routes use) and
+  // passed in as `market`. Shown as a single currency, never both —
+  // this is a display convenience only; the ACTUAL charged price is
+  // always re-resolved server-side at checkout-creation time
+  // (routes/stripe.js), never trusted from here.
+  const _isIndia = (typeof market !== 'undefined' && market === 'india');
+  const _growthTopupPrice = _isIndia ? '\u20b9699' : '$12';
+  const _leadershipTopupPrice = _isIndia ? '\u20b91,999' : '$29';
+  %>
   <div id="topupModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(2,6,16,0.75); z-index:9999; align-items:center; justify-content:center; padding:16px;">
     <div style="background:var(--card); border:1px solid rgba(255,255,255,0.12); border-radius:var(--radius); padding:28px; max-width:380px; width:100%;">
       <div style="font-size:17px; font-weight:700; color:var(--white); margin-bottom:4px;">Add AI Minutes</div>
@@ -357,10 +374,10 @@ const _initialGreeting = (_srvHour >= 5 && _srvHour < 12) ? `Good morning, ${_fi
 
       <div style="font-size:11.5px; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px;">Choose additional minutes</div>
 
-      <button type="button" class="topup-option-btn" data-package="growth" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; margin-bottom:10px; background:var(--slate); border:1px solid rgba(255,255,255,0.10); border-radius:10px; cursor:pointer; text-align:left; font-family:inherit;">
+      <button type="button" class="topup-option-btn" data-package="growth-topup" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; margin-bottom:10px; background:var(--slate); border:1px solid rgba(255,255,255,0.10); border-radius:10px; cursor:pointer; text-align:left; font-family:inherit;">
         <span>
           <span style="display:block; font-size:14px; font-weight:700; color:var(--white);">+120 AI Minutes</span>
-          <span style="display:block; font-size:12px; color:var(--muted);">$5</span>
+          <span style="display:block; font-size:12px; color:var(--muted);"><%= _growthTopupPrice %></span>
         </span>
         <span class="topup-option-cta" style="font-size:12.5px; font-weight:600; color:var(--bright);">Add 120 Minutes</span>
       </button>
@@ -379,7 +396,7 @@ const _initialGreeting = (_srvHour >= 5 && _srvHour < 12) ? `Good morning, ${_fi
       <button type="button" class="topup-option-btn" data-package="leadership-topup" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; margin-bottom:6px; background:var(--slate); border:1px solid rgba(255,255,255,0.10); border-radius:10px; cursor:pointer; text-align:left; font-family:inherit;">
         <span>
           <span style="display:block; font-size:14px; font-weight:700; color:var(--white);">+300 AI Minutes</span>
-          <span style="display:block; font-size:12px; color:var(--muted);">$15</span>
+          <span style="display:block; font-size:12px; color:var(--muted);"><%= _leadershipTopupPrice %></span>
         </span>
         <span class="topup-option-cta" style="font-size:12.5px; font-weight:600; color:var(--bright);">Add 300 Minutes</span>
       </button>

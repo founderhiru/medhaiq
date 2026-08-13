@@ -22,16 +22,22 @@
 // expiry/entitlement resolution, same idempotency path).
 //
 // Deliberately NOT implemented here (still out of scope): Explorer
-// checkout, Top Up, the entitlement-exhausted modal's checkout wiring,
-// INR/pricing-market checkout logic. Those all remain exactly as they
-// were.
+// checkout, the entitlement-exhausted modal's checkout wiring, currency
+// awareness on the two FULL package prices (STRIPE_GROWTH_PRICE_ID /
+// STRIPE_LEADERSHIP_PRICE_ID remain single-price, exactly as already
+// real-Sandbox-tested — this was a deliberate scoping decision, not an
+// oversight; lib/pricing-market.js's own header comment flags this as
+// the thing to "re-review" before wiring currency into payment logic,
+// and that re-review has so far only been done for the two top-up
+// prices below, not the full package prices).
 //
-// This file introduces NO entitlement logic of its own — every number
-// that ends up in package_acquisitions/credit_ledger is read from the
-// same config/product-packages.js and config/pricing.js that already
-// govern every other package grant in the app (Founder reassignment,
-// welcome offer, etc.). Stripe is a payment trigger, not a second source
-// of truth for what any package means.
+// The two top-up prices (growth_topup, leadership_topup) ARE currency-
+// aware, via lib/pricing-market.js's existing resolveMarket() — see the
+// resolveTopupPriceEnvVar() helper below. This is the first real use of
+// that function in a payment path. Four total top-up routes/prices:
+// POST /checkout/growth-topup (growth OR leadership eligible) and
+// POST /checkout/leadership-topup (leadership-only), each resolving one
+// of two currency-specific Price IDs (INR/USD) per request.
 
 const express = require('express');
 const router = express.Router();
@@ -40,6 +46,7 @@ const { stripe, isStripeConfigured, configError } = require('../services/stripe-
 const { createPackageAcquisition, getActivePackageAcquisition } = require('../db/package-acquisitions');
 const { PRODUCT_PACKAGES, PACKAGE_TIER_RANK } = require('../config/product-packages');
 const { plans: PRICING_PLANS } = require('../config/pricing');
+const { resolveMarket } = require('../lib/pricing-market');
 
 // Explicit whitelist — the ONLY package IDs Stripe checkout will ever
 // create a session for or grant from. Adding a package to this list is
@@ -47,21 +54,44 @@ const { plans: PRICING_PLANS } = require('../config/pricing');
 // request can influence in any way.
 const SUPPORTED_PACKAGE_IDS = ['growth', 'leadership'];
 
-// Which env var holds each PRICE KIND's Sandbox/Test Price ID. Note this
-// is keyed by price_kind, not package_id — 'leadership' and
-// 'leadership_topup' both grant the SAME entitlement (packageId
-// 'leadership', 300 minutes) but are two DIFFERENT purchasable prices:
-// 'leadership' is the full package price (Explorer/Growth upgrading, or
-// the standing Pricing page CTA), 'leadership_topup' is a cheaper price
-// available ONLY to users who already have active Leadership (Buy More
-// Minutes' +300 option) — see the server-side eligibility check on the
-// /checkout/leadership-topup route below. Never read from anywhere else,
-// never accepted from the client.
+// Which env var holds each FULL-PACKAGE price kind's Sandbox/Test Price
+// ID. These two are single-price, NOT currency-aware — a deliberate,
+// unchanged scoping decision (see file header). Never read from
+// anywhere else, never accepted from the client.
 const PRICE_ENV_VAR_BY_KIND = {
   growth: 'STRIPE_GROWTH_PRICE_ID',
   leadership: 'STRIPE_LEADERSHIP_PRICE_ID',
-  leadership_topup: 'STRIPE_LEADERSHIP_TOPUP_PRICE_ID',
 };
+
+// Top-up prices are commercially DIFFERENT products from the full
+// packages above (confirmed: ₹699/$12 top-up vs ₹999/$19 full Growth;
+// ₹1,999/$29 top-up vs ₹2,999/$49 full Leadership — the numbers don't
+// match, so these are never allowed to fall back to or be confused with
+// the full-package price IDs) — and, unlike the two above, ARE
+// currency-aware, resolved per-request via lib/pricing-market.js's
+// resolveMarket(). Four distinct Sandbox Price IDs total.
+const TOPUP_PRICE_ENV_VAR = {
+  growth: { india: 'STRIPE_GROWTH_TOPUP_PRICE_ID_INR', international: 'STRIPE_GROWTH_TOPUP_PRICE_ID_USD' },
+  leadership: { india: 'STRIPE_LEADERSHIP_TOPUP_PRICE_ID_INR', international: 'STRIPE_LEADERSHIP_TOPUP_PRICE_ID_USD' },
+};
+
+/**
+ * Resolves which env var holds the correct top-up Price ID for this
+ * package + market. Market is resolved ONCE, at checkout-creation time,
+ * from the real inbound request (lib/pricing-market.js's resolveMarket
+ * — logged-in user's stable market, then geo header, then safe default)
+ * and stored in the Checkout Session's metadata; the webhook (which has
+ * no HTTP request of its own — it's a server-to-server call from
+ * Stripe, with no geo header to read) reads that stored market back
+ * rather than re-resolving it, so the price the webhook validates
+ * against is always the exact same one actually shown/charged at
+ * checkout time, never a value that could have drifted between request
+ * and webhook delivery.
+ */
+function resolveTopupPriceEnvVar(packageId, market) {
+  const byMarket = TOPUP_PRICE_ENV_VAR[packageId];
+  return byMarket && byMarket[market];
+}
 
 /**
  * Existing package validity convention, read from config/pricing.js
@@ -96,6 +126,62 @@ function resolveExpiryForPackage(packageId) {
 // immediately below, which is registered BEFORE this param route so
 // Express matches it first for that literal path.
 
+router.post('/checkout/growth-topup', requireAuth, async (req, res) => {
+  if (!isStripeConfigured()) {
+    console.error('[stripe] growth-topup checkout requested but Stripe is not configured:', configError());
+    return res.status(503).json({ error: 'Payments are temporarily unavailable' });
+  }
+
+  // Server-side eligibility gate — the +120 top-up is available to
+  // anyone at Growth tier or above (Growth or Leadership); Explorer must
+  // purchase a real package first, per the approved eligibility rule.
+  // Same tier-aware resolution as the Leadership top-up gate below.
+  const currentActive = await getActivePackageAcquisition(req.user.id);
+  const currentRank = PACKAGE_TIER_RANK[currentActive && currentActive.package_id] ?? -1;
+  if (currentRank < PACKAGE_TIER_RANK.growth) {
+    return res.status(403).json({ error: 'AI Minute top-ups are only available to Growth or Leadership customers. Purchase a package first.' });
+  }
+
+  // Currency/market resolved ONCE here, from the real request
+  // (lib/pricing-market.js's existing resolveMarket — logged-in user's
+  // stable market, then geo header, then safe default), and stored in
+  // the session metadata so the webhook validates against the exact
+  // same price actually shown/charged, never re-resolving it later.
+  const market = resolveMarket(req, req.user);
+  const priceEnvVarName = resolveTopupPriceEnvVar('growth', market);
+  const priceId = priceEnvVarName && process.env[priceEnvVarName];
+  if (!priceId || !priceId.startsWith('price_')) {
+    console.error(`[stripe] ${priceEnvVarName || 'growth top-up price env var'} missing or malformed (market=${market})`);
+    return res.status(503).json({ error: 'Payments are temporarily unavailable' });
+  }
+
+  try {
+    const origin = `${req.protocol}://${req.get('host')}`;
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      line_items: [{ price: priceId, quantity: 1 }],
+      metadata: {
+        medhaiq_user_id: String(req.user.id),
+        // package_id is the ENTITLEMENT this grants (growth, 120
+        // minutes, merged into the user's existing pool) — separate
+        // from price_kind (which price funnel) and market (which
+        // currency was actually charged), both needed by the webhook's
+        // price cross-check.
+        package_id: 'growth',
+        price_kind: 'growth_topup',
+        market,
+      },
+      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/?growth_topup_purchase=cancelled#pricing`,
+    });
+
+    return res.json({ url: session.url });
+  } catch (err) {
+    console.error('[stripe] failed to create growth-topup checkout session:', err && err.message);
+    return res.status(500).json({ error: 'Could not start checkout' });
+  }
+});
+
 router.post('/checkout/leadership-topup', requireAuth, async (req, res) => {
   if (!isStripeConfigured()) {
     console.error('[stripe] leadership-topup checkout requested but Stripe is not configured:', configError());
@@ -117,9 +203,11 @@ router.post('/checkout/leadership-topup', requireAuth, async (req, res) => {
     return res.status(403).json({ error: 'The Leadership top-up price is only available to existing Leadership customers. Use the standard Leadership purchase instead.' });
   }
 
-  const priceId = process.env[PRICE_ENV_VAR_BY_KIND.leadership_topup];
+  const market = resolveMarket(req, req.user);
+  const priceEnvVarName = resolveTopupPriceEnvVar('leadership', market);
+  const priceId = priceEnvVarName && process.env[priceEnvVarName];
   if (!priceId || !priceId.startsWith('price_')) {
-    console.error(`[stripe] ${PRICE_ENV_VAR_BY_KIND.leadership_topup} missing or malformed`);
+    console.error(`[stripe] ${priceEnvVarName || 'leadership top-up price env var'} missing or malformed (market=${market})`);
     return res.status(503).json({ error: 'Payments are temporarily unavailable' });
   }
 
@@ -132,11 +220,12 @@ router.post('/checkout/leadership-topup', requireAuth, async (req, res) => {
         medhaiq_user_id: String(req.user.id),
         // package_id stays 'leadership' — this grants the exact same
         // entitlement as the full-price route (300 minutes, leadership
-        // tier), merged into the user's existing pool. price_kind is
-        // what tells the webhook which price to cross-check against —
-        // see PRICE_ENV_VAR_BY_KIND above.
+        // tier), merged into the user's existing pool. price_kind +
+        // market together are what tell the webhook which exact price
+        // to cross-check against — see TOPUP_PRICE_ENV_VAR above.
         package_id: 'leadership',
         price_kind: 'leadership_topup',
+        market,
       },
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?leadership_topup_purchase=cancelled#pricing`,
@@ -268,23 +357,35 @@ async function handleCheckoutCompleted(session) {
   }
 
   // Defense-in-depth: confirm the Stripe Price actually charged on this
-  // session matches the env-configured price for the price_kind claimed
-  // in metadata. Metadata is server-set at session creation and never
-  // client-writable, so this can't be forged by a browser — but this
-  // check still guards against the metadata and the price ever silently
-  // drifting apart (e.g. a future bug in checkout creation), which
-  // would otherwise grant the wrong package for what was actually paid.
+  // session matches the env-configured price for the price_kind (and,
+  // for top-ups, market/currency) claimed in metadata. Metadata is
+  // server-set at session creation and never client-writable, so this
+  // can't be forged by a browser — but this check still guards against
+  // the metadata and the price ever silently drifting apart (e.g. a
+  // future bug in checkout creation), which would otherwise grant the
+  // wrong package for what was actually paid.
   //
-  // price_kind (not package_id) is what determines the EXPECTED price
-  // here, because 'leadership' and 'leadership_topup' are two different
-  // prices that both grant the same package_id='leadership' entitlement
-  // — see PRICE_ENV_VAR_BY_KIND above. Falls back to packageId itself
-  // when price_kind is absent, which preserves the exact old behavior
-  // for any session created by code prior to this price_kind field
-  // existing (packageId was already the correct lookup key for every
-  // price kind that existed before the Leadership top-up was added).
+  // Full-package kinds ('growth', 'leadership') resolve via
+  // PRICE_ENV_VAR_BY_KIND, single-price, unchanged. Top-up kinds
+  // ('growth_topup', 'leadership_topup') resolve via
+  // TOPUP_PRICE_ENV_VAR, keyed by market — the market is read back from
+  // metadata (set once, at checkout-creation time, from the real
+  // request) rather than re-resolved here, since a webhook delivery has
+  // no HTTP request/geo header of its own to resolve from, and must
+  // validate against the exact price that was actually shown/charged.
   const priceKind = (session.metadata && session.metadata.price_kind) || packageId;
-  const priceEnvVar = PRICE_ENV_VAR_BY_KIND[priceKind];
+  let priceEnvVar;
+  if (priceKind === 'growth_topup' || priceKind === 'leadership_topup') {
+    const topupPackageId = priceKind === 'growth_topup' ? 'growth' : 'leadership';
+    const market = session.metadata && session.metadata.market;
+    if (!market || !['india', 'international'].includes(market)) {
+      console.error(`[stripe] session ${session.id} top-up has missing/invalid market metadata (market=${market}) — not granting entitlement`);
+      return;
+    }
+    priceEnvVar = resolveTopupPriceEnvVar(topupPackageId, market);
+  } else {
+    priceEnvVar = PRICE_ENV_VAR_BY_KIND[priceKind];
+  }
   if (!priceEnvVar) {
     console.error(`[stripe] session ${session.id} has unrecognized price_kind=${priceKind} — not granting entitlement`);
     return;
