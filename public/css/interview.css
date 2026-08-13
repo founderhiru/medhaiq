@@ -1262,25 +1262,3 @@ body.report-page-body {
   color: #64748B;
   margin-top: 2px;
 }
-
-/* ══════════════════════════════════════════════════════════════════════
-   CTA cleanup — removed redundant "Return Home" (2026-08-12)
-   ══════════════════════════════════════════════════════════════════════
-   .report-ctas now holds exactly 2 equal-width buttons (Practice Again,
-   Return to Workspace) instead of 4. "Try a different persona" moved
-   into its own row, styled here as a genuine lightweight text link
-   rather than a .cta-btn box stretched by the old 4-item flex row —
-   this is new, scoped CSS for a new class (.report-ctas-tertiary),
-   nothing shared or existing was touched.
-   ══════════════════════════════════════════════════════════════════════ */
-.report-page .report-ctas-tertiary {
-  text-align: center;
-  margin-top: 16px;
-}
-.report-page .report-ctas-tertiary a {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #64748B;
-  text-decoration: none;
-}
-.report-page .report-ctas-tertiary a:hover { color: #2554C7; }
