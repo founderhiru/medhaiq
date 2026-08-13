@@ -606,14 +606,6 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   // up almost the entire short message (<=6 words), not when embedded in
   // a longer, real answer.
   const AMBIGUOUS_SKIP_PHRASES = ['move on', "let's move on", "lets move on", 'move forward', 'continue'];
-  // Bug fix (2026-07-29): "I like to skip" / "I'd like to skip" / "I want
-  // to pass" were falling through to the sparse-answer guardrail below,
-  // producing a REPROMPT loop instead of an explicit skip. Every phrase
-  // in STRONG_SKIP_PHRASES above assumes an object after the verb ("skip
-  // THIS", "pass IT", "skip QUESTION") — a bare "I want to skip" has no
-  // object, so no substring matched. This one regex covers exactly that
-  // sentence pattern; it does not touch or loosen anything else above.
-  const SKIP_DESIRE_REGEX = /\b(?:want|like)\s+to\s+(?:skip|pass)\b/;
   const cleanInputForIntent = (answerText || '').trim();
   const intentWordCount = cleanInputForIntent.split(/\s+/).filter(Boolean).length;
   const detectedSkipIntent = (() => {
@@ -621,7 +613,6 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     const lower = cleanInputForIntent.toLowerCase().replace(/[.!?,]/g, ' ').replace(/\s+/g, ' ').trim();
     // Also catch the single bare word "skip" or "pass" (not just phrases)
     if (/^(skip|pass|next)$/.test(lower)) return true;
-    if (SKIP_DESIRE_REGEX.test(lower)) return true;
     if (STRONG_SKIP_PHRASES.some((phrase) => lower.includes(phrase))) return true;
     if (intentWordCount <= 6 && AMBIGUOUS_SKIP_PHRASES.some((phrase) => lower.includes(phrase))) return true;
     return false;
