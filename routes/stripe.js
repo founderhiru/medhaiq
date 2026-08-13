@@ -37,8 +37,8 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/guards');
 const { stripe, isStripeConfigured, configError } = require('../services/stripe-client');
-const { createPackageAcquisition } = require('../db/package-acquisitions');
-const { PRODUCT_PACKAGES } = require('../config/product-packages');
+const { createPackageAcquisition, getActivePackageAcquisition } = require('../db/package-acquisitions');
+const { PRODUCT_PACKAGES, PACKAGE_TIER_RANK } = require('../config/product-packages');
 const { plans: PRICING_PLANS } = require('../config/pricing');
 
 // Explicit whitelist — the ONLY package IDs Stripe checkout will ever
@@ -47,11 +47,20 @@ const { plans: PRICING_PLANS } = require('../config/pricing');
 // request can influence in any way.
 const SUPPORTED_PACKAGE_IDS = ['growth', 'leadership'];
 
-// Which env var holds each package's Sandbox/Test Price ID. Never read
-// from anywhere else, never accepted from the client.
-const PACKAGE_PRICE_ENV_VAR = {
+// Which env var holds each PRICE KIND's Sandbox/Test Price ID. Note this
+// is keyed by price_kind, not package_id — 'leadership' and
+// 'leadership_topup' both grant the SAME entitlement (packageId
+// 'leadership', 300 minutes) but are two DIFFERENT purchasable prices:
+// 'leadership' is the full package price (Explorer/Growth upgrading, or
+// the standing Pricing page CTA), 'leadership_topup' is a cheaper price
+// available ONLY to users who already have active Leadership (Buy More
+// Minutes' +300 option) — see the server-side eligibility check on the
+// /checkout/leadership-topup route below. Never read from anywhere else,
+// never accepted from the client.
+const PRICE_ENV_VAR_BY_KIND = {
   growth: 'STRIPE_GROWTH_PRICE_ID',
   leadership: 'STRIPE_LEADERSHIP_PRICE_ID',
+  leadership_topup: 'STRIPE_LEADERSHIP_TOPUP_PRICE_ID',
 };
 
 /**
@@ -81,6 +90,64 @@ function resolveExpiryForPackage(packageId) {
 // as a lookup key into server-side env vars and config. The existing
 // Growth CTA already POSTs to /api/stripe/checkout/growth and needs no
 // change; this route now also matches /api/stripe/checkout/leadership.
+//
+// price_kind === packageId for both routes handled here — the ONE case
+// where price_kind differs from packageId is the Leadership top-up route
+// immediately below, which is registered BEFORE this param route so
+// Express matches it first for that literal path.
+
+router.post('/checkout/leadership-topup', requireAuth, async (req, res) => {
+  if (!isStripeConfigured()) {
+    console.error('[stripe] leadership-topup checkout requested but Stripe is not configured:', configError());
+    return res.status(503).json({ error: 'Payments are temporarily unavailable' });
+  }
+
+  // Server-side eligibility gate — the discounted Leadership top-up
+  // price is available ONLY to users who ALREADY have active Leadership
+  // access. This is an entitlement rule, not a UI-only restriction: a
+  // Growth (or Explorer) user calling this endpoint directly, bypassing
+  // the UI entirely, is rejected here before any Stripe Checkout Session
+  // is ever created — there is nothing for them to complete or replay.
+  // Uses the exact same tier-aware resolution
+  // (db/package-acquisitions.js's getActivePackageAcquisition) the rest
+  // of the app already treats as canonical, so this can never drift from
+  // what the Workspace itself shows as the user's current access level.
+  const currentActive = await getActivePackageAcquisition(req.user.id);
+  if (!currentActive || currentActive.package_id !== 'leadership') {
+    return res.status(403).json({ error: 'The Leadership top-up price is only available to existing Leadership customers. Use the standard Leadership purchase instead.' });
+  }
+
+  const priceId = process.env[PRICE_ENV_VAR_BY_KIND.leadership_topup];
+  if (!priceId || !priceId.startsWith('price_')) {
+    console.error(`[stripe] ${PRICE_ENV_VAR_BY_KIND.leadership_topup} missing or malformed`);
+    return res.status(503).json({ error: 'Payments are temporarily unavailable' });
+  }
+
+  try {
+    const origin = `${req.protocol}://${req.get('host')}`;
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      line_items: [{ price: priceId, quantity: 1 }],
+      metadata: {
+        medhaiq_user_id: String(req.user.id),
+        // package_id stays 'leadership' — this grants the exact same
+        // entitlement as the full-price route (300 minutes, leadership
+        // tier), merged into the user's existing pool. price_kind is
+        // what tells the webhook which price to cross-check against —
+        // see PRICE_ENV_VAR_BY_KIND above.
+        package_id: 'leadership',
+        price_kind: 'leadership_topup',
+      },
+      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/?leadership_topup_purchase=cancelled#pricing`,
+    });
+
+    return res.json({ url: session.url });
+  } catch (err) {
+    console.error('[stripe] failed to create leadership-topup checkout session:', err && err.message);
+    return res.status(500).json({ error: 'Could not start checkout' });
+  }
+});
 
 router.post('/checkout/:packageId', requireAuth, async (req, res) => {
   const packageId = req.params.packageId;
@@ -94,9 +161,9 @@ router.post('/checkout/:packageId', requireAuth, async (req, res) => {
     return res.status(503).json({ error: 'Payments are temporarily unavailable' });
   }
 
-  const priceId = process.env[PACKAGE_PRICE_ENV_VAR[packageId]];
+  const priceId = process.env[PRICE_ENV_VAR_BY_KIND[packageId]];
   if (!priceId || !priceId.startsWith('price_')) {
-    console.error(`[stripe] ${PACKAGE_PRICE_ENV_VAR[packageId]} missing or malformed`);
+    console.error(`[stripe] ${PRICE_ENV_VAR_BY_KIND[packageId]} missing or malformed`);
     return res.status(503).json({ error: 'Payments are temporarily unavailable' });
   }
 
@@ -112,6 +179,7 @@ router.post('/checkout/:packageId', requireAuth, async (req, res) => {
       metadata: {
         medhaiq_user_id: String(req.user.id),
         package_id: packageId,
+        price_kind: packageId,
       },
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?${packageId}_purchase=cancelled#pricing`,
@@ -200,12 +268,27 @@ async function handleCheckoutCompleted(session) {
   }
 
   // Defense-in-depth: confirm the Stripe Price actually charged on this
-  // session matches the env-configured price for the package_id claimed
+  // session matches the env-configured price for the price_kind claimed
   // in metadata. Metadata is server-set at session creation and never
   // client-writable, so this can't be forged by a browser — but this
   // check still guards against the metadata and the price ever silently
   // drifting apart (e.g. a future bug in checkout creation), which
   // would otherwise grant the wrong package for what was actually paid.
+  //
+  // price_kind (not package_id) is what determines the EXPECTED price
+  // here, because 'leadership' and 'leadership_topup' are two different
+  // prices that both grant the same package_id='leadership' entitlement
+  // — see PRICE_ENV_VAR_BY_KIND above. Falls back to packageId itself
+  // when price_kind is absent, which preserves the exact old behavior
+  // for any session created by code prior to this price_kind field
+  // existing (packageId was already the correct lookup key for every
+  // price kind that existed before the Leadership top-up was added).
+  const priceKind = (session.metadata && session.metadata.price_kind) || packageId;
+  const priceEnvVar = PRICE_ENV_VAR_BY_KIND[priceKind];
+  if (!priceEnvVar) {
+    console.error(`[stripe] session ${session.id} has unrecognized price_kind=${priceKind} — not granting entitlement`);
+    return;
+  }
   let lineItems;
   try {
     lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 });
@@ -214,9 +297,9 @@ async function handleCheckoutCompleted(session) {
     return;
   }
   const chargedPriceId = lineItems && lineItems.data && lineItems.data[0] && lineItems.data[0].price && lineItems.data[0].price.id;
-  const expectedPriceId = process.env[PACKAGE_PRICE_ENV_VAR[packageId]];
+  const expectedPriceId = process.env[priceEnvVar];
   if (!chargedPriceId || chargedPriceId !== expectedPriceId) {
-    console.error(`[stripe] session ${session.id} price mismatch — metadata claims package_id=${packageId} (expected price ${expectedPriceId}) but charged price was ${chargedPriceId} — not granting entitlement`);
+    console.error(`[stripe] session ${session.id} price mismatch — metadata claims price_kind=${priceKind} (expected price ${expectedPriceId}) but charged price was ${chargedPriceId} — not granting entitlement`);
     return;
   }
 
@@ -325,11 +408,46 @@ async function resolveCheckoutSuccessContext(sessionId, requestingUserId) {
     return { status: 'processing', packageName: pkgPricingEntry.title };
   }
 
+  // Buy More Minutes: this purchase's own package (packageId above) is
+  // NOT necessarily the user's resulting access level — a Leadership
+  // user buying a Growth top-up stays Leadership. Read the user's
+  // CURRENT resolved package (same tier-first resolution
+  // lib/capability-engine.js uses) to word the success message
+  // correctly: "is now active" when this purchase matches or exceeds
+  // their current access level, "remains active" when they already sit
+  // at a higher tier than what was just purchased. Note: if the webhook
+  // for THIS purchase hasn't landed yet (rare, sub-second race — same
+  // caveat as the rest of this function), this reads the state from
+  // just before it, which in the worst case shows slightly stale wording
+  // for one page load; the minutes-added number below is always correct
+  // regardless, since it comes from static config, not this DB read.
+  let accessLevelName = pkgPricingEntry.title;
+  let accessLevelIsNewlyEstablished = true;
+  try {
+    const currentActive = await getActivePackageAcquisition(requestingUserId);
+    if (currentActive) {
+      const currentPricingEntry = PRICING_PLANS.find((p) => p.id === currentActive.package_id);
+      const currentRank = PACKAGE_TIER_RANK[currentActive.package_id] ?? -1;
+      const purchasedRank = PACKAGE_TIER_RANK[packageId] ?? -1;
+      if (currentPricingEntry) {
+        accessLevelName = currentPricingEntry.title;
+        accessLevelIsNewlyEstablished = currentRank <= purchasedRank;
+      }
+    }
+  } catch (err) {
+    // Falls back to the purchased package's own name/"is now active"
+    // wording above — never lets a lookup failure break the success
+    // page itself.
+    console.error('[stripe] could not resolve current access level for success page:', err && err.message);
+  }
+
   return {
     status: 'paid',
     packageId,
     packageName: pkgPricingEntry.title,
     minutes: pkgDefinition.entitlements.includedMinutes,
+    accessLevelName,
+    accessLevelIsNewlyEstablished,
   };
 }
 

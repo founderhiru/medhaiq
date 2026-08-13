@@ -121,4 +121,18 @@ function resolveInterviewPolicy(packageId) {
   };
 }
 
-module.exports = { PRODUCT_PACKAGES, DEFAULT_PACKAGE_ID, resolveInterviewPolicy };
+// Package tier ranking — Explorer < Growth < Leadership. Used ONLY to
+// decide which of a user's several concurrently-unexpired
+// package_acquisitions rows determines their ACCESS LEVEL (permissions,
+// personas, question budget) when a credit top-up (Buy More Minutes,
+// routes/stripe.js) has left them with more than one unexpired row.
+// Higher number = higher tier; a lower-tier top-up must never win over
+// an existing higher-tier acquisition. Does NOT affect credited
+// minutes, which are always merged additively across every unexpired
+// acquisition regardless of tier — see db/package-acquisitions.js's
+// getMergedCreditPool. A user with exactly one unexpired acquisition
+// (the normal case for every purchase before Buy More Minutes existed)
+// is completely unaffected by this ranking.
+const PACKAGE_TIER_RANK = { explorer: 0, growth: 1, leadership: 2 };
+
+module.exports = { PRODUCT_PACKAGES, DEFAULT_PACKAGE_ID, resolveInterviewPolicy, PACKAGE_TIER_RANK };

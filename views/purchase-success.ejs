@@ -13,8 +13,12 @@
    Expected locals:
    - shellUser, capabilities: same as every other authenticated page
    - context: the object returned by routes/stripe.js's
-     resolveCheckoutSuccessContext() — { status, packageName, minutes }
-     for 'paid'; lighter shapes for 'processing' / 'invalid' / 'unavailable'
+     resolveCheckoutSuccessContext() — { status, packageName, minutes,
+     accessLevelName, accessLevelIsNewlyEstablished } for 'paid' (the
+     last two distinguish "Leadership is now active" from "Your
+     Leadership access remains active" when a top-up doesn't change the
+     user's resolved tier — see Buy More Minutes); lighter shapes for
+     'processing' / 'invalid' / 'unavailable'
 */
 %>
 <%- include('partials/workspace-shell-top', { pageTitle: 'Payment Successful — MedhaIQ', activeNav: 'dashboard', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'] }) %>
@@ -26,8 +30,14 @@
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
       <h1 style="font-size:22px; margin-bottom:6px;">Payment successful</h1>
-      <p class="subtitle" style="margin-bottom:4px;"><strong><%= context.packageName %></strong> is now active.</p>
-      <p class="subtitle" style="margin-bottom:24px;"><%= context.minutes %> AI Minutes added to your account.</p>
+      <p class="subtitle" style="margin-bottom:4px;"><%= context.minutes %> AI Minutes added to your account.</p>
+      <p class="subtitle" style="margin-bottom:24px;">
+        <% if (context.accessLevelIsNewlyEstablished) { %>
+          <strong><%= context.accessLevelName %></strong> is now active.
+        <% } else { %>
+          Your <strong><%= context.accessLevelName %></strong> access remains active.
+        <% } %>
+      </p>
       <a href="/dashboard" class="cta-btn primary" style="display:inline-block;">Go to Workspace</a>
     </div>
   <% } else if (context.status === 'processing') { %>
