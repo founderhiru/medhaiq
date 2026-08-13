@@ -80,7 +80,7 @@ router.post('/checkout/growth', requireAuth, async (req, res) => {
         medhaiq_user_id: String(req.user.id),
         package_id: GROWTH_PACKAGE_ID,
       },
-      success_url: `${origin}/dashboard?growth_purchase=processing&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?growth_purchase=cancelled#pricing`,
     });
 
@@ -199,4 +199,74 @@ async function handleCheckoutCompleted(session) {
   }
 }
 
-module.exports = { router, handleWebhook };
+module.exports = { router, handleWebhook, resolveCheckoutSuccessContext };
+
+// ── Post-payment success page context ───────────────────────────────────
+//
+// UX-only helper for the new GET /checkout/success page (server.js).
+// This does NOT grant anything — the webhook above remains the sole
+// source of truth for entitlement. This function only answers "what
+// should the success page say", by asking Stripe directly (server-side,
+// authoritative) which package a *specific, ownership-verified* Checkout
+// Session was for, then reading that package's display name and minutes
+// from the same config every other part of the app already uses
+// (config/pricing.js's `title`, config/product-packages.js's
+// `includedMinutes`) — never hard-coded, never re-derived, and never
+// trusting anything the browser claims about which package it bought.
+//
+// If the webhook hasn't landed in the DB yet (real but usually
+// sub-second race — see approved design), this still renders correctly:
+// the copy is driven by Stripe's own payment_status on the session, not
+// by polling package_acquisitions, so the "browser closed before this
+// page ever loads" scenario is completely unaffected — that path never
+// touches this function at all.
+async function resolveCheckoutSuccessContext(sessionId, requestingUserId) {
+  if (!isStripeConfigured()) {
+    return { status: 'unavailable' };
+  }
+  if (!sessionId || typeof sessionId !== 'string') {
+    return { status: 'invalid' };
+  }
+
+  let session;
+  try {
+    session = await stripe.checkout.sessions.retrieve(sessionId);
+  } catch (err) {
+    console.error('[stripe] could not retrieve checkout session for success page:', err && err.message);
+    return { status: 'invalid' };
+  }
+
+  // Ownership check — a session_id is not a secret capability token by
+  // itself; without this, one user's success-page URL (e.g. shared,
+  // bookmarked, or guessed) could show another user's purchase details.
+  // Never trust the URL alone.
+  const ownerId = session.metadata && session.metadata.medhaiq_user_id;
+  if (!ownerId || String(ownerId) !== String(requestingUserId)) {
+    return { status: 'invalid' };
+  }
+
+  const packageId = session.metadata && session.metadata.package_id;
+  const pkgDefinition = packageId && PRODUCT_PACKAGES[packageId];
+  const pkgPricingEntry = packageId && PRICING_PLANS.find((p) => p.id === packageId);
+  if (!pkgDefinition || !pkgPricingEntry) {
+    // Metadata present but doesn't map to a real, currently-configured
+    // package — same "don't display something invented" principle as
+    // the rest of the app. Treat as invalid rather than guessing.
+    return { status: 'invalid' };
+  }
+
+  if (session.payment_status !== 'paid') {
+    // Genuinely still in flight (e.g. an async payment method). Not a
+    // failure — just not confirmed yet. The webhook will grant the
+    // entitlement whenever Stripe itself confirms payment, independent
+    // of whether anyone is looking at this page.
+    return { status: 'processing', packageName: pkgPricingEntry.title };
+  }
+
+  return {
+    status: 'paid',
+    packageId,
+    packageName: pkgPricingEntry.title,
+    minutes: pkgDefinition.entitlements.includedMinutes,
+  };
+}

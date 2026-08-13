@@ -27,6 +27,17 @@ const port = process.env.PORT || 3000;
 // exactly one hop, matching Render's architecture.
 app.set('trust proxy', 1);
 
+// Stripe webhook (Sandbox/staging only, routes/stripe.js) — mounted here,
+// BEFORE the app-wide express.json() below, and given its own raw-body
+// parser scoped only to this exact path. Stripe's signature verification
+// (stripe.webhooks.constructEvent) requires the untouched raw request
+// body; if this ran after express.json() the body would already be
+// parsed/consumed and every webhook signature check would fail. This is
+// the one route in the app that cannot use the global JSON parser.
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  require('./routes/stripe').handleWebhook(req, res);
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const passport = require('passport');
@@ -84,6 +95,7 @@ app.use('/api',            require('./routes/vapi-silent-model')); // tts_pipeli
 app.use('/api/voice',      require('./routes/voice-tts'));   // PR3: ElevenLabs proxy, requireAuth-gated
 app.use('/debug/voice',    require('./routes/debug-voice')); // PR3: internal diagnostic page, requireFounder-gated
 app.use('/api/debug/elevenlabs/voices', require('./routes/debug-elevenlabs-voices')); // TEMPORARY -- delete once a working voice is identified
+app.use('/api/stripe',     require('./routes/stripe').router); // Sandbox/staging checkout only — webhook is mounted separately above, pre-express.json()
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/', async (req, res) => {

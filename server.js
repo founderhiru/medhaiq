@@ -873,6 +873,18 @@ app.get('/founder', requireFounderPage, async (req, res) => {
 // Career Workspace page lives at /dashboard/history and is unchanged.
 app.get('/dashboard', requireAuthPage, (_req, res) => res.redirect('/dashboard/history'));
 
+// Generic post-payment success page (Stripe Sandbox, Growth today —
+// automatically works for Leadership too once that checkout is
+// separately approved and built, since it reads the package purely from
+// the verified Checkout Session, never a hardcoded name). UX only — see
+// routes/stripe.js's resolveCheckoutSuccessContext for why this never
+// grants anything itself; the webhook remains the sole source of truth.
+app.get('/checkout/success', requireAuthPage, async (req, res) => {
+  const { resolveCheckoutSuccessContext } = require('./routes/stripe');
+  const context = await resolveCheckoutSuccessContext(req.query.session_id, req.user.id);
+  res.render('purchase-success', { shellUser: req.user, capabilities: req.capabilities, context });
+});
+
 app.get('/dashboard/history', requireAuthPage, async (req, res) => {
   try {
     const userId = req.cookies.user_id;
