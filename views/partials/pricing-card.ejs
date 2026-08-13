@@ -47,6 +47,11 @@
     </div>
   </div>
 
-  <a href="<%= plan.cta.href %>" class="mh-pricing-cta mh-cta-<%= plan.colorKey %>"><%= plan.cta.text %></a>
+  <!-- Stripe Sandbox checkout wiring (Growth only, per approved staging
+       pilot scope) — data-stripe-checkout marks this anchor for the
+       click-intercept handler in pricing-section.ejs. href is left as
+       the existing '/login' destination and still works as a plain link
+       for anyone without JS, or if the fetch call itself fails. -->
+  <a href="<%= plan.cta.href %>" class="mh-pricing-cta mh-cta-<%= plan.colorKey %>"<% if (plan.cta.action === 'stripe-checkout') { %> data-stripe-checkout="<%= plan.id %>"<% } %>><%= plan.cta.text %></a>
   <div class="mh-card-footer"><%= plan.footer %></div>
 </div>
