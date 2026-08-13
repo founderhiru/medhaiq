@@ -1,0 +1,16 @@
+{
+  "name": "MedhaIQ",
+  "short_name": "MedhaIQ",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0A0F1E",
+  "background_color": "#0A0F1E",
+  "icons": [
+    {
+      "src": "/assets/branding/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
