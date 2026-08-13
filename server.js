@@ -1023,6 +1023,16 @@ app.get('/dashboard/history', requireAuthPage, async (req, res) => {
     const preparingForSession = interruptedSession || history[0] || null;
     const preparingForRole = preparingForSession ? (preparingForSession.roleTitle || 'Mock Interview') : null;
 
+    // Resolved ONCE here, server-side, using the exact same
+    // lib/pricing-market.js resolveMarket() the Buy More Minutes
+    // top-up checkout routes use (routes/stripe.js) — so the price the
+    // modal DISPLAYS is guaranteed to match the price actually CHARGED
+    // if the user clicks through, since both come from the same
+    // resolution call shape (req + req.user), not two independently
+    // maintained lookups that could drift apart.
+    const { resolveMarket } = require('./lib/pricing-market');
+    const market = resolveMarket(req, req.user);
+
     res.render('dashboard-history', {
       shellUser: user,
       history, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY, trendLatest, trendAvg,
@@ -1031,6 +1041,7 @@ app.get('/dashboard/history', requireAuthPage, async (req, res) => {
       lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
       resumeIntelActive, resumeIntelSubLabel,
       bestCompetencyLabel, focusNextLabel,
+      market,
     });
   } catch (err) {
     console.error('[dashboard/history]', err);

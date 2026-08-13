@@ -197,7 +197,7 @@ const _initialGreeting = (_srvHour >= 5 && _srvHour < 12) ? `Good morning, ${_fi
             </div>
           </div>
           <% } %>
-          <a href="/#pricing" class="minutes-cta">Buy More Minutes</a>
+          <button type="button" class="minutes-cta" id="openTopupModalBtn" data-package-id="<%= (capabilities && capabilities.package && capabilities.package.id) || 'explorer' %>" style="cursor:pointer; font-family:inherit;">Buy More Minutes</button>
         </div>
       <% } else { %>
         <p style="color:var(--dim); font-size:12.5px;">Unlimited AI Interview Minutes on your plan.</p>
@@ -336,6 +336,175 @@ const _initialGreeting = (_srvHour >= 5 && _srvHour < 12) ? `Good morning, ${_fi
       </div>
     </div>
   </div>
+
+  <!-- Buy More Minutes modal (Workspace top-up) — same visual language
+       (colors, radius, overlay pattern) as the existing entitlement-
+       exhausted modal in views/interview-setup.ejs, kept page-local
+       rather than extracted into a shared component per "smallest safe
+       change." This is a credit top-up selector only — it never offers
+       package switching/downgrade. The two option buttons route through
+       the DEDICATED, currency-aware top-up checkout routes
+       (/checkout/growth-topup, /checkout/leadership-topup —
+       routes/stripe.js), commercially distinct prices from the full
+       Growth/Leadership package purchase; the "Upgrade to Leadership"
+       button in the locked state below routes through the EXISTING
+       full-price /checkout/leadership route instead — see its own
+       comment further down for why. Placed HERE, inside this else-block,
+       because it reads _ent (current balance) which is scoped to this
+       block — see the const _ent declaration near the top of this
+       branch. -->
+  <%
+  // Local, currency-appropriate top-up prices — resolved server-side
+  // (server.js's /dashboard/history route, using the SAME
+  // lib/pricing-market.js resolveMarket() the checkout routes use) and
+  // passed in as `market`. Shown as a single currency, never both —
+  // this is a display convenience only; the ACTUAL charged price is
+  // always re-resolved server-side at checkout-creation time
+  // (routes/stripe.js), never trusted from here.
+  const _isIndia = (typeof market !== 'undefined' && market === 'india');
+  const _growthTopupPrice = _isIndia ? '\u20b9699' : '$12';
+  const _leadershipTopupPrice = _isIndia ? '\u20b91,999' : '$29';
+  %>
+  <div id="topupModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(2,6,16,0.75); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:var(--card); border:1px solid rgba(255,255,255,0.12); border-radius:var(--radius); padding:28px; max-width:380px; width:100%;">
+      <div style="font-size:17px; font-weight:700; color:var(--white); margin-bottom:4px;">Add AI Minutes</div>
+      <div style="font-size:13px; color:var(--muted); margin-bottom:20px;">
+        Current balance: <strong style="color:var(--white);"><%= _ent ? Math.round(_ent.minutesRemaining) : 0 %> AI Minutes</strong>
+      </div>
+
+      <div style="font-size:11.5px; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px;">Choose additional minutes</div>
+
+      <button type="button" class="topup-option-btn" data-package="growth-topup" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; margin-bottom:10px; background:var(--slate); border:1px solid rgba(255,255,255,0.10); border-radius:10px; cursor:pointer; text-align:left; font-family:inherit;">
+        <span>
+          <span style="display:block; font-size:14px; font-weight:700; color:var(--white);">+120 AI Minutes</span>
+          <span style="display:block; font-size:12px; color:var(--muted);"><%= _growthTopupPrice %></span>
+        </span>
+        <span class="topup-option-cta" style="font-size:12.5px; font-weight:600; color:var(--bright);">Add 120 Minutes</span>
+      </button>
+
+      <%
+      // Top-up eligibility rule: the discounted +300 (Leadership-tier)
+      // top-up price is available ONLY to users who already have active
+      // Leadership access — enforced server-side too (routes/stripe.js's
+      // /checkout/leadership-topup route rejects anyone else, never
+      // creating a Stripe session). This UI lock is the friendly,
+      // fast-fail front end for that same rule, not the actual
+      // enforcement.
+      const _isLeadership = capabilities && capabilities.package && capabilities.package.id === 'leadership';
+      %>
+      <% if (_isLeadership) { %>
+      <button type="button" class="topup-option-btn" data-package="leadership-topup" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; margin-bottom:6px; background:var(--slate); border:1px solid rgba(255,255,255,0.10); border-radius:10px; cursor:pointer; text-align:left; font-family:inherit;">
+        <span>
+          <span style="display:block; font-size:14px; font-weight:700; color:var(--white);">+300 AI Minutes</span>
+          <span style="display:block; font-size:12px; color:var(--muted);"><%= _leadershipTopupPrice %></span>
+        </span>
+        <span class="topup-option-cta" style="font-size:12.5px; font-weight:600; color:var(--bright);">Add 300 Minutes</span>
+      </button>
+      <% } else { %>
+      <div style="width:100%; padding:14px 16px; margin-bottom:6px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; text-align:left;">
+        <div style="font-size:13px; font-weight:700; color:var(--muted); margin-bottom:4px;">🔒 Available with Leadership</div>
+        <div style="font-size:12px; color:var(--dim); margin-bottom:10px;">Upgrade to Leadership to unlock 300-minute top-ups.</div>
+        <button type="button" id="upgradeToLeadershipBtn" style="width:100%; padding:9px; border-radius:8px; border:1px solid rgba(59,130,246,0.4); background:rgba(59,130,246,0.12); color:var(--bright); font-weight:600; font-size:12.5px; cursor:pointer; font-family:inherit;">Upgrade to Leadership</button>
+      </div>
+      <% } %>
+
+      <p style="font-size:11.5px; color:var(--dim); margin:12px 0 18px;">Your current access level remains unchanged.</p>
+
+      <button type="button" id="topupModalCancel" style="width:100%; padding:9px; border-radius:10px; border:none; background:transparent; color:var(--muted); font-weight:600; font-size:12.5px; cursor:pointer; font-family:inherit;">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    // Buy More Minutes modal — opens on click, closes on Cancel/backdrop/
+    // Escape (same conventions as the account dropdown script further
+    // below and the entitlement-exhausted modal on the interview setup
+    // page). Each option button POSTs to the EXISTING checkout route for
+    // that package (routes/stripe.js) — this creates no new payment
+    // logic, just a different entry point into the same flow the
+    // Pricing page already used.
+    (function() {
+      var openBtn = document.getElementById('openTopupModalBtn');
+      var overlay = document.getElementById('topupModalOverlay');
+      var cancelBtn = document.getElementById('topupModalCancel');
+      if (!openBtn || !overlay) return;
+
+      function openModal() { overlay.style.display = 'flex'; }
+      function closeModal() { overlay.style.display = 'none'; }
+
+      // Explorer has no top-up UI at all (nothing to "top up" yet) —
+      // clicking Buy More Minutes sends them straight to the normal
+      // package purchase options instead of opening this modal. Growth
+      // and Leadership both open the modal; which options are unlocked
+      // inside it is decided server-side at render time (see the EJS
+      // conditional above this script), not here.
+      openBtn.addEventListener('click', function() {
+        var pkgId = openBtn.getAttribute('data-package-id');
+        if (pkgId === 'explorer') {
+          window.location.href = '/#pricing';
+          return;
+        }
+        openModal();
+      });
+
+      if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+      overlay.addEventListener('click', function(e) { if (e.target === overlay) closeModal(); });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && overlay.style.display === 'flex') closeModal();
+      });
+
+      // Shared checkout-start helper — used by both the top-up option
+      // buttons (growth / leadership-topup) AND the locked +300 card's
+      // "Upgrade to Leadership" button (full-price 'leadership' route).
+      // All three are just different packageId values into the SAME
+      // existing checkout endpoint family; no separate payment logic.
+      async function startCheckout(packageId, triggerBtn, labelEl, otherButtonsToDisable) {
+        var originalText = labelEl ? labelEl.textContent : '';
+        otherButtonsToDisable.forEach(function(b) { b.disabled = true; });
+        if (labelEl) labelEl.textContent = 'Redirecting…';
+        try {
+          var res = await fetch('/api/stripe/checkout/' + packageId, { method: 'POST' });
+          if (res.status === 401) {
+            window.location.href = '/login';
+            return;
+          }
+          var json = await res.json();
+          if (res.ok && json.url) {
+            window.location.href = json.url;
+          } else {
+            alert(json.error || 'Could not start checkout. Please try again.');
+            otherButtonsToDisable.forEach(function(b) { b.disabled = false; });
+            if (labelEl) labelEl.textContent = originalText;
+          }
+        } catch (err) {
+          alert('Network error. Please try again.');
+          otherButtonsToDisable.forEach(function(b) { b.disabled = false; });
+          if (labelEl) labelEl.textContent = originalText;
+        }
+      }
+
+      var optionButtons = overlay.querySelectorAll('.topup-option-btn');
+      optionButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var packageId = btn.getAttribute('data-package');
+          var ctaEl = btn.querySelector('.topup-option-cta');
+          startCheckout(packageId, btn, ctaEl, Array.prototype.slice.call(optionButtons));
+        });
+      });
+
+      // Locked +300 card's upgrade path — full Leadership price, the
+      // SAME /checkout/leadership route the standing Pricing page CTA
+      // already uses. Deliberately NOT /checkout/leadership-topup: that
+      // discounted price is only ever reachable by someone who is
+      // already Leadership, which by definition this button's viewer is
+      // not (otherwise they'd see the unlocked +300 option instead).
+      var upgradeBtn = document.getElementById('upgradeToLeadershipBtn');
+      if (upgradeBtn) {
+        upgradeBtn.addEventListener('click', function() {
+          startCheckout('leadership', upgradeBtn, upgradeBtn, [upgradeBtn]);
+        });
+      }
+    })();
+  </script>
 
 <% } %>
 

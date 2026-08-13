@@ -4,28 +4,56 @@
 // own module, separate from db/interview.js, since it's a different
 // domain (User Management / entitlements, not interview delivery).
 const { pool } = require('./index');
+const { PACKAGE_TIER_RANK } = require('../config/product-packages');
 
 /**
- * The user's currently ACTIVE package acquisition — the single row that
- * governs their permissions, entitlements, and persona access all
- * together. Returns null if the user has no unexpired acquisition, which
- * is the normal, expected state for an Explorer (free) user — it is not
- * an error case.
- *
- * If a user has more than one unexpired acquisition (e.g. bought
- * Leadership while Growth credits still remained), the most recently
- * acquired one wins — see Architecture v1.5 §9.2's noted open item on
- * whether older unused credits should instead be preserved/merged.
+ * ALL of a user's currently-unexpired package_acquisitions rows, oldest
+ * first. A normal single-purchase user has exactly one row here (or
+ * zero, for a not-yet-welcomed Explorer). A user who has bought an
+ * additional credit pack while a package was already active (Buy More
+ * Minutes) will have more than one — this is the shared building block
+ * both getActivePackageAcquisition (access level) and
+ * getMergedCreditPool (credits) below are built from, replacing the old
+ * assumption that a user only ever has one unexpired row at a time.
  */
-async function getActivePackageAcquisition(userId) {
+async function getActiveAcquisitions(userId) {
   const result = await pool.query(
     `SELECT * FROM package_acquisitions
      WHERE user_id = $1 AND (expires_at IS NULL OR expires_at > NOW())
-     ORDER BY acquired_at DESC
-     LIMIT 1`,
+     ORDER BY acquired_at ASC`,
     [userId]
   );
-  return result.rows[0] || null;
+  return result.rows;
+}
+
+/**
+ * The user's currently ACTIVE package acquisition — the row that
+ * governs their permissions, entitlements, and persona access. Returns
+ * null if the user has no unexpired acquisition, which is the normal,
+ * expected state for a not-yet-welcomed visitor — it is not an error
+ * case.
+ *
+ * FIX (Buy More Minutes entitlement bug): previously "most recently
+ * acquired unexpired row wins," which meant a Leadership user buying a
+ * cheaper Growth top-up would incorrectly downgrade to Growth. Now picks
+ * the HIGHEST-TIER unexpired row (config/product-packages.js's
+ * PACKAGE_TIER_RANK — Explorer < Growth < Leadership); ties at the same
+ * tier (e.g. two separate Growth top-ups) fall back to most-recent, same
+ * as before. A user with exactly one unexpired acquisition — every
+ * purchase before Buy More Minutes existed — gets the IDENTICAL result
+ * as the old code, since there's nothing to rank against.
+ */
+async function getActivePackageAcquisition(userId) {
+  const rows = await getActiveAcquisitions(userId);
+  if (rows.length === 0) return null;
+  return rows.reduce((best, row) => {
+    if (!best) return row;
+    const bestRank = PACKAGE_TIER_RANK[best.package_id] ?? -1;
+    const rowRank = PACKAGE_TIER_RANK[row.package_id] ?? -1;
+    if (rowRank > bestRank) return row;
+    if (rowRank === bestRank && new Date(row.acquired_at) > new Date(best.acquired_at)) return row;
+    return best;
+  }, null);
 }
 
 /**
@@ -35,6 +63,13 @@ async function getActivePackageAcquisition(userId) {
  * interview_sessions, the same live-computation approach
  * services/entitlement.js already uses, scoped to sessions started at or
  * after this acquisition's acquired_at.
+ *
+ * Kept for API completeness — as of the Buy More Minutes fix,
+ * lib/capability-engine.js reads getMergedCreditPool() instead of this
+ * for its "credits included" number (a single acquisition's minutes are
+ * no longer the right number once a user can have more than one
+ * concurrently active acquisition). This function itself is unchanged
+ * and still correct for what it does: one acquisition's own credits.
  */
 async function getCreditedMinutes(packageAcquisitionId) {
   const result = await pool.query(
@@ -42,6 +77,44 @@ async function getCreditedMinutes(packageAcquisitionId) {
     [packageAcquisitionId]
   );
   return Number(result.rows[0].total);
+}
+
+/**
+ * Merges credited minutes across ALL of a user's currently-unexpired
+ * acquisitions into a single pool, and returns the EARLIEST of those
+ * acquisitions' acquired_at as the consumption boundary. This is the
+ * exact generalization of the old single-acquisition formula
+ * (getCreditedMinutes(activeAcquisition.id) + "sessions since
+ * activeAcquisition.acquired_at") to the "more than one concurrently
+ * active acquisition" case Buy More Minutes introduces:
+ *
+ *   - A user with exactly ONE unexpired acquisition gets numerically
+ *     IDENTICAL totalMinutes/earliestAcquiredAt to the old code path —
+ *     this is a strict generalization, not a new formula.
+ *   - A user with several (e.g. Leadership + a Growth top-up) gets their
+ *     minutes summed (300 + 120 = 420) and the consumption window
+ *     anchored to whichever acquisition came FIRST — so a later top-up
+ *     never retroactively excludes usage that already happened, and
+ *     usage from BEFORE the earliest unexpired acquisition (i.e. from an
+ *     already-expired prior package) still correctly does not count.
+ *   - Every session is counted at most once (a single boundary, not a
+ *     per-acquisition sum), so there is no double-counting risk.
+ */
+async function getMergedCreditPool(userId) {
+  const acquisitions = await getActiveAcquisitions(userId);
+  if (acquisitions.length === 0) {
+    return { totalMinutes: 0, earliestAcquiredAt: null, acquisitionIds: [] };
+  }
+  const ids = acquisitions.map((a) => a.id);
+  const result = await pool.query(
+    `SELECT COALESCE(SUM(minutes), 0) AS total FROM credit_ledger WHERE package_acquisition_id = ANY($1::int[])`,
+    [ids]
+  );
+  return {
+    totalMinutes: Number(result.rows[0].total),
+    earliestAcquiredAt: acquisitions[0].acquired_at, // getActiveAcquisitions is already sorted ASC
+    acquisitionIds: ids,
+  };
 }
 
 /**
@@ -81,9 +154,12 @@ async function createPackageAcquisition({ userId, packageId, expiresAt, source, 
 /**
  * Bulk version of getActivePackageAcquisition, for listing many users at
  * once (Founder Dashboard → User Management table) without an N+1 query
- * per row. Same "most recent unexpired wins" rule as the single-user
- * function — DISTINCT ON here is just that same rule applied across a
- * batch in one round trip, not a different rule.
+ * per row. Same tier-first-then-recency rule as the single-user function
+ * (see its comment for the Buy More Minutes fix rationale) — the ranking
+ * is duplicated here as a SQL CASE (rather than shared JS) because this
+ * is a single bulk query, not a per-user fetch-then-reduce; if
+ * PACKAGE_TIER_RANK in config/product-packages.js ever changes, this
+ * CASE must be updated to match.
  *
  * @param {number[]} userIds
  * @returns {Promise<Object<number,string>>} map of user_id -> package_id.
@@ -96,7 +172,9 @@ async function getActivePackageAcquisitionsForUsers(userIds) {
     `SELECT DISTINCT ON (user_id) user_id, package_id
      FROM package_acquisitions
      WHERE user_id = ANY($1::int[]) AND (expires_at IS NULL OR expires_at > NOW())
-     ORDER BY user_id, acquired_at DESC`,
+     ORDER BY user_id,
+       CASE package_id WHEN 'leadership' THEN 2 WHEN 'growth' THEN 1 WHEN 'explorer' THEN 0 ELSE -1 END DESC,
+       acquired_at DESC`,
     [userIds]
   );
   const map = {};
@@ -153,8 +231,10 @@ async function reassignPackage({ userId, packageId, grantedBy, initialMinutes })
 }
 
 module.exports = {
+  getActiveAcquisitions,
   getActivePackageAcquisition,
   getCreditedMinutes,
+  getMergedCreditPool,
   createPackageAcquisition,
   getActivePackageAcquisitionsForUsers,
   reassignPackage,

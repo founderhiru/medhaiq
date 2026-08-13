@@ -554,21 +554,22 @@
     }
   });
 
-  // ── Stripe Sandbox Checkout (Growth only) ──────────────────────────
-  // Staging pilot, approved scope. Anchors carrying data-stripe-checkout
-  // (set only on the Growth card — see pricing-card.ejs) are intercepted
-  // here; every other CTA (Explorer, Leadership) is untouched and keeps
-  // its plain href behavior.
+  // ── Stripe Sandbox Checkout (Growth & Leadership) ───────────────────
+  // Staging pilot. Anchors carrying data-stripe-checkout (set on the
+  // Growth and Leadership cards — see pricing-card.ejs) are intercepted
+  // here; Explorer's CTA has no data-stripe-checkout attribute at all
+  // and keeps its plain href behavior untouched (it's free, no checkout).
   var stripeCheckoutLinks = document.querySelectorAll('[data-stripe-checkout]');
+  var SUPPORTED_CHECKOUT_PACKAGES = ['growth', 'leadership'];
   stripeCheckoutLinks.forEach(function(link) {
     link.addEventListener('click', async function(e) {
       var packageId = link.getAttribute('data-stripe-checkout');
-      if (packageId !== 'growth') return; // only Growth is wired up in this pass
+      if (SUPPORTED_CHECKOUT_PACKAGES.indexOf(packageId) === -1) return;
       e.preventDefault();
       var originalText = link.textContent;
       link.textContent = 'Redirecting to checkout...';
       try {
-        var res = await fetch('/api/stripe/checkout/growth', { method: 'POST' });
+        var res = await fetch('/api/stripe/checkout/' + packageId, { method: 'POST' });
         if (res.status === 401) {
           // Not logged in — fall back to the card's existing '/login' href.
           window.location.href = link.getAttribute('href');
