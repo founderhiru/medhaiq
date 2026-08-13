@@ -13,7 +13,7 @@
 // in different files, on purpose.
 
 const PERSONA_ENTITLEMENTS = {
-  // FIXED as part of enforcement work: this was previously an empty array
+ // FIXED as part of enforcement work: this was previously an empty array
   // pending an open product question (Architecture v1.5 §12.4 — does
   // Explorer get a default/sample persona, or genuinely none?). Enforcing
   // entitlement in the UI/backend (see views/interview-setup.ejs,
@@ -23,7 +23,13 @@ const PERSONA_ENTITLEMENTS = {
   // completely non-functional, not just limited. Defaulting to one
   // persona here keeps Explorer usable. This is a pragmatic default, not
   // a confirmed business decision — revisit if the real answer differs.
-  explorer: ['alex_chen'],
+  //
+  // Changed 2026-08-13: that one persona moved from Alex Chen (Hard) to
+  // Marcus Webb (Medium) — a free/new user's first interview shouldn't
+  // default to the Hard persona. Reuses the existing Marcus Webb persona
+  // exactly as-is (no persona definition changed, no new persona
+  // created); Growth and Leadership entitlements below are untouched.
+  explorer: ['marcus_webb'],
   growth: [
     'alex_chen',
     'priya_ramesh',
