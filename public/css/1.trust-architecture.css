@@ -12,7 +12,7 @@
 
 /* Force Dark Theme Scope & Match Container Width */
 #trust-architecture.mh-framework {
-  background: var(--navy-deep) !important;
+  background: #030712 !important;
   padding: 80px 0;
   scroll-margin-top: 80px; 
 }
@@ -59,7 +59,7 @@
 .mh-trustarch-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  background: var(--navy-deep);
+  background: #070A12;
   border-bottom: 1px solid var(--ta-border-subtle);
 }
 
@@ -93,7 +93,7 @@
 .mh-trustarch-tab.is-active {
   color: #FFFFFF;
   font-weight: 600;
-  background: var(--navy-card);
+  background: #0D1322;
   border-bottom-color: #3B82F6;
 }
 
@@ -246,7 +246,7 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: var(--navy-card);
+  background: #0B132B;
   border: 2px solid #2563EB;
   box-shadow: 0 0 30px rgba(37, 99, 235, 0.42), inset 0 0 22px rgba(37, 99, 235, 0.1);
   display: flex;
@@ -384,7 +384,7 @@
   justify-content: center;
   gap: 12px;
   padding: 16px 24px;
-  background: var(--navy-deep);
+  background: #070A12;
   border-top: 1px solid var(--ta-border-subtle);
   color: #9CA3AF;
   font-size: 14px;

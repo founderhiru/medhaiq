@@ -6,10 +6,10 @@
 
 :root {
   /* Color Palette */
-  --navy-deep:    #0A0E1A;
-  --navy-rich:    #0D1220;
-  --navy-card:    #111827;
-  --navy-border:  #1E293B;
+  --navy-deep:    #05070D;
+  --navy-rich:    #080B14;
+  --navy-card:    #0A0E1A;
+  --navy-border:  #161F30;
   --royal-blue:   #1E40AF;
   --blue-bright:  #3B82F6;
   --blue-glow:    rgba(59, 130, 246, 0.15);
@@ -613,8 +613,8 @@ button { cursor: pointer; }
   position: relative;
   width: 100%;
   max-width: 460px;
-  background: var(--navy-card);
-  border: 1px solid var(--navy-border);
+  background: #0C1323;
+  border: 1px solid #1E293B;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 0 80px rgba(59, 130, 246, 0.08), 0 32px 80px rgba(0,0,0,0.6);
@@ -626,8 +626,8 @@ button { cursor: pointer; }
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  background: var(--navy-card);
-  border-bottom: 1px solid var(--navy-border);
+  background: #111827;
+  border-bottom: 1px solid #1E293B;
 }
 .mh-term-dots { display: flex; gap: 6px; }
 .mh-dot { width: 10px; height: 10px; border-radius: 50%; }
@@ -680,7 +680,7 @@ button { cursor: pointer; }
   font-size: 10px;
   color: #475569;
 }
-.mh-term-meta-sep { color: var(--navy-border); }
+.mh-term-meta-sep { color: #1E293B; }
 .mh-term-meta-item { color: #64748B; display: flex; align-items: center; gap: 4px; }
 
 /* Main split: waveform + score */
@@ -693,8 +693,8 @@ button { cursor: pointer; }
 
 /* Voice waveform section */
 .mh-term-wave-section {
-  background: var(--navy-rich);
-  border: 1px solid var(--navy-border);
+  background: #080D18;
+  border: 1px solid #1E293B;
   border-radius: 10px;
   padding: 12px;
 }
@@ -785,8 +785,8 @@ button { cursor: pointer; }
   display: flex;
   align-items: center;
   gap: 0;
-  background: var(--navy-rich);
-  border: 1px solid var(--navy-border);
+  background: #080D18;
+  border: 1px solid #1E293B;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -814,7 +814,7 @@ button { cursor: pointer; }
 .mh-term-strip-sep {
   width: 1px;
   height: 28px;
-  background: var(--navy-border);
+  background: #1E293B;
 }
 
 /* Footer */
@@ -827,7 +827,7 @@ button { cursor: pointer; }
   color: #334155;
   padding: 0 2px;
 }
-.mh-term-footer-sep { color: var(--navy-border); }
+.mh-term-footer-sep { color: #1E293B; }
 .mh-term-footer-dot {
   width: 5px;
   height: 5px;
@@ -2667,7 +2667,7 @@ button { cursor: pointer; }
    TRUST BAR — Logo Marquee
    ============================================ */
 .mh-trust-bar {
-  background: var(--navy-deep);
+  background: #0A0F1E;
   padding: 40px 0 32px;
   border-top: 1px solid var(--white-border);
   border-bottom: 1px solid var(--white-border);
@@ -3467,7 +3467,7 @@ button { cursor: pointer; }
    ============================================ */
 .mh-founder {
   padding: var(--section-pad-y) var(--section-pad-x);
-  background: var(--navy-deep);
+  background: #0A0F1E;
 }
 .mh-founder-inner { max-width: var(--max-w); margin: 0 auto; }
 .mh-founder-grid {
@@ -3536,12 +3536,12 @@ button { cursor: pointer; }
 .mh-founder-viz-ring-1 {
   width: 240px;
   height: 240px;
-  border-color: var(--navy-border);
+  border-color: #1E293B;
 }
 .mh-founder-viz-ring-2 {
   width: 160px;
   height: 160px;
-  border-color: var(--navy-border);
+  border-color: #1E293B;
   animation-direction: reverse;
   animation-duration: 8s;
 }
@@ -3561,8 +3561,8 @@ button { cursor: pointer; }
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: var(--navy-card);
-  border: 1px solid var(--navy-border);
+  background: #111827;
+  border: 1px solid #1E293B;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3573,8 +3573,8 @@ button { cursor: pointer; }
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: var(--navy-card);
-  border: 1px solid var(--navy-border);
+  background: #111827;
+  border: 1px solid #1E293B;
   display: flex;
   align-items: center;
   justify-content: center;
