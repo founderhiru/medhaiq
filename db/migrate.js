@@ -869,6 +869,48 @@ async function runMigrations() {
           `);
         },
       },
+      {
+        name: '025_response_intent',
+        up: async (c) => {
+          // Formalizes response intent classification (approved 2026-08-13):
+          // ANSWER / SKIP / DONT_KNOW / SPARSE. Purely additive, nullable,
+          // no default.
+          //
+          // NULL means "this row predates this migration" — it is NOT
+          // treated as an implicit ANSWER anywhere downstream. Every
+          // consumer (routes/interview.js's qaPairs construction,
+          // lib/career-intelligence-report.js's response-pattern counts)
+          // must check for NULL explicitly and fall back to the
+          // pre-existing text-based behavior for those rows, so historical
+          // reports render exactly as they did before this migration.
+          // Retroactively inferring SKIP/DONT_KNOW from historical blank
+          // answer_text values is deliberately NOT done here — the founder
+          // explicitly ruled that out; blank legacy rows keep today's
+          // existing (pre-migration) report behavior, unchanged.
+          //
+          // New rows, going forward, always get an explicit value —
+          // 'ANSWER', 'SKIP', 'DONT_KNOW', or 'SPARSE' — written by
+          // routes/interview.js's processInterviewAnswer(). SPARSE never
+          // actually reaches a persisted row today (the sparse-answer
+          // guardrail blocks the DB write and reprompts instead, unchanged
+          // by this migration) — the value is included in the CHECK
+          // constraint below for completeness/future-proofing, not because
+          // a SPARSE row is expected to exist.
+          await c.query(`
+            ALTER TABLE interview_answers
+              ADD COLUMN IF NOT EXISTS response_intent VARCHAR(20)
+          `);
+          await c.query(`
+            ALTER TABLE interview_answers
+              DROP CONSTRAINT IF EXISTS interview_answers_response_intent_check
+          `);
+          await c.query(`
+            ALTER TABLE interview_answers
+              ADD CONSTRAINT interview_answers_response_intent_check
+              CHECK (response_intent IS NULL OR response_intent IN ('ANSWER', 'SKIP', 'DONT_KNOW', 'SPARSE'))
+          `);
+        },
+      },
     ];
 
     for (const m of migrations) {

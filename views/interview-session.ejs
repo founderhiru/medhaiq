@@ -2012,7 +2012,7 @@
     window.questionSpeechService.onFinished(function () {
       slog('[LIFECYCLE-TRACE] QuestionSpeechService onFinished fired at ' + Date.now(), 'info');
       window.aiIsSpeaking = false;
-      sub.textContent = '🎤 Click mic to speak';
+      sub.textContent = 'Type your answer or click the mic to speak...';
       if (currentSpokenTurnId) slog('[turn-trace] TURN_ID='+currentSpokenTurnId+' Speech finished: QuestionId='+currentSpokenQuestionId, 'info');
       InterviewVoiceController.onSpeechEnd();
       if (window.MedhaIQOrchestrator) window.MedhaIQOrchestrator.unlockInput();
@@ -2053,7 +2053,7 @@
   }
   function setErr(msg){
     setState(STATES.IDLE,msg,true);
-    setTimeout(function(){ if(state===STATES.IDLE){ sub.textContent='Speak directly with your AI interviewer'; sub.style.color=''; } },7000);
+    setTimeout(function(){ if(state===STATES.IDLE){ sub.textContent='Type your answer or click the mic to speak...'; sub.style.color=''; } },7000);
   }
 
   /* ── Exposed to the main engine's MedhaIQSync so it can (a) check
@@ -2172,7 +2172,7 @@
         window._sttAutoReconnectCount = 0;
       }
       slog('[LIFECYCLE-TRACE] call-start fired at ' + Date.now(), 'info');
-      setState(STATES.LIVE, 'Voice active — speak your answer');
+      setState(STATES.LIVE, 'Listening... speak your answer');
       window.MedhaIQVoiceLive = true;
       /* ── v2.2 sessionReadyContext handshake (cold-start amnesia + latency
          fix) — two-part, matching the instructNext fix above:
@@ -2359,7 +2359,7 @@
             window.InterviewVoiceController.onIntentionalCancel();
           } catch (e) { console.warn('[BARGE-IN] stop failed (non-fatal):', e); }
           window.aiIsSpeaking = false;
-          sub.textContent = 'Your turn — speak clearly';
+          sub.textContent = 'Type your answer or click the mic to speak...';
         }
         if (message.transcriptType === 'final' && message.transcript) {
           var chunk = String(message.transcript).trim();
@@ -2635,7 +2635,7 @@
       // working fine after an ejection, silently masking a dead mic --
       // which is exactly why this went unnoticed until now.
       try { vapi.stop(); } catch (e) {}
-      setState(STATES.IDLE, 'Speak directly with your AI interviewer');
+      setState(STATES.IDLE, 'Type your answer or click the mic to speak...');
 
       // THE ACTUAL FIX (not another investigation): auto-reconnect unless
       // this was the user deliberately clicking Stop. Every symptom this

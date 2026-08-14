@@ -61,46 +61,6 @@
   .mh-hero-chip { width: calc(50% - 5px); }
 }
 
-/* ---------- Mini email/login card ---------- */
-.mh-hero-notify {
-  margin-top: 32px;
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  flex-wrap: wrap;
-  background: var(--navy-card);
-  border: 1px solid var(--navy-border);
-  border-radius: var(--radius-lg);
-  padding: 20px 24px;
-}
-.mh-hero-notify-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius);
-  background: var(--blue-glow);
-  color: var(--blue-bright);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.mh-hero-notify-copy { flex: 1 1 220px; min-width: 180px; }
-.mh-hero-notify-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--white); margin-bottom: 4px; }
-.mh-hero-notify-sub { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
-.mh-hero-notify-btn-link {
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 14px;
-  padding: 11px 20px;
-  border: none;
-  border-radius: var(--radius);
-  background: linear-gradient(135deg, var(--royal-blue), var(--blue-bright));
-  color: var(--white);
-  text-decoration: none;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
 /* ============================================================
    LIVE INTERVIEW TERMINAL — dashboard mockup (right column)
    ============================================================ */
@@ -354,12 +314,11 @@
    Append to the END of hero-v2.css.
    ============================================================ */
 @media (min-width: 1025px) {
-  .mh-hero { padding-top: 76px; min-height: calc(100svh - 68px); } /* 68px nav + 8px buffer — guaranteed clearance regardless of which column (left text vs. terminal) is taller, since whichever one is tallest sits with its top at padding-top exactly */
+  .mh-hero { padding-top: 65px; min-height: calc(85svh - 68px); } /* 2026-08-13: tightened ~15% (was padding-top 76px / 100svh) after the notify-card removal left extra empty space above/below the now-shorter left column — see chat. Still a floor, not a fixed height, so the terminal mockup can never be cropped; align-items:center (medhaiq.css) still owns the actual centering. */
   .mh-hero-badge { margin-bottom: 14px; }
   .mh-hero-h1 { margin-bottom: 10px; }
   .mh-hero-chips { margin: 14px 0 18px; }
-  .mh-hero-tertiary-row { margin-bottom: 20px; }
-  .mh-hero-notify { margin-top: 20px; }
+ .mh-hero-tertiary-row { margin-bottom: 20px; }
 }
 
 .mh-terminal-v2 {

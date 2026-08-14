@@ -53,7 +53,19 @@
        score ring and vectors side by side, per §4/§5's explicit
        requirement that "the five vectors should have enough horizontal
        width to make the bars and labels readable." Same data, same
-       markup for each half — only the wrapping structure changed. -->
+       markup for each half — only the wrapping structure changed.
+
+       hasSubstantiveEvidence branch (2026-08-13, response-intent
+       formalization): when a session has zero real interview_scores
+       rows — every question was SKIP/DONT_KNOW, or Discovery-only —
+       report.overall_score and every vector average are literally 0,
+       which is not "the candidate scored zero," it's "there is nothing
+       to score." Shows "—" / "Not assessed" instead per the approved
+       plan. hasSubstantiveEvidence is computed once in
+       lib/career-intelligence-report.js and is TRUE for every legacy
+       (pre-migration) session by construction — see that file's
+       comment — so this branch never changes what a historical report
+       already looked like. -->
   <div class="report-hero">
     <div class="report-hero-identity">
       <div class="report-date"><%= formattedDate %></div>
@@ -65,11 +77,17 @@
         <div class="score-ring">
           <svg width="140" height="140" viewBox="0 0 140 140">
             <circle class="bg" cx="70" cy="70" r="60" />
+            <% if (hasSubstantiveEvidence) { %>
             <circle class="fill" cx="70" cy="70" r="60"
               stroke-dasharray="<%= circumference %>"
               stroke-dashoffset="<%= circumferenceOffset %>" />
+            <% } %>
           </svg>
+          <% if (hasSubstantiveEvidence) { %>
           <div class="score-num"><%= Math.round(report.overall_score) %><span class="score-num-sub">out of 100</span></div>
+          <% } else { %>
+          <div class="score-num">—<span class="score-num-sub">Not assessed</span></div>
+          <% } %>
         </div>
         <div class="score-label">Overall Career Intelligence Score</div>
         <% if (hasPdfAccess) { %>
@@ -89,6 +107,7 @@
             { label: 'Leadership & Execution', score: gccAvg },
           ]; %>
           <% scoreboardRows.forEach(function(row) { %>
+            <% if (hasSubstantiveEvidence) { %>
             <% const cls = row.score >= 80 ? 'high' : row.score >= 60 ? 'mid' : 'low'; %>
             <div class="scoreboard-row">
               <span class="scoreboard-label"><%= row.label %></span>
@@ -97,17 +116,36 @@
               </div>
               <span class="scoreboard-val <%= cls %>"><%= Math.round(row.score) %>/100</span>
             </div>
+            <% } else { %>
+            <div class="scoreboard-row">
+              <span class="scoreboard-label"><%= row.label %></span>
+              <div class="scoreboard-track"></div>
+              <span class="scoreboard-val" style="color:#94A3B8; font-weight:600;">Not assessed</span>
+            </div>
+            <% } %>
           <% }); %>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- ═══ RESPONSE SUMMARY ═══ Deterministic counts from real per-answer
+       response_intent values — never guessed. Null (and therefore
+       nothing rendered here) for any legacy session with no classified
+       intents, so historical reports are unaffected. Uses the existing
+       .score-attribution caption style — no new CSS. -->
+  <% if (responsePattern) { %>
+  <div class="response-summary">
+    <span class="eyebrow">RESPONSE SUMMARY</span>
+    <div class="score-attribution" style="margin-top:4px;"><%= responsePattern.answered %> answered · <%= responsePattern.skipped %> skipped · <%= responsePattern.dontKnow %> don't know</div>
+  </div>
+  <% } %>
+
   <!-- ═══ SECTION 1 — YOUR CAREER INTELLIGENCE OVERVIEW ═══
        Kept full-width — see the CSS block's header comment for why this
        deliberately deviates from the prompt's "half-width" list. -->
 
-  <% if (hasFullReport && report.executive_summary) { %>
+  <% if (hasFullReport && hasSubstantiveEvidence && report.executive_summary) { %>
   <div class="report-section">
     <h3>Your Career Intelligence Overview</h3>
     <p class="exec-summary"><%= report.executive_summary %></p>
@@ -122,7 +160,35 @@
 
   <div class="report-divider"></div>
 
-  <% if (hasFullReport) { %>
+  <% if (!hasSubstantiveEvidence) { %>
+  <!-- ═══ INTERVIEW NOT COMPLETED ═══ (2026-08-13, response-intent
+       formalization). Shown for BOTH Explorer and Growth/Leadership when
+       there is zero substantive evidence — exact copy, not AI-generated,
+       so "no performance criticism from nonexistent evidence" and "no
+       candidate/employer-style conclusions" are guaranteed every time
+       rather than relying on the AI to consistently avoid them. Replaces
+       the entire Strengths/Development/STAR/Evidence/Improve/Roadmap/
+       Leadership content below for this session — none of that content
+       is meaningful when there is nothing to assess. -->
+  <div class="report-section">
+    <h3>Interview Not Completed</h3>
+    <p class="exec-summary">There isn't enough response evidence to assess your interview performance. Complete an interview with substantive responses to generate your Career Intelligence assessment.</p>
+  </div>
+
+  <div class="report-section">
+    <h3>How to Get a Meaningful Assessment</h3>
+    <p class="exec-summary">Answer the interview questions with specific examples, decisions, reasoning, and outcomes. A completed interview will generate your 5-Vector Intelligence assessment and personalized development insights.</p>
+  </div>
+
+  <% if (!hasFullReport) { %>
+  <div class="report-section" style="text-align:center; background:#F7F8FA; border-radius:12px; padding:24px;">
+    <h3 style="margin-bottom:8px;">Want the full picture?</h3>
+    <p class="exec-summary" style="margin-bottom:16px;">Unlock your complete interview analysis, evidence, and personalized improvement guidance with Growth.</p>
+    <a href="/dashboard" class="cta-btn primary">Upgrade to Growth</a>
+  </div>
+  <% } %>
+
+  <% } else if (hasFullReport) { %>
 
   <div class="report-grid">
   <!-- ═══ SECTION 2 — YOUR STRONGEST SIGNAL ═══
@@ -343,12 +409,23 @@
   <% } %>
 
 
-  <!-- CTAs — unchanged -->
+  <!-- CTA hierarchy (cleaned up — reapplied 2026-08-14, previously
+       delivered but never merged): Return Home removed — for an
+       authenticated user, Return to Workspace already covers that exit
+       path, so a separate Return Home link was redundant. Primary +
+       secondary stay as equal-width buttons in .report-ctas; the
+       tertiary "Try a different persona" link moved to its own small
+       centered row below rather than stretching to match the button
+       row's width, so it reads as a lightweight secondary action, not a
+       fourth equal button. Destinations/functionality unchanged for all
+       three — only the Return Home link and the DOM position of "Try a
+       different persona" changed. -->
   <div class="report-ctas">
     <a href="/interview" class="cta-btn primary">Practice Again</a>
-    <a href="/interview" class="cta-btn outline">Try a Different Persona</a>
-  <a href="/dashboard/history" class="cta-btn emerald">Return to Workspace</a>
-    <a href="/" class="cta-btn text-link">Return Home</a>
+    <a href="/dashboard/history" class="cta-btn emerald">Return to Workspace</a>
+  </div>
+  <div class="report-ctas-tertiary">
+    <a href="/interview">Try a different persona →</a>
   </div>
 
   <% if (typeof showFeedbackPrompt !== 'undefined' && showFeedbackPrompt) { %>

@@ -581,23 +581,33 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
 
   const allQuestions = await getSessionQuestions(sessionId);
 
-  // ── DETERMINISTIC SKIP/PASS INTENT DETECTION (no LLM) ──────────────────
-  // Fixes the real bug: a candidate typing "pass", "skip this", "I don't
-  // know, just move on", etc. was previously either reprompted with a
-  // generic "please expand" message or scored as a real (near-zero)
-  // answer — neither of which is what the candidate meant. This runs
-  // BEFORE the sparse-answer guardrail below, and produces the exact
-  // same effect as clicking the existing Skip button — same downstream
-  // code path, not a new one. Deliberately conservative: only considers
-  // SHORT inputs (<=15 words) — a genuine, substantive answer describing
-  // real experience is essentially never this short, even if it happens
-  // to mention "next" or "move on" in passing. This ALSO now applies
-  // identically to spoken answers via the Vapi webhook, since both paths
-  // call this exact same function.
+  // ── RESPONSE INTENT CLASSIFICATION (no LLM) — formalized 2026-08-13 ────
+  // Four states: ANSWER, SKIP, DONT_KNOW, SPARSE. Replaces the previous
+  // two-separate-checks approach (a boolean skip detector, then a
+  // separate inline sparse-phrase check) with one classifier evaluated
+  // once, in priority order SKIP → DONT_KNOW → SPARSE → ANSWER. This is
+  // the SAME shared function both typed answers and Vapi voice answers
+  // go through — there has only ever been one call path
+  // (processInterviewAnswer), so no separate classification system for
+  // voice was introduced.
+  //
+  // SKIP and DONT_KNOW phrase lists and word-count gates are the exact
+  // same ones already proven in production (including the 2026-07-29
+  // SKIP_DESIRE_REGEX fix for "I'd like to skip"-style phrasing) — DONT_KNOW
+  // is newly split OUT of what used to be lumped into SKIP
+  // ("i don't know", "no idea", etc. used to set effectiveSkip=true with
+  // no way to tell it apart from a real "skip"/"pass"). The false-positive
+  // guard for DONT_KNOW mirrors the existing pattern already used for
+  // SKIP's ambiguous phrases (AMBIGUOUS_SKIP_PHRASES's <=6-word gate): an
+  // 8-word ceiling comfortably covers every genuine DONT_KNOW example
+  // ("I'm not familiar with that" = 5 words) while excluding the two
+  // documented false-positive cases ("I don't know the exact number, but
+  // I believe the project saved 20%" = 13 words; "I don't know whether
+  // that was the right decision, but here is what I did..." = 15 words) —
+  // both correctly fall through to ANSWER.
   const STRONG_SKIP_PHRASES = [
     'skip this', 'pass this', 'just skip', 'just pass', 'skip it', 'pass it',
     "let's skip", "lets skip", 'skip question', 'pass question', 'next question',
-    "i don't know", "i dont know", 'no idea', "don't know it", "dont know it",
     'go next', 'go to next',
   ];
   // These are genuinely ambiguous — "I decided to move on from the vendor
@@ -606,28 +616,63 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   // up almost the entire short message (<=6 words), not when embedded in
   // a longer, real answer.
   const AMBIGUOUS_SKIP_PHRASES = ['move on', "let's move on", "lets move on", 'move forward', 'continue'];
+  const SKIP_DESIRE_REGEX = /\b(?:want|like)\s+to\s+(?:skip|pass)\b/;
+  const DONT_KNOW_PHRASES = [
+    "i don't know", "i dont know", "don't know", "dont know", 'no idea',
+    "i have no idea", 'not sure', "i'm not sure", 'im not sure',
+    'not familiar with that', "i'm not familiar with that", 'im not familiar with that',
+  ];
+  const DONT_KNOW_MAX_WORDS = 8;
+  const SPARSE_PHRASES = new Set(['yes', 'no', 'ok', 'sure', 'yep', 'nope', 'yeah', 'maybe', 'not really', 'yes.', 'no.']);
+  const SPARSE_MIN_WORDS = 5;
+
   const cleanInputForIntent = (answerText || '').trim();
   const intentWordCount = cleanInputForIntent.split(/\s+/).filter(Boolean).length;
-  const detectedSkipIntent = (() => {
-    if (!cleanInputForIntent || intentWordCount > 15) return false;
-    const lower = cleanInputForIntent.toLowerCase().replace(/[.!?,]/g, ' ').replace(/\s+/g, ' ').trim();
-    // Also catch the single bare word "skip" or "pass" (not just phrases)
-    if (/^(skip|pass|next)$/.test(lower)) return true;
-    if (STRONG_SKIP_PHRASES.some((phrase) => lower.includes(phrase))) return true;
-    if (intentWordCount <= 6 && AMBIGUOUS_SKIP_PHRASES.some((phrase) => lower.includes(phrase))) return true;
-    return false;
-  })();
-  if (detectedSkipIntent) {
-    console.log(`[intent-router] Detected skip/pass intent in answer: "${cleanInputForIntent}" — routing as an explicit skip.`);
+  const normalizedIntentInput = cleanInputForIntent.toLowerCase().replace(/[.!?,]/g, ' ').replace(/\s+/g, ' ').trim();
+
+  function classifyResponseIntent() {
+    if (skip) return 'SKIP'; // explicit Skip button — never reclassified
+    // SKIP — same 15-word ceiling already proven in production. An empty
+    // cleanInputForIntent falls through untouched to the SPARSE check
+    // below (word count 0 < 5), matching the exact pre-existing behavior
+    // for a blank submission with the Skip button NOT clicked — not
+    // reclassified as SKIP here.
+    if (cleanInputForIntent && intentWordCount <= 15) {
+      if (/^(skip|pass|next)$/.test(normalizedIntentInput)) return 'SKIP';
+      if (SKIP_DESIRE_REGEX.test(normalizedIntentInput)) return 'SKIP';
+      if (STRONG_SKIP_PHRASES.some((phrase) => normalizedIntentInput.includes(phrase))) return 'SKIP';
+      if (intentWordCount <= 6 && AMBIGUOUS_SKIP_PHRASES.some((phrase) => normalizedIntentInput.includes(phrase))) return 'SKIP';
+    }
+    // DONT_KNOW — 8-word ceiling (see comment above for why).
+    if (intentWordCount <= DONT_KNOW_MAX_WORDS && DONT_KNOW_PHRASES.some((phrase) => normalizedIntentInput.includes(phrase))) {
+      return 'DONT_KNOW';
+    }
+    // SPARSE — same guardrail thresholds already in production.
+    if (intentWordCount < SPARSE_MIN_WORDS || SPARSE_PHRASES.has(normalizedIntentInput)) {
+      return 'SPARSE';
+    }
+    return 'ANSWER';
   }
-  const effectiveSkip = !!skip || detectedSkipIntent;
 
-  // ── RESPONSE QUALITY GATEWAY INTERCEPTOR ──
-  const cleanInput = (answerText || '').trim().replace(/\s+/g, ' ');
-  const wordCount = cleanInput.split(' ').filter(Boolean).length;
-  const sparsePhrases = new Set(["yes", "no", "ok", "sure", "yep", "nope", "yeah", "yes.", "no."]);
+  const responseIntent = classifyResponseIntent();
+  if (responseIntent !== 'ANSWER') {
+    console.log(`[intent-router] Classified as ${responseIntent}: "${cleanInputForIntent}"`);
+  }
+  // effectiveSkip = "advance without scoring, don't reprompt" — true for
+  // BOTH SKIP and DONT_KNOW. Kept as one boolean (rather than touching
+  // every downstream site individually) because every existing consumer
+  // of effectiveSkip below (starProgress's zero object, the wasSkipped
+  // API field, the voice closing-line phrasing) treats "explicit skip"
+  // and "don't know" identically from a session-flow point of view — the
+  // only place SKIP and DONT_KNOW actually need to be told apart is (a)
+  // what gets persisted (responseIntent, new) and (b) the scoring gate
+  // just below (also new). This keeps the diff to exactly those two
+  // places instead of touching voice/UI-facing code paths that were
+  // explicitly flagged as protected.
+  const effectiveSkip = responseIntent === 'SKIP' || responseIntent === 'DONT_KNOW';
 
-  if (!effectiveSkip && (wordCount < 5 || sparsePhrases.has(cleanInput.toLowerCase()))) {
+  if (responseIntent === 'SPARSE') {
+    const cleanInput = cleanInputForIntent.replace(/\s+/g, ' ');
     console.log(`[guardrail] Intercepted sparse answer: "${cleanInput}". Blocking database commit.`);
 
     const repromptText = "I see. Could you please expand on that answer with a bit more detail or a specific example from your professional experience?";
@@ -642,7 +687,7 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
         sessionEnded: false,
         validationFailed: true,
         turnId,
-        wasSkipped: effectiveSkip,
+        wasSkipped: false,
         scores: { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 },
         star_progress: { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 },
         intelligence_scores: { overallScore: 0, vectors: { structure: 0, technicalDepth: 0, executivePresence: 0, gccReadiness: 0, communicationClarity: 0 } },
@@ -660,12 +705,15 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     };
   }
 
-  // 1. Save valid answer to database
+  // 1. Save valid answer to database — response_intent persisted
+  // explicitly for every new row (migration 025). SKIP/DONT_KNOW save
+  // empty answer_text, same as before; ANSWER saves the real text.
   _timing.beforeAnswerSave = process.hrtime.bigint();
   const savedAnswer = await addAnswer({
     sessionId,
     questionId,
     answerText: effectiveSkip ? '' : (answerText || ''),
+    responseIntent,
   });
   _timing.afterAnswerSave = process.hrtime.bigint();
   if (!savedAnswer) {
@@ -684,34 +732,46 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   const answeredQuestionRow = allQuestions.find(q => String(q.id) === String(questionId));
   const isDiscoveryQuestion = isDiscoveryQuestionType(answeredQuestionRow && answeredQuestionRow.question_type);
 
-  // 2. Score the validated answer — skipped entirely for Discovery turns.
-  // No placeholder/zero-value score is fabricated: `scores` stays null, no
-  // interview_scores row is written, and the response fields below are
-  // null rather than a synthetic object. The frontend already treats both
-  // as optional (`if (data.intelligence_scores)` / `if (data.star_progress)`
-  // in views/interview-session.ejs), so this degrades gracefully — the
-  // metrics dashboard simply doesn't update for this turn, which is
-  // correct: there is nothing to score.
+  // 2. Score the validated answer — skipped entirely for Discovery turns
+  // AND now (2026-08-13) for SKIP/DONT_KNOW turns too. Previously this
+  // gate only checked isDiscoveryQuestion; a SKIP/DONT_KNOW turn still
+  // got scored with a hardcoded {star:0,...} object and a real
+  // interview_scores row written for it — exactly the "0/100 as
+  // demonstrated incapability" problem the approved plan set out to fix.
+  // No new averaging logic is introduced anywhere: lib/career-intelligence-
+  // report.js's avgOf() already naturally excludes a question from the
+  // average when there is simply no interview_scores row for it, which is
+  // now the case for every SKIP/DONT_KNOW turn — same as it already was
+  // for Discovery turns. `scores`/`starProgress`/`intelligenceScores` stay
+  // null (not a fabricated zero object) for both cases; the frontend
+  // already treats all three as optional, so this degrades exactly the
+  // same way a Discovery turn already does.
   let scores = null;
   let starProgress = null;
   let intelligenceScores = null;
   _timing.beforeScoring = process.hrtime.bigint();
-  if (!isDiscoveryQuestion) {
-    if (!effectiveSkip && answerText && answerText.trim()) {
+  const shouldScoreThisTurn = !isDiscoveryQuestion && !effectiveSkip;
+  if (shouldScoreThisTurn) {
+    if (answerText && answerText.trim()) {
       scores = await scoreAnswer(answerText, session.persona_id, {
         roleTitle: session.role_title,
         experienceLevel: session.experience_level,
         orgPreset: session.org_preset,
       });
     } else {
+      // Defensive fallback only — responseIntent 'ANSWER' should never
+      // reach here with empty text (SPARSE/SKIP/DONT_KNOW would have
+      // classified it first), kept so an unexpected empty-but-ANSWER case
+      // still degrades to a real zero score row rather than a null-object
+      // crash a few lines below.
       scores = { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 };
     }
   }
   _timing.afterScoring = process.hrtime.bigint();
-  _timing.scoringWasSkipped = isDiscoveryQuestion || effectiveSkip || !answerText || !answerText.trim(); // for the diagnostic log below — a skip/Discovery turn legitimately has ~0ms here, not a fast scoreAnswer() call
+  _timing.scoringWasSkipped = !shouldScoreThisTurn; // for the diagnostic log below — a skip/dont-know/Discovery turn legitimately has ~0ms here, not a fast scoreAnswer() call
 
   _timing.beforeDbScore = process.hrtime.bigint();
-  if (!isDiscoveryQuestion) {
+  if (shouldScoreThisTurn) {
     await addScore({
       sessionId,
       questionId,
@@ -723,9 +783,7 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
       weighted: scores.weighted,
     });
 
-    starProgress = effectiveSkip
-      ? { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 }
-      : computeStarProgress(answerText);
+    starProgress = computeStarProgress(answerText);
 
     intelligenceScores = {
       overallScore: scores.weighted,

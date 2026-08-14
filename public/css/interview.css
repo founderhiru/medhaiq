@@ -1262,3 +1262,46 @@ body.report-page-body {
   color: #64748B;
   margin-top: 2px;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   RESPONSE INTENT FORMALIZATION — Response Summary line (2026-08-13)
+   ══════════════════════════════════════════════════════════════════════
+   One small scoped addition: the "RESPONSE SUMMARY" eyebrow label reuses
+   the exact same color/size/letter-spacing as .report-page .report-section
+   h3 above (same visual language, not a new pattern) — .eyebrow didn't
+   exist as its own class in this file before, so it's defined narrowly
+   scoped here rather than introduced globally.
+   ══════════════════════════════════════════════════════════════════════ */
+.report-page .response-summary {
+  margin: 18px 0 8px;
+  text-align: center;
+}
+.report-page .response-summary .eyebrow {
+  color: #2554C7;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   CTA cleanup — removed redundant "Return Home" (reapplied 2026-08-14;
+   previously delivered but never merged)
+   ══════════════════════════════════════════════════════════════════════
+   .report-ctas now holds exactly 2 equal-width buttons (Practice Again,
+   Return to Workspace) instead of 4. "Try a different persona" moved
+   into its own row, styled here as a genuine lightweight text link
+   rather than a .cta-btn box stretched by the old 4-item flex row —
+   this is new, scoped CSS for a new class (.report-ctas-tertiary),
+   nothing shared or existing was touched.
+   ══════════════════════════════════════════════════════════════════════ */
+.report-page .report-ctas-tertiary {
+  text-align: center;
+  margin-top: 16px;
+}
+.report-page .report-ctas-tertiary a {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #64748B;
+  text-decoration: none;
+}
+.report-page .report-ctas-tertiary a:hover { color: #2554C7; }
