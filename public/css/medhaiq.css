@@ -848,7 +848,8 @@ button { cursor: pointer; }
    ============================================ */
 .mh-timeline {
   padding: var(--section-pad-y) var(--section-pad-x);
-  background: var(--navy-rich);
+  background-color: var(--navy-rich);
+  background-image: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(20,184,166,0.06), transparent 70%);
 }
 .mh-timeline-inner {
   max-width: var(--max-w);
@@ -989,7 +990,8 @@ button { cursor: pointer; }
    ============================================ */
 .mh-arch {
   padding: var(--section-pad-y) var(--section-pad-x);
-  background: var(--navy-deep);
+  background-color: var(--navy-deep);
+  background-image: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,0.06), transparent 70%);
   --bp-blue:  #3B82F6;
   --bp-green: #10B981;
   --bp-amber: #F59E0B;
@@ -2001,7 +2003,8 @@ button { cursor: pointer; }
    ============================================ */
 .mh-proof {
   padding: var(--section-pad-y) var(--section-pad-x);
-  background: var(--navy-rich);
+  background-color: var(--navy-rich);
+  background-image: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(139,92,246,0.06), transparent 70%);
 }
 .mh-proof-inner {
   max-width: var(--max-w);
@@ -4101,13 +4104,15 @@ button { cursor: pointer; }
 /* 03 — The Paradigm Shift */
 .mh-why-shift {
   padding: var(--section-pad-y) var(--section-pad-x);
-  background: var(--navy-deep);
+  background-color: var(--navy-deep);
+  background-image: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(20,184,166,0.06), transparent 70%);
 }
 
 /* 04 — Core Philosophy (manifesto-style quote) */
 .mh-why-philosophy {
   padding: var(--section-pad-y) var(--section-pad-x);
-  background: var(--navy-rich);
+  background-color: var(--navy-rich);
+  background-image: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(139,92,246,0.06), transparent 70%);
 }
 .mh-why-quote {
   font-family: var(--font-display);
@@ -4132,7 +4137,8 @@ button { cursor: pointer; }
 /* 05 — The Three Pillars */
 .mh-why-pillars {
   padding: var(--section-pad-y) var(--section-pad-x);
-  background: var(--navy-deep);
+  background-color: var(--navy-deep);
+  background-image: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,0.06), transparent 70%);
 }
 .mh-why-pillars-inner { max-width: var(--max-w); margin: 0 auto; }
 .mh-why-pillar-grid {
