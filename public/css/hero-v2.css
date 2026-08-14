@@ -61,46 +61,6 @@
   .mh-hero-chip { width: calc(50% - 5px); }
 }
 
-/* ---------- Mini email/login card ---------- */
-.mh-hero-notify {
-  margin-top: 32px;
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  flex-wrap: wrap;
-  background: var(--navy-card);
-  border: 1px solid var(--navy-border);
-  border-radius: var(--radius-lg);
-  padding: 20px 24px;
-}
-.mh-hero-notify-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius);
-  background: var(--blue-glow);
-  color: var(--blue-bright);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.mh-hero-notify-copy { flex: 1 1 220px; min-width: 180px; }
-.mh-hero-notify-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--white); margin-bottom: 4px; }
-.mh-hero-notify-sub { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
-.mh-hero-notify-btn-link {
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 14px;
-  padding: 11px 20px;
-  border: none;
-  border-radius: var(--radius);
-  background: linear-gradient(135deg, var(--royal-blue), var(--blue-bright));
-  color: var(--white);
-  text-decoration: none;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
 /* ============================================================
    LIVE INTERVIEW TERMINAL — dashboard mockup (right column)
    ============================================================ */
@@ -358,8 +318,7 @@
   .mh-hero-badge { margin-bottom: 14px; }
   .mh-hero-h1 { margin-bottom: 10px; }
   .mh-hero-chips { margin: 14px 0 18px; }
-  .mh-hero-tertiary-row { margin-bottom: 20px; }
-  .mh-hero-notify { margin-top: 20px; }
+ .mh-hero-tertiary-row { margin-bottom: 20px; }
 }
 
 .mh-terminal-v2 {
