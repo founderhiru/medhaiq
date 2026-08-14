@@ -1,0 +1,26 @@
+187c187
+<     <a href="/dashboard" class="cta-btn primary">Upgrade to Growth</a>
+---
+>     <a href="/#pricing" class="cta-btn primary">Upgrade to Growth</a>
+407c407
+<     <a href="/dashboard" class="cta-btn primary">Upgrade to Growth</a>
+---
+>     <a href="/#pricing" class="cta-btn primary">Upgrade to Growth</a>
+416,422c416,420
+<        secondary stay as equal-width buttons in .report-ctas; the
+<        tertiary "Try a different persona" link moved to its own small
+<        centered row below rather than stretching to match the button
+<        row's width, so it reads as a lightweight secondary action, not a
+<        fourth equal button. Destinations/functionality unchanged for all
+<        three — only the Return Home link and the DOM position of "Try a
+<        different persona" changed. -->
+---
+>        secondary stay as equal-width buttons in .report-ctas.
+>        "Try a different persona" tertiary link removed entirely (2026-08-14)
+>        — redundant with navigation/action elsewhere in the report flow;
+>        not replaced with another CTA. Destinations/functionality
+>        unchanged for the two remaining buttons. -->
+426,428d423
+<   </div>
+<   <div class="report-ctas-tertiary">
+<     <a href="/interview">Try a different persona →</a>

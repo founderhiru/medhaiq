@@ -184,7 +184,7 @@
   <div class="report-section" style="text-align:center; background:#F7F8FA; border-radius:12px; padding:24px;">
     <h3 style="margin-bottom:8px;">Want the full picture?</h3>
     <p class="exec-summary" style="margin-bottom:16px;">Unlock your complete interview analysis, evidence, and personalized improvement guidance with Growth.</p>
-    <a href="/dashboard" class="cta-btn primary">Upgrade to Growth</a>
+    <a href="/#pricing" class="cta-btn primary">Upgrade to Growth</a>
   </div>
   <% } %>
 
@@ -404,7 +404,7 @@
   <div class="report-section" style="text-align:center; background:#F7F8FA; border-radius:12px; padding:24px;">
     <h3 style="margin-bottom:8px;">Want the full picture?</h3>
     <p class="exec-summary" style="margin-bottom:16px;">Unlock your complete interview analysis, evidence, and personalized improvement guidance with Growth.</p>
-    <a href="/dashboard" class="cta-btn primary">Upgrade to Growth</a>
+    <a href="/#pricing" class="cta-btn primary">Upgrade to Growth</a>
   </div>
   <% } %>
 
@@ -413,19 +413,14 @@
        delivered but never merged): Return Home removed — for an
        authenticated user, Return to Workspace already covers that exit
        path, so a separate Return Home link was redundant. Primary +
-       secondary stay as equal-width buttons in .report-ctas; the
-       tertiary "Try a different persona" link moved to its own small
-       centered row below rather than stretching to match the button
-       row's width, so it reads as a lightweight secondary action, not a
-       fourth equal button. Destinations/functionality unchanged for all
-       three — only the Return Home link and the DOM position of "Try a
-       different persona" changed. -->
+       secondary stay as equal-width buttons in .report-ctas.
+       "Try a different persona" tertiary link removed entirely (2026-08-14)
+       — redundant with navigation/action elsewhere in the report flow;
+       not replaced with another CTA. Destinations/functionality
+       unchanged for the two remaining buttons. -->
   <div class="report-ctas">
     <a href="/interview" class="cta-btn primary">Practice Again</a>
     <a href="/dashboard/history" class="cta-btn emerald">Return to Workspace</a>
-  </div>
-  <div class="report-ctas-tertiary">
-    <a href="/interview">Try a different persona →</a>
   </div>
 
   <% if (typeof showFeedbackPrompt !== 'undefined' && showFeedbackPrompt) { %>

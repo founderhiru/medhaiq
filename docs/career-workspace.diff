@@ -1,4 +1,7 @@
-306a307,396
+307c307,432
+< }
+\ No newline at end of file
+---
 > }
 > 
 > /* ============================================================
@@ -89,3 +92,40 @@
 > body.career-workspace .activity-cta.view {
 >   color: var(--cw-purple-text);
 >   border: 1px solid var(--cw-purple);
+> }
+> 
+> /* ============================================================
+>    CAREER WORKSPACE — METADATA CONTRAST POLISH (Fix 1)
+>    ------------------------------------------------------------
+>    Scoped under body.career-workspace. Single accessibility pass:
+>    lifts var(--dim) (#475569) to a locally-scoped --cw-metadata
+>    (#5F6B7D) — roughly a 13% lift toward white — applied ONLY to
+>    genuinely low-priority informational text matching the approved
+>    examples: overview sublabels ("Last interview today" etc.),
+>    readiness caption, chart axis labels, competency eyebrow labels,
+>    minutes usage labels ("Used X mins"), renew label, activity
+>    timestamps.
+> 
+>    Explicitly NOT touched: primary headings, semantic status colors
+>    (.readiness-progress-label.*, .activity-status-text.abandoned,
+>    .resume-intel-dot.is-inactive), and primary-adjacent "/100"/"/30"
+>    suffixes next to score numbers (.readiness-score .of100,
+>    .activity-score .of100, .minutes-ring-center .of100) — left alone
+>    since they sit directly against a primary metric, not general
+>    metadata. No card background, spacing, radius, shadow, or layout
+>    property appears anywhere in this block.
+>    ============================================================ */
+> 
+> body.career-workspace {
+>   --cw-metadata: #5F6B7D;
+> }
+> 
+> body.career-workspace .overview-stat .sublabel { color: var(--cw-metadata); }
+> body.career-workspace .readiness-caption { color: var(--cw-metadata); }
+> body.career-workspace .trend-y-labels { color: var(--cw-metadata); }
+> body.career-workspace .trend-x-labels { color: var(--cw-metadata); }
+> body.career-workspace .competency-stat-label { color: var(--cw-metadata); }
+> body.career-workspace .minutes-progress-labels { color: var(--cw-metadata); }
+> body.career-workspace .minutes-renew-label { color: var(--cw-metadata); }
+> body.career-workspace .activity-main .meta { color: var(--cw-metadata); }
+\ No newline at end of file
