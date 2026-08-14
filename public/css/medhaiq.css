@@ -65,30 +65,6 @@
     #6D5CF5 72%,
     #8B5CF6 100%
   );
-
-  /* ============================================================
-     MEDHAIQ UI SURFACE & INTERACTION SYSTEM — Phase 1 tokens.
-     Merged per approved design-tokens-phase1.css. Does not replace
-     or duplicate any token above. See that file for the full layer
-     model and constraints (asset/logo/semantic-color freeze).
-     ============================================================ */
-  --mh-surface-primary:   #FFFFFF;
-  --mh-surface-secondary: #F7F9FC;
-  --mh-surface-tertiary:  #F2F5F9;
-  --mh-surface-cool:      #F4F7FA;
-  --mh-surface-intelligence:      #F7F5FF;
-  --mh-surface-intelligence-soft: #FAF9FF;
-  --mh-navy:      #07152F;
-  --mh-navy-soft: #0B1D3A;
-  --mh-text-primary:   #0B1020;
-  --mh-text-secondary: #586579;
-  --mh-text-muted:     #7B8798;
-  --mh-border-subtle: #E4E9F0;
-  --mh-border-soft:   #EDF0F5;
-  --mh-purple: #7C3AED;
-  --mh-pink:   #EC3FA7;
-  --mh-shadow-card:  0 20px 50px -30px rgba(11, 16, 32, 0.25);
-  --mh-shadow-float: 0 16px 40px -24px rgba(11, 16, 32, 0.22);
 }
 
 /* ============================================
@@ -206,16 +182,16 @@ button { cursor: pointer; }
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(10, 15, 30, 0);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid transparent;
   transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .mh-nav.mh-nav-scrolled {
-  background: var(--mh-surface-primary);
-  border-bottom-color: var(--mh-border-subtle);
-  box-shadow: none;
+  background: rgba(10, 15, 30, 0.97);
+  border-bottom-color: var(--white-border);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.5);
 }
 .mh-nav-inner {
   max-width: var(--max-w);
@@ -281,20 +257,15 @@ button { cursor: pointer; }
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
-  color: var(--mh-text-secondary);
+  color: var(--text-muted);
   padding: 8px 14px;
   border-radius: 8px;
   transition: color 0.15s ease, background 0.15s ease;
   white-space: nowrap;
 }
-.mh-nav-link:hover { color: var(--mh-purple); background: var(--mh-surface-intelligence); }
-.mh-nav-link:focus-visible {
-  outline: 2px solid var(--mh-purple);
-  outline-offset: 2px;
-}
+.mh-nav-link:hover { color: var(--white); background: var(--white-soft); }
 .mh-nav-link.active {
-  color: var(--mh-purple);
-  background: var(--mh-surface-intelligence);
+  color: var(--blue-bright);
   position: relative;
 }
 .mh-nav-link.active::after {
@@ -304,7 +275,7 @@ button { cursor: pointer; }
   left: 14px;
   right: 14px;
   height: 2px;
-  background: var(--mh-purple);
+  background: var(--blue-bright);
   border-radius: 1px;
 }
 
@@ -315,8 +286,8 @@ button { cursor: pointer; }
   flex-shrink: 0;
 }
 .mh-nav-cta {
-  background: var(--mh-purple);
-  color: var(--mh-surface-primary);
+  background: var(--royal-blue);
+  color: var(--white);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 12px;
@@ -324,15 +295,13 @@ button { cursor: pointer; }
   border-radius: 40px;
   transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   white-space: nowrap;
+  box-shadow: 0 0 30px rgba(30, 64, 175, 0.4);
   margin-right: 8px;
 }
 .mh-nav-cta:hover {
-  filter: brightness(0.88);
+  background: #2563eb;
   transform: translateY(-1px);
-}
-.mh-nav-cta:focus-visible {
-  outline: 2px solid var(--mh-purple);
-  outline-offset: 2px;
+  box-shadow: 0 4px 40px rgba(30, 64, 175, 0.5);
 }
 /* Sign In — secondary action for existing/returning users. Reuses the
       same font-family/size/weight as .mh-nav-link so it reads as part of the
@@ -341,14 +310,13 @@ button { cursor: pointer; }
      font-family: var(--font-body);
      font-size: 14px;
      font-weight: 600;
-     color: var(--mh-text-secondary);
+     color: var(--text-muted);
      padding: 8px 14px;
      border-radius: 8px;
      white-space: nowrap;
      transition: color 0.15s ease, background 0.15s ease;
    }
-   .mh-nav-signin:hover { color: var(--mh-purple); background: var(--mh-surface-intelligence); }
-   .mh-nav-signin:focus-visible { outline: 2px solid var(--mh-purple); outline-offset: 2px; }
+   .mh-nav-signin:hover { color: var(--white); background: var(--white-soft); }
 
 /* Hamburger */
 .mh-hamburger {
@@ -366,7 +334,7 @@ button { cursor: pointer; }
   display: block;
   width: 100%;
   height: 2px;
-  background: var(--mh-text-secondary);
+  background: var(--text-muted);
   border-radius: 2px;
   transition: all 0.25s ease;
 }
@@ -377,8 +345,8 @@ button { cursor: pointer; }
 /* Mobile menu */
 .mh-mobile-menu {
   display: none;
-  background: var(--mh-surface-primary);
-  border-top: 1px solid var(--mh-border-subtle);
+  background: var(--navy-deep);
+  border-top: 1px solid var(--white-border);
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease;
@@ -398,17 +366,16 @@ button { cursor: pointer; }
   font-family: var(--font-display);
   font-size: 16px;
   font-weight: 500;
-  color: var(--mh-text-secondary);
+  color: var(--text-muted);
   padding: 12px 0;
-  border-bottom: 1px solid var(--mh-border-soft);
+  border-bottom: 1px solid var(--white-soft);
   transition: color 0.15s ease;
 }
-.mh-mobile-link:hover { color: var(--mh-purple); }
-.mh-mobile-link:focus-visible { outline: 2px solid var(--mh-purple); outline-offset: 2px; }
+.mh-mobile-link:hover { color: var(--white); }
 .mh-mobile-cta {
   margin-top: 12px;
-  background: var(--mh-purple);
-  color: var(--mh-surface-primary);
+  background: var(--royal-blue);
+  color: var(--white);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 15px;
@@ -561,8 +528,8 @@ button { cursor: pointer; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--mh-purple);
-  color: var(--mh-surface-primary);
+  background: var(--royal-blue);
+  color: var(--white);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 15px;
@@ -571,6 +538,7 @@ button { cursor: pointer; }
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 0 30px rgba(30, 64, 175, 0.4);
   white-space: nowrap;
 }
 /* Explore-page closing CTA ("Ready to measure your interview readiness?")
@@ -585,38 +553,30 @@ button { cursor: pointer; }
   padding: var(--btn-pad-y) 38px;
 }
 .mh-btn-primary:hover {
-  filter: brightness(0.88);
+  background: #2563eb;
   transform: translateY(-1px);
-}
-.mh-btn-primary:focus-visible {
-  outline: 2px solid var(--mh-purple);
-  outline-offset: 2px;
+  box-shadow: 0 4px 40px rgba(30, 64, 175, 0.5);
 }
 
 .mh-btn-outline {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--mh-surface-primary);
-  color: var(--mh-text-primary);
+  background: transparent;
+  color: var(--white);
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 15px;
   padding: var(--btn-pad-y) var(--btn-pad-x);
   border-radius: 40px;
-  border: 1.5px solid var(--mh-border-subtle);
+  border: 1.5px solid var(--white-border);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 .mh-btn-outline:hover {
-  background: var(--mh-surface-intelligence);
-  border-color: var(--mh-purple);
-  color: var(--mh-purple);
-}
-.mh-btn-outline:focus-visible {
-  outline: 2px solid var(--mh-purple);
-  outline-offset: 2px;
+  background: var(--white);
+  color: var(--navy-deep);
 }
 
 .mh-hero-proof {
@@ -3854,18 +3814,12 @@ button { cursor: pointer; }
   border: none;
   cursor: pointer;
   font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--mh-text-secondary);
-  padding: 8px 14px;
-  border-radius: 8px;
 }
 .mh-nav-chevron {
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .mh-nav-item-mega.mh-mega-open .mh-nav-chevron { transform: rotate(180deg); }
-.mh-nav-item-mega.mh-mega-open .mh-nav-trigger { color: var(--mh-purple); background: var(--mh-surface-intelligence); }
-.mh-nav-trigger:focus-visible { outline: 2px solid var(--mh-purple); outline-offset: 2px; }
+.mh-nav-item-mega.mh-mega-open .mh-nav-trigger { color: var(--white); background: var(--white-soft); }
 
 /* Panel — frosted glass, drops from the trigger */
 .mh-megamenu {
@@ -3879,12 +3833,12 @@ button { cursor: pointer; }
   left: 50%;
   transform: translateX(-50%) translateY(-6px);
   width: 340px;
-  background: var(--mh-surface-primary);
+  background: rgba(7, 10, 19, 0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--mh-border-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
-  box-shadow: var(--mh-shadow-card);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -3910,7 +3864,7 @@ button { cursor: pointer; }
 .mh-megamenu-divider {
   border: none;
   height: 1px;
-  background: var(--mh-border-subtle);
+  background: var(--navy-border);
   margin: 0;
 }
 .mh-megamenu-item-link {
@@ -3920,9 +3874,9 @@ button { cursor: pointer; }
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 0.9rem;
-  color: var(--mh-text-primary);
+  color: var(--white);
 }
-.mh-megamenu-item-link:hover { color: var(--mh-purple); }
+.mh-megamenu-item-link:hover { color: var(--blue-bright); }
 
 .mh-megamenu-item {
   display: block; /* per spec: block-level anchor, not flex, so translateX(4px) reads cleanly */
@@ -3938,7 +3892,7 @@ button { cursor: pointer; }
 .mh-megamenu-item .mh-megamenu-icon { margin-right: 10px; }
 .mh-megamenu-item:hover,
 .mh-megamenu-item:focus-visible {
-  background: var(--mh-surface-intelligence);
+  background: rgba(255, 255, 255, 0.04);
   transform: translateX(4px);
 }
 .mh-megamenu-icon {
@@ -3950,19 +3904,19 @@ button { cursor: pointer; }
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.95rem;
-  color: var(--mh-text-primary);
+  color: var(--white);
 }
 .mh-megamenu-desc {
   font-family: var(--font-body);
   font-size: 0.82rem;
-  color: var(--mh-text-secondary);
+  color: var(--text-muted);
   line-height: 1.4;
 }
 
 /* ============================================
    MOBILE ACCORDION — "Platform" inside the slide-out menu
    ============================================ */
-.mh-mobile-accordion { border-bottom: 1px solid var(--mh-border-soft); }
+.mh-mobile-accordion { border-bottom: 1px solid var(--white-soft); }
 .mh-mobile-accordion-trigger {
   width: 100%;
   display: flex;
@@ -3973,12 +3927,8 @@ button { cursor: pointer; }
   border-bottom: none; /* parent .mh-mobile-accordion already has the divider */
   cursor: pointer;
   font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--mh-text-secondary);
-  padding: 12px 0;
 }
-.mh-mobile-chevron { transition: transform 0.25s ease; color: var(--mh-text-muted); }
+.mh-mobile-chevron { transition: transform 0.25s ease; color: var(--text-muted); }
 .mh-mobile-accordion-trigger[aria-expanded="true"] .mh-mobile-chevron { transform: rotate(180deg); }
 
 .mh-mobile-accordion-panel {
@@ -3995,7 +3945,7 @@ button { cursor: pointer; }
 .mh-mobile-sublink-divider {
   border: none;
   height: 1px;
-  background: var(--mh-border-soft);
+  background: var(--white-soft);
   margin: 6px 12px;
 }
 
@@ -4087,13 +4037,12 @@ button { cursor: pointer; }
 .mh-mobile-sublink {
   font-family: var(--font-body);
   font-size: 14.5px;
-  color: var(--mh-text-secondary);
+  color: var(--text-muted);
   padding: 10px 12px;
   border-radius: 8px;
   transition: color 0.15s ease, background 0.15s ease;
 }
-.mh-mobile-sublink:hover { color: var(--mh-purple); background: var(--mh-surface-intelligence); }
-.mh-mobile-sublink:focus-visible { outline: 2px solid var(--mh-purple); outline-offset: 2px; }
+.mh-mobile-sublink:hover { color: var(--white); background: var(--white-soft); }
 
 /* Below 1024px (same breakpoint your hamburger already uses), the desktop
    mega menu never needs to render — nav-links are already display:none there. */
