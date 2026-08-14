@@ -1,0 +1,118 @@
+--- /tmp/career-workspace.css.orig	2026-08-14 11:46:00.768501951 +0000
++++ public/css/career-workspace.css	2026-08-14 11:47:48.750799606 +0000
+@@ -304,4 +304,114 @@
+ @media (max-width: 900px) {
+   .overview-strip { grid-template-columns: repeat(2, 1fr); }
+   .pair-row, .pair-row--activity { grid-template-columns: 1fr; }
++}
++
++/* ============================================================
++   CAREER WORKSPACE — LIGHT-SYSTEM OVERRIDE
++   ------------------------------------------------------------
++   Scoped entirely under body.career-workspace, applied only via
++   dashboard-history.ejs (see partials/workspace-shell-top.ejs's
++   optional bodyClass local). Every base rule above this block is
++   untouched — Founder Dashboard, Resume, Settings, and
++   purchase-success (all of which also load this file) keep their
++   exact current dark styling, since none of them set that body class.
++
++   NOT touched anywhere in this block, on purpose:
++   - readiness green/amber/red (#34D399, #FCD34D, #FCA5A5, #6EE7B7)
++   - minutes ring amber (#FBBF24, #F59E0B, url(#minutesRingGrad))
++   - trend chart (url(#trendGrad), .trend-line/.trend-dot strokes)
++   - score-bar-fill.high/mid/low (var(--emerald)/var(--gold)/var(--danger))
++   - activity-status-text.in_progress (#FDBA74)
++   - icon-sq.violet/green/blue/gold/orange (ambiguous category coding,
++     left as-is — not clearly decorative vs. semantic, flagged not guessed)
++   - qa-card.violet/green/blue variants (same reasoning)
++   - activity-row.interrupted background tint (same reasoning)
++   - resume-intel-dot is-active/is-inactive + its pulse animation
++   ============================================================ */
++
++body.career-workspace {
++  background: var(--mh-surface-cool);
++  color: var(--mh-text-primary);
++}
++
++body.career-workspace .subtitle { color: var(--mh-text-secondary); }
++
++/* Overview strip */
++body.career-workspace .overview-strip {
++  background: var(--mh-surface-primary);
++  border: 1px solid var(--mh-border-subtle);
++}
++body.career-workspace .overview-stat { border-right: 1px solid var(--mh-border-subtle); }
++body.career-workspace .overview-stat .num { color: var(--mh-text-primary); }
++body.career-workspace .overview-stat .label { color: var(--mh-text-secondary); }
++body.career-workspace .overview-stat .sublabel { color: var(--mh-text-muted); }
++
++/* Resume Intelligence CTA link — plain interactive link, not a status color */
++body.career-workspace .resume-intel-cta { color: var(--mh-purple); }
++body.career-workspace .resume-intel-cta:hover { color: var(--mh-purple); text-decoration: underline; }
++
++/* Primary action button */
++body.career-workspace .new-interview-btn {
++  background: var(--mh-purple);
++  color: var(--mh-surface-primary);
++}
++body.career-workspace .new-interview-btn:hover { filter: brightness(0.88); }
++
++/* Bell + profile menu chrome */
++body.career-workspace .db-bell-btn {
++  background: var(--mh-surface-primary);
++  border: 1px solid var(--mh-border-subtle);
++  color: var(--mh-text-secondary);
++}
++body.career-workspace .db-bell-btn:hover { background: var(--mh-surface-intelligence); color: var(--mh-purple); }
++body.career-workspace .db-profile-avatar {
++  background: var(--mh-surface-intelligence);
++  color: var(--mh-purple);
++}
++body.career-workspace .db-profile-menu {
++  background: var(--mh-surface-primary);
++  border: 1px solid var(--mh-border-subtle);
++  box-shadow: var(--mh-shadow-card);
++}
++body.career-workspace .db-profile-menu-header { border-bottom: 1px solid var(--mh-border-subtle); }
++body.career-workspace .db-profile-menu-name { color: var(--mh-text-primary); }
++
++/* Panel container (readiness, minutes, activity, quick-actions all sit
++   inside this — only the container surface changes, never the data
++   colors inside it) */
++body.career-workspace .panel {
++  background: var(--mh-surface-primary);
++  border: 1px solid var(--mh-border-subtle);
++  box-shadow: none;
++}
++body.career-workspace .panel h3 { color: var(--mh-text-primary); }
++body.career-workspace .view-all-link { color: var(--mh-purple); }
++body.career-workspace .view-all-link:hover { color: var(--mh-purple); text-decoration: underline; }
++
++/* Score bar — only the track (structural), never .score-bar-fill's
++   semantic high/mid/low colors */
++body.career-workspace .score-bar-label { color: var(--mh-text-primary); }
++body.career-workspace .score-bar-track { background: var(--mh-border-subtle); }
++
++/* Activity feed — row structure and plain text only */
++body.career-workspace .activity-row { border-top: 1px solid var(--mh-border-soft); }
++body.career-workspace .activity-main .title { color: var(--mh-text-primary); }
++body.career-workspace .activity-main .meta { color: var(--mh-text-muted); }
++body.career-workspace .activity-cta.resume {
++  background: var(--mh-purple);
++  color: var(--mh-surface-primary);
++  box-shadow: none;
++}
++body.career-workspace .activity-cta.view {
++  color: var(--mh-purple);
++  border: 1px solid var(--mh-purple);
++}
++
++/* Quick-action cards: .violet/.green/.blue variants (background, icon,
++   arrow, AND their text) are entirely untouched — those cards keep their
++   current dark-tinted background exactly as-is, so .qa-title/.qa-desc
++   text must stay light to remain readable against it. No changes here. */
++
++@media (max-width: 1200px) {
++  body.career-workspace .workspace-content { max-width: 100%; }
+ }
+\ No newline at end of file

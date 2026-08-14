@@ -120,3 +120,45 @@
   .shell-footer { display: none; }
   .workspace-content { padding: 24px 16px 60px; }
 }
+
+/* ============================================================
+   CAREER WORKSPACE — LIGHT-SYSTEM SIDEBAR OVERRIDE
+   ------------------------------------------------------------
+   Scoped under body.career-workspace, same pattern as
+   career-workspace.css. Base rules above are untouched — Founder
+   Dashboard, Resume, Settings, and purchase-success (which also load
+   this file) keep their current dark sidebar exactly as-is.
+
+   NOT touched, on purpose: .pill-explorer/.growth/.leadership/.founder
+   (package-tier badges — semantic), .shell-minutes-badge-icon (#FBBF24,
+   matches the amber minutes ring elsewhere), brand-logo (frozen).
+   ============================================================ */
+
+body.career-workspace .shell-nav {
+  background: var(--mh-surface-primary);
+  border-right: 1px solid var(--mh-border-subtle);
+}
+
+body.career-workspace .shell-profile-avatar {
+  background: var(--mh-surface-intelligence);
+  color: var(--mh-purple);
+}
+body.career-workspace .shell-profile-name { color: var(--mh-text-primary); }
+
+body.career-workspace .shell-minutes-badge { color: var(--mh-text-muted); }
+
+body.career-workspace .shell-preparing { border-bottom: 1px solid var(--mh-border-subtle); }
+body.career-workspace .shell-preparing-label { color: var(--mh-text-muted); }
+body.career-workspace .shell-preparing-badge { color: var(--mh-purple); }
+
+body.career-workspace .shell-link { color: var(--mh-text-secondary); }
+body.career-workspace .shell-link:hover { background: var(--mh-surface-intelligence); color: var(--mh-purple); }
+body.career-workspace .shell-link:focus-visible { outline: 2px solid var(--mh-purple); outline-offset: 2px; }
+body.career-workspace .shell-link.active {
+  background: var(--mh-surface-intelligence);
+  color: var(--mh-purple);
+}
+
+body.career-workspace .shell-footer { border-top: 1px solid var(--mh-border-subtle); }
+body.career-workspace .shell-logout { color: var(--mh-text-muted); }
+body.career-workspace .shell-logout:hover { color: var(--mh-text-secondary); }
