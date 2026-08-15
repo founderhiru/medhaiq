@@ -1,0 +1,275 @@
+<!-- ============================================
+     Scroll-Driven Career Intelligence Product Demo
+     NEW, isolated section. Deterministic demo data only — NEVER calls
+     /api/public-preview, any AI provider, or any backend. Reuses the
+     site's existing header classes (.mh-eyebrow/.mh-section-title/
+     .mh-section-sub) and the sitewide .reveal fade-in convention.
+     ============================================ -->
+<section class="mh-scrolldemo" id="live-demo">
+  <div class="mh-scrolldemo-inner">
+    <div class="mh-section-center reveal">
+      <div class="mh-eyebrow">See It In Action</div>
+      <h2 class="mh-section-title">Watch Career Intelligence Come To Life</h2>
+      <p class="mh-section-sub">A look at how MedhaIQ turns a resume into structured, evidence-based career intelligence — the same experience you'll see with your own resume above.</p>
+    </div>
+
+    <!-- Animated (default) version — hidden entirely for reduced-motion/mobile via JS, which shows #mh-sd-static instead -->
+    <div class="mh-scrolldemo-spacer" id="mh-sd-spacer">
+      <div class="mh-scrolldemo-stage">
+        <div class="mh-scrolldemo-shell">
+
+          <!-- LEFT: static config panel, display-only, mirrors the real tool's visual language -->
+          <div class="mh-sd-left">
+            <div class="mh-sd-step"><span class="mh-sd-step-num">1</span><span class="mh-sd-step-label">Upload Your Resume</span></div>
+            <div class="mh-sd-dropzone" id="mh-sd-dropzone">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <div class="mh-sd-drop-label" id="mh-sd-drop-label">Drag &amp; drop your resume here</div>
+              <div class="mh-sd-filename" id="mh-sd-filename">Resume_Executive.pdf &#10003;</div>
+            </div>
+            <div class="mh-sd-step"><span class="mh-sd-step-num">2</span><span class="mh-sd-step-label">Choose Target Role &amp; Level</span></div>
+            <div class="mh-sd-field">Director</div>
+            <div class="mh-sd-step"><span class="mh-sd-step-num">3</span><span class="mh-sd-step-label">Target Organisation Scale</span></div>
+            <div class="mh-sd-field">Enterprise (500&ndash;5,000)</div>
+          </div>
+
+          <!-- RIGHT: 7-state animated intelligence panel -->
+          <div class="mh-sd-right" id="mh-sd-right" data-active-state="1">
+            <div class="mh-sd-eyebrow">Career Intelligence Preview</div>
+
+            <!-- State 1: waiting -->
+            <div class="mh-sd-state mh-sd-state-1">
+              <div class="mh-sd-waiting">Waiting for a resume to begin analysis&hellip;</div>
+            </div>
+
+            <!-- State 2: processing -->
+            <div class="mh-sd-state mh-sd-state-2">
+              <ul class="mh-sd-process-list">
+                <li class="mh-sd-process-line" data-idx="0">Resume received</li>
+                <li class="mh-sd-process-line" data-idx="1">Analyzing experience&hellip;</li>
+                <li class="mh-sd-process-line" data-idx="2">Mapping capabilities&hellip;</li>
+                <li class="mh-sd-process-line" data-idx="3">Evaluating executive signals&hellip;</li>
+              </ul>
+              <div class="mh-sd-progress-track"><div class="mh-sd-progress-fill" id="mh-sd-progress-fill"></div></div>
+            </div>
+
+            <!-- State 3: intelligence generated -->
+            <div class="mh-sd-state mh-sd-state-3">
+              <div class="mh-sd-band">Strong</div>
+              <div class="mh-sd-band-label">Overall Rating</div>
+              <div class="mh-sd-bars">
+                <div class="mh-sd-bar-row">
+                  <span class="mh-sd-bar-label">Career Readiness</span>
+                  <div class="mh-sd-bar-track"><div class="mh-sd-bar-fill" data-target="82"></div></div>
+                  <span class="mh-sd-bar-num" data-target="82">0</span>
+                </div>
+                <div class="mh-sd-bar-row">
+                  <span class="mh-sd-bar-label">Leadership Evidence</span>
+                  <div class="mh-sd-bar-track"><div class="mh-sd-bar-fill gold" data-target="76"></div></div>
+                  <span class="mh-sd-bar-num" data-target="76">0</span>
+                </div>
+                <div class="mh-sd-bar-row">
+                  <span class="mh-sd-bar-label">Business Impact</span>
+                  <div class="mh-sd-bar-track"><div class="mh-sd-bar-fill" data-target="88"></div></div>
+                  <span class="mh-sd-bar-num" data-target="88">0</span>
+                </div>
+                <div class="mh-sd-bar-row">
+                  <span class="mh-sd-bar-label">Executive Communication</span>
+                  <div class="mh-sd-bar-track"><div class="mh-sd-bar-fill gold" data-target="79"></div></div>
+                  <span class="mh-sd-bar-num" data-target="79">0</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- State 4: executive signals -->
+            <div class="mh-sd-state mh-sd-state-4">
+              <div class="mh-sd-section-title">Executive Signals Detected</div>
+              <ul class="mh-sd-signals">
+                <li data-idx="0">Career Scope &amp; Seniority</li>
+                <li data-idx="1">Leadership Evidence</li>
+                <li data-idx="2">Quantified Business Impact</li>
+                <li data-idx="3">Executive Communication</li>
+              </ul>
+            </div>
+
+            <!-- State 5: recruiter perspective -->
+            <div class="mh-sd-state mh-sd-state-5">
+              <div class="mh-sd-section-title">AI Recruiter First Impression</div>
+              <p class="mh-sd-recruiter-text">This profile shows real leadership scope and team ownership, with measurable business outcomes beginning to take shape.</p>
+            </div>
+
+            <!-- State 6: opportunities -->
+            <div class="mh-sd-state mh-sd-state-6">
+              <div class="mh-sd-section-title">Opportunities to Strengthen</div>
+              <p class="mh-sd-opportunity-text">&ldquo;Business impact could be framed with stronger, more specific numbers.&rdquo;</p>
+            </div>
+
+            <!-- State 7: conversion -->
+            <div class="mh-sd-state mh-sd-state-7">
+              <p class="mh-sd-conversion-text">A resume only tells part of your story.<br>Validate what it says with a Live AI Interview.</p>
+              <a href="/interview" class="mh-sd-cta">Continue &rarr;</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Static fallback — shown instead of the pinned/animated version when
+         prefers-reduced-motion is set, or on mobile (scroll-jacking is poor
+         UX on small screens). Same content, no animation, no JS scroll
+         listener attached at all in this mode. -->
+    <div class="mh-sd-static" id="mh-sd-static" hidden>
+      <div class="mh-sd-static-shell">
+        <div class="mh-sd-left">
+          <div class="mh-sd-step"><span class="mh-sd-step-num">1</span><span class="mh-sd-step-label">Upload Your Resume</span></div>
+          <div class="mh-sd-dropzone">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="mh-sd-drop-label">Resume_Executive.pdf &#10003;</div>
+          </div>
+          <div class="mh-sd-step"><span class="mh-sd-step-num">2</span><span class="mh-sd-step-label">Choose Target Role &amp; Level</span></div>
+          <div class="mh-sd-field">Director</div>
+          <div class="mh-sd-step"><span class="mh-sd-step-num">3</span><span class="mh-sd-step-label">Target Organisation Scale</span></div>
+          <div class="mh-sd-field">Enterprise (500&ndash;5,000)</div>
+        </div>
+        <div class="mh-sd-right mh-sd-right-static">
+          <div class="mh-sd-eyebrow">Career Intelligence Preview</div>
+          <div class="mh-sd-band">Strong</div>
+          <div class="mh-sd-band-label">Overall Rating</div>
+          <div class="mh-sd-bars">
+            <div class="mh-sd-bar-row"><span class="mh-sd-bar-label">Career Readiness</span><div class="mh-sd-bar-track"><div class="mh-sd-bar-fill" style="width:82%"></div></div><span class="mh-sd-bar-num">82</span></div>
+            <div class="mh-sd-bar-row"><span class="mh-sd-bar-label">Leadership Evidence</span><div class="mh-sd-bar-track"><div class="mh-sd-bar-fill gold" style="width:76%"></div></div><span class="mh-sd-bar-num">76</span></div>
+            <div class="mh-sd-bar-row"><span class="mh-sd-bar-label">Business Impact</span><div class="mh-sd-bar-track"><div class="mh-sd-bar-fill" style="width:88%"></div></div><span class="mh-sd-bar-num">88</span></div>
+            <div class="mh-sd-bar-row"><span class="mh-sd-bar-label">Executive Communication</span><div class="mh-sd-bar-track"><div class="mh-sd-bar-fill gold" style="width:79%"></div></div><span class="mh-sd-bar-num">79</span></div>
+          </div>
+          <div class="mh-sd-section-title">Executive Signals Detected</div>
+          <ul class="mh-sd-signals mh-sd-signals-static">
+            <li>Career Scope &amp; Seniority</li>
+            <li>Leadership Evidence</li>
+            <li>Quantified Business Impact</li>
+            <li>Executive Communication</li>
+          </ul>
+          <div class="mh-sd-section-title">AI Recruiter First Impression</div>
+          <p class="mh-sd-recruiter-text">This profile shows real leadership scope and team ownership, with measurable business outcomes beginning to take shape.</p>
+          <div class="mh-sd-section-title">Opportunities to Strengthen</div>
+          <p class="mh-sd-opportunity-text">&ldquo;Business impact could be framed with stronger, more specific numbers.&rdquo;</p>
+          <p class="mh-sd-conversion-text">A resume only tells part of your story. Validate what it says with a Live AI Interview.</p>
+          <a href="/interview" class="mh-sd-cta">Continue &rarr;</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+(function () {
+  // ── Deterministic demo data only. This section NEVER calls fetch(),
+  // never touches /api/public-preview or any AI provider. Everything
+  // below is either static markup already in the DOM or pure scroll-
+  // position math driving CSS class/style changes.
+
+  var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var isMobile = window.innerWidth < 760;
+
+  var spacer = document.getElementById('mh-sd-spacer');
+  var staticVersion = document.getElementById('mh-sd-static');
+  var rightPanel = document.getElementById('mh-sd-right');
+
+  if (!spacer || !rightPanel) return;
+
+  if (prefersReducedMotion || isMobile) {
+    // Static, non-animated presentation — same content, no scroll-jacking.
+    spacer.style.display = 'none';
+    if (staticVersion) staticVersion.hidden = false;
+    return;
+  }
+
+  // ── Scroll-progress state machine ───────────────────────────────────
+  // 7 states, weighted ranges (processing + intelligence generation get
+  // more "dwell" scroll distance than the shorter states).
+  var RANGES = [
+    { state: 1, from: 0.00, to: 0.08 },
+    { state: 2, from: 0.08, to: 0.28 },
+    { state: 3, from: 0.28, to: 0.48 },
+    { state: 4, from: 0.48, to: 0.64 },
+    { state: 5, from: 0.64, to: 0.76 },
+    { state: 6, from: 0.76, to: 0.88 },
+    { state: 7, from: 0.88, to: 1.00 },
+  ];
+
+  var progressFill = document.getElementById('mh-sd-progress-fill');
+  var processLines = rightPanel.querySelectorAll('.mh-sd-process-line');
+  var barFills = rightPanel.querySelectorAll('.mh-sd-bar-fill');
+  var barNums = rightPanel.querySelectorAll('.mh-sd-bar-num');
+  var signalItems = rightPanel.querySelectorAll('.mh-sd-signals li');
+
+  var ticking = false;
+
+  function clamp01(n) { return Math.max(0, Math.min(1, n)); }
+
+  function update() {
+    ticking = false;
+    var rect = spacer.getBoundingClientRect();
+    var spacerHeight = spacer.offsetHeight;
+    var viewportH = window.innerHeight;
+    var scrolled = -rect.top; // how far we've scrolled INTO the spacer
+    var scrollableDistance = spacerHeight - viewportH;
+    if (scrollableDistance <= 0) return;
+
+    var progress = clamp01(scrolled / scrollableDistance);
+
+    var activeRange = RANGES[0];
+    for (var i = 0; i < RANGES.length; i++) {
+      if (progress >= RANGES[i].from) activeRange = RANGES[i];
+    }
+    var activeState = activeRange.state;
+    var subProgress = clamp01((progress - activeRange.from) / (activeRange.to - activeRange.from));
+
+    rightPanel.setAttribute('data-active-state', String(activeState));
+
+    // State 2: sequential process lines + progress bar, driven by subProgress
+    if (activeState === 2 || activeState > 2) {
+      var p2 = activeState > 2 ? 1 : subProgress;
+      processLines.forEach(function (line) {
+        var idx = parseInt(line.getAttribute('data-idx'), 10);
+        line.classList.toggle('is-visible', p2 > idx / processLines.length);
+      });
+      if (progressFill) progressFill.style.width = (p2 * 100) + '%';
+    } else {
+      processLines.forEach(function (line) { line.classList.remove('is-visible'); });
+      if (progressFill) progressFill.style.width = '0%';
+    }
+
+    // State 3: bars count up + fill, driven by subProgress (reversible —
+    // scrolling back up smoothly un-counts, since this is pure scroll math,
+    // not a one-shot timer-based animation).
+    var p3 = activeState > 3 ? 1 : (activeState === 3 ? subProgress : 0);
+    barFills.forEach(function (fill) {
+      var target = parseFloat(fill.getAttribute('data-target'));
+      fill.style.width = (p3 * target) + '%';
+    });
+    barNums.forEach(function (num) {
+      var target = parseFloat(num.getAttribute('data-target'));
+      num.textContent = Math.round(p3 * target);
+    });
+
+    // State 4: sequential signal reveal
+    var p4 = activeState > 4 ? 1 : (activeState === 4 ? subProgress : 0);
+    signalItems.forEach(function (item) {
+      var idx = parseInt(item.getAttribute('data-idx'), 10);
+      item.classList.toggle('is-visible', p4 > idx / signalItems.length);
+    });
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  update(); // initial paint
+})();
+</script>

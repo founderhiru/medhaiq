@@ -1,0 +1,137 @@
+/* ============================================
+   scroll-demo.css — Scroll-Driven Career Intelligence Product Demo
+   Page-scoped to #live-demo only. Every color/font/radius here is either
+   an existing :root variable from medhaiq.css or the site's established
+   purple accent (#8B5CF6, already used by .mh-audience-badge-purple) —
+   no new design language introduced.
+   ============================================ */
+
+.mh-scrolldemo { padding: var(--section-pad-y) var(--section-pad-x); background: var(--navy-deep); }
+.mh-scrolldemo-inner { max-width: var(--max-w); margin: 0 auto; }
+
+/* ── Scroll-pin mechanics: sticky stage inside a tall spacer ─────────── */
+.mh-scrolldemo-spacer { position: relative; height: 650vh; margin-top: 48px; }
+.mh-scrolldemo-stage { position: sticky; top: 0; height: 100vh; display: flex; align-items: center; }
+.mh-scrolldemo-shell {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  background: var(--navy-rich);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+/* ── Left: static config panel ───────────────────────────────────────── */
+.mh-sd-left { padding: 28px; border-right: 1px solid var(--navy-border); background: var(--navy-card); }
+.mh-sd-step { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+.mh-sd-step:not(:first-child) { margin-top: 22px; }
+.mh-sd-step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid var(--blue-bright); color: var(--blue-bright);
+  font-family: var(--font-display); font-size: 11.5px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.mh-sd-step-label { font-family: var(--font-display); font-size: 13.5px; font-weight: 700; color: var(--white); }
+.mh-sd-dropzone {
+  border: 1.5px dashed var(--navy-border); border-radius: var(--radius-lg);
+  background: var(--navy-deep); padding: 16px 18px; text-align: center; color: var(--blue-bright);
+}
+.mh-sd-drop-label { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--white); margin-top: 6px; }
+.mh-sd-filename {
+  margin-top: 8px; font-size: 11.5px; color: var(--emerald);
+  background: var(--navy-deep); border: 1px solid var(--navy-border);
+  border-radius: var(--radius); padding: 6px 12px;
+}
+.mh-sd-field {
+  background: var(--navy-deep); border: 1px solid var(--navy-border); border-radius: var(--radius);
+  padding: 10px 14px; font-size: 13.5px; color: var(--white);
+}
+
+/* ── Right: 7-state animated panel ───────────────────────────────────── */
+.mh-sd-right { position: relative; padding: 28px; min-height: 380px; }
+.mh-sd-eyebrow {
+  font-family: var(--font-display); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.06em; color: var(--blue-bright); text-transform: uppercase; margin-bottom: 16px;
+}
+
+.mh-sd-state {
+  position: absolute; top: 56px; left: 28px; right: 28px; bottom: 28px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.mh-sd-right[data-active-state="1"] .mh-sd-state-1,
+.mh-sd-right[data-active-state="2"] .mh-sd-state-2,
+.mh-sd-right[data-active-state="3"] .mh-sd-state-3,
+.mh-sd-right[data-active-state="4"] .mh-sd-state-4,
+.mh-sd-right[data-active-state="5"] .mh-sd-state-5,
+.mh-sd-right[data-active-state="6"] .mh-sd-state-6,
+.mh-sd-right[data-active-state="7"] .mh-sd-state-7 { opacity: 1; }
+
+.mh-sd-waiting { font-size: 13px; color: var(--text-faint); font-style: italic; }
+
+/* State 2: processing */
+.mh-sd-process-list { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.mh-sd-process-line {
+  font-size: 13px; color: var(--text-faint); opacity: 0.35; transition: opacity 0.35s ease, color 0.35s ease;
+}
+.mh-sd-process-line.is-visible { opacity: 1; color: var(--white); }
+.mh-sd-progress-track { height: 5px; background: var(--navy-deep); border-radius: 4px; overflow: hidden; }
+.mh-sd-progress-fill { height: 100%; width: 0; background: #8B5CF6; border-radius: 4px; }
+
+/* State 3: intelligence generated */
+.mh-sd-band { font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--emerald); line-height: 1; }
+.mh-sd-band-label { font-size: 10.5px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.05em; margin: 4px 0 16px; }
+.mh-sd-bars { display: flex; flex-direction: column; gap: 10px; }
+.mh-sd-bar-row { display: flex; align-items: center; gap: 10px; }
+.mh-sd-bar-label { font-size: 11.5px; color: var(--text-muted); width: 145px; flex-shrink: 0; }
+.mh-sd-bar-track { flex: 1; max-width: 170px; height: 6px; background: var(--navy-deep); border-radius: 4px; overflow: hidden; }
+.mh-sd-bar-fill { height: 100%; width: 0; border-radius: 4px; background: linear-gradient(90deg, var(--blue-bright), var(--emerald)); }
+.mh-sd-bar-fill.gold { background: linear-gradient(90deg, var(--gold), #fbbf24); }
+.mh-sd-bar-num { font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--white); width: 28px; text-align: right; flex-shrink: 0; }
+
+/* State 4: executive signals */
+.mh-sd-section-title { font-family: var(--font-display); font-size: 11px; font-weight: 700; color: var(--white); margin-bottom: 14px; }
+.mh-sd-signals { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.mh-sd-signals li {
+  font-size: 12.5px; color: #6EE7B7;
+  background: var(--emerald-soft); border: 1px solid rgba(5,150,105,0.3);
+  border-radius: var(--radius); padding: 8px 14px;
+  opacity: 0; transform: translateX(-8px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.mh-sd-signals li.is-visible { opacity: 1; transform: translateX(0); }
+
+/* State 5 / 6: recruiter + opportunities */
+.mh-sd-recruiter-text, .mh-sd-opportunity-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 46ch; }
+.mh-sd-opportunity-text { font-style: italic; }
+
+/* State 7: conversion */
+.mh-sd-conversion-text { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--white); line-height: 1.4; margin-bottom: 18px; }
+.mh-sd-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(90deg, var(--emerald), #10B981);
+  color: white; font-family: var(--font-display); font-weight: 700; font-size: 14px;
+  padding: 11px 22px; border-radius: 999px; text-decoration: none;
+  box-shadow: 0 0 20px rgba(5,150,105,0.25);
+}
+
+/* ── Static fallback (reduced-motion / mobile) ───────────────────────── */
+.mh-sd-static-shell {
+  display: grid; grid-template-columns: 1fr 1.2fr;
+  background: var(--navy-rich); border: 1px solid var(--navy-border);
+  border-radius: var(--radius-xl); overflow: hidden; margin-top: 32px;
+}
+.mh-sd-right-static { min-height: 0; }
+.mh-sd-right-static .mh-sd-signals-static li {
+  opacity: 1; transform: none; display: block; margin-bottom: 8px;
+}
+.mh-sd-right-static .mh-sd-conversion-text { margin-top: 20px; }
+
+@media (max-width: 900px) {
+  .mh-scrolldemo-shell, .mh-sd-static-shell { grid-template-columns: 1fr; }
+  .mh-sd-left { border-right: none; border-bottom: 1px solid var(--navy-border); }
+}
+@media (max-width: 640px) {
+  .mh-sd-static-shell { grid-template-columns: 1fr; }
+}

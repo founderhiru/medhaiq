@@ -17,6 +17,13 @@ const _pageTitle = typeof pageTitle !== 'undefined' ? pageTitle : 'MedhaIQ';
 const _activeNav = typeof activeNav !== 'undefined' ? activeNav : '';
 const _shellUser = typeof shellUser !== 'undefined' && shellUser ? shellUser : { name: '' };
 const _extraStylesheets = typeof extraStylesheets !== 'undefined' ? extraStylesheets : [];
+/* CSS scoping hook only — no logic/route/behavior tied to this. Explicit
+   opt-in per page (not derived from activeNav) because activeNav:'dashboard'
+   is shared by both dashboard-history.ejs (Career Workspace) and
+   purchase-success.ejs, which are visually different pages. Defaults to
+   '' so every existing consumer of this partial is unaffected unless it
+   passes bodyClass explicitly. */
+const _bodyClass = typeof bodyClass !== 'undefined' && bodyClass ? bodyClass : '';
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -34,7 +41,7 @@ const _extraStylesheets = typeof extraStylesheets !== 'undefined' ? extraStylesh
   <link rel="stylesheet" href="/css/workspace-shell.css">
   <% if (typeof extraHead !== 'undefined' && extraHead) { %><%- extraHead %><% } %>
 </head>
-<body>
+<body<%- _bodyClass ? ' class="' + _bodyClass + '"' : '' %>>
 <div class="shell">
   <nav class="shell-nav">
     <%- include('brand-logo', { size: 'md', eager: true, href: '/' }) %>

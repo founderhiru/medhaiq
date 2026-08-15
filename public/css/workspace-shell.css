@@ -120,3 +120,28 @@
   .shell-footer { display: none; }
   .workspace-content { padding: 24px 16px 60px; }
 }
+
+/* ============================================================
+   CAREER WORKSPACE — SIDEBAR INTERACTION STATES ONLY
+   ------------------------------------------------------------
+   Scoped under body.career-workspace. Exactly the three
+   already-approved rules, verbatim values — nothing else in the
+   sidebar changes. .shell-nav surface, .shell-profile-avatar,
+   .shell-profile-name, .shell-minutes-badge, .shell-preparing,
+   .shell-footer, .shell-logout, all .pill-* remain completely
+   untouched, still navy, per instruction. Base rules above this
+   block are untouched; every other page sharing this file is
+   unaffected.
+   ============================================================ */
+
+body.career-workspace .shell-link:hover {
+  background: rgba(124, 58, 237, 0.12);
+}
+body.career-workspace .shell-link.active {
+  background: rgba(124, 58, 237, 0.18);
+  color: #C4B5FD;
+}
+body.career-workspace .shell-link:focus-visible {
+  outline: 2px solid #A78BFA;
+  outline-offset: 2px;
+}

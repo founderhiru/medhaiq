@@ -1,0 +1,72 @@
+4212a4213,4283
+> 
+> /* ============================================================
+>    HOMEPAGE — LIGHT + MIDNIGHT HYBRID (Phase 1 of 3: Homepage only)
+>    ------------------------------------------------------------
+>    Scoped under body.mh-light-hybrid, set only in views/layout.ejs
+>    (the homepage). Why MedhaIQ and Architecture are NOT scoped yet —
+>    they are separate, queued checkpoints per the phased plan. About
+>    and the other 11 pages sharing this file are completely
+>    unaffected since none of them carry this class.
+> 
+>    New token added (not existing in :root, needed per the brief's
+>    #F8FAFC requirement — no equivalent light-background token exists
+>    in this file today):
+>      --mh-light-bg: #F8FAFC
+> 
+>    CTA color is MedhaIQ blue (--royal-blue/--blue-bright), NOT
+>    purple — this brief explicitly specifies one blue CTA color
+>    sitewide and explicitly excludes purple as a CTA color. This
+>    reverses the purple-CTA direction explored in earlier mockup
+>    rounds; noting it explicitly since it's a real reversal, not
+>    an oversight.
+> 
+>    NOT touched: the Live Interview Terminal's own dark styling
+>    (.mh-terminal-v2*, in hero-v2.css) — stays dark by design, per
+>    the brief's "LIGHT ENVIRONMENT + DARK AI ENGINE" instruction.
+>    NOT touched: .mh-pricing (see chat — flagged discrepancy, left
+>    entirely alone). NOT touched: header/footer (brief says both
+>    stay deep navy — already the current state, no change needed).
+>    ============================================================ */
+> 
+> body.mh-light-hybrid .mh-hero {
+>   --mh-light-bg: #F8FAFC;
+>   background: var(--mh-light-bg);
+> }
+> body.mh-light-hybrid .mh-hero-glow {
+>   background:
+>     radial-gradient(ellipse 60% 40% at 50% 0%, rgba(30, 64, 175, 0.05) 0%, transparent 60%),
+>     radial-gradient(ellipse 40% 60% at 80% 60%, rgba(59, 130, 246, 0.03) 0%, transparent 50%);
+> }
+> body.mh-light-hybrid .mh-hero-badge {
+>   background: rgba(30, 64, 175, 0.08);
+>   border-color: rgba(30, 64, 175, 0.2);
+> }
+> body.mh-light-hybrid .mh-hero-badge-text { color: #0F172A; }
+> /* badge dot stays --blue-bright — explicitly instructed: "blue indicator
+>    dot... do NOT make the entire badge blue" */
+> body.mh-light-hybrid .mh-hero-h1 { color: #0F172A; }
+> body.mh-light-hybrid .mh-hero-h2 { color: #475569; }
+> body.mh-light-hybrid .mh-hero-chip { background: #FFFFFF; border: 1px solid #E2E8F0; color: #334155; }
+> body.mh-light-hybrid .mh-btn-primary { background: var(--royal-blue); color: #fff; }
+> body.mh-light-hybrid .mh-btn-primary:hover { background: #1E3A8A; }
+> body.mh-light-hybrid .mh-btn-outline {
+>   background: transparent;
+>   color: #0F172A;
+>   border: 1.5px solid #CBD5E1;
+> }
+> body.mh-light-hybrid .mh-btn-outline:hover { background: #F1F5F9; }
+> body.mh-light-hybrid .mh-hero-tertiary { color: #475569; }
+> body.mh-light-hybrid .mh-hero-tertiary:hover { color: #0F172A; }
+> body.mh-light-hybrid .mh-hero-tertiary-icon { border-color: #CBD5E1; color: #475569; }
+> body.mh-light-hybrid .mh-hero-tertiary:hover .mh-hero-tertiary-icon { border-color: var(--blue-bright); color: var(--blue-bright); }
+> 
+> /* Value-footer strip directly below hero — first section in the
+>    "light → light → dark intelligence" rhythm, so it stays light too */
+> body.mh-light-hybrid .mh-value-footer {
+>   background: #FFFFFF;
+>   border-top: 1px solid #E2E8F0;
+>   border-bottom: 1px solid #E2E8F0;
+> }
+> body.mh-light-hybrid .mh-value-footer-title { color: #0F172A; }
+> body.mh-light-hybrid .mh-value-footer-sub { color: #64748B; }

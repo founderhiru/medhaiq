@@ -1,0 +1,370 @@
+--- /tmp/medhaiq.css.orig	2026-08-14 11:34:36.853133366 +0000
++++ public/css/medhaiq.css	2026-08-14 11:38:09.563522595 +0000
+@@ -65,6 +65,30 @@
+     #6D5CF5 72%,
+     #8B5CF6 100%
+   );
++
++  /* ============================================================
++     MEDHAIQ UI SURFACE & INTERACTION SYSTEM — Phase 1 tokens.
++     Merged per approved design-tokens-phase1.css. Does not replace
++     or duplicate any token above. See that file for the full layer
++     model and constraints (asset/logo/semantic-color freeze).
++     ============================================================ */
++  --mh-surface-primary:   #FFFFFF;
++  --mh-surface-secondary: #F7F9FC;
++  --mh-surface-tertiary:  #F2F5F9;
++  --mh-surface-cool:      #F4F7FA;
++  --mh-surface-intelligence:      #F7F5FF;
++  --mh-surface-intelligence-soft: #FAF9FF;
++  --mh-navy:      #07152F;
++  --mh-navy-soft: #0B1D3A;
++  --mh-text-primary:   #0B1020;
++  --mh-text-secondary: #586579;
++  --mh-text-muted:     #7B8798;
++  --mh-border-subtle: #E4E9F0;
++  --mh-border-soft:   #EDF0F5;
++  --mh-purple: #7C3AED;
++  --mh-pink:   #EC3FA7;
++  --mh-shadow-card:  0 20px 50px -30px rgba(11, 16, 32, 0.25);
++  --mh-shadow-float: 0 16px 40px -24px rgba(11, 16, 32, 0.22);
+ }
+ 
+ /* ============================================
+@@ -182,16 +206,16 @@
+   position: fixed;
+   top: 0; left: 0; right: 0;
+   z-index: 100;
+-  background: rgba(10, 15, 30, 0);
++  background: rgba(255, 255, 255, 0.85);
+   backdrop-filter: blur(16px);
+   -webkit-backdrop-filter: blur(16px);
+   border-bottom: 1px solid transparent;
+   transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+ }
+ .mh-nav.mh-nav-scrolled {
+-  background: rgba(10, 15, 30, 0.97);
+-  border-bottom-color: var(--white-border);
+-  box-shadow: 0 4px 30px rgba(0,0,0,0.5);
++  background: var(--mh-surface-primary);
++  border-bottom-color: var(--mh-border-subtle);
++  box-shadow: none;
+ }
+ .mh-nav-inner {
+   max-width: var(--max-w);
+@@ -257,15 +281,20 @@
+   font-family: var(--font-body);
+   font-size: 14px;
+   font-weight: 600;
+-  color: var(--text-muted);
++  color: var(--mh-text-secondary);
+   padding: 8px 14px;
+   border-radius: 8px;
+   transition: color 0.15s ease, background 0.15s ease;
+   white-space: nowrap;
+ }
+-.mh-nav-link:hover { color: var(--white); background: var(--white-soft); }
++.mh-nav-link:hover { color: var(--mh-purple); background: var(--mh-surface-intelligence); }
++.mh-nav-link:focus-visible {
++  outline: 2px solid var(--mh-purple);
++  outline-offset: 2px;
++}
+ .mh-nav-link.active {
+-  color: var(--blue-bright);
++  color: var(--mh-purple);
++  background: var(--mh-surface-intelligence);
+   position: relative;
+ }
+ .mh-nav-link.active::after {
+@@ -275,7 +304,7 @@
+   left: 14px;
+   right: 14px;
+   height: 2px;
+-  background: var(--blue-bright);
++  background: var(--mh-purple);
+   border-radius: 1px;
+ }
+ 
+@@ -286,8 +315,8 @@
+   flex-shrink: 0;
+ }
+ .mh-nav-cta {
+-  background: var(--royal-blue);
+-  color: var(--white);
++  background: var(--mh-purple);
++  color: var(--mh-surface-primary);
+   font-family: var(--font-display);
+   font-weight: 700;
+   font-size: 12px;
+@@ -295,13 +324,15 @@
+   border-radius: 40px;
+   transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+   white-space: nowrap;
+-  box-shadow: 0 0 30px rgba(30, 64, 175, 0.4);
+   margin-right: 8px;
+ }
+ .mh-nav-cta:hover {
+-  background: #2563eb;
++  filter: brightness(0.88);
+   transform: translateY(-1px);
+-  box-shadow: 0 4px 40px rgba(30, 64, 175, 0.5);
++}
++.mh-nav-cta:focus-visible {
++  outline: 2px solid var(--mh-purple);
++  outline-offset: 2px;
+ }
+ /* Sign In — secondary action for existing/returning users. Reuses the
+       same font-family/size/weight as .mh-nav-link so it reads as part of the
+@@ -310,13 +341,14 @@
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+-     color: var(--text-muted);
++     color: var(--mh-text-secondary);
+      padding: 8px 14px;
+      border-radius: 8px;
+      white-space: nowrap;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+-   .mh-nav-signin:hover { color: var(--white); background: var(--white-soft); }
++   .mh-nav-signin:hover { color: var(--mh-purple); background: var(--mh-surface-intelligence); }
++   .mh-nav-signin:focus-visible { outline: 2px solid var(--mh-purple); outline-offset: 2px; }
+ 
+ /* Hamburger */
+ .mh-hamburger {
+@@ -334,7 +366,7 @@
+   display: block;
+   width: 100%;
+   height: 2px;
+-  background: var(--text-muted);
++  background: var(--mh-text-secondary);
+   border-radius: 2px;
+   transition: all 0.25s ease;
+ }
+@@ -345,8 +377,8 @@
+ /* Mobile menu */
+ .mh-mobile-menu {
+   display: none;
+-  background: var(--navy-deep);
+-  border-top: 1px solid var(--white-border);
++  background: var(--mh-surface-primary);
++  border-top: 1px solid var(--mh-border-subtle);
+   max-height: 0;
+   overflow: hidden;
+   transition: max-height 0.3s ease;
+@@ -366,16 +398,17 @@
+   font-family: var(--font-display);
+   font-size: 16px;
+   font-weight: 500;
+-  color: var(--text-muted);
++  color: var(--mh-text-secondary);
+   padding: 12px 0;
+-  border-bottom: 1px solid var(--white-soft);
++  border-bottom: 1px solid var(--mh-border-soft);
+   transition: color 0.15s ease;
+ }
+-.mh-mobile-link:hover { color: var(--white); }
++.mh-mobile-link:hover { color: var(--mh-purple); }
++.mh-mobile-link:focus-visible { outline: 2px solid var(--mh-purple); outline-offset: 2px; }
+ .mh-mobile-cta {
+   margin-top: 12px;
+-  background: var(--royal-blue);
+-  color: var(--white);
++  background: var(--mh-purple);
++  color: var(--mh-surface-primary);
+   font-family: var(--font-display);
+   font-weight: 700;
+   font-size: 15px;
+@@ -528,8 +561,8 @@
+   display: inline-flex;
+   align-items: center;
+   gap: 8px;
+-  background: var(--royal-blue);
+-  color: var(--white);
++  background: var(--mh-purple);
++  color: var(--mh-surface-primary);
+   font-family: var(--font-display);
+   font-weight: 700;
+   font-size: 15px;
+@@ -538,7 +571,6 @@
+   border: none;
+   cursor: pointer;
+   transition: all 0.2s ease;
+-  box-shadow: 0 0 30px rgba(30, 64, 175, 0.4);
+   white-space: nowrap;
+ }
+ /* Explore-page closing CTA ("Ready to measure your interview readiness?")
+@@ -553,30 +585,38 @@
+   padding: var(--btn-pad-y) 38px;
+ }
+ .mh-btn-primary:hover {
+-  background: #2563eb;
++  filter: brightness(0.88);
+   transform: translateY(-1px);
+-  box-shadow: 0 4px 40px rgba(30, 64, 175, 0.5);
++}
++.mh-btn-primary:focus-visible {
++  outline: 2px solid var(--mh-purple);
++  outline-offset: 2px;
+ }
+ 
+ .mh-btn-outline {
+   display: inline-flex;
+   align-items: center;
+   gap: 8px;
+-  background: transparent;
+-  color: var(--white);
++  background: var(--mh-surface-primary);
++  color: var(--mh-text-primary);
+   font-family: var(--font-display);
+   font-weight: 600;
+   font-size: 15px;
+   padding: var(--btn-pad-y) var(--btn-pad-x);
+   border-radius: 40px;
+-  border: 1.5px solid var(--white-border);
++  border: 1.5px solid var(--mh-border-subtle);
+   cursor: pointer;
+   transition: all 0.2s ease;
+   white-space: nowrap;
+ }
+ .mh-btn-outline:hover {
+-  background: var(--white);
+-  color: var(--navy-deep);
++  background: var(--mh-surface-intelligence);
++  border-color: var(--mh-purple);
++  color: var(--mh-purple);
++}
++.mh-btn-outline:focus-visible {
++  outline: 2px solid var(--mh-purple);
++  outline-offset: 2px;
+ }
+ 
+ .mh-hero-proof {
+@@ -3814,12 +3854,18 @@
+   border: none;
+   cursor: pointer;
+   font-family: var(--font-body);
++  font-size: 14px;
++  font-weight: 600;
++  color: var(--mh-text-secondary);
++  padding: 8px 14px;
++  border-radius: 8px;
+ }
+ .mh-nav-chevron {
+   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+ }
+ .mh-nav-item-mega.mh-mega-open .mh-nav-chevron { transform: rotate(180deg); }
+-.mh-nav-item-mega.mh-mega-open .mh-nav-trigger { color: var(--white); background: var(--white-soft); }
++.mh-nav-item-mega.mh-mega-open .mh-nav-trigger { color: var(--mh-purple); background: var(--mh-surface-intelligence); }
++.mh-nav-trigger:focus-visible { outline: 2px solid var(--mh-purple); outline-offset: 2px; }
+ 
+ /* Panel — frosted glass, drops from the trigger */
+ .mh-megamenu {
+@@ -3833,12 +3879,12 @@
+   left: 50%;
+   transform: translateX(-50%) translateY(-6px);
+   width: 340px;
+-  background: rgba(7, 10, 19, 0.98);
++  background: var(--mh-surface-primary);
+   backdrop-filter: blur(20px);
+   -webkit-backdrop-filter: blur(20px);
+-  border: 1px solid rgba(255, 255, 255, 0.08);
++  border: 1px solid var(--mh-border-subtle);
+   border-radius: 12px;
+-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
++  box-shadow: var(--mh-shadow-card);
+   opacity: 0;
+   visibility: hidden;
+   pointer-events: none;
+@@ -3864,7 +3910,7 @@
+ .mh-megamenu-divider {
+   border: none;
+   height: 1px;
+-  background: var(--navy-border);
++  background: var(--mh-border-subtle);
+   margin: 0;
+ }
+ .mh-megamenu-item-link {
+@@ -3874,9 +3920,9 @@
+   font-family: var(--font-display);
+   font-weight: 600;
+   font-size: 0.9rem;
+-  color: var(--white);
++  color: var(--mh-text-primary);
+ }
+-.mh-megamenu-item-link:hover { color: var(--blue-bright); }
++.mh-megamenu-item-link:hover { color: var(--mh-purple); }
+ 
+ .mh-megamenu-item {
+   display: block; /* per spec: block-level anchor, not flex, so translateX(4px) reads cleanly */
+@@ -3892,7 +3938,7 @@
+ .mh-megamenu-item .mh-megamenu-icon { margin-right: 10px; }
+ .mh-megamenu-item:hover,
+ .mh-megamenu-item:focus-visible {
+-  background: rgba(255, 255, 255, 0.04);
++  background: var(--mh-surface-intelligence);
+   transform: translateX(4px);
+ }
+ .mh-megamenu-icon {
+@@ -3904,19 +3950,19 @@
+   font-family: var(--font-display);
+   font-weight: 700;
+   font-size: 0.95rem;
+-  color: var(--white);
++  color: var(--mh-text-primary);
+ }
+ .mh-megamenu-desc {
+   font-family: var(--font-body);
+   font-size: 0.82rem;
+-  color: var(--text-muted);
++  color: var(--mh-text-secondary);
+   line-height: 1.4;
+ }
+ 
+ /* ============================================
+    MOBILE ACCORDION — "Platform" inside the slide-out menu
+    ============================================ */
+-.mh-mobile-accordion { border-bottom: 1px solid var(--white-soft); }
++.mh-mobile-accordion { border-bottom: 1px solid var(--mh-border-soft); }
+ .mh-mobile-accordion-trigger {
+   width: 100%;
+   display: flex;
+@@ -3927,8 +3973,12 @@
+   border-bottom: none; /* parent .mh-mobile-accordion already has the divider */
+   cursor: pointer;
+   font-family: var(--font-display);
++  font-size: 16px;
++  font-weight: 500;
++  color: var(--mh-text-secondary);
++  padding: 12px 0;
+ }
+-.mh-mobile-chevron { transition: transform 0.25s ease; color: var(--text-muted); }
++.mh-mobile-chevron { transition: transform 0.25s ease; color: var(--mh-text-muted); }
+ .mh-mobile-accordion-trigger[aria-expanded="true"] .mh-mobile-chevron { transform: rotate(180deg); }
+ 
+ .mh-mobile-accordion-panel {
+@@ -3945,7 +3995,7 @@
+ .mh-mobile-sublink-divider {
+   border: none;
+   height: 1px;
+-  background: var(--white-soft);
++  background: var(--mh-border-soft);
+   margin: 6px 12px;
+ }
+ 
+@@ -4037,12 +4087,13 @@
+ .mh-mobile-sublink {
+   font-family: var(--font-body);
+   font-size: 14.5px;
+-  color: var(--text-muted);
++  color: var(--mh-text-secondary);
+   padding: 10px 12px;
+   border-radius: 8px;
+   transition: color 0.15s ease, background 0.15s ease;
+ }
+-.mh-mobile-sublink:hover { color: var(--white); background: var(--white-soft); }
++.mh-mobile-sublink:hover { color: var(--mh-purple); background: var(--mh-surface-intelligence); }
++.mh-mobile-sublink:focus-visible { outline: 2px solid var(--mh-purple); outline-offset: 2px; }
+ 
+ /* Below 1024px (same breakpoint your hamburger already uses), the desktop
+    mega menu never needs to render — nav-links are already display:none there. */
