@@ -4241,8 +4241,10 @@ button { cursor: pointer; }
    ============================================================ */
 
 body.mh-light-hybrid .mh-hero {
-  --mh-light-bg: #F8FAFC;
-  background: var(--mh-light-bg);
+  background: var(--light-surface); /* pre-existing token, #F8FAFC — reused,
+    not redefined. Correction from Phase 1, which had locally redefined an
+    identical value as --mh-light-bg without realizing this token already
+    existed and is already used elsewhere (.mh-score, .mh-research). */
 }
 body.mh-light-hybrid .mh-hero-glow {
   background:
@@ -4258,7 +4260,7 @@ body.mh-light-hybrid .mh-hero-badge-text { color: #0F172A; }
    dot... do NOT make the entire badge blue" */
 body.mh-light-hybrid .mh-hero-h1 { color: #0F172A; }
 body.mh-light-hybrid .mh-hero-h2 { color: #475569; }
-body.mh-light-hybrid .mh-hero-chip { background: #FFFFFF; border: 1px solid #E2E8F0; color: #334155; }
+body.mh-light-hybrid .mh-hero-chip { background: #FFFFFF; border: 1px solid #EEF2F6; color: #334155; }
 body.mh-light-hybrid .mh-btn-primary { background: var(--royal-blue); color: #fff; }
 body.mh-light-hybrid .mh-btn-primary:hover { background: #1E3A8A; }
 body.mh-light-hybrid .mh-btn-outline {
@@ -4275,9 +4277,46 @@ body.mh-light-hybrid .mh-hero-tertiary:hover .mh-hero-tertiary-icon { border-col
 /* Value-footer strip directly below hero — first section in the
    "light → light → dark intelligence" rhythm, so it stays light too */
 body.mh-light-hybrid .mh-value-footer {
-  background: #FFFFFF;
+  background: #F1F5F9;
   border-top: 1px solid #E2E8F0;
   border-bottom: 1px solid #E2E8F0;
 }
 body.mh-light-hybrid .mh-value-footer-title { color: #0F172A; }
 body.mh-light-hybrid .mh-value-footer-sub { color: #64748B; }
+
+/* ============================================================
+   HOMEPAGE — HEADER + TERMINAL CORRECTIONS (visual review round 2)
+   ------------------------------------------------------------
+   1) HEADER: base .mh-nav is transparent by default (only turns
+      solid on scroll, via .mh-nav-scrolled), which worked fine
+      floating over the old dark hero. Now that the hero below it
+      is light, the same transparency let the light hero show
+      through, making the pale nav text unreadable. Force the
+      header to always be solid navy on the homepage — no scroll
+      dependency, no glassmorphism, matching the "distinct brand
+      frame" instruction. Nav structure/links/CTA are untouched —
+      background/text-contrast only.
+   2) TERMINAL: traced (not assumed) — .mh-terminal-v2 in
+      hero-v2.css has a pre-existing left-edge mask-image
+      (transparent 0px -> black 24px) added specifically to blend
+      the terminal into the old DARK hero. Confirmed via grep that
+      .mh-terminal-v2 and the hero partial are used ONLY on the
+      homepage — zero blast radius elsewhere. With the hero now
+      light, that same transparent zone reveals the light
+      background bleeding through the terminal's left edge, which
+      is exactly the reported haze. Disabling the mask on the
+      homepage only; terminal's own background/border/content are
+      completely untouched.
+   ============================================================ */
+
+body.mh-light-hybrid .mh-nav {
+  background: var(--navy-deep);
+}
+body.mh-light-hybrid .mh-nav.mh-nav-scrolled {
+  background: var(--navy-deep);
+}
+
+body.mh-light-hybrid .mh-terminal-v2 {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
