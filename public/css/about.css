@@ -1,304 +1,290 @@
 /* ============================================
    ABOUT.CSS — scoped to /about only.
    Reuses existing tokens from medhaiq.css: --navy-deep, --navy-rich,
-   --royal-blue, --blue-bright, --white, --text-muted, --light-surface,
-   --max-w, --radius/-lg/-xl, --font-display, --font-body,
-   .mh-eyebrow, .mh-btn-primary. No global rule is modified here —
-   every selector below is prefixed .mh-about- and lives only on this
-   page's DOM.
+   --royal-blue, --blue-bright, --white, --text-muted, --text-faint,
+   --light-surface, --max-w, --radius/-lg, --font-display, --font-body,
+   --white-border, .mh-eyebrow, .mh-btn-primary. No global rule is
+   modified here — every selector below is prefixed .mh-about- and
+   lives only on this page's DOM.
 
-   Design direction: light-first editorial system. White / cool
-   blue-grey surfaces dominate; deep navy is reserved for the Origin
-   section and the closing band (which hands off into the site's
-   existing dark footer). Accent purple (#7C3AED / #A78BFA) is reused
-   from the same violet already established in career-workspace.css
-   and hero-v2.css for AI/interaction accents — not a new brand color.
-
-   The very top of the page (behind the fixed, transparent-until-scroll
-   .mh-nav) is intentionally left on the body's default --navy-deep
-   background rather than white — this is what keeps the existing nav
-   legible before the user scrolls. Nav CSS itself is untouched.
+   Deliberately compact (target ≈3–4 desktop viewport heights): section
+   padding, card padding, and inter-section gaps are all tightened
+   relative to the previous implementation. No element here starts at
+   opacity:0 or depends on IntersectionObserver/JS to become visible —
+   the page is fully readable with JavaScript disabled.
    ============================================ */
 
+/* ---------- Masthead ---------- */
 .mh-about-masthead {
-  padding: 148px var(--section-pad-x) 56px;
-  max-width: var(--max-w);
+  padding: 132px var(--section-pad-x) 40px;
+  max-width: 640px;
   margin: 0 auto;
   text-align: center;
 }
 .mh-about-masthead h1 {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: var(--hero-h1-size);
+  font-size: clamp(28px, 3.6vw, 38px);
   color: var(--white);
-  letter-spacing: var(--hero-h1-tracking);
-  margin: 12px 0 0;
+  letter-spacing: -0.02em;
+  margin: 10px 0 0;
+}
+.mh-about-masthead-sub {
+  margin: 14px auto 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 520px;
 }
 
 /* ---------- Shared section scaffolding ---------- */
-.mh-about-section { padding: var(--section-pad-y) var(--section-pad-x); }
+.mh-about-section { padding: 60px var(--section-pad-x); }
 .mh-about-inner { max-width: var(--max-w); margin: 0 auto; }
-.mh-about-inner-narrow { max-width: 720px; margin: 0 auto; }
 
 /* ============================================
    01 — OUR MISSION (light)
    ============================================ */
-.mh-about-mission {
-  background: var(--white);
-  text-align: center;
-  padding: 108px var(--section-pad-x) 96px;
+.mh-about-mission { background: var(--white); }
+.mh-about-mission-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 56px;
+  align-items: center;
 }
-.mh-about-mission .mh-eyebrow { color: var(--royal-blue); justify-content: center; display: flex; }
+.mh-about-mission-copy .mh-eyebrow { color: var(--royal-blue); }
 .mh-about-mission-statement {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(30px, 4.8vw, 50px);
-  line-height: 1.15;
+  font-size: clamp(26px, 3.2vw, 36px);
+  line-height: 1.18;
   letter-spacing: -0.03em;
   color: var(--navy-rich);
-  max-width: 820px;
-  margin: 0 auto;
+  margin: 10px 0 16px;
 }
-.mh-about-mission-sub {
-  margin: 24px auto 0;
-  max-width: 620px;
-  font-size: 17px;
+.mh-about-mission-copy p {
+  font-size: 15.5px;
   line-height: 1.7;
   color: #52607A;
+  margin-bottom: 12px;
+}
+.mh-about-mission-copy p:last-child { margin-bottom: 0; }
+
+/* Restrained CSS/HTML abstract visual — no illustration asset exists
+   for this section, and none is generated; this is a simple labeled-
+   node composition using only existing brand colors. */
+.mh-about-mission-visual {
+  position: relative;
+  aspect-ratio: 320 / 260;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(circle, #E2E8F0 1px, transparent 1px) 0 0 / 18px 18px,
+    var(--light-surface);
+  border: 1px solid #E7ECF3;
+}
+.mh-about-mv-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: #C7D2E0;
+}
+.mh-about-mv-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: var(--white);
+  border: 1px solid #E2E8F0;
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--navy-rich);
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+}
+.mh-about-mv-node-primary {
+  background: var(--navy-rich);
+  color: var(--white);
+  border-color: var(--navy-rich);
 }
 
 /* ============================================
    02 — THE ORIGIN (deep navy — authority section)
    ============================================ */
-.mh-about-origin {
-  background: var(--navy-deep);
-  padding: 104px var(--section-pad-x);
+.mh-about-origin { background: var(--navy-deep); }
+.mh-about-origin-top {
+  display: grid;
+  grid-template-columns: 38% 1fr;
+  gap: 48px;
+  margin-bottom: 32px;
 }
-.mh-about-origin .mh-eyebrow { color: var(--blue-bright); }
+.mh-about-origin-narrative .mh-eyebrow { color: var(--blue-bright); }
 .mh-about-origin-headline {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(28px, 3.6vw, 40px);
+  font-size: clamp(24px, 2.8vw, 32px);
   color: var(--white);
   letter-spacing: -0.03em;
-  line-height: 1.18;
-  max-width: 760px;
-  margin-bottom: 40px;
+  line-height: 1.2;
+  margin: 10px 0 16px;
 }
-.mh-about-origin-body {
-  max-width: 700px;
-}
-.mh-about-origin-body p {
-  font-size: 16.5px;
-  line-height: 1.8;
+.mh-about-origin-narrative p {
+  font-size: 14.5px;
+  line-height: 1.7;
   color: var(--text-muted);
-  margin-bottom: 22px;
+  margin-bottom: 14px;
 }
-.mh-about-origin-close {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 19px;
-  color: var(--white);
-  line-height: 1.5;
-  margin-top: 8px;
-  border-left: 2px solid var(--blue-bright);
-  padding-left: 20px;
-}
+.mh-about-origin-narrative p:last-child { margin-bottom: 0; }
 
-/* Three-gap list — icon + bold lede + one line, not run as prose */
 .mh-about-gaps {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  margin: 40px 0 44px;
-  max-width: 700px;
+  gap: 18px;
 }
-.mh-about-gap {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
+.mh-about-gap { display: flex; gap: 14px; align-items: flex-start; }
 .mh-about-gap-mark {
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
   background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.28);
   color: var(--blue-bright);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 13px;
-  margin-top: 2px;
+  font-size: 11.5px;
+  margin-top: 1px;
 }
-.mh-about-gap-text { font-size: 15px; line-height: 1.6; color: var(--text-muted); }
-.mh-about-gap-text strong { color: var(--white); font-weight: 600; }
+.mh-about-gap-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14.5px;
+  color: var(--white);
+  margin-bottom: 3px;
+}
+.mh-about-gap-text { font-size: 13.5px; line-height: 1.6; color: var(--text-muted); }
 
-/* Founder byline — sits at the bottom of the Origin section itself.
-   Deliberately not a separate section/component: no card border, no
-   "team grid" styling — a quiet editorial byline, not a profile card. */
+.mh-about-origin-close {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--white);
+  line-height: 1.5;
+  border-left: 2px solid var(--blue-bright);
+  padding-left: 18px;
+  max-width: 880px;
+}
+
+/* Founder byline — small, subtle, secondary to the story */
 .mh-about-byline {
-  margin-top: 56px;
-  padding-top: 40px;
+  margin-top: 28px;
+  padding-top: 22px;
   border-top: 1px solid var(--white-border);
   display: flex;
   align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
+  gap: 12px;
 }
 .mh-about-byline-photo {
-  width: 76px;
-  height: 76px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
   border: 1px solid var(--white-border);
-  background: var(--navy-card);
 }
-.mh-about-byline-text { flex: 1; min-width: 200px; }
-.mh-about-byline-name { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--white); }
-.mh-about-byline-role { font-size: 13px; color: var(--text-faint); margin-top: 2px; }
-.mh-about-byline-linkedin {
-  display: inline-flex;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-faint);
-  margin-left: auto;
-  flex-shrink: 0;
-}
+.mh-about-byline-text { display: flex; flex-direction: column; }
+.mh-about-byline-name { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; color: var(--white); }
+.mh-about-byline-role { font-size: 12px; color: var(--text-faint); margin-top: 1px; }
 
 /* ============================================
    03 — OUR VISION (light)
    ============================================ */
-.mh-about-vision {
-  background: var(--light-surface);
-}
-/* Scoped fix only — global .reveal (medhaiq.css) is untouched. Eliminates
-   a faint Chrome compositing-layer seam that can appear in this
-   section's empty whitespace while the shared .reveal transform/opacity
-   transition runs. Purely a rendering hint — no visual/layout/color
-   property is changed by this rule. */
-.mh-about-vision.reveal {
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
-.mh-about-vision .mh-eyebrow { color: var(--royal-blue); }
+.mh-about-vision { background: var(--light-surface); }
+.mh-about-vision-top { max-width: 700px; margin-bottom: 32px; }
+.mh-about-vision-top .mh-eyebrow { color: var(--royal-blue); }
 .mh-about-vision-headline {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(26px, 3.4vw, 36px);
+  font-size: clamp(24px, 3vw, 32px);
   color: var(--navy-rich);
   letter-spacing: -0.03em;
   line-height: 1.2;
-  max-width: 680px;
-  margin-bottom: 24px;
+  margin: 10px 0 14px;
 }
 .mh-about-vision-body p {
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: 15px;
+  line-height: 1.7;
   color: #52607A;
-  max-width: 680px;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
+.mh-about-vision-body p:last-child { margin-bottom: 0; }
 
-/* Discover -> Develop -> Demonstrate -> Advance flow */
 .mh-about-flow {
-  margin-top: 64px;
-  display: flex;
-  align-items: flex-start;
-  gap: 0;
-  position: relative;
-}
-.mh-about-flow-line {
-  position: absolute;
-  top: 21px;
-  left: 44px;
-  right: 44px;
-  height: 1px;
-  background: repeating-linear-gradient(to right, #CBD5E1 0, #CBD5E1 6px, transparent 6px, transparent 12px);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
 }
 .mh-about-flow-node {
-  flex: 1;
-  min-width: 140px;
-  text-align: center;
-  position: relative;
-  padding: 0 14px;
-}
-.mh-about-flow-num {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: var(--white);
-  border: 1.5px solid #DDD6FE;
-  color: #7C3AED;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 18px;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 0 0 6px var(--light-surface);
+  border-top: 2px solid #DDD6FE;
+  padding-top: 14px;
 }
 .mh-about-flow-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 15.5px;
+  font-size: 14.5px;
   color: var(--navy-rich);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+}
+.mh-about-flow-title span {
+  color: #7C3AED;
+  font-weight: 700;
+  margin-right: 4px;
 }
 .mh-about-flow-desc {
   font-size: 13px;
   line-height: 1.55;
   color: #64748B;
-  max-width: 170px;
-  margin: 0 auto;
 }
 
 /* ============================================
-   04 — OUR PRINCIPLES (light / blue-grey)
+   04 — OUR PRINCIPLES (light)
    ============================================ */
-.mh-about-principles {
-  background: var(--white);
-  border-top: 1px solid #E7ECF3;
-}
-.mh-about-principles .mh-eyebrow { color: var(--royal-blue); justify-content: center; display: flex; }
+.mh-about-principles { background: var(--white); border-top: 1px solid #E7ECF3; }
+.mh-about-principles-head { max-width: 620px; margin-bottom: 28px; }
+.mh-about-principles-head .mh-eyebrow { color: var(--royal-blue); }
 .mh-about-principles-title {
-  text-align: center;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(24px, 3.2vw, 34px);
+  font-size: clamp(22px, 2.8vw, 30px);
   color: var(--navy-rich);
   letter-spacing: -0.03em;
-  margin: 0 auto 56px;
-  max-width: 680px;
+  margin: 10px 0 0;
 }
 .mh-about-principles-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  gap: 18px;
 }
 .mh-about-principle-card {
   background: var(--light-surface);
   border: 1px solid #E7ECF3;
-  border-radius: var(--radius-lg);
-  padding: 32px 28px;
+  border-radius: var(--radius);
+  padding: 22px 20px;
 }
 .mh-about-principle-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 .mh-about-principle-icon-rigor    { background: var(--blue-glow); color: var(--blue-bright); }
 .mh-about-principle-icon-ai       { background: rgba(124, 58, 237, 0.12); color: #7C3AED; }
@@ -306,56 +292,31 @@
 .mh-about-principle-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 17px;
+  font-size: 15.5px;
   color: var(--navy-rich);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   letter-spacing: -0.01em;
 }
 .mh-about-principle-desc {
-  font-size: 14.5px;
-  line-height: 1.7;
+  font-size: 13.5px;
+  line-height: 1.65;
   color: #52607A;
 }
 
 /* ============================================
-   05 — CLOSING (deep navy — hands off into the dark footer)
-   ============================================ */
-.mh-about-closing {
-  background: var(--navy-deep);
-  padding: 120px var(--section-pad-x);
-  text-align: center;
-  border-top: 1px solid var(--white-border);
-}
-.mh-about-closing-headline {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(28px, 4.2vw, 46px);
-  color: var(--white);
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-  max-width: 700px;
-  margin: 0 auto 36px;
-}
-.mh-about-closing .mh-btn-primary { font-size: 15px; }
-
-/* ============================================
    RESPONSIVE
    ============================================ */
-@media (max-width: 860px) {
+@media (max-width: 900px) {
+  .mh-about-mission-grid { grid-template-columns: 1fr; gap: 36px; }
+  .mh-about-mission-visual { max-width: 320px; }
+  .mh-about-origin-top { grid-template-columns: 1fr; gap: 28px; }
   .mh-about-principles-grid { grid-template-columns: 1fr; }
-  .mh-about-flow { flex-direction: column; gap: 32px; }
-  .mh-about-flow-line { display: none; }
-  .mh-about-flow-node { display: flex; align-items: center; gap: 16px; text-align: left; padding: 0; }
-  .mh-about-flow-num { margin: 0; box-shadow: none; flex-shrink: 0; }
-  .mh-about-flow-desc { max-width: none; margin: 0; }
-  .mh-about-byline-linkedin { margin-left: 0; }
+  .mh-about-flow { grid-template-columns: repeat(2, 1fr); row-gap: 24px; }
 }
 
 @media (max-width: 640px) {
-  .mh-about-masthead { padding: 128px 24px 44px; }
-  .mh-about-section { padding: 64px 24px; }
-  .mh-about-mission { padding: 72px 24px 64px; }
-  .mh-about-origin { padding: 72px 24px; }
-  .mh-about-closing { padding: 80px 24px; }
-  .mh-about-byline { gap: 16px; }
+  .mh-about-masthead { padding: 116px 24px 32px; }
+  .mh-about-section { padding: 44px 24px; }
+  .mh-about-flow { grid-template-columns: 1fr; }
+  .mh-about-gaps { gap: 16px; }
 }

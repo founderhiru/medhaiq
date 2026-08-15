@@ -21,40 +21,24 @@
 <body>
   <%- include('partials/header') %>
 
-  <!-- Slim masthead: intentionally left on body's default --navy-deep
-       background (no override) so the fixed, transparent-until-scroll
-       nav stays legible at the very top of the page. Section 01 below
-       is where the light editorial system actually begins. -->
+  <!-- Compact masthead — intentionally left on body's default
+       --navy-deep background (no override) so the fixed,
+       transparent-until-scroll nav stays legible at the very top.
+       Kept short by design: this is not a hero, just a title band
+       that transitions straight into Section 01. -->
   <section class="mh-about-masthead">
     <div class="mh-eyebrow">About</div>
     <h1>About MedhaIQ</h1>
+    <p class="mh-about-masthead-sub">We're building the intelligence layer for careers — so professionals can grow with clarity, communicate with confidence, and lead with impact.</p>
   </section>
 
   <%- include('partials/about-mission') %>
   <%- include('partials/about-origin') %>
   <%- include('partials/about-vision') %>
   <%- include('partials/about-principles') %>
-  <%- include('partials/about-closing') %>
 
+  <!-- No bottom CTA by design — the page transitions directly from
+       Principles into the existing footer. -->
   <%- include('partials/footer') %>
-
-  <script>
-  (function() {
-    var reveals = document.querySelectorAll('.reveal');
-    if (!reveals.length) return;
-    var observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          var items = entry.target.querySelectorAll('.reveal-item');
-          items.forEach(function(item, i) {
-            setTimeout(function() { item.classList.add('visible'); }, i * 100);
-          });
-        }
-      });
-    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-    reveals.forEach(function(el) { observer.observe(el); });
-  })();
-  </script>
 </body>
 </html>
