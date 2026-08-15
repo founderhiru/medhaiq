@@ -69,46 +69,48 @@
 }
 .mh-about-mission-copy p:last-child { margin-bottom: 0; }
 
-/* Restrained CSS/HTML abstract visual — no illustration asset exists
-   for this section, and none is generated; this is a simple labeled-
-   node composition using only existing brand colors. */
+/* Orbital "intelligence core" visual — central MedhaIQ mark with four
+   capability nodes connected via fine radial lines on a light, subtly
+   glowing panel. Replaces the earlier flowchart-style diagram. Uses
+   only existing tokens/colors — no new palette introduced. */
 .mh-about-mission-visual {
   position: relative;
-  aspect-ratio: 320 / 260;
+  aspect-ratio: 340 / 300;
   width: 100%;
   max-width: 340px;
   margin: 0 auto;
   border-radius: var(--radius-lg);
-  background:
-    radial-gradient(circle, #E2E8F0 1px, transparent 1px) 0 0 / 18px 18px,
-    var(--light-surface);
+  background: var(--light-surface);
   border: 1px solid #E7ECF3;
 }
-.mh-about-mv-lines {
+.mh-about-mv-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mh-about-mv-orbit { stroke: #E2E8F0; stroke-width: 1; }
+.mh-about-mv-line { stroke: #D6DEEA; stroke-width: 1; }
+.mh-about-mv-core-mark {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  color: #C7D2E0;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
 }
 .mh-about-mv-node {
   position: absolute;
   transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: var(--white);
   border: 1px solid #E2E8F0;
-  border-radius: 999px;
-  padding: 7px 13px;
-  font-size: 11.5px;
+  border-radius: var(--radius);
+  padding: 7px 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--navy-rich);
   white-space: nowrap;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
 }
-.mh-about-mv-node-primary {
-  background: var(--navy-rich);
-  color: var(--white);
-  border-color: var(--navy-rich);
-}
+.mh-about-mv-node svg { color: #7C3AED; flex-shrink: 0; }
 
 /* ============================================
    02 — THE ORIGIN (deep navy — authority section)

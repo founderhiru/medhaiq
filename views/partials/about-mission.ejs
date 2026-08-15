@@ -1,9 +1,11 @@
 <!-- ============================================
      ABOUT — 01. OUR MISSION
-     No approved illustration asset exists in the repo for this section,
-     so per spec this is a restrained CSS/HTML visual treatment rather
-     than a generated or stock image — a few labeled nodes on a soft
-     dot-grid panel, using only existing brand colors.
+     Visual: an orbital "intelligence core" composition — no approved
+     illustration asset exists in the repo, so this is built in
+     HTML/SVG using only existing brand colors and the real MedhaIQ
+     mark (medhaiq-icon.png, already used in the header/footer — not a
+     new or generated logo). Reuses the same outline-icon language as
+     the Principles cards further down the page.
      ============================================ -->
 <section class="mh-about-section mh-about-mission" id="mission">
   <div class="mh-about-inner mh-about-mission-grid">
@@ -15,13 +17,47 @@
     </div>
 
     <div class="mh-about-mission-visual" aria-hidden="true">
-      <svg class="mh-about-mv-lines" viewBox="0 0 320 260" fill="none" preserveAspectRatio="none">
-        <path d="M70 70 L160 190" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4"/>
-        <path d="M250 70 L160 190" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4"/>
+      <svg class="mh-about-mv-svg" viewBox="0 0 340 300" fill="none">
+        <defs>
+          <radialGradient id="mvGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#7C3AED" stop-opacity="0.14"/>
+            <stop offset="100%" stop-color="#7C3AED" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="mvCoreRing" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3B82F6"/>
+            <stop offset="100%" stop-color="#7C3AED"/>
+          </linearGradient>
+        </defs>
+
+        <circle cx="170" cy="150" r="70" fill="url(#mvGlow)"/>
+        <circle class="mh-about-mv-orbit" cx="170" cy="150" r="114" fill="none"/>
+
+        <line class="mh-about-mv-line" x1="170" y1="150" x2="262" y2="82"/>
+        <line class="mh-about-mv-line" x1="170" y1="150" x2="262" y2="218"/>
+        <line class="mh-about-mv-line" x1="170" y1="150" x2="78" y2="218"/>
+        <line class="mh-about-mv-line" x1="170" y1="150" x2="78" y2="82"/>
+
+        <circle cx="170" cy="150" r="31" fill="var(--white)" stroke="url(#mvCoreRing)" stroke-width="1.5"/>
       </svg>
-      <div class="mh-about-mv-node" style="left:21.9%; top:26.9%;">Structured Evaluation</div>
-      <div class="mh-about-mv-node" style="left:78.1%; top:26.9%;">Adaptive Practice</div>
-      <div class="mh-about-mv-node mh-about-mv-node-primary" style="left:50%; top:73.1%;">Career Intelligence</div>
+
+      <img src="/assets/branding/medhaiq-icon.png" alt="" class="mh-about-mv-core-mark" loading="lazy" />
+
+      <div class="mh-about-mv-node" style="left:77.1%; top:27.3%;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Understanding
+      </div>
+      <div class="mh-about-mv-node" style="left:77.1%; top:72.7%;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 11l2 2 4-4"/></svg>
+        Assessment
+      </div>
+      <div class="mh-about-mv-node" style="left:22.9%; top:72.7%;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2.1l4 4-4 4"/><path d="M3 12.7V10a4 4 0 0 1 4-4h14"/><path d="M7 21.9l-4-4 4-4"/><path d="M21 11.3V14a4 4 0 0 1-4 4H3"/></svg>
+        Practice
+      </div>
+      <div class="mh-about-mv-node" style="left:22.9%; top:27.3%;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 6h6v6"/></svg>
+        Improvement
+      </div>
     </div>
   </div>
 </section>
