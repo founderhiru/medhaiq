@@ -2485,7 +2485,7 @@ button { cursor: pointer; }
    HOW IT WORKS
    ============================================ */
 .mh-howitworks {
-  padding: 56px 40px 100px;
+  padding: 100px 40px;
   background: var(--navy-deep);
 }
 .mh-howitworks-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -2671,7 +2671,7 @@ button { cursor: pointer; }
    ============================================ */
 .mh-trust-bar {
   background: var(--navy-deep);
-  padding: 24px 0 20px;
+  padding: 40px 0 32px;
   border-top: 1px solid var(--white-border);
   border-bottom: 1px solid var(--white-border);
   overflow: hidden;
@@ -2684,27 +2684,27 @@ button { cursor: pointer; }
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 }
 .logo-marquee-track {
   display: flex;
   gap: 0;
   animation: marquee 60s linear infinite;
   width: max-content;
-  padding: 14px 20px;
+  padding: 24px 0;
   align-items: center;
 }
-.mh-trust-name {
+
+.mh-trust-disclaimer {
   font-family: var(--font-body);
-  font-size: 16px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: #CBD5E1;
-  white-space: nowrap;
-}
-.mh-trust-sep { color: #475569; margin: 0 8px; }
-@media (max-width: 640px) {
-  .mh-trust-name { font-size: 13px; }
+  font-size: 11px;
+  color: #6B7280;
+  margin-top: 16px;
+  line-height: 1.5;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
 
 /* ============================================
