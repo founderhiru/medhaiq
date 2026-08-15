@@ -2485,7 +2485,7 @@ button { cursor: pointer; }
    HOW IT WORKS
    ============================================ */
 .mh-howitworks {
-  padding: 100px 40px;
+  padding: 56px 40px 100px;
   background: var(--navy-deep);
 }
 .mh-howitworks-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -2671,7 +2671,7 @@ button { cursor: pointer; }
    ============================================ */
 .mh-trust-bar {
   background: var(--navy-deep);
-  padding: 40px 0 32px;
+  padding: 24px 0 20px;
   border-top: 1px solid var(--white-border);
   border-bottom: 1px solid var(--white-border);
   overflow: hidden;
@@ -2684,27 +2684,27 @@ button { cursor: pointer; }
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 .logo-marquee-track {
   display: flex;
   gap: 0;
   animation: marquee 60s linear infinite;
   width: max-content;
-  padding: 24px 0;
+  padding: 14px 20px;
   align-items: center;
 }
-
-.mh-trust-disclaimer {
+.mh-trust-name {
   font-family: var(--font-body);
-  font-size: 11px;
-  color: #6B7280;
-  margin-top: 16px;
-  line-height: 1.5;
-  max-width: 680px;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #CBD5E1;
+  white-space: nowrap;
+}
+.mh-trust-sep { color: #475569; margin: 0 8px; }
+@media (max-width: 640px) {
+  .mh-trust-name { font-size: 13px; }
 }
 
 /* ============================================
@@ -4210,234 +4210,3 @@ button { cursor: pointer; }
   }
   .mh-why-pillar-grid { grid-template-columns: 1fr; }
 }
-
-/* ============================================================
-   HOMEPAGE — LIGHT + MIDNIGHT HYBRID (Phase 1 of 3: Homepage only)
-   ------------------------------------------------------------
-   Scoped under body.mh-light-hybrid, set only in views/layout.ejs
-   (the homepage). Why MedhaIQ and Architecture are NOT scoped yet —
-   they are separate, queued checkpoints per the phased plan. About
-   and the other 11 pages sharing this file are completely
-   unaffected since none of them carry this class.
-
-   New token added (not existing in :root, needed per the brief's
-   #F8FAFC requirement — no equivalent light-background token exists
-   in this file today):
-     --mh-light-bg: #F8FAFC
-
-   CTA color is MedhaIQ blue (--royal-blue/--blue-bright), NOT
-   purple — this brief explicitly specifies one blue CTA color
-   sitewide and explicitly excludes purple as a CTA color. This
-   reverses the purple-CTA direction explored in earlier mockup
-   rounds; noting it explicitly since it's a real reversal, not
-   an oversight.
-
-   NOT touched: the Live Interview Terminal's own dark styling
-   (.mh-terminal-v2*, in hero-v2.css) — stays dark by design, per
-   the brief's "LIGHT ENVIRONMENT + DARK AI ENGINE" instruction.
-   NOT touched: .mh-pricing (see chat — flagged discrepancy, left
-   entirely alone). NOT touched: header/footer (brief says both
-   stay deep navy — already the current state, no change needed).
-   ============================================================ */
-
-body.mh-light-hybrid .mh-hero {
-  background: var(--light-surface); /* pre-existing token, #F8FAFC — reused,
-    not redefined. Correction from Phase 1, which had locally redefined an
-    identical value as --mh-light-bg without realizing this token already
-    existed and is already used elsewhere (.mh-score, .mh-research). */
-}
-body.mh-light-hybrid .mh-hero-glow {
-  background:
-    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(30, 64, 175, 0.05) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 60% at 80% 60%, rgba(59, 130, 246, 0.03) 0%, transparent 50%);
-}
-body.mh-light-hybrid .mh-hero-badge {
-  background: rgba(30, 64, 175, 0.08);
-  border-color: rgba(30, 64, 175, 0.2);
-}
-body.mh-light-hybrid .mh-hero-badge-text { color: #0F172A; }
-/* badge dot stays --blue-bright — explicitly instructed: "blue indicator
-   dot... do NOT make the entire badge blue" */
-body.mh-light-hybrid .mh-hero-h1 { color: #0F172A; }
-body.mh-light-hybrid .mh-hero-h2 { color: #475569; }
-body.mh-light-hybrid .mh-hero-chip { background: #FFFFFF; border: 1px solid #EEF2F6; color: #334155; }
-body.mh-light-hybrid .mh-btn-primary { background: var(--royal-blue); color: #fff; }
-body.mh-light-hybrid .mh-btn-primary:hover { background: #1E3A8A; }
-body.mh-light-hybrid .mh-btn-outline {
-  background: transparent;
-  color: #0F172A;
-  border: 1.5px solid #CBD5E1;
-}
-body.mh-light-hybrid .mh-btn-outline:hover { background: #F1F5F9; }
-body.mh-light-hybrid .mh-hero-tertiary { color: #475569; }
-body.mh-light-hybrid .mh-hero-tertiary:hover { color: #0F172A; }
-body.mh-light-hybrid .mh-hero-tertiary-icon { border-color: #CBD5E1; color: #475569; }
-body.mh-light-hybrid .mh-hero-tertiary:hover .mh-hero-tertiary-icon { border-color: var(--blue-bright); color: var(--blue-bright); }
-
-/* Value-footer strip directly below hero — first section in the
-   "light → light → dark intelligence" rhythm, so it stays light too */
-body.mh-light-hybrid .mh-value-footer {
-  background: #F1F5F9;
-  border-top: 1px solid #E2E8F0;
-  border-bottom: 1px solid #E2E8F0;
-}
-body.mh-light-hybrid .mh-value-footer-title { color: #0F172A; }
-body.mh-light-hybrid .mh-value-footer-sub { color: #64748B; }
-
-/* ============================================================
-   HOMEPAGE — HEADER + TERMINAL CORRECTIONS (visual review round 2)
-   ------------------------------------------------------------
-   1) HEADER: base .mh-nav is transparent by default (only turns
-      solid on scroll, via .mh-nav-scrolled), which worked fine
-      floating over the old dark hero. Now that the hero below it
-      is light, the same transparency let the light hero show
-      through, making the pale nav text unreadable. Force the
-      header to always be solid navy on the homepage — no scroll
-      dependency, no glassmorphism, matching the "distinct brand
-      frame" instruction. Nav structure/links/CTA are untouched —
-      background/text-contrast only.
-   2) TERMINAL: traced (not assumed) — .mh-terminal-v2 in
-      hero-v2.css has a pre-existing left-edge mask-image
-      (transparent 0px -> black 24px) added specifically to blend
-      the terminal into the old DARK hero. Confirmed via grep that
-      .mh-terminal-v2 and the hero partial are used ONLY on the
-      homepage — zero blast radius elsewhere. With the hero now
-      light, that same transparent zone reveals the light
-      background bleeding through the terminal's left edge, which
-      is exactly the reported haze. Disabling the mask on the
-      homepage only; terminal's own background/border/content are
-      completely untouched.
-   ============================================================ */
-
-body.mh-light-hybrid .mh-nav {
-  background: var(--navy-deep);
-}
-body.mh-light-hybrid .mh-nav.mh-nav-scrolled {
-  background: var(--navy-deep);
-}
-
-body.mh-light-hybrid .mh-terminal-v2 {
-  -webkit-mask-image: none;
-  mask-image: none;
-}
-
-/* ============================================================
-   ARCHITECTURE — LIGHT FOUNDATION + SELECTIVE DARK TECHNICAL PANEL
-   ------------------------------------------------------------
-   Scoped under body.mh-arch-refined, set only in views/architecture.ejs.
-   No content/labels/terminology changed.
-
-   Audit finding, not assumed: .mh-framework (Practice/Polish/Place AND
-   Trust & AI Governance — both partials share this exact class) is
-   ALREADY #ffffff in the base rules. .mh-proof (Live Intelligence
-   Engine) is already dark (navy-rich) — exactly the one dark technical
-   panel the brief wants. NEITHER is touched here — already correct.
-   Only .mh-arch (Platform Architecture) and .mh-timeline (Career
-   Journey) needed changing; both were dark, now light.
-   ============================================================ */
-
-body.mh-arch-refined .mh-arch,
-body.mh-arch-refined .mh-timeline {
-  background: var(--light-surface);
-}
-
-body.mh-arch-refined .mh-section-title { color: #0F172A; }
-body.mh-arch-refined .mh-section-sub { color: #475569; }
-
-/* Platform Architecture (Technical Blueprint) content */
-body.mh-arch-refined .mh-bp-col-title { color: #0F172A; }
-body.mh-arch-refined .mh-bp-col-desc { color: #64748B; }
-body.mh-arch-refined .mh-bp-model-title { color: #0F172A; }
-body.mh-arch-refined .mh-bp-model-body { color: #64748B; }
-body.mh-arch-refined .mh-bp-layer-desc { color: #64748B; }
-body.mh-arch-refined .mh-bp-icon { background: rgba(15, 23, 42, 0.04); }
-body.mh-arch-refined .mh-bp-divider { background: rgba(15, 23, 42, 0.08); }
-body.mh-arch-refined .mh-bp-model-divider { background: #E2E8F0; }
-body.mh-arch-refined .mh-bp-connector-circle { background: #FFFFFF; border-color: #E2E8F0; }
-/* .mh-bp-layer-label variants (--bp-blue/--bp-amber/etc.) and
-   .mh-bp-future-badge (--bp-amber) are semantic accent colors, already
-   readable on light, intentionally left untouched. */
-
-/* Career Journey (timeline) */
-body.mh-arch-refined .mh-timeline-title { color: #0F172A; }
-body.mh-arch-refined .mh-timeline-desc { color: #64748B; }
-body.mh-arch-refined .mh-timeline-num { color: #94A3B8; }
-body.mh-arch-refined .mh-timeline-line { background: #E2E8F0; }
-
-/* Sticky sidebar nav: no background at all in the base rules — it
-   relies on the whole page being one dark color to stay readable
-   while sticky-scrolling past every section. Now that sections
-   alternate light/dark, it needs its own solid backdrop so it reads
-   consistently regardless of what's behind it. This is the one
-   structural-adjacent addition in this round — a background/border/
-   padding on an existing element, not a new component. */
-body.mh-arch-refined .mh-hub-nav {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 12px;
-  padding: 10px;
-}
-body.mh-arch-refined .mh-hub-nav-link { color: #475569; }
-body.mh-arch-refined .mh-hub-nav-link:hover,
-body.mh-arch-refined .mh-hub-nav-link:focus-visible {
-  color: #0F172A;
-  background: #F1F5F9;
-}
-body.mh-arch-refined .mh-hub-nav-link.active {
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.1), rgba(37, 99, 235, 0.06));
-  color: #1D4ED8;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  box-shadow: none;
-}
-   ------------------------------------------------------------
-   Scoped under body.mh-why-refined, set only in views/why.ejs.
-   No content, copy, heading, or section order changed — visual
-   properties only. Header/footer untouched (already navy).
-   Manifesto intentionally kept navy — "restrained navy treatment
-   is acceptable" for the closing section, per the brief — giving
-   a light->light->light->light->light->navy-close rhythm before
-   the (already navy) footer.
-   ============================================================ */
-
-body.mh-why-refined .mh-why-problem,
-body.mh-why-refined .mh-why-shift,
-body.mh-why-refined .mh-why-pillars {
-  background: var(--light-surface);
-}
-body.mh-why-refined .mh-why-philosophy,
-body.mh-why-refined .mh-why-compare {
-  background: #FFFFFF;
-}
-/* Manifesto: deliberately NOT overridden — stays var(--navy-deep) per brief */
-
-body.mh-why-refined .mh-section-title { color: #0F172A; }
-body.mh-why-refined .mh-why-body { color: #475569; }
-body.mh-why-refined .mh-why-body-emphasis { color: #0F172A; }
-
-body.mh-why-refined .mh-why-quote { color: #0F172A; }
-body.mh-why-refined .mh-why-quote-mark { color: #CBD5E1; }
-
-body.mh-why-refined .mh-why-pillar-card {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-}
-body.mh-why-refined .mh-why-pillar-card:hover {
-  border-color: #CBD5E1;
-  transform: translateY(-4px);
-}
-body.mh-why-refined .mh-why-pillar-title { color: #0F172A; }
-body.mh-why-refined .mh-why-pillar-desc { color: #64748B; }
-/* .mh-why-pillar-icon stays var(--blue-bright) — already reads fine on
-   white, and this is a semantic/brand accent, not a contrast-dependent
-   text color, so it's intentionally left alone. */
-
-body.mh-why-refined .mh-matrix-table-wrap { border: 1px solid #E2E8F0; }
-body.mh-why-refined .mh-matrix-th { border-bottom: 1px solid #E2E8F0; }
-body.mh-why-refined .mh-matrix-th-label { color: #64748B; }
-body.mh-why-refined .mh-matrix-cell { color: #64748B; }
-body.mh-why-refined .mh-matrix-cell-label { color: #0F172A; }
-body.mh-why-refined .mh-matrix-cell-legacy { color: #94A3B8; }
-body.mh-why-refined .mh-matrix-cell-platform { color: #334155; }
-/* .mh-matrix-check stays var(--emerald), .mh-matrix-cell-platform's
-   border-left stays var(--royal-blue) — both already semantic-correct
-   on light, left untouched. */
