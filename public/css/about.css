@@ -102,15 +102,23 @@
   height: 37.7%;
   transform: translate(-50%, -50%);
   border-radius: 18%;
-  background: linear-gradient(135deg, #4A5FC7 0%, #1E2260 100%);
+  /* Dark navy (reusing --navy-rich/--navy-deep) rather than a mid-blue
+     fill — the MedhaIQ mark itself is blue, so it needs a genuinely
+     dark background to read with real contrast. The soft highlight at
+     top-left and the blue/purple glow rim keep the premium depth from
+     the reference without lightening the fill itself. */
+  background:
+    radial-gradient(130% 130% at 20% 15%, rgba(88, 101, 191, 0.55) 0%, transparent 45%),
+    linear-gradient(160deg, var(--navy-rich) 0%, var(--navy-deep) 100%);
   box-shadow:
-    0 18px 40px -8px rgba(43, 55, 158, 0.38),
-    0 0 0 10px rgba(124, 58, 237, 0.06);
+    0 20px 44px -10px rgba(6, 8, 20, 0.55),
+    0 0 0 10px rgba(59, 130, 246, 0.07),
+    0 0 44px 6px rgba(124, 58, 237, 0.16);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.mh-about-mv-core-mark { width: 34%; height: auto; }
+.mh-about-mv-core-mark { width: 36%; height: auto; }
 
 .mh-about-mv-card {
   position: absolute;
