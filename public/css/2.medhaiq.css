@@ -4411,7 +4411,7 @@ body.mh-why-refined .mh-why-compare {
 /* Manifesto: deliberately NOT overridden — stays var(--navy-deep) per brief */
 
 body.mh-why-refined .mh-section-title { color: #0F172A; }
-body.mh-why-refined .mh-why-body { color: #3F4A5A; } /* was #475569 — darkened per contrast review */
+body.mh-why-refined .mh-why-body { color: #475569; }
 body.mh-why-refined .mh-why-body-emphasis { color: #0F172A; }
 
 body.mh-why-refined .mh-why-quote { color: #0F172A; }
@@ -4426,28 +4426,18 @@ body.mh-why-refined .mh-why-pillar-card:hover {
   transform: translateY(-4px);
 }
 body.mh-why-refined .mh-why-pillar-title { color: #0F172A; }
-body.mh-why-refined .mh-why-pillar-desc { color: #3F4A5A; } /* was #64748B — darkened, named explicitly in review */
+body.mh-why-refined .mh-why-pillar-desc { color: #64748B; }
 /* .mh-why-pillar-icon stays var(--blue-bright) — already reads fine on
    white, and this is a semantic/brand accent, not a contrast-dependent
    text color, so it's intentionally left alone. */
 
 body.mh-why-refined .mh-matrix-table-wrap { border: 1px solid #E2E8F0; }
 body.mh-why-refined .mh-matrix-th { border-bottom: 1px solid #E2E8F0; }
-body.mh-why-refined .mh-matrix-th-label { color: #52606D; } /* was #64748B */
-body.mh-why-refined .mh-matrix-th-platform { background: rgba(37, 99, 235, 0.05); }
-body.mh-why-refined .mh-matrix-cell { color: #52606D; } /* was #64748B */
+body.mh-why-refined .mh-matrix-th-label { color: #64748B; }
+body.mh-why-refined .mh-matrix-cell { color: #64748B; }
 body.mh-why-refined .mh-matrix-cell-label { color: #0F172A; }
-body.mh-why-refined .mh-matrix-cell-legacy { color: #64748B; } /* was #94A3B8 — much darker, was the faintest element on the page */
-body.mh-why-refined .mh-matrix-cell-platform {
-  color: #0F172A; /* was #334155 */
-  font-weight: 600;
-  background: rgba(37, 99, 235, 0.045);
-  border-left: 3px solid var(--royal-blue);
-}
-body.mh-why-refined .mh-matrix-check {
-  color: #1D4ED8; /* was inheriting var(--emerald) (green) — brief explicitly
-    wants a MedhaIQ blue checkmark here, not the base rule's green */
-}
+body.mh-why-refined .mh-matrix-cell-legacy { color: #94A3B8; }
+body.mh-why-refined .mh-matrix-cell-platform { color: #334155; }
 /* .mh-matrix-check stays var(--emerald), .mh-matrix-cell-platform's
    border-left stays var(--royal-blue) — both already semantic-correct
    on light, left untouched. */
