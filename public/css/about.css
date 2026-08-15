@@ -69,48 +69,73 @@
 }
 .mh-about-mission-copy p:last-child { margin-bottom: 0; }
 
-/* Orbital "intelligence core" visual — central MedhaIQ mark with four
-   capability nodes connected via fine radial lines on a light, subtly
-   glowing panel. Replaces the earlier flowchart-style diagram. Uses
-   only existing tokens/colors — no new palette introduced. */
+/* "Intelligence core" visual, matching the approved reference: a
+   central gradient card carrying the real MedhaIQ mark, four elevated
+   white icon-cards (Understand / Assess / Improve / Practice) placed
+   around it, faint dashed orbit rings with dot accents, and a layered
+   platform suggesting elevation beneath the core. Colors are drawn
+   from the existing blue/purple brand family already used elsewhere
+   on this page (Principles icons, Vision numerals) — no new palette
+   introduced. No container border/panel — floats directly on the
+   section's white background, matching the reference. */
 .mh-about-mission-visual {
   position: relative;
-  aspect-ratio: 340 / 300;
   width: 100%;
-  max-width: 340px;
+  max-width: 420px;
   margin: 0 auto;
-  border-radius: var(--radius-lg);
-  background: var(--light-surface);
-  border: 1px solid #E7ECF3;
+}
+.mh-about-mv-stage {
+  position: relative;
+  aspect-ratio: 1274 / 876;
+  width: 100%;
 }
 .mh-about-mv-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.mh-about-mv-orbit { stroke: #E2E8F0; stroke-width: 1; }
-.mh-about-mv-line { stroke: #D6DEEA; stroke-width: 1; }
-.mh-about-mv-core-mark {
+.mh-about-mv-orbit { fill: none; stroke: #D8DDF3; stroke-width: 1.5; stroke-dasharray: 3 7; }
+.mh-about-mv-dot { fill: #A8B3F0; }
+.mh-about-mv-platform { fill: #DDE1F6; }
+
+.mh-about-mv-core {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: 46.5%;
+  top: 45.1%;
+  width: 21.4%;
+  height: 37.7%;
   transform: translate(-50%, -50%);
-  width: 24px;
-  height: 24px;
-}
-.mh-about-mv-node {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  display: inline-flex;
+  border-radius: 18%;
+  background: linear-gradient(135deg, #4A5FC7 0%, #1E2260 100%);
+  box-shadow:
+    0 18px 40px -8px rgba(43, 55, 158, 0.38),
+    0 0 0 10px rgba(124, 58, 237, 0.06);
+  display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+}
+.mh-about-mv-core-mark { width: 34%; height: auto; }
+
+.mh-about-mv-card {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   background: var(--white);
-  border: 1px solid #E2E8F0;
-  border-radius: var(--radius);
-  padding: 7px 12px;
+  border-radius: 16px;
+  box-shadow: 0 12px 28px -10px rgba(30, 41, 82, 0.14);
+}
+.mh-about-mv-card svg {
+  width: 26%;
+  height: 26%;
+  color: #4F46E5;
+  flex-shrink: 0;
+}
+.mh-about-mv-card span {
   font-size: 11px;
   font-weight: 600;
-  color: var(--navy-rich);
+  color: #55607A;
   white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
 }
-.mh-about-mv-node svg { color: #7C3AED; flex-shrink: 0; }
 
 /* ============================================
    02 — THE ORIGIN (deep navy — authority section)
@@ -203,6 +228,26 @@
 .mh-about-byline-text { display: flex; flex-direction: column; }
 .mh-about-byline-name { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; color: var(--white); }
 .mh-about-byline-role { font-size: 12px; color: var(--text-faint); margin-top: 1px; }
+.mh-about-byline-linkedin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--white-border);
+  color: var(--text-muted);
+  margin-left: auto;
+  flex-shrink: 0;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.mh-about-byline-linkedin:hover,
+.mh-about-byline-linkedin:focus-visible {
+  color: var(--blue-bright);
+  border-color: var(--blue-bright);
+  background: rgba(59, 130, 246, 0.08);
+}
+.mh-about-byline-linkedin:focus-visible { outline: 2px solid var(--blue-bright); outline-offset: 2px; }
 
 /* ============================================
    03 — OUR VISION (light)
