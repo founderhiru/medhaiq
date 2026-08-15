@@ -1,0 +1,77 @@
+/* ============================================================
+   WHY MEDHAIQ — WARM LIGHT EDITORIAL
+   ------------------------------------------------------------
+   Dedicated file, loaded only by views/why.ejs. No body-class
+   scoping needed — every selector below (.mh-why-*) is confirmed
+   exclusive to this page (grepped across all views/*.ejs and
+   views/partials/*.ejs). Replaces the earlier scoped-override
+   approach in medhaiq.css, which was removed.
+
+   Palette (warm, per latest direction — replaces the cool
+   #F8FAFC/--light-surface values used in the prior round):
+     page background   #F7F6F2
+     alt section        #F2F3F1
+     card                #FFFFFF
+     subtle warm surface #FAF9F6
+     border              #E5E7EB
+     primary text        #0B1020
+     secondary text      #5F6B82
+
+   Manifesto section intentionally stays var(--navy-deep) — dark
+   closing moment before the (already navy) footer, matching the
+   two-mode "Warm Light exploration / Deep Navy focus" architecture.
+
+   Semantic/brand colors NOT touched: .mh-why-pillar-icon (blue),
+   .mh-matrix-check (kept MedhaIQ blue per prior explicit review),
+   .mh-matrix-cell-platform's blue border-left.
+   ============================================================ */
+
+.mh-why-problem { background: #F7F6F2; }
+.mh-why-shift { background: #F2F3F1; }
+.mh-why-philosophy { background: #FFFFFF; }
+.mh-why-pillars { background: #FAF9F6; }
+.mh-why-compare { background: #F7F6F2; }
+/* .mh-why-manifesto: no override — stays navy, by design */
+
+.mh-why-problem .mh-section-title,
+.mh-why-shift .mh-section-title,
+.mh-why-philosophy .mh-section-title,
+.mh-why-pillars .mh-section-title,
+.mh-why-compare .mh-section-title {
+  color: #0B1020;
+}
+.mh-why-problem .mh-why-body,
+.mh-why-shift .mh-why-body,
+.mh-why-philosophy .mh-why-body {
+  color: #5F6B82;
+}
+.mh-why-body-emphasis { color: #0B1020; }
+
+.mh-why-quote { color: #0B1020; }
+.mh-why-quote-mark { color: #CBD5E1; }
+
+.mh-why-pillar-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+}
+.mh-why-pillar-card:hover {
+  border-color: #D6DAE0;
+  transform: translateY(-4px);
+}
+.mh-why-pillar-title { color: #0B1020; }
+.mh-why-pillar-desc { color: #5F6B82; }
+
+.mh-matrix-table-wrap { border: 1px solid #E5E7EB; }
+.mh-matrix-th { border-bottom: 1px solid #E5E7EB; }
+.mh-matrix-th-label { color: #5F6B82; }
+.mh-matrix-th-platform { background: rgba(37, 99, 235, 0.05); }
+.mh-matrix-cell { color: #5F6B82; }
+.mh-matrix-cell-label { color: #0B1020; }
+.mh-matrix-cell-legacy { color: #7A8699; }
+.mh-matrix-cell-platform {
+  color: #0B1020;
+  font-weight: 600;
+  background: rgba(37, 99, 235, 0.045);
+  border-left: 3px solid var(--royal-blue);
+}
+.mh-matrix-check { color: #1D4ED8; }

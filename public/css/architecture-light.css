@@ -1,0 +1,75 @@
+/* ============================================================
+   ARCHITECTURE — WARM LIGHT FOUNDATION + ONE DARK TECHNICAL PANEL
+   ------------------------------------------------------------
+   Dedicated file, loaded only by views/architecture.ejs. No
+   body-class scoping needed — .mh-arch, .mh-timeline, .mh-bp-*,
+   .mh-timeline-*, .mh-hub-nav* are all confirmed exclusive to
+   this page. .mh-framework is shared by two partials on THIS
+   SAME page only (Practice/Polish/Place + Trust & AI Governance)
+   — confirmed via grep, not used elsewhere.
+
+   Audit finding, still true: .mh-framework is ALREADY #ffffff in
+   medhaiq.css's base rules, and .mh-proof (Live Intelligence
+   Engine) is ALREADY dark navy — exactly the one deliberate dark
+   technical panel this page should have. NEITHER needs any
+   override here — both already correct.
+
+   Only .mh-arch (Platform Architecture) and .mh-timeline (Career
+   Journey) needed changing — both were dark, now warm light.
+
+   Palette matches why.css (warm direction):
+     light   #F7F6F2   |   alt  #F2F3F1   |   card  #FFFFFF
+     border  #E5E7EB   |   primary text #0B1020   |   secondary #5F6B82
+   ============================================================ */
+
+.mh-arch { background: #F7F6F2; }
+.mh-timeline { background: #F2F3F1; }
+
+.mh-arch .mh-section-title,
+.mh-timeline .mh-section-title {
+  color: #0B1020;
+}
+.mh-section-sub { color: #5F6B82; }
+
+/* Platform Architecture (Technical Blueprint) content */
+.mh-bp-col-title { color: #0B1020; }
+.mh-bp-col-desc { color: #5F6B82; }
+.mh-bp-model-title { color: #0B1020; }
+.mh-bp-model-body { color: #5F6B82; }
+.mh-bp-layer-desc { color: #5F6B82; }
+.mh-bp-icon { background: rgba(11, 16, 32, 0.04); }
+.mh-bp-divider { background: rgba(11, 16, 32, 0.08); }
+.mh-bp-model-divider { background: #E5E7EB; }
+.mh-bp-connector-circle { background: #FFFFFF; border-color: #E5E7EB; }
+/* .mh-bp-layer-label variants (--bp-blue/--bp-amber/etc.) and
+   .mh-bp-future-badge (--bp-amber) are semantic accents, already
+   readable on light — intentionally left untouched. */
+
+/* Career Journey (timeline) */
+.mh-timeline-title { color: #0B1020; }
+.mh-timeline-desc { color: #5F6B82; }
+.mh-timeline-num { color: #9AA5B5; }
+.mh-timeline-line { background: #E5E7EB; }
+
+/* Sticky sidebar nav — had no background at all in the base rules,
+   which only worked because the whole page used to be one dark
+   color. Needs its own solid backdrop now that sections alternate
+   light/dark, so it reads consistently while sticky-scrolling. */
+.mh-hub-nav {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 10px;
+}
+.mh-hub-nav-link { color: #5F6B82; }
+.mh-hub-nav-link:hover,
+.mh-hub-nav-link:focus-visible {
+  color: #0B1020;
+  background: #F2F3F1;
+}
+.mh-hub-nav-link.active {
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.1), rgba(37, 99, 235, 0.06));
+  color: #1D4ED8;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: none;
+}
