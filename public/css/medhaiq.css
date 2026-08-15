@@ -2485,7 +2485,7 @@ button { cursor: pointer; }
    HOW IT WORKS
    ============================================ */
 .mh-howitworks {
-  padding: 100px 40px;
+  padding: 56px 40px 100px;
   background: var(--navy-deep);
 }
 .mh-howitworks-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -2671,7 +2671,7 @@ button { cursor: pointer; }
    ============================================ */
 .mh-trust-bar {
   background: var(--navy-deep);
-  padding: 40px 0 32px;
+  padding: 24px 0 20px;
   border-top: 1px solid var(--white-border);
   border-bottom: 1px solid var(--white-border);
   overflow: hidden;
@@ -2684,27 +2684,27 @@ button { cursor: pointer; }
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 .logo-marquee-track {
   display: flex;
   gap: 0;
   animation: marquee 60s linear infinite;
   width: max-content;
-  padding: 24px 0;
+  padding: 14px 20px;
   align-items: center;
 }
-
-.mh-trust-disclaimer {
+.mh-trust-name {
   font-family: var(--font-body);
-  font-size: 11px;
-  color: #6B7280;
-  margin-top: 16px;
-  line-height: 1.5;
-  max-width: 680px;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #CBD5E1;
+  white-space: nowrap;
+}
+.mh-trust-sep { color: #475569; margin: 0 8px; }
+@media (max-width: 640px) {
+  .mh-trust-name { font-size: 13px; }
 }
 
 /* ============================================
@@ -4209,114 +4209,4 @@ button { cursor: pointer; }
     padding-right: 24px;
   }
   .mh-why-pillar-grid { grid-template-columns: 1fr; }
-}
-
-/* ============================================================
-   HOMEPAGE — LIGHT + MIDNIGHT HYBRID (Phase 1 of 3: Homepage only)
-   ------------------------------------------------------------
-   Scoped under body.mh-light-hybrid, set only in views/layout.ejs
-   (the homepage). Why MedhaIQ and Architecture are NOT scoped yet —
-   they are separate, queued checkpoints per the phased plan. About
-   and the other 11 pages sharing this file are completely
-   unaffected since none of them carry this class.
-
-   New token added (not existing in :root, needed per the brief's
-   #F8FAFC requirement — no equivalent light-background token exists
-   in this file today):
-     --mh-light-bg: #F8FAFC
-
-   CTA color is MedhaIQ blue (--royal-blue/--blue-bright), NOT
-   purple — this brief explicitly specifies one blue CTA color
-   sitewide and explicitly excludes purple as a CTA color. This
-   reverses the purple-CTA direction explored in earlier mockup
-   rounds; noting it explicitly since it's a real reversal, not
-   an oversight.
-
-   NOT touched: the Live Interview Terminal's own dark styling
-   (.mh-terminal-v2*, in hero-v2.css) — stays dark by design, per
-   the brief's "LIGHT ENVIRONMENT + DARK AI ENGINE" instruction.
-   NOT touched: .mh-pricing (see chat — flagged discrepancy, left
-   entirely alone). NOT touched: header/footer (brief says both
-   stay deep navy — already the current state, no change needed).
-   ============================================================ */
-
-body.mh-light-hybrid .mh-hero {
-  background: var(--light-surface); /* pre-existing token, #F8FAFC — reused,
-    not redefined. Correction from Phase 1, which had locally redefined an
-    identical value as --mh-light-bg without realizing this token already
-    existed and is already used elsewhere (.mh-score, .mh-research). */
-}
-body.mh-light-hybrid .mh-hero-glow {
-  background:
-    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(30, 64, 175, 0.05) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 60% at 80% 60%, rgba(59, 130, 246, 0.03) 0%, transparent 50%);
-}
-body.mh-light-hybrid .mh-hero-badge {
-  background: rgba(30, 64, 175, 0.08);
-  border-color: rgba(30, 64, 175, 0.2);
-}
-body.mh-light-hybrid .mh-hero-badge-text { color: #0F172A; }
-/* badge dot stays --blue-bright — explicitly instructed: "blue indicator
-   dot... do NOT make the entire badge blue" */
-body.mh-light-hybrid .mh-hero-h1 { color: #0F172A; }
-body.mh-light-hybrid .mh-hero-h2 { color: #475569; }
-body.mh-light-hybrid .mh-hero-chip { background: #FFFFFF; border: 1px solid #EEF2F6; color: #334155; }
-body.mh-light-hybrid .mh-btn-primary { background: var(--royal-blue); color: #fff; }
-body.mh-light-hybrid .mh-btn-primary:hover { background: #1E3A8A; }
-body.mh-light-hybrid .mh-btn-outline {
-  background: transparent;
-  color: #0F172A;
-  border: 1.5px solid #CBD5E1;
-}
-body.mh-light-hybrid .mh-btn-outline:hover { background: #F1F5F9; }
-body.mh-light-hybrid .mh-hero-tertiary { color: #475569; }
-body.mh-light-hybrid .mh-hero-tertiary:hover { color: #0F172A; }
-body.mh-light-hybrid .mh-hero-tertiary-icon { border-color: #CBD5E1; color: #475569; }
-body.mh-light-hybrid .mh-hero-tertiary:hover .mh-hero-tertiary-icon { border-color: var(--blue-bright); color: var(--blue-bright); }
-
-/* Value-footer strip directly below hero — first section in the
-   "light → light → dark intelligence" rhythm, so it stays light too */
-body.mh-light-hybrid .mh-value-footer {
-  background: #F1F5F9;
-  border-top: 1px solid #E2E8F0;
-  border-bottom: 1px solid #E2E8F0;
-}
-body.mh-light-hybrid .mh-value-footer-title { color: #0F172A; }
-body.mh-light-hybrid .mh-value-footer-sub { color: #64748B; }
-
-/* ============================================================
-   HOMEPAGE — HEADER + TERMINAL CORRECTIONS (visual review round 2)
-   ------------------------------------------------------------
-   1) HEADER: base .mh-nav is transparent by default (only turns
-      solid on scroll, via .mh-nav-scrolled), which worked fine
-      floating over the old dark hero. Now that the hero below it
-      is light, the same transparency let the light hero show
-      through, making the pale nav text unreadable. Force the
-      header to always be solid navy on the homepage — no scroll
-      dependency, no glassmorphism, matching the "distinct brand
-      frame" instruction. Nav structure/links/CTA are untouched —
-      background/text-contrast only.
-   2) TERMINAL: traced (not assumed) — .mh-terminal-v2 in
-      hero-v2.css has a pre-existing left-edge mask-image
-      (transparent 0px -> black 24px) added specifically to blend
-      the terminal into the old DARK hero. Confirmed via grep that
-      .mh-terminal-v2 and the hero partial are used ONLY on the
-      homepage — zero blast radius elsewhere. With the hero now
-      light, that same transparent zone reveals the light
-      background bleeding through the terminal's left edge, which
-      is exactly the reported haze. Disabling the mask on the
-      homepage only; terminal's own background/border/content are
-      completely untouched.
-   ============================================================ */
-
-body.mh-light-hybrid .mh-nav {
-  background: var(--navy-deep);
-}
-body.mh-light-hybrid .mh-nav.mh-nav-scrolled {
-  background: var(--navy-deep);
-}
-
-body.mh-light-hybrid .mh-terminal-v2 {
-  -webkit-mask-image: none;
-  mask-image: none;
 }
