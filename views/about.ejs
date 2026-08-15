@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About | MedhaIQ.ai</title>
-  <meta name="description" content="About MedhaIQ — the founder, the vision, and the story behind the platform.">
+  <meta name="description" content="About MedhaIQ — our mission, our origin, and the conviction behind the Career Operating System for the AI era.">
   <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#0A0F1E">
+  <meta name="theme-color" content="#0A0E1A">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -14,24 +14,28 @@
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/hero-v2.css">
   <link rel="stylesheet" href="/css/value-footer.css">
+  <!-- Page-scoped only — see about.css header comment. Does not touch
+       any global rule used by other pages. -->
+  <link rel="stylesheet" href="/css/about.css">
 </head>
 <body>
   <%- include('partials/header') %>
 
-  <!-- Minimal page intro. Everything below reuses founder.ejs verbatim,
-       which already contains a real "The Vision" subsection. No "Mission"
-       content exists anywhere in the repo, so none was invented here —
-       see conflict note in chat. -->
-  <section style="padding: 148px var(--section-pad-x) 0; max-width: var(--max-w); margin: 0 auto; text-align: center;">
+  <!-- Slim masthead: intentionally left on body's default --navy-deep
+       background (no override) so the fixed, transparent-until-scroll
+       nav stays legible at the very top of the page. Section 01 below
+       is where the light editorial system actually begins. -->
+  <section class="mh-about-masthead">
     <div class="mh-eyebrow">About</div>
-    <h1 style="font-family: var(--font-display); font-weight: 800; font-size: var(--hero-h1-size); color: var(--white); letter-spacing: var(--hero-h1-tracking); margin: 12px 0;">
-      About MedhaIQ
-    </h1>
+    <h1>About MedhaIQ</h1>
   </section>
 
-  <%- include('partials/founder') %>
+  <%- include('partials/about-mission') %>
+  <%- include('partials/about-origin') %>
+  <%- include('partials/about-vision') %>
+  <%- include('partials/about-principles') %>
+  <%- include('partials/about-closing') %>
 
-  <%- include('partials/cta-banner') %>
   <%- include('partials/footer') %>
 
   <script>
