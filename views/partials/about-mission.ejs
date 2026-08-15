@@ -27,14 +27,20 @@
           <circle class="mh-about-mv-dot" cx="1120" cy="540" r="3.5"/>
           <circle class="mh-about-mv-dot" cx="152" cy="697" r="4"/>
 
-          <!-- layered "platform" beneath the core, suggesting elevation -->
-          <rect class="mh-about-mv-platform" x="486" y="562" width="212" height="20" rx="10" opacity="0.9"/>
-          <rect class="mh-about-mv-platform" x="466" y="586" width="252" height="22" rx="11" opacity="0.6"/>
-          <rect class="mh-about-mv-platform" x="446" y="610" width="292" height="24" rx="12" opacity="0.35"/>
+          <!-- layered "platform" beneath the core, suggesting elevation.
+               Grouped separately so a perspective skew can be applied to
+               it alone, without touching the orbit rings/dots above. -->
+          <g class="mh-about-mv-platform-group">
+            <rect class="mh-about-mv-platform" x="486" y="562" width="212" height="20" rx="10" opacity="0.9"/>
+            <rect class="mh-about-mv-platform" x="466" y="586" width="252" height="22" rx="11" opacity="0.6"/>
+            <rect class="mh-about-mv-platform" x="446" y="610" width="292" height="24" rx="12" opacity="0.35"/>
+          </g>
         </svg>
 
         <div class="mh-about-mv-core">
-          <img src="/assets/branding/medhaiq-icon.png" alt="" class="mh-about-mv-core-mark" loading="lazy" />
+          <div class="mh-about-mv-core-face">
+            <img src="/assets/branding/medhaiq-icon.png" alt="" class="mh-about-mv-core-mark" loading="lazy" />
+          </div>
         </div>
 
         <div class="mh-about-mv-card" style="left:56.0%; top:16.4%; width:14.9%; height:25.6%;">
