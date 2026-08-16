@@ -29,11 +29,20 @@
   }) %>
 
   <!-- ============================================
-       02 — THE PROBLEM: THE TRANSACTIONAL TRAP
+       02/03 — THE PROBLEM + THE PARADIGM SHIFT
+       Two side-by-side dark cards, matching the approved reference
+       layout. Same eyebrows, headings, and body copy as before —
+       only the composition changed (no more separate cycle-diagram
+       or comparison-card visuals; each card is now self-contained
+       with icon + eyebrow + title + body, per the reference).
        ============================================ -->
-  <section class="mh-why-problem reveal">
-    <div class="mh-why-split">
-      <div>
+  <section class="mh-why-twocard reveal">
+    <div class="mh-why-twocard-grid">
+
+      <div class="mh-why-card">
+        <div class="mh-why-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.5" fill="currentColor"/></svg>
+        </div>
         <div class="mh-eyebrow">The Problem</div>
         <h2 class="mh-section-title">The Transactional Trap</h2>
         <p class="mh-why-body">
@@ -46,39 +55,11 @@
           That's the transactional trap.
         </p>
       </div>
-      <!-- Visual is built entirely from words already in the paragraph
-           above (single event / ends / disappears / starts from zero) —
-           no new claims or labels introduced. -->
-      <div class="mh-why-cycle" aria-hidden="true">
-        <div class="mh-why-cycle-step">
-          <div class="mh-why-cycle-dot">1</div>
-          <div class="mh-why-cycle-label">A single event</div>
-        </div>
-        <div class="mh-why-cycle-arrow">&#8594;</div>
-        <div class="mh-why-cycle-step">
-          <div class="mh-why-cycle-dot">2</div>
-          <div class="mh-why-cycle-label">The interview ends</div>
-        </div>
-        <div class="mh-why-cycle-arrow">&#8594;</div>
-        <div class="mh-why-cycle-step">
-          <div class="mh-why-cycle-dot">3</div>
-          <div class="mh-why-cycle-label">Learning disappears</div>
-        </div>
-        <div class="mh-why-cycle-arrow">&#8594;</div>
-        <div class="mh-why-cycle-step">
-          <div class="mh-why-cycle-dot mh-why-cycle-dot-loop">&#8635;</div>
-          <div class="mh-why-cycle-label">Starts from zero</div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ============================================
-       03 — THE PARADIGM SHIFT: FROM CRAMMING TO PROGRESSION
-       ============================================ -->
-  <section class="mh-why-shift reveal">
-    <div class="mh-why-split mh-why-split-reverse">
-      <div>
+      <div class="mh-why-card">
+        <div class="mh-why-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17 9 11 13 15 21 7"/><path d="M15 7h6v6"/></svg>
+        </div>
         <div class="mh-eyebrow">The Paradigm Shift</div>
         <h2 class="mh-section-title">From Cramming to Progression</h2>
         <p class="mh-why-body">
@@ -91,19 +72,7 @@
           That's the shift: from a test survived once, to a skill that keeps compounding.
         </p>
       </div>
-      <!-- Verbatim phrases pulled directly from the paragraphs above —
-           no new comparison claims introduced. -->
-      <div class="mh-why-shift-card">
-        <div class="mh-why-shift-row mh-why-shift-row-old">
-          <span class="mh-why-shift-tag">Traditional prep</span>
-          <p>"One script, one outcome, then it's gone."</p>
-        </div>
-        <div class="mh-why-shift-divider">vs</div>
-        <div class="mh-why-shift-row mh-why-shift-row-new">
-          <span class="mh-why-shift-tag">MedhaIQ</span>
-          <p>"Each session compounding into the next. A growth curve."</p>
-        </div>
-      </div>
+
     </div>
   </section>
 
@@ -112,6 +81,7 @@
        ============================================ -->
   <section class="mh-why-philosophy reveal">
     <div class="mh-why-narrow">
+      <div class="mh-why-quote-card">
       <blockquote class="mh-why-quote">
         <span class="mh-why-quote-mark">&#8220;</span>
         Professionals don't need another answer generator. <span class="mh-why-quote-accent">They need a better thinking system.</span>
@@ -126,6 +96,7 @@
       <p class="mh-why-body">
         This philosophy is reflected throughout MedhaIQ—from adaptive interview simulations and structured STAR coaching to multi-vector performance analysis and longitudinal career tracking.
       </p>
+      </div>
     </div>
   </section>
 
