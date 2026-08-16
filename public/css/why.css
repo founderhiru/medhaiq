@@ -76,20 +76,13 @@
 }
 .mh-why-pillar-desc { color: #5F6B82; }
 
-.mh-matrix-table-wrap { border: 1px solid #E5E7EB; }
-.mh-matrix-th { border-bottom: 1px solid #E5E7EB; }
-.mh-matrix-th-label { color: #5F6B82; }
-.mh-matrix-th-platform { background: rgba(37, 99, 235, 0.05); }
-.mh-matrix-cell { color: #5F6B82; }
-.mh-matrix-cell-label { color: #0B1020; }
-.mh-matrix-cell-legacy { color: #7A8699; }
-.mh-matrix-cell-platform {
-  color: #0B1020;
-  font-weight: 600;
-  background: rgba(37, 99, 235, 0.045);
-  border-left: 3px solid var(--royal-blue);
-}
-.mh-matrix-check { color: #1D4ED8; }
+/* Comparison table colors: see the dedicated, panel-scoped block near
+   the end of this file (search "COMPARISON TABLE — CONTRAST FIX").
+   The rules that used to be here were light-background-appropriate
+   colors (dark text) left over from before .mh-why-compare-panel's
+   dark navy background was added — that mismatch was the actual
+   invisible-text bug, not a design issue. */
+.mh-matrix-table-wrap { border: none; }
 
 /* ============================================================
    FLOW / DENSITY / WIDTH CORRECTIONS (visual review round 2)
@@ -260,6 +253,51 @@
 .mh-why-compare-panel .mh-matrix-table-wrap {
   border: none;
   margin-top: 0;
+}
+
+/* ============================================================
+   COMPARISON TABLE — CONTRAST FIX (functional bug, not a
+   redesign)
+   ------------------------------------------------------------
+   Root cause: .mh-why-compare-panel's dark navy background was
+   added in an earlier round, but the matrix cell text colors were
+   never updated from their previous light-background values —
+   near-black text on navy is effectively invisible. This block is
+   the actual fix: every text element below is explicitly colored
+   for the dark panel it now sits inside. Table structure, rows,
+   and all existing comparison content are completely unchanged —
+   this is colors only.
+   ============================================================ */
+.mh-why-compare-panel .mh-matrix-th-label {
+  color: #FFFFFF;
+}
+.mh-why-compare-panel .mh-matrix-th-legacy,
+.mh-why-compare-panel .mh-matrix-th-platform {
+  color: #94A3B8;
+  background: transparent;
+}
+.mh-why-compare-panel .mh-matrix-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.mh-why-compare-panel .mh-matrix-cell-label {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+.mh-why-compare-panel .mh-matrix-cell-legacy {
+  color: #7C89A3; /* muted grey/blue, deliberately quieter — "Typical
+    Platforms" per the requested hierarchy, but still legible, not
+    the near-invisible tone from before */
+}
+.mh-why-compare-panel .mh-matrix-cell-platform {
+  color: #FFFFFF;
+  font-weight: 600;
+  background: rgba(59, 130, 246, 0.08);
+  border-left: 3px solid var(--blue-bright);
+}
+.mh-why-compare-panel .mh-matrix-check {
+  color: #60A5FA; /* bright MedhaIQ blue, clearly visible against navy —
+    darker blues (e.g. #1D4ED8, used in the earlier light-panel version)
+    lose contrast on a dark background */
 }
 
 /* Manifesto — same floating-panel treatment as the closing card in

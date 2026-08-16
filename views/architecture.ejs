@@ -93,16 +93,58 @@
     var targets = Array.from(navLinks).map(function(l) {
       return document.querySelector(l.getAttribute('href'));
     }).filter(Boolean);
+
+    // Root cause of the earlier bug: with a single-entry threshold
+    // observer, multiple adjacent sections can simultaneously satisfy
+    // isIntersecting near their shared boundary, and the previous logic
+    // reacted to whichever entry's callback happened to fire last in
+    // that batch — not necessarily the section actually at the top of
+    // the viewport. Fix: track ALL currently-intersecting sections in
+    // a Set, and on every observer callback, explicitly pick whichever
+    // one has the smallest boundingClientRect.top (i.e. the section
+    // actually nearest the top of the viewport) as active. This is
+    // tied to the real section elements/IDs, not a hardcoded scroll
+    // range, so it keeps working correctly if section heights change.
+    var currentlyVisible = new Set();
+    function updateActiveTab() {
+      var topMost = null;
+      var topMostTop = Infinity;
+      currentlyVisible.forEach(function(el) {
+        var top = el.getBoundingClientRect().top;
+        if (top < topMostTop) {
+          topMostTop = top;
+          topMost = el;
+        }
+      });
+      if (!topMost) return;
+      var idx = targets.indexOf(topMost);
+      if (idx === -1) return;
+      navLinks.forEach(function(l) { l.classList.remove('active'); });
+      navLinks[idx].classList.add('active');
+    }
     var observer = new IntersectionObserver(function(entries) {
       entries.forEach(function(entry) {
         if (entry.isIntersecting) {
-          var idx = targets.indexOf(entry.target);
-          navLinks.forEach(function(l) { l.classList.remove('active'); });
-          if (idx > -1) navLinks[idx].classList.add('active');
+          currentlyVisible.add(entry.target);
+        } else {
+          currentlyVisible.delete(entry.target);
         }
       });
-    }, { threshold: 0.3, rootMargin: '-100px 0px -60% 0px' });
+      updateActiveTab();
+    }, { threshold: 0.15, rootMargin: '-100px 0px -55% 0px' });
     targets.forEach(function(t) { observer.observe(t); });
+
+    // Handle direct anchor landing / page refresh at a section: the
+    // observer fires once sections start crossing the threshold during
+    // scroll, but a hard load at #proof, for example, needs an initial
+    // check since no scroll event necessarily occurs first.
+    if (window.location.hash) {
+      var initial = document.querySelector(window.location.hash);
+      if (initial && targets.indexOf(initial) > -1) {
+        currentlyVisible.add(initial);
+        updateActiveTab();
+      }
+    }
   })();
   </script>
 </body>

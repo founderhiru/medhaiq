@@ -88,6 +88,8 @@
    viewport below the now-taller nav clearance, on typical laptop
    heights, without ever being cut off. Scales the whole panel and its
    content together; nothing inside it is altered or truncated. */
+.mh-hero-inner { grid-template-columns: 46% 54%; }
+
 .mh-hero-mockup-wrap {
   filter: drop-shadow(0 24px 48px rgba(10, 15, 30, 0.13));
   transform: scale(0.94);
