@@ -277,3 +277,36 @@
   .mh-why-split-reverse > *:first-child,
   .mh-why-split-reverse > *:last-child { order: unset; }
 }
+
+/* ============================================================
+   SCALE-UP PASS (visual review round 3)
+   ------------------------------------------------------------
+   --h2-size (global token, all 15 medhaiq.css pages) caps out at
+   29px — too small for the large editorial headlines these two
+   sections need. Page-scoped override only; the token itself is
+   untouched, so every other page's section titles are unaffected.
+   ============================================================ */
+
+.mh-why-problem .mh-section-title,
+.mh-why-shift .mh-section-title {
+  font-size: clamp(28px, 3.4vw, 38px);
+  line-height: 1.2;
+  color: #0B1020;
+}
+
+.mh-why-quote-accent { color: var(--royal-blue); }
+
+.mh-why-cycle {
+  padding: 40px 32px;
+  gap: 8px;
+}
+.mh-why-cycle-dot { width: 56px; height: 56px; font-size: 18px; }
+.mh-why-cycle-label { font-size: 13px; max-width: 110px; }
+.mh-why-cycle-arrow { font-size: 20px; }
+
+.mh-why-shift-card { padding: 12px; }
+.mh-why-shift-row { padding: 26px 28px; }
+.mh-why-shift-row-old p { font-size: 15.5px; }
+.mh-why-shift-row-new p { font-size: 16px; }
+
+.mh-why-philosophy .mh-why-narrow { max-width: 900px; }
