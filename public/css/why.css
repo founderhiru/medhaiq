@@ -75,3 +75,78 @@
   border-left: 3px solid var(--royal-blue);
 }
 .mh-matrix-check { color: #1D4ED8; }
+
+/* ============================================================
+   FLOW / DENSITY / WIDTH CORRECTIONS (visual review round 2)
+   ------------------------------------------------------------
+   Page-scoped overrides only — --section-pad-y and --max-w are
+   shared global tokens (used by all 15 medhaiq.css consumers) and
+   were NOT touched; these overrides apply only within why.css,
+   loaded only by why.ejs.
+   ============================================================ */
+
+.mh-why-problem,
+.mh-why-shift,
+.mh-why-philosophy,
+.mh-why-pillars,
+.mh-why-compare {
+  padding-top: 52px;
+  padding-bottom: 52px;
+}
+
+.mh-why-narrow { max-width: 820px; }
+
+.mh-matrix-table-wrap {
+  margin-top: 32px;
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+}
+.mh-matrix-th {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+.mh-matrix-th-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+.mh-matrix-cell {
+  font-size: 15px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.mh-matrix-cell-platform { font-size: 15.5px; }
+.mh-why-compare .mh-section-title { font-size: 32px; }
+
+/* ============================================================
+   DENSITY + TABLE PROMINENCE PASS
+   ------------------------------------------------------------
+   .mh-why-narrow was 720px (global rule, why-exclusive class) —
+   widened for stronger heading presence. Section vertical padding
+   was --section-pad-y (76px, a GLOBAL token shared by every page
+   using medhaiq.css) — NOT changed globally; overridden per-section
+   here instead, since only Why's rhythm needed tightening.
+   Comparison table font sizes/padding bumped up — table container
+   width was already ~var(--max-w) (~1160px, already close to the
+   1100-1200px target), so the "too small" complaint was really
+   about internal type scale, not outer container width.
+   ============================================================ */
+
+.mh-why-narrow { max-width: 860px; }
+
+.mh-why-problem,
+.mh-why-shift,
+.mh-why-philosophy,
+.mh-why-pillars,
+.mh-why-compare {
+  padding-top: 56px;
+  padding-bottom: 56px;
+}
+.mh-why-manifesto {
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+
+.mh-matrix-table-wrap { margin-top: 40px; }
+.mh-matrix-th { font-size: 12.5px; padding: 18px 20px; }
+.mh-matrix-cell { font-size: 15px; padding: 18px 20px; }
+.mh-matrix-check { font-size: 17px; }

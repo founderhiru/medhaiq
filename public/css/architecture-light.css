@@ -1,8 +1,26 @@
 /* ============================================================
    ARCHITECTURE — WARM LIGHT FOUNDATION + ONE DARK TECHNICAL PANEL
    ------------------------------------------------------------
-   Dedicated file, loaded only by views/architecture.ejs. No
-   body-class scoping needed — .mh-arch, .mh-timeline, .mh-bp-*,
+   Dedicated file, loaded only by views/architecture.ejs.
+
+   ROOT CAUSE FOUND AND FIXED (the "black TV screen" effect):
+   .mh-hub — the outer wrapper containing the sidebar nav and every
+   content section — had NO background of its own in the base
+   rules. It's transparent over body's var(--navy-deep). Because
+   .mh-hub-inner is max-width-constrained and centered, this meant
+   the page was full-width dark navy with only the narrow
+   constrained column showing each section's own background —
+   exactly the "narrow white webpage inside a huge dark canvas"
+   symptom. Fixing .mh-hub itself (edge-to-edge) is what actually
+   resolves it; the individual section backgrounds below were
+   already correct from the prior round and are unchanged.
+   ============================================================ */
+
+.mh-hub {
+  background: #F7F6F2;
+}
+
+/* No body-class scoping needed — .mh-arch, .mh-timeline, .mh-bp-*,
    .mh-timeline-*, .mh-hub-nav* are all confirmed exclusive to
    this page. .mh-framework is shared by two partials on THIS
    SAME page only (Practice/Polish/Place + Trust & AI Governance)
@@ -21,6 +39,16 @@
      light   #F7F6F2   |   alt  #F2F3F1   |   card  #FFFFFF
      border  #E5E7EB   |   primary text #0B1020   |   secondary #5F6B82
    ============================================================ */
+
+/* Root-cause fix for the "black TV screen" composition bug: every
+   section on this page lives inside .mh-hub-content, the narrow
+   right-column of .mh-hub-inner's 240px-sidebar grid, itself capped
+   at max-width and centered. The true full-viewport wrapper, .mh-hub,
+   has NO background in the base rules — it was inheriting the dark
+   body color, which is exactly why the page read as a narrow column
+   floating on a huge dark field regardless of any individual
+   section's own color. */
+.mh-hub { background: #F7F6F2; }
 
 .mh-arch { background: #F7F6F2; }
 .mh-timeline { background: #F2F3F1; }

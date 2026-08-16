@@ -29,7 +29,13 @@
    ============================================================ */
 
 .mh-hero {
-  background: #F7F6F2;
+  background:
+    radial-gradient(ellipse 70% 100% at 92% 50%, rgba(30, 41, 59, 0.11) 0%, rgba(30, 41, 59, 0.05) 40%, transparent 72%),
+    radial-gradient(ellipse 55% 80% at 78% 50%, rgba(30, 41, 59, 0.05) 0%, transparent 65%),
+    #F7F6F2;
+}
+.mh-hero-mockup-wrap {
+  filter: drop-shadow(0 24px 48px rgba(10, 15, 30, 0.13));
 }
 .mh-hero-glow {
   background:
@@ -46,6 +52,10 @@
 .mh-hero-h1 { color: #0B1020; }
 .mh-hero-h2 { color: #5F6B82; }
 .mh-hero-chip { background: #FFFFFF; border: 1px solid #E5E7EB; color: #334155; }
+.mh-hero-chip-icon-purple  { background: rgba(167, 139, 250, 0.22); color: #7C3AED; }
+.mh-hero-chip-icon-green   { background: rgba(5, 150, 105, 0.16);   color: #059669; }
+.mh-hero-chip-icon-amber   { background: rgba(217, 119, 6, 0.16);   color: #B45309; }
+.mh-hero-chip-icon-magenta { background: rgba(236, 72, 153, 0.18);  color: #DB2777; }
 .mh-btn-primary { background: var(--royal-blue); color: #fff; }
 .mh-btn-primary:hover { background: #1E3A8A; }
 .mh-btn-outline {
@@ -76,10 +86,14 @@
 .mh-value-footer {
   background: #FAF9F6;
   border-top: 1px solid #E5E7EB;
-  border-bottom: 1px solid #E5E7EB;
 }
 .mh-value-footer-title { color: #0B1020; }
 .mh-value-footer-sub { color: #5F6B82; }
+.mh-value-footer-icon-blue   { background: rgba(59, 130, 246, 0.14);  color: #1D4ED8; }
+.mh-value-footer-icon-purple { background: rgba(167, 139, 250, 0.22); color: #7C3AED; }
+.mh-value-footer-icon-orange { background: rgba(217, 119, 6, 0.16);   color: #B45309; }
+.mh-value-footer-icon-teal   { background: rgba(45, 212, 191, 0.20);  color: #0F766E; }
+.mh-value-footer-icon-violet { background: rgba(139, 92, 246, 0.20);  color: #6D28D9; }
 
 /* Trust bar — text marquee of company names (no logo image assets
    exist for these companies in the codebase, confirmed via
