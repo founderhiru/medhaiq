@@ -33,6 +33,9 @@
     radial-gradient(ellipse 90% 130% at 100% 50%, rgba(30, 41, 59, 0.08) 0%, rgba(30, 41, 59, 0.04) 45%, transparent 78%),
     #F7F6F2;
 }
+.mh-hero-mockup-wrap {
+  filter: drop-shadow(0 24px 48px rgba(10, 15, 30, 0.13));
+}
 .mh-hero-glow {
   background:
     radial-gradient(ellipse 60% 40% at 50% 0%, rgba(30, 64, 175, 0.05) 0%, transparent 60%),
@@ -47,7 +50,7 @@
    blue badge, per the approved direction. */
 .mh-hero-h1 { color: #0B1020; }
 .mh-hero-h2 { color: #5F6B82; }
-.mh-hero-chip { background: #FFFFFF; border: 1px solid #D6DAE0; color: #1E293B; }
+.mh-hero-chip { background: #FFFFFF; border: 1px solid #E5E7EB; color: #334155; }
 .mh-hero-chip-icon-purple  { background: rgba(167, 139, 250, 0.22); color: #7C3AED; }
 .mh-hero-chip-icon-green   { background: rgba(5, 150, 105, 0.16);   color: #059669; }
 .mh-hero-chip-icon-amber   { background: rgba(217, 119, 6, 0.16);   color: #B45309; }
@@ -65,33 +68,16 @@
 .mh-hero-tertiary-icon { border-color: #D6DAE0; color: #5F6B82; }
 .mh-hero-tertiary:hover .mh-hero-tertiary-icon { border-color: var(--blue-bright); color: var(--blue-bright); }
 
-/* Fixed-nav clearance: .mh-hero's original top padding (56px) was less
-   than the fixed nav's own 68px height, so hero content — including the
-   Terminal — started underneath it. */
-.mh-hero {
-  padding-top: 104px; /* 68px nav + ~36px breathing room */
-}
-
-/* Pre-existing left-edge mask (added to blend the terminal into the OLD
-   dark hero) reveals the light background bleeding through at the edge
-   now that the hero is light. Traced in an earlier round — the
-   terminal's own background/border/content are untouched, this only
-   disables a fade effect that no longer applies. */
+/* Live Interview Terminal: pre-existing left-edge mask (added to
+   blend the terminal into the OLD dark hero) reveals the new light
+   background bleeding through at the edge if left in place. Traced
+   in an earlier round, confirmed via hero-v2.css inspection — the
+   terminal's own background/border/content are untouched, this
+   only disables a fade effect that no longer applies now that the
+   hero behind it is light instead of dark. */
 .mh-terminal-v2 {
   -webkit-mask-image: none;
   mask-image: none;
-}
-
-/* Modest proportional scale-down (not a height cap, which risks
-   clipping content that doesn't fit) so the full Terminal — including
-   the AI Activity Feed at the bottom — comfortably fits within the
-   viewport below the now-taller nav clearance, on typical laptop
-   heights, without ever being cut off. Scales the whole panel and its
-   content together; nothing inside it is altered or truncated. */
-.mh-hero-mockup-wrap {
-  filter: drop-shadow(0 24px 48px rgba(10, 15, 30, 0.13));
-  transform: scale(0.94);
-  transform-origin: top center;
 }
 
 /* Value-footer strip directly below hero — quiet, subtle warm
