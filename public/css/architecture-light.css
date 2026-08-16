@@ -66,19 +66,22 @@
    240px sidebar coexist with full-width sections via floats/breakout
    margin tricks, which risk horizontal-overflow bugs the review
    explicitly flagged as a thing to avoid. */
+/* Sidebar restored to match production's actual left-side layout
+   (confirmed directly by the founder — an earlier web_fetch only
+   returned link text in DOM order, which doesn't reveal visual
+   CSS layout direction, so "horizontal" was an incorrect inference
+   from that alone). Recolored for the light system; structure,
+   position, and behavior otherwise match production exactly. The
+   .mh-hub background fix above still prevents the original "black
+   TV screen" issue, since the whole hub area — sidebar included —
+   is now consistently light; only the individual technical cards
+   (Layer 1/2/3, Live Terminal) stay dark, by design. */
 .mh-hub-nav {
   position: sticky;
-  top: 68px; /* clears the fixed 68px main nav */
-  z-index: 40;
+  top: 88px;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-  padding: 14px 24px;
-  background: rgba(247, 246, 242, 0.92);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid #E5E7EB;
+  flex-direction: column;
+  gap: 4px;
 }
 .mh-hub-nav-link {
   color: #5F6B82;
@@ -90,9 +93,9 @@
   background: #F2F3F1;
 }
 .mh-hub-nav-link.active {
-  background: rgba(37, 99, 235, 0.12);
+  background: rgba(37, 99, 235, 0.1);
   color: #1D4ED8;
-  border: 1px solid rgba(37, 99, 235, 0.4);
+  border: 1px solid rgba(37, 99, 235, 0.3);
   box-shadow: none;
   font-weight: 700;
 }
@@ -137,8 +140,6 @@
    ============================================================ */
 
 .mh-why-hero { padding: 56px var(--section-pad-x) 32px; }
-
-.mh-hub-nav { padding: 10px 20px; gap: 4px; }
 
 .mh-arch { padding-top: 44px; padding-bottom: 44px; }
 .mh-timeline { padding-top: 44px; padding-bottom: 44px; }
