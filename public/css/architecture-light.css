@@ -125,3 +125,25 @@
 .mh-timeline-desc { color: #5F6B82; }
 .mh-timeline-num { color: #9AA5B5; }
 .mh-timeline-line { background: #E5E7EB; }
+
+/* ============================================================
+   DENSITY / SPACING COMPACTION (visual review — match 11.png)
+   ------------------------------------------------------------
+   Keeps the new warm-light theme exactly as-is; only reduces
+   vertical spacing that had grown too generous. Every selector
+   below is a shared class (.mh-why-hero, .mh-hub-nav, .mh-arch,
+   .mh-bp-*), but this file loads ONLY on architecture.ejs, so
+   these overrides never reach Why or any other page.
+   ============================================================ */
+
+.mh-why-hero { padding: 56px var(--section-pad-x) 32px; }
+
+.mh-hub-nav { padding: 10px 20px; gap: 4px; }
+
+.mh-arch { padding-top: 44px; padding-bottom: 44px; }
+.mh-timeline { padding-top: 44px; padding-bottom: 44px; }
+
+.mh-bp-stack { margin-top: 28px; }
+.mh-bp-layer { padding: 26px 28px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); }
+.mh-bp-layer-desc { margin-top: 10px; }
+.mh-bp-divider { margin: 14px 0 18px; }
