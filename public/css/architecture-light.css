@@ -40,15 +40,62 @@
      border  #E5E7EB   |   primary text #0B1020   |   secondary #5F6B82
    ============================================================ */
 
-/* Root-cause fix for the "black TV screen" composition bug: every
-   section on this page lives inside .mh-hub-content, the narrow
-   right-column of .mh-hub-inner's 240px-sidebar grid, itself capped
-   at max-width and centered. The true full-viewport wrapper, .mh-hub,
-   has NO background in the base rules — it was inheriting the dark
-   body color, which is exactly why the page read as a narrow column
-   floating on a huge dark field regardless of any individual
-   section's own color. */
+/* Root-cause fix for the "black TV screen" composition bug, part 1:
+   .mh-hub (the true full-width page wrapper) had no background in
+   the base rules and was inheriting the dark body color. */
 .mh-hub { background: #F7F6F2; }
+
+/* Part 2 — the structural fix. Every section (.mh-arch, .mh-timeline,
+   .mh-framework, .mh-proof, trust-architecture) used to live inside
+   .mh-hub-content, the narrow right-column of a 240px-sidebar grid
+   capped at max-width. That's what actually squeezed every section
+   into a narrow column regardless of its own background color.
+
+   Fix: the EJS was restructured (views/architecture.ejs) so these
+   five sections are now full-width top-level children of .mh-hub,
+   not grid-column children. Confirmed via direct inspection that
+   each one already has its own internal wrapper (.mh-arch-inner,
+   .mh-timeline-inner, .mh-framework-inner, .mh-proof-inner — all
+   `max-width: var(--max-w); margin: 0 auto;` in the base rules) —
+   so removing the grid constraint needed NO new width rule here;
+   each section already manages its own correct desktop width
+   exactly like Homepage/Why's sections do.
+
+   The sidebar nav is now a slim sticky horizontal bar instead of a
+   left column — smaller structural footprint than trying to make a
+   240px sidebar coexist with full-width sections via floats/breakout
+   margin tricks, which risk horizontal-overflow bugs the review
+   explicitly flagged as a thing to avoid. */
+.mh-hub-nav {
+  position: sticky;
+  top: 68px; /* clears the fixed 68px main nav */
+  z-index: 40;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  padding: 14px 24px;
+  background: rgba(247, 246, 242, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #E5E7EB;
+}
+.mh-hub-nav-link {
+  color: #5F6B82;
+  border: 1px solid transparent;
+}
+.mh-hub-nav-link:hover,
+.mh-hub-nav-link:focus-visible {
+  color: #0B1020;
+  background: #F2F3F1;
+}
+.mh-hub-nav-link.active {
+  background: rgba(37, 99, 235, 0.08);
+  color: #1D4ED8;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: none;
+  font-weight: 600;
+}
 
 .mh-arch { background: #F7F6F2; }
 .mh-timeline { background: #F2F3F1; }
@@ -78,26 +125,3 @@
 .mh-timeline-desc { color: #5F6B82; }
 .mh-timeline-num { color: #9AA5B5; }
 .mh-timeline-line { background: #E5E7EB; }
-
-/* Sticky sidebar nav — had no background at all in the base rules,
-   which only worked because the whole page used to be one dark
-   color. Needs its own solid backdrop now that sections alternate
-   light/dark, so it reads consistently while sticky-scrolling. */
-.mh-hub-nav {
-  background: #FFFFFF;
-  border: 1px solid #E5E7EB;
-  border-radius: 12px;
-  padding: 10px;
-}
-.mh-hub-nav-link { color: #5F6B82; }
-.mh-hub-nav-link:hover,
-.mh-hub-nav-link:focus-visible {
-  color: #0B1020;
-  background: #F2F3F1;
-}
-.mh-hub-nav-link.active {
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.1), rgba(37, 99, 235, 0.06));
-  color: #1D4ED8;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  box-shadow: none;
-}

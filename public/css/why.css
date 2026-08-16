@@ -94,7 +94,10 @@
   padding-bottom: 52px;
 }
 
-.mh-why-narrow { max-width: 820px; }
+.mh-why-shift { border-top: 1px solid #E5E7EB; }
+.mh-why-philosophy { border-top: 1px solid #E5E7EB; }
+.mh-why-pillars { border-top: 1px solid #E5E7EB; }
+.mh-why-compare { border-top: 1px solid #E5E7EB; }
 
 .mh-matrix-table-wrap {
   margin-top: 32px;

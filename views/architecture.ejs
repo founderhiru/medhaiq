@@ -44,22 +44,18 @@
          the 5th and final section, reusing the same mh-framework /
          mh-frame-card component as "Core Architecture" (framework.ejs). -->
   <section class="mh-hub reveal">
-    <div class="mh-hub-inner">
-      <nav class="mh-hub-nav" aria-label="Architecture sections">
-        <a href="#technical-blueprint" class="mh-hub-nav-link">Technical Blueprint</a>
-        <a href="#journey" class="mh-hub-nav-link">Career Architecture</a>
-        <a href="#framework" class="mh-hub-nav-link">Core Architecture</a>
-        <a href="#proof" class="mh-hub-nav-link">Live Terminal</a>
-        <a href="#trust-architecture" class="mh-hub-nav-link">Trust Architecture</a>
-      </nav>
-      <div class="mh-hub-content">
-        <%- include('partials/architecture') %>
-        <%- include('partials/timeline') %>
-        <%- include('partials/framework') %>
-        <%- include('partials/proof') %>
-        <%- include('partials/trust-architecture') %>
-      </div>
-    </div>
+    <nav class="mh-hub-nav" aria-label="Architecture sections">
+      <a href="#technical-blueprint" class="mh-hub-nav-link">Technical Blueprint</a>
+      <a href="#journey" class="mh-hub-nav-link">Career Architecture</a>
+      <a href="#framework" class="mh-hub-nav-link">Core Architecture</a>
+      <a href="#proof" class="mh-hub-nav-link">Live Terminal</a>
+      <a href="#trust-architecture" class="mh-hub-nav-link">Trust Architecture</a>
+    </nav>
+    <%- include('partials/architecture') %>
+    <%- include('partials/timeline') %>
+    <%- include('partials/framework') %>
+    <%- include('partials/proof') %>
+    <%- include('partials/trust-architecture') %>
   </section>
 
   <%- include('partials/cta-banner') %>
