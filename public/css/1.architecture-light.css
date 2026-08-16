@@ -110,26 +110,14 @@
 .mh-section-sub { color: #5F6B82; }
 
 /* Platform Architecture (Technical Blueprint) content */
-/* .mh-bp-col-title, .mh-bp-col-desc, .mh-bp-model-title,
-   .mh-bp-model-body, .mh-bp-layer-desc, .mh-bp-icon, .mh-bp-divider,
-   .mh-bp-model-divider: NOT overridden, deliberately.
-   Confirmed via grep that every instance of each of these classes
-   renders exclusively inside still-dark elements — the Layer cards
-   (.mh-bp-layer, background: var(--bp-card)) or the Multi-Model
-   panel (.mh-bp-model-panel, same var(--bp-card) background).
-   Neither was ever converted to a light surface — they were always
-   meant to stay dark, per the "keep architecture cards dark"
-   instruction from the very first round.
-   The base rules already use correct dark-card-appropriate values
-   (#F8FAFC / var(--white) text, rgba(255,255,255,*) tints and
-   dividers). An earlier round mistakenly overrode several of these
-   to dark values meant for a light background — near-black text
-   and near-black tints on a dark navy card, which is effectively
-   invisible. Those overrides are removed here, not replaced with
-   new colors, since the originals were already correct.
-   .mh-bp-connector-circle IS still overridden below — that element
-   sits on the light page BETWEEN cards, not inside one, so white
-   is genuinely correct there. */
+.mh-bp-col-title { color: #0B1020; }
+.mh-bp-col-desc { color: #5F6B82; }
+.mh-bp-model-title { color: #0B1020; }
+.mh-bp-model-body { color: #5F6B82; }
+.mh-bp-layer-desc { color: #5F6B82; }
+.mh-bp-icon { background: rgba(11, 16, 32, 0.04); }
+.mh-bp-divider { background: rgba(11, 16, 32, 0.08); }
+.mh-bp-model-divider { background: #E5E7EB; }
 .mh-bp-connector-circle { background: #FFFFFF; border-color: #E5E7EB; }
 /* .mh-bp-layer-label variants (--bp-blue/--bp-amber/etc.) and
    .mh-bp-future-badge (--bp-amber) are semantic accents, already
