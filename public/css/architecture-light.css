@@ -139,7 +139,11 @@
    these overrides never reach Why or any other page.
    ============================================================ */
 
-.mh-why-hero { padding: 56px var(--section-pad-x) 32px; }
+/* .mh-why-hero override removed — it was less than the fixed nav's
+   68px height, causing the "ARCHITECTURE" eyebrow to render
+   underneath it. Architecture now uses the exact same hero padding
+   as every other page (104px/53px, from the base rule), which is
+   what "same distance from top across all pages" requires. */
 
 .mh-arch { padding-top: 44px; padding-bottom: 44px; }
 .mh-timeline { padding-top: 44px; padding-bottom: 44px; }

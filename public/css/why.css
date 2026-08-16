@@ -143,6 +143,8 @@
    ============================================================ */
 
 .mh-why-narrow { max-width: 860px; }
+.mh-why-pillars-inner { max-width: 1280px; }
+.mh-matrix-inner { max-width: 1280px; }
 
 .mh-why-problem,
 .mh-why-shift,
@@ -171,7 +173,7 @@
    ============================================================ */
 
 .mh-why-split {
-  max-width: var(--max-w);
+  max-width: 1280px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
@@ -299,6 +301,10 @@
     darker blues (e.g. #1D4ED8, used in the earlier light-panel version)
     lose contrast on a dark background */
 }
+.mh-matrix-th-label { font-size: 16px; }
+.mh-matrix-cell { font-size: 16px; padding: 20px 22px; }
+.mh-matrix-cell-platform { font-size: 16.5px; }
+.mh-matrix-check { font-size: 18px; }
 
 /* Manifesto — same floating-panel treatment as the closing card in
    the reference */
@@ -347,4 +353,15 @@
 .mh-why-shift-row-old p { font-size: 15.5px; }
 .mh-why-shift-row-new p { font-size: 16px; }
 
+.mh-why-pillar-card {
+  padding: 36px 32px;
+}
+.mh-why-pillar-title { font-size: 19px; }
+.mh-why-pillar-desc { font-size: 14.5px; line-height: 1.6; }
+.mh-why-pillar-icon {
+  width: 52px;
+  height: 52px;
+  font-size: 22px;
+}
+.mh-why-pillar-grid { gap: 28px; }
 .mh-why-philosophy .mh-why-narrow { max-width: 900px; }
