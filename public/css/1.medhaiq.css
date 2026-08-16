@@ -4015,6 +4015,7 @@ button { cursor: pointer; }
    }
 
 @media (max-width: 900px) {
+  .mh-hub-inner { grid-template-columns: 1fr; }
   .mh-hub-nav {
     position: static;
     flex-direction: row;
@@ -4022,8 +4023,7 @@ button { cursor: pointer; }
     gap: 8px;
     padding-bottom: 8px;
     margin-bottom: 24px;
-    border-bottom: 1px solid #E5E7EB; /* was var(--navy-border) — a dark-theme
-      value never updated when this page moved to the light system */
+    border-bottom: 1px solid var(--navy-border);
   }
   .mh-hub-nav-link {
     white-space: nowrap;
