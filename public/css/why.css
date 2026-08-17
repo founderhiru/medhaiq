@@ -213,7 +213,13 @@
   border-radius: 24px;
   padding: 48px 40px;
 }
-
+/* 2. Bottommost Manifesto Card Text */
+.mh-why-manifesto-text {
+  font-size: 20px; /* Reduced font size */
+  line-height: 1.6;
+  font-weight: 500;
+  color: #FFFFFF;
+}
 /* ============================================================
    SCALE-UP PASS (visual review round 3)
    ------------------------------------------------------------
@@ -290,13 +296,22 @@
   border-radius: 20px;
   padding: 24px 32px;
 }
+/* 1. Quote Box Font Size & Bright Blue Accent */
 .mh-why-quote-card .mh-why-quote {
   text-align: left;
   margin: 0 0 12px;
-  font-size: 24px;
-  line-height: 1.3;
+  font-size: 20px; /* Reduced to match bottommost manifesto text */
+  line-height: 1.5;
+  font-weight: 700;
+  color: #0B1020;
 }
+
 .mh-why-quote-card .mh-why-body { color: #475569; margin: 0; font-size: 14px; }
+
+.mh-why-quote-accent {
+  color: #2563EB; /* Bright royal blue */
+}
+
 
 .mh-why-pillar-card {
   background: #FFFFFF;
