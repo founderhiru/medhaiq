@@ -29,15 +29,15 @@
    ============================================================ */
 
 .mh-hero {
-  background: linear-gradient(
-    92deg,
-    #F7F6F2 0%,
-    #F7F6F2 45%,
-    #0B1220 48%,
-    #0A0F1E 100%
-  );
+  background:
+    radial-gradient(ellipse 90% 130% at 100% 50%, rgba(30, 41, 59, 0.08) 0%, rgba(30, 41, 59, 0.04) 45%, transparent 78%),
+    #F7F6F2;
 }
-.mh-hero-glow { background: none; }
+.mh-hero-glow {
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(30, 64, 175, 0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 80% 60%, rgba(59, 130, 246, 0.03) 0%, transparent 50%);
+}
 .mh-hero-badge {
   background: rgba(30, 64, 175, 0.08);
   border-color: rgba(30, 64, 175, 0.2);
@@ -65,28 +65,6 @@
 .mh-hero-tertiary-icon { border-color: #D6DAE0; color: #5F6B82; }
 .mh-hero-tertiary:hover .mh-hero-tertiary-icon { border-color: var(--blue-bright); color: var(--blue-bright); }
 
-/* Homepage nav: white/light, per this round's reference — page-scoped
-   override only. medhaiq.css's global .mh-nav (deep navy, "quiet
-   permanent brand frame") stays exactly as-is for Why/Architecture/
-   Pricing/About; this file loads only on the homepage, so it can't
-   affect those pages. */
-.mh-nav, .mh-nav.mh-nav-scrolled {
-  background: rgba(255, 255, 255, 0.96);
-  border-bottom-color: #E5E7EB;
-}
-.mh-nav-link { color: #334155; }
-.mh-nav-link:hover,
-.mh-nav-link.active { color: var(--royal-blue); background: rgba(30, 64, 175, 0.06); }
-.mh-hamburger span { background: #334155; }
-
-.mh-hero-badge { margin-bottom: 14px; }
-.mh-hero-h1 { margin-bottom: 14px; }
-.mh-hero-h2 { margin-bottom: 20px; }
-.mh-hero-chips { margin-bottom: 22px; gap: 8px; }
-.mh-hero-chip { padding: 8px 12px; }
-.mh-hero-actions { margin-bottom: 10px; }
-.mh-hero-tertiary-row { margin-bottom: 0; }
-
 /* Fixed-nav clearance: .mh-hero's original top padding (56px) was less
    than the fixed nav's own 68px height, so hero content — including the
    Terminal — started underneath it. */
@@ -110,36 +88,12 @@
    viewport below the now-taller nav clearance, on typical laptop
    heights, without ever being cut off. Scales the whole panel and its
    content together; nothing inside it is altered or truncated. */
-.mh-hero-inner { grid-template-columns: 44% 56%; align-items: center; }
+.mh-hero-inner { grid-template-columns: 46% 54%; }
 
 .mh-hero-mockup-wrap {
-  filter: none;
-  transform: none;
-}
-.mh-terminal-v2 {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: none;
-}
-
-/* Desktop internal reorg — CSS grid placement only, DOM order
-   unchanged (still Engine, STAR, Score, Vectors, Feed in the HTML,
-   exactly as before). Row 1: Engine + STAR. Row 2: Score + Feed.
-   Row 3: Vectors, full width. */
-.mh-terminal-v2-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 24px;
-}
-.mh-terminal-v2-block:nth-child(1) { grid-column: 1; grid-row: 1; } /* AI Engine Status */
-.mh-terminal-v2-block:nth-child(2) { grid-column: 2; grid-row: 1; border-left: 1px solid var(--navy-border); padding-left: 24px; } /* STAR Progress */
-.mh-terminal-v2-block:nth-child(3) { grid-column: 1; grid-row: 2; } /* Overall Intelligence Score */
-.mh-terminal-v2-block-last { grid-column: 2; grid-row: 2; border-left: 1px solid var(--navy-border); padding-left: 24px; } /* AI Activity Feed */
-.mh-terminal-v2-block:nth-child(4) { grid-column: 1 / span 2; grid-row: 3; } /* 5-Vector Intelligence */
-
-.mh-terminal-v2-vectors {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px 24px;
+  filter: drop-shadow(0 24px 48px rgba(10, 15, 30, 0.13));
+  transform: scale(0.94);
+  transform-origin: top center;
 }
 
 /* Value-footer strip directly below hero — quiet, subtle warm
@@ -168,23 +122,3 @@
 .mh-trust-label { color: #64748B; }
 .mh-trust-name { color: #1E293B; }
 .mh-trust-sep { color: #A8B2C0; }
-
-@media (max-width: 900px) {
-  .mh-hero {
-    background: #F7F6F2;
-    padding-top: 96px;
-  }
-  .mh-hero-inner { grid-template-columns: 1fr; }
-  .mh-hero-mockup-wrap { width: 100%; }
-  .mh-terminal-v2-body {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-  }
-  .mh-terminal-v2-block:nth-child(2),
-  .mh-terminal-v2-block-last {
-    border-left: none;
-    padding-left: 0;
-  }
-  .mh-terminal-v2-vectors { grid-template-columns: 1fr; }
-}
