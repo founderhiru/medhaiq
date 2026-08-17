@@ -30,11 +30,13 @@
 
 .mh-hero {
   background: linear-gradient(
-    92deg,
-    #F7F6F2 0%,
-    #F7F6F2 45%,
-    #0B1220 48%,
-    #0A0F1E 100%
+    100deg,
+    #F7F8F6 0%,
+    #F7F8F6 38%,
+    #EEF2F7 50%,
+    #DCE5F2 60%,
+    #0B1427 74%,
+    #080F20 100%
   );
 }
 .mh-hero-glow { background: none; }
@@ -65,19 +67,10 @@
 .mh-hero-tertiary-icon { border-color: #D6DAE0; color: #5F6B82; }
 .mh-hero-tertiary:hover .mh-hero-tertiary-icon { border-color: var(--blue-bright); color: var(--blue-bright); }
 
-/* Homepage nav: white/light, per this round's reference — page-scoped
-   override only. medhaiq.css's global .mh-nav (deep navy, "quiet
-   permanent brand frame") stays exactly as-is for Why/Architecture/
-   Pricing/About; this file loads only on the homepage, so it can't
-   affect those pages. */
-.mh-nav, .mh-nav.mh-nav-scrolled {
-  background: rgba(255, 255, 255, 0.96);
-  border-bottom-color: #E5E7EB;
-}
-.mh-nav-link { color: #334155; }
-.mh-nav-link:hover,
-.mh-nav-link.active { color: var(--royal-blue); background: rgba(30, 64, 175, 0.06); }
-.mh-hamburger span { background: #334155; }
+/* Homepage nav override REMOVED per explicit instruction: the nav must
+   stay the existing dark navy global navigation (medhaiq.css), unchanged
+   on every page including the homepage. No homepage-specific .mh-nav
+   rule exists in this file anymore. */
 
 .mh-hero-badge { margin-bottom: 14px; }
 .mh-hero-h1 { margin-bottom: 14px; }
@@ -171,7 +164,7 @@
 
 @media (max-width: 900px) {
   .mh-hero {
-    background: #F7F6F2;
+    background: #F7F8F6;
     padding-top: 96px;
   }
   .mh-hero-inner { grid-template-columns: 1fr; }
@@ -187,4 +180,126 @@
     padding-left: 0;
   }
   .mh-terminal-v2-vectors { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   LAYERED PRODUCT COMPOSITION — Career Workspace + Live Terminal
+   ------------------------------------------------------------
+   .mh-career-mock is entirely new markup (added to hero.ejs,
+   necessary since no workspace-preview visual existed before).
+   .mh-hero-mockup-wrap / .mh-terminal-v2 are the pre-existing,
+   completely unmodified terminal — only its position/rotation
+   changes here, never its content.
+   ============================================================ */
+
+.mh-hero-inner { grid-template-columns: 41% 59%; align-items: center; }
+
+.mh-hero-product-stack {
+  position: relative;
+  perspective: 1800px;
+  min-height: 640px;
+}
+
+.mh-career-mock {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 76%;
+  z-index: 1;
+  transform: rotateY(-5deg) rotateX(1deg);
+  transform-style: preserve-3d;
+  background: #0B1427;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.5);
+  padding: 20px 22px;
+  font-family: var(--font-body);
+}
+.mh-career-mock-header { margin-bottom: 10px; }
+.mh-career-mock-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94A3B8;
+}
+.mh-career-mock-greeting { color: #F8FAFC; font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+.mh-career-mock-sub { color: #94A3B8; font-size: 12px; margin-bottom: 16px; }
+.mh-career-mock-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.mh-career-mock-card {
+  background: #111A2D;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.mh-career-mock-profile { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.mh-career-mock-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: #16213A; color: #3B82F6;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.mh-career-mock-name { color: #F8FAFC; font-size: 12.5px; font-weight: 700; }
+.mh-career-mock-role { color: #94A3B8; font-size: 11px; }
+.mh-career-mock-strength { display: flex; align-items: center; gap: 10px; }
+.mh-career-mock-ring {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid #2563EB;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10.5px; font-weight: 700; color: #F8FAFC; flex-shrink: 0;
+}
+.mh-career-mock-strength-label { color: #F8FAFC; font-size: 11px; font-weight: 600; }
+.mh-career-mock-strength-sub { color: #94A3B8; font-size: 10px; margin-top: 1px; }
+.mh-career-mock-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; color: #94A3B8; margin-bottom: 8px;
+}
+.mh-career-mock-practice-item,
+.mh-career-mock-rec {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: #F8FAFC; padding: 5px 0;
+}
+.mh-career-mock-rec { color: #94A3B8; justify-content: flex-start; }
+.mh-career-mock-score { color: #10B981; font-weight: 700; }
+.mh-career-mock-footer {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  padding-top: 12px; margin-top: 4px;
+}
+.mh-career-mock-stat { display: block; color: #F8FAFC; font-size: 15px; font-weight: 700; }
+.mh-career-mock-stat-label { display: block; color: #94A3B8; font-size: 9.5px; margin-top: 2px; }
+
+.mh-hero-mockup-wrap {
+  position: absolute;
+  top: 16%;
+  right: 0;
+  width: 60%;
+  z-index: 2;
+  filter: none;
+  transform: rotateY(-4deg) rotateX(1deg);
+  transform-style: preserve-3d;
+}
+.mh-terminal-v2 {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow:
+    0 40px 70px -30px rgba(0, 0, 0, 0.55),
+    0 0 40px -10px rgba(37, 99, 235, 0.15);
+}
+
+@media (max-width: 1200px) {
+  .mh-hero-inner { grid-template-columns: 1fr; }
+  .mh-hero-product-stack {
+    position: static;
+    perspective: none;
+    min-height: 0;
+    margin-top: 32px;
+  }
+  .mh-career-mock,
+  .mh-hero-mockup-wrap {
+    position: static;
+    width: 100%;
+    transform: none;
+    margin-bottom: 20px;
+  }
 }
