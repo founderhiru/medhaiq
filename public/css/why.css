@@ -299,11 +299,40 @@
 .mh-why-quote-card {
   background: #EEF0FB;
   border-radius: 20px;
-  padding: 44px 48px;
+  padding: 32px 40px;
 }
-.mh-why-quote-card .mh-why-quote { text-align: left; margin: 0 0 20px; }
-.mh-why-quote-card .mh-why-body { color: #475569; }
+.mh-why-quote-card .mh-why-quote { text-align: left; margin: 0 0 14px; }
+.mh-why-quote-card .mh-why-body { color: #475569; margin: 0; }
+
+/* Pillar icons: brighter, with a light tinted circle behind them for
+   more visual presence — was flat text-color-only before. */
+.mh-why-pillar-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
 
 @media (max-width: 900px) {
   .mh-why-twocard-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   FURTHER COMPACTION (page overall too tall / too much empty space)
+   ------------------------------------------------------------
+   Tightens remaining generous gaps without touching --section-pad-y
+   (still a global token — page-scoped overrides only).
+   ============================================================ */
+.mh-why-twocard { padding: 40px var(--section-pad-x); }
+.mh-why-philosophy,
+.mh-why-pillars,
+.mh-why-compare { padding-top: 40px; padding-bottom: 40px; }
+.mh-why-pillar-grid { margin-top: 36px; }
+.mh-matrix-table-wrap { margin-top: 24px; }
+.mh-why-manifesto { padding-bottom: 48px; }
+.mh-why-manifesto-panel { padding: 36px 40px; }
