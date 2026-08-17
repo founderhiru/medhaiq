@@ -108,15 +108,14 @@
   padding-bottom: 18px;
 }
 .mh-matrix-th-label {
-  font-size: 15px;
+  font-size: 12.5px;
   font-weight: 700;
 }
 .mh-matrix-cell {
-  font-size: 15px;
+  font-size: 14px;
   padding-top: 16px;
   padding-bottom: 16px;
 }
-.mh-matrix-cell-platform { font-size: 15.5px; }
 .mh-why-compare .mh-section-title { font-size: 32px; }
 
 /* ============================================================
@@ -127,10 +126,6 @@
    was --section-pad-y (76px, a GLOBAL token shared by every page
    using medhaiq.css) — NOT changed globally; overridden per-section
    here instead, since only Why's rhythm needed tightening.
-   Comparison table font sizes/padding bumped up — table container
-   width was already ~var(--max-w) (~1160px, already close to the
-   1100-1200px target), so the "too small" complaint was really
-   about internal type scale, not outer container width.
    ============================================================ */
 
 .mh-why-narrow { max-width: 860px; }
@@ -149,9 +144,7 @@
 }
 
 .mh-matrix-table-wrap { margin-top: 40px; }
-.mh-matrix-th { font-size: 12.5px; padding: 18px 20px; }
-.mh-matrix-cell { font-size: 15px; padding: 18px 20px; }
-.mh-matrix-check { font-size: 17px; }
+.mh-matrix-th { padding: 18px 20px; }
 
 /* ============================================================
    LAYOUT RESTRUCTURE — two-column sections + floating dark panels
@@ -201,7 +194,6 @@
 }
 .mh-why-compare-panel .mh-matrix-cell-label {
   color: #FFFFFF;
-  font-weight: 600;
 }
 .mh-why-compare-panel .mh-matrix-cell-legacy {
   color: #7C89A3; /* muted grey/blue, deliberately quieter — "Typical
@@ -210,7 +202,6 @@
 }
 .mh-why-compare-panel .mh-matrix-cell-platform {
   color: #FFFFFF;
-  font-weight: 600;
   background: rgba(59, 130, 246, 0.08);
   border-left: 3px solid var(--blue-bright);
 }
@@ -219,10 +210,10 @@
     darker blues (e.g. #1D4ED8, used in the earlier light-panel version)
     lose contrast on a dark background */
 }
-.mh-matrix-th-label { font-size: 16px; }
-.mh-matrix-cell { font-size: 16px; padding: 20px 22px; }
-.mh-matrix-cell-platform { font-size: 16.5px; }
-.mh-matrix-check { font-size: 18px; }
+.mh-matrix-th-label { font-size: 12px; }
+.mh-matrix-cell { font-size: 13px; padding: 15px 18px; }
+.mh-matrix-cell-platform { font-size: 13px; font-weight: 400; }
+.mh-matrix-check { font-size: 14px; }
 
 /* Manifesto — same floating-panel treatment as the closing card in
    the reference */
@@ -280,30 +271,30 @@
 }
 
 .mh-why-card {
-  background: #0B0F1A;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 36px 36px 32px;
+  background: #F1F0EB;
+  border: 1px solid #E5E3DA;
+  border-radius: 16px;
+  padding: 32px 32px 28px;
 }
 .mh-why-card-icon {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  border: 1.5px solid rgba(59, 130, 246, 0.4);
+  border: 1.5px solid rgba(37, 99, 235, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #60A5FA;
-  margin-bottom: 18px;
+  color: var(--royal-blue);
+  margin-bottom: 14px;
 }
-.mh-why-card .mh-eyebrow { color: #60A5FA; }
+.mh-why-card .mh-eyebrow { color: var(--royal-blue); }
 .mh-why-card .mh-section-title {
-  color: #FFFFFF;
-  font-size: 26px;
-  margin: 8px 0 16px;
+  color: #0B1020;
+  font-size: 24px;
+  margin: 6px 0 14px;
 }
-.mh-why-card .mh-why-body { color: #94A3B8; }
-.mh-why-card .mh-why-body-emphasis { color: #FFFFFF; font-weight: 700; }
+.mh-why-card .mh-why-body { color: #5F6B82; }
+.mh-why-card .mh-why-body-emphasis { color: #0B1020; font-weight: 700; }
 
 .mh-why-quote-card {
   background: #EEF0FB;
