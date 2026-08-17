@@ -1,6 +1,121 @@
 <!--
-  HERO — v6 Corrected Structure
+  HERO — v6 Corrected Structure & Refined 2(10).png Geometry
 -->
+<style>
+  /* Localized Layout & Geometric Overrides for 2(10).png Convergence */
+  .mh-hero-product-stack {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 520px;
+    perspective: 1800px;
+    margin-bottom: 20px;
+  }
+
+  /* REAR LAYER: CAREER WORKSPACE (Broad Landscape Card) */
+  .mh-career-mock {
+    position: relative;
+    width: 60%;
+    max-width: 620px;
+    background: #0B1427;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 12px;
+    padding: 20px;
+    z-index: 1;
+    transform: perspective(1800px) rotateY(-5deg) rotateX(1deg);
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease;
+  }
+
+  .mh-career-mock-card {
+    background: #111A2D;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  /* FRONT LAYER: LIVE INTERVIEW TERMINAL (Compact Vertical Card) */
+  .mh-hero-mockup-wrap {
+    position: absolute;
+    right: 4%;
+    top: 50%;
+    transform: translateY(-50%) perspective(1800px) rotateY(-5deg) rotateX(1deg);
+    width: 33%;
+    min-width: 300px;
+    max-width: 340px;
+    z-index: 2;
+  }
+
+  .mh-terminal-v2 {
+    background: #080F20;
+    border: 1px solid rgba(59, 130, 246, 0.28);
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 
+      0 0 0 1px rgba(59, 130, 246, 0.18),
+      0 30px 70px -25px rgba(0, 0, 0, 0.55),
+      0 0 55px -15px rgba(37, 99, 235, 0.25);
+  }
+
+  /* Internal Compact Spacing Offsets */
+  .mh-terminal-v2-body {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .mh-terminal-v2-block {
+    padding: 8px 10px !important;
+    margin-bottom: 0 !important;
+    background: rgba(17, 26, 45, 0.6);
+    border-radius: 6px;
+    border: 1px solid rgba(148, 163, 184, 0.08);
+  }
+
+  .mh-terminal-v2-header {
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  }
+
+  .mh-terminal-v2-engine {
+    gap: 10px;
+  }
+
+  .mh-terminal-v2-ring-svg {
+    width: 42px;
+    height: 42px;
+  }
+
+  .mh-terminal-v2-vectors li {
+    padding: 2px 0;
+    font-size: 11px;
+  }
+
+  /* Responsive Adjustments for Smaller Viewports */
+  @media (max-width: 1024px) {
+    .mh-hero-product-stack {
+      flex-direction: column;
+      align-items: center;
+      min-height: auto;
+    }
+    .mh-career-mock {
+      width: 100%;
+      transform: none;
+    }
+    .mh-hero-mockup-wrap {
+      position: relative;
+      right: 0;
+      top: 0;
+      transform: none;
+      width: 100%;
+      margin-top: -40px;
+    }
+  }
+</style>
+
 <section class="mh-hero">
   <div class="mh-hero-grid"></div>
   <div class="mh-hero-glow"></div>
@@ -155,7 +270,7 @@
             <div class="mh-terminal-v2-block">
               <div class="mh-terminal-v2-label">AI Engine Status</div>
               <div class="mh-terminal-v2-engine">
-                <svg width="52" height="52" viewBox="0 0 52 52" class="mh-terminal-v2-ring-svg">
+                <svg width="42" height="42" viewBox="0 0 52 52" class="mh-terminal-v2-ring-svg">
                   <defs>
                     <linearGradient id="mh-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stop-color="#3B82F6"/>
