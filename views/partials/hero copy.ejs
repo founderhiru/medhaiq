@@ -1,5 +1,5 @@
 <!--
-  HERO — Matched to Live Terminal SVGs & 2_5.jpg Embedded 3D Stage
+  HERO — 100% Matched to TT.png Design Target
 -->
 <style>
   /* 1. Pulsing Green Indicator Animation */
@@ -30,37 +30,37 @@
     animation: mh-live-pulse 1.8s infinite ease-in-out;
   }
 
-  /* 2. Hero Stage (10% Wider & Enhanced 3D Perspective) */
+  /* Hero Container Setup */
   .mh-hero-product-stack {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: flex-end;
     width: 100%;
-    max-width: 900px;
-    height: 540px;
+    max-width: 820px;
+    height: 520px;
     margin-top: -10px;
-    perspective: 1600px;
+    perspective: 1400px;
     perspective-origin: 55% 45%;
   }
 
-  /* REAR CARD: CAREER WORKSPACE (Jointed & 4D Embedded Shadow) */
+  /* REAR CARD: CAREER WORKSPACE (Jointed to Terminal with Neon Glow) */
   .mh-career-mock {
     position: absolute;
-    right: 250px;
+    right: 220px; /* Jointed/snapped flush behind the Terminal card */
     top: 15px;
-    width: 530px;
-    height: 495px;
+    width: 480px;
+    height: 475px;
     background: #0B1226;
-    border: 1.5px solid rgba(59, 130, 246, 0.45);
+    border: 1.5px solid rgba(59, 130, 246, 0.5);
     border-radius: 18px;
     padding: 22px;
     z-index: 1;
     transform-style: preserve-3d;
-    transform: rotateY(-18deg) rotateX(7deg) rotateZ(2deg);
+    transform: rotateY(-16deg) rotateX(6deg) rotateZ(2deg);
     box-shadow: 
-      0 0 25px rgba(59, 130, 246, 0.35),
-      -25px 35px 70px rgba(0, 0, 0, 0.85),
+      0 0 20px rgba(59, 130, 246, 0.35),
+      -20px 30px 60px rgba(0, 0, 0, 0.8),
       inset 0 0 15px rgba(59, 130, 246, 0.15);
     overflow: hidden;
   }
@@ -72,16 +72,16 @@
     padding: 12px 14px;
   }
 
-  /* FRONT CARD: LIVE INTERVIEW TERMINAL (10% Wider + Intense Neon Edge Glow) */
+  /* FRONT CARD: LIVE INTERVIEW TERMINAL (Seamless 3D Joint & Perimeter Neon Glow) */
   .mh-hero-mockup-wrap {
     position: absolute;
     right: 0px;
     top: 0px;
-    width: 340px;
-    height: 525px;
+    width: 310px;
+    height: 505px;
     z-index: 2;
     transform-style: preserve-3d;
-    transform: rotateY(-18deg) rotateX(7deg) rotateZ(2deg);
+    transform: rotateY(-16deg) rotateX(6deg) rotateZ(2deg);
   }
 
   .mh-terminal-v2 {
@@ -91,15 +91,16 @@
     border-radius: 18px;
     padding: 14px 16px;
     box-shadow: 
-      0 0 35px rgba(59, 130, 246, 0.7),
-      -10px 20px 50px rgba(0, 0, 0, 0.9),
-      inset 0 0 18px rgba(59, 130, 246, 0.25);
+      0 0 30px rgba(59, 130, 246, 0.65),
+      -10px 20px 50px rgba(0, 0, 0, 0.85),
+      inset 0 0 15px rgba(59, 130, 246, 0.25);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     overflow: hidden;
   }
 
+  /* Internal Compact Layout Strategy */
   .mh-terminal-v2-body {
     display: flex !important;
     flex-direction: column !important;
@@ -137,30 +138,13 @@
     flex-shrink: 0;
   }
 
-  /* 5-Vector List Styles matching Live Engine */
-  .mh-terminal-v2-vectors {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-
   .mh-terminal-v2-vectors li {
+    padding: 1px 0;
     font-size: 10px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    color: #CBD5E1;
-  }
-
-  .mh-vector-bar {
-    flex: 1;
-    height: 3px;
-    background: rgba(148, 163, 184, 0.15);
-    border-radius: 2px;
-    margin: 0 4px;
+    justify-content: space-between;
+    color: #94A3B8;
   }
 
   /* Responsive Fallback */
@@ -251,77 +235,80 @@
       </div>
     </div>
 
-    <!-- Right Column: Jointed 4D Embedded Cards Stack -->
+    <!-- Right Column: Jointed Product Cards Stack Matching TT.png -->
     <div class="mh-hero-product-stack">
       
       <!-- REAR LAYER: CAREER WORKSPACE -->
       <div class="mh-career-mock" aria-hidden="true">
         <div class="mh-career-mock-header">
           <span class="mh-career-mock-title" style="font-size:10px; color:#64748B; letter-spacing:0.05em;">CAREER WORKSPACE</span>
-          <h3 class="mh-career-mock-greeting" style="margin:2px 0 0 0; font-size:15px; color:#F8FAFC;">Good evening, Ron 🌙</h3>
+          <h3 class="mh-career-mock-greeting" style="margin:2px 0 0 0; font-size:15px; color:#F8FAFC;">Good afternoon, Alex ☀️</h3>
           <p class="mh-career-mock-sub" style="margin:2px 0 12px 0; font-size:10.5px; color:#94A3B8;">Track your progress, improve every day, and land your next opportunity.</p>
         </div>
 
         <div class="mh-career-mock-row" style="display:flex; gap:10px;">
-          <!-- AI Interview Minutes Meter -->
+          <!-- Profile Card -->
           <div class="mh-career-mock-card" style="flex:1;">
-            <div style="font-size:8.5px; color:#64748B; margin-bottom:4px; font-weight:600;">⚡ AI INTERVIEW MINUTES</div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <div style="font-size:16px; font-weight:700; color:#F59E0B;">110 <span style="font-size:9px; color:#94A3B8;">mins</span></div>
-              <div style="flex:1; height:4px; background:#1E293B; border-radius:2px; overflow:hidden;">
-                <div style="width:91%; height:100%; background:#F59E0B;"></div>
+            <div class="mh-career-mock-profile" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <div class="mh-career-mock-avatar" style="width:28px; height:28px; background:#1E293B; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; color:#60A5FA; font-weight:700;">AC</div>
+              <div>
+                <div class="mh-career-mock-name" style="font-size:11px; font-weight:700; color:#F8FAFC;">Alex Chen</div>
+                <div class="mh-career-mock-role" style="font-size:9.5px; color:#94A3B8;">Engineering Manager</div>
               </div>
             </div>
-            <div style="font-size:8px; color:#64748B; margin-top:4px;">Used 10 mins · 120 Total</div>
+            <div class="mh-career-mock-strength" style="display:flex; align-items:center; gap:8px;">
+              <div class="mh-career-mock-ring" style="font-size:11px; font-weight:700; color:#F8FAFC;">68%</div>
+              <div>
+                <div class="mh-career-mock-strength-label" style="font-size:10px; font-weight:600; color:#CBD5E1;">Profile Strength</div>
+                <div class="mh-career-mock-strength-sub" style="font-size:8.5px; color:#64748B;">Complete your profile to get better insights</div>
+              </div>
+            </div>
           </div>
 
-          <!-- Interview Readiness -->
+          <!-- Upcoming Interview Card -->
           <div class="mh-career-mock-card" style="flex:1;">
-            <div style="font-size:8.5px; color:#64748B; margin-bottom:4px; font-weight:600;">INTERVIEW READINESS</div>
-            <div style="display:flex; align-items:baseline; gap:4px;">
-              <span style="font-size:16px; font-weight:700; color:#10B981;">0</span>
-              <span style="font-size:9px; color:#64748B;">/100</span>
-              <span style="font-size:8px; color:#F43F5E; margin-left:auto;">Needs Focus</span>
-            </div>
-            <div style="font-size:8px; color:#94A3B8; margin-top:4px;">Focus next: <span style="color:#F59E0B;">Domain Expertise</span></div>
+            <div class="mh-career-mock-label" style="font-size:8.5px; color:#64748B; margin-bottom:4px;">UPCOMING INTERVIEW</div>
+            <div style="font-weight:700; color:#F8FAFC; font-size:11px;">Engineering Manager</div>
+            <div style="color:#94A3B8; font-size:10px; margin-bottom:6px;">Google · In 2 days · 10:00 AM</div>
+            <a href="#" style="font-size:9.5px; color:#3B82F6; text-decoration:none;">↑ View Details</a>
           </div>
         </div>
 
         <div class="mh-career-mock-row" style="display:flex; gap:10px; margin-top:10px;">
-          <!-- Recent Activity -->
+          <!-- Recent Practice -->
           <div class="mh-career-mock-card" style="flex:1;">
-            <div class="mh-career-mock-label" style="font-size:8.5px; color:#64748B; margin-bottom:6px;">RECENT ACTIVITY</div>
-            <div style="display:flex; justify-content:space-between; font-size:9.5px; color:#CBD5E1; margin-bottom:3px;">
-              <span>Management Consultant</span>
-              <span style="color:#64748B;">Aug 15</span>
+            <div class="mh-career-mock-label" style="font-size:8.5px; color:#64748B; margin-bottom:6px;">RECENT PRACTICE</div>
+            <div class="mh-career-mock-practice-item" style="display:flex; justify-content:space-between; font-size:10px; color:#CBD5E1; margin-bottom:4px;">
+              <span>System Design</span>
+              <span class="mh-career-mock-score" style="color:#10B981; font-weight:700;">85/100</span>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:9.5px; color:#CBD5E1;">
-              <span>Technical Program Manager</span>
-              <span style="color:#64748B;">Aug 13</span>
+            <div class="mh-career-mock-practice-item" style="display:flex; justify-content:space-between; font-size:10px; color:#CBD5E1;">
+              <span>Behavioral Leadership</span>
+              <span class="mh-career-mock-score" style="color:#60A5FA; font-weight:700;">72/100</span>
             </div>
           </div>
 
-          <!-- Quick Start Practice -->
-          <div class="mh-career-mock-card" style="flex:1; background:rgba(30, 41, 59, 0.6);">
-            <div class="mh-career-mock-label" style="font-size:8.5px; color:#64748B; margin-bottom:4px;">QUICK ACTIONS</div>
-            <div style="font-size:10px; font-weight:700; color:#F8FAFC;">Start Interview</div>
-            <div style="font-size:8.5px; color:#94A3B8;">Practice with AI interviewer & get instant feedback</div>
+          <!-- Recommended for You -->
+          <div class="mh-career-mock-card" style="flex:1;">
+            <div class="mh-career-mock-label" style="font-size:8.5px; color:#64748B; margin-bottom:6px;">RECOMMENDED FOR YOU</div>
+            <div style="font-size:10px; color:#CBD5E1; margin-bottom:3px;">Leadership Interviews</div>
+            <div style="font-size:10px; color:#CBD5E1;">Product Sense</div>
           </div>
         </div>
 
         <!-- Progress Metrics Footer -->
         <div class="mh-career-mock-footer" style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(148,163,184,0.12); display:flex; justify-content:space-between;">
           <div>
-            <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">3</span>
+            <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">24</span>
             <span style="font-size:8.5px; color:#64748B;">Interviews Completed</span>
           </div>
           <div>
-            <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">15m</span>
+            <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">14h 30m</span>
             <span style="font-size:8.5px; color:#64748B;">Total Practice Time</span>
           </div>
           <div>
-            <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">3</span>
-            <span style="font-size:8.5px; color:#64748B;">Reports Generated</span>
+            <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">78%</span>
+            <span style="font-size:8.5px; color:#64748B;">Average Score</span>
           </div>
         </div>
       </div>
@@ -394,48 +381,25 @@
               </div>
             </div>
 
-            <!-- 5-VECTOR INTELLIGENCE WITH EXACT LIVE ENGINE SVG ICONS -->
             <div class="mh-terminal-v2-block">
-              <div style="font-size:8.5px; color:#64748B; margin-bottom:4px; font-weight:600;">5-VECTOR INTELLIGENCE</div>
-              <ul class="mh-terminal-v2-vectors">
-                <li>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                  <span>Structure</span>
-                  <div class="mh-vector-bar"></div>
-                  <span style="color:#64748B;">--</span>
-                </li>
-                <li>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg>
-                  <span>Domain Expertise</span>
-                  <div class="mh-vector-bar"></div>
-                  <span style="color:#64748B;">--</span>
-                </li>
-                <li>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  <span>Strategic Thinking</span>
-                  <div class="mh-vector-bar"></div>
-                  <span style="color:#64748B;">--</span>
-                </li>
-                <li>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  <span>Communication</span>
-                  <div class="mh-vector-bar"></div>
-                  <span style="color:#64748B;">--</span>
-                </li>
-                <li>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  <span>Leadership &amp; Execution</span>
-                  <div class="mh-vector-bar"></div>
-                  <span style="color:#64748B;">--</span>
-                </li>
+              <div style="font-size:8.5px; color:#64748B; margin-bottom:2px; font-weight:600;">5-VECTOR INTELLIGENCE</div>
+              <ul class="mh-terminal-v2-vectors" style="list-style:none; padding:0; margin:0;">
+                <li>Structure<span>--</span></li>
+                <li>Domain Expertise<span>--</span></li>
+                <li>Strategic Thinking<span>--</span></li>
+                <li>Communication<span>--</span></li>
+                <li>Leadership &amp; Execution<span>--</span></li>
               </ul>
             </div>
 
             <div class="mh-terminal-v2-block">
               <div style="font-size:8.5px; color:#64748B; margin-bottom:2px; font-weight:600;">AI ACTIVITY FEED</div>
-              <div style="font-size:8.5px; color:#CBD5E1; line-height:1.3; display:flex; align-items:center; gap:5px;">
-                <span style="width:5px; height:5px; background:#3B82F6; border-radius:50%; display:inline-block;"></span>
-                <span>AI systems ready. Click 'Start Free Trial' to begin.</span>
+              <div style="font-size:9px; color:#CBD5E1; line-height:1.3;">
+                ◆ AI systems ready. Click 'Start Free Trial' to begin.<br>
+                ◆ Resume analysis complete<br>
+                ◆ Role detected: Engineering Manager<br>
+                ◆ Interview pattern optimized<br>
+                ◆ Standing by for your input...
               </div>
             </div>
 
