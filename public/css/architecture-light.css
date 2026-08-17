@@ -1,0 +1,166 @@
+/* ============================================================
+   ARCHITECTURE — WARM LIGHT FOUNDATION + ONE DARK TECHNICAL PANEL
+   ------------------------------------------------------------
+   Dedicated file, loaded only by views/architecture.ejs.
+
+   ROOT CAUSE FOUND AND FIXED (the "black TV screen" effect):
+   .mh-hub — the outer wrapper containing the sidebar nav and every
+   content section — had NO background of its own in the base
+   rules. It's transparent over body's var(--navy-deep). Because
+   .mh-hub-inner is max-width-constrained and centered, this meant
+   the page was full-width dark navy with only the narrow
+   constrained column showing each section's own background —
+   exactly the "narrow white webpage inside a huge dark canvas"
+   symptom. Fixing .mh-hub itself (edge-to-edge) is what actually
+   resolves it; the individual section backgrounds below were
+   already correct from the prior round and are unchanged.
+   ============================================================ */
+
+.mh-hub {
+  background: #F7F6F2;
+}
+
+/* No body-class scoping needed — .mh-arch, .mh-timeline, .mh-bp-*,
+   .mh-timeline-*, .mh-hub-nav* are all confirmed exclusive to
+   this page. .mh-framework is shared by two partials on THIS
+   SAME page only (Practice/Polish/Place + Trust & AI Governance)
+   — confirmed via grep, not used elsewhere.
+
+   Audit finding, still true: .mh-framework is ALREADY #ffffff in
+   medhaiq.css's base rules, and .mh-proof (Live Intelligence
+   Engine) is ALREADY dark navy — exactly the one deliberate dark
+   technical panel this page should have. NEITHER needs any
+   override here — both already correct.
+
+   Only .mh-arch (Platform Architecture) and .mh-timeline (Career
+   Journey) needed changing — both were dark, now warm light.
+
+   Palette matches why.css (warm direction):
+     light   #F7F6F2   |   alt  #F2F3F1   |   card  #FFFFFF
+     border  #E5E7EB   |   primary text #0B1020   |   secondary #5F6B82
+   ============================================================ */
+
+/* Root-cause fix for the "black TV screen" composition bug, part 1:
+   .mh-hub (the true full-width page wrapper) had no background in
+   the base rules and was inheriting the dark body color. */
+.mh-hub { background: #F7F6F2; }
+
+/* Part 2 — the structural fix. Every section (.mh-arch, .mh-timeline,
+   .mh-framework, .mh-proof, trust-architecture) used to live inside
+   .mh-hub-content, the narrow right-column of a 240px-sidebar grid
+   capped at max-width. That's what actually squeezed every section
+   into a narrow column regardless of its own background color.
+
+   Fix: the EJS was restructured (views/architecture.ejs) so these
+   five sections are now full-width top-level children of .mh-hub,
+   not grid-column children. Confirmed via direct inspection that
+   each one already has its own internal wrapper (.mh-arch-inner,
+   .mh-timeline-inner, .mh-framework-inner, .mh-proof-inner — all
+   `max-width: var(--max-w); margin: 0 auto;` in the base rules) —
+   so removing the grid constraint needed NO new width rule here;
+   each section already manages its own correct desktop width
+   exactly like Homepage/Why's sections do.
+
+   The sidebar nav is now a slim sticky horizontal bar instead of a
+   left column — smaller structural footprint than trying to make a
+   240px sidebar coexist with full-width sections via floats/breakout
+   margin tricks, which risk horizontal-overflow bugs the review
+   explicitly flagged as a thing to avoid. */
+/* Sidebar restored to match production's actual left-side layout
+   (confirmed directly by the founder — an earlier web_fetch only
+   returned link text in DOM order, which doesn't reveal visual
+   CSS layout direction, so "horizontal" was an incorrect inference
+   from that alone). Recolored for the light system; structure,
+   position, and behavior otherwise match production exactly. The
+   .mh-hub background fix above still prevents the original "black
+   TV screen" issue, since the whole hub area — sidebar included —
+   is now consistently light; only the individual technical cards
+   (Layer 1/2/3, Live Terminal) stay dark, by design. */
+.mh-hub-nav {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mh-hub-nav-link {
+  color: #5F6B82;
+  border: 1px solid transparent;
+}
+.mh-hub-nav-link:hover,
+.mh-hub-nav-link:focus-visible {
+  color: #0B1020;
+  background: #F2F3F1;
+}
+.mh-hub-nav-link.active {
+  background: rgba(37, 99, 235, 0.1);
+  color: #1D4ED8;
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  box-shadow: none;
+  font-weight: 700;
+}
+
+.mh-arch { background: #F7F6F2; }
+.mh-timeline { background: #F2F3F1; }
+
+.mh-arch .mh-section-title,
+.mh-timeline .mh-section-title {
+  color: #0B1020;
+}
+.mh-section-sub { color: #5F6B82; }
+
+/* Platform Architecture (Technical Blueprint) content */
+/* .mh-bp-col-title, .mh-bp-col-desc, .mh-bp-model-title,
+   .mh-bp-model-body, .mh-bp-layer-desc, .mh-bp-icon, .mh-bp-divider,
+   .mh-bp-model-divider: NOT overridden, deliberately.
+   Confirmed via grep that every instance of each of these classes
+   renders exclusively inside still-dark elements — the Layer cards
+   (.mh-bp-layer, background: var(--bp-card)) or the Multi-Model
+   panel (.mh-bp-model-panel, same var(--bp-card) background).
+   Neither was ever converted to a light surface — they were always
+   meant to stay dark, per the "keep architecture cards dark"
+   instruction from the very first round.
+   The base rules already use correct dark-card-appropriate values
+   (#F8FAFC / var(--white) text, rgba(255,255,255,*) tints and
+   dividers). An earlier round mistakenly overrode several of these
+   to dark values meant for a light background — near-black text
+   and near-black tints on a dark navy card, which is effectively
+   invisible. Those overrides are removed here, not replaced with
+   new colors, since the originals were already correct.
+   .mh-bp-connector-circle IS still overridden below — that element
+   sits on the light page BETWEEN cards, not inside one, so white
+   is genuinely correct there. */
+.mh-bp-connector-circle { background: #FFFFFF; border-color: #E5E7EB; }
+/* .mh-bp-layer-label variants (--bp-blue/--bp-amber/etc.) and
+   .mh-bp-future-badge (--bp-amber) are semantic accents, already
+   readable on light — intentionally left untouched. */
+
+/* Career Journey (timeline) */
+.mh-timeline-title { color: #0B1020; }
+.mh-timeline-desc { color: #5F6B82; }
+.mh-timeline-num { color: #9AA5B5; }
+.mh-timeline-line { background: #E5E7EB; }
+
+/* ============================================================
+   DENSITY / SPACING COMPACTION (visual review — match 11.png)
+   ------------------------------------------------------------
+   Keeps the new warm-light theme exactly as-is; only reduces
+   vertical spacing that had grown too generous. Every selector
+   below is a shared class (.mh-why-hero, .mh-hub-nav, .mh-arch,
+   .mh-bp-*), but this file loads ONLY on architecture.ejs, so
+   these overrides never reach Why or any other page.
+   ============================================================ */
+
+/* .mh-why-hero override removed — it was less than the fixed nav's
+   68px height, causing the "ARCHITECTURE" eyebrow to render
+   underneath it. Architecture now uses the exact same hero padding
+   as every other page (104px/53px, from the base rule), which is
+   what "same distance from top across all pages" requires. */
+
+.mh-arch { padding-top: 44px; padding-bottom: 44px; }
+.mh-timeline { padding-top: 44px; padding-bottom: 44px; }
+
+.mh-bp-stack { margin-top: 28px; }
+.mh-bp-layer { padding: 26px 28px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); }
+.mh-bp-layer-desc { margin-top: 10px; }
+.mh-bp-divider { margin: 14px 0 18px; }

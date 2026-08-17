@@ -182,11 +182,15 @@ button { cursor: pointer; }
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 100;
-  background: rgba(10, 15, 30, 0);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid transparent;
-  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  background: var(--navy-deep); /* was transparent-until-scroll; now always
+    solid — "quiet, permanent brand frame" per the approved public-page
+    direction. Safe globally: every current consumer of this file is in
+    the approved light-migration set, and About (already light at the
+    top in places) shows no regression from an always-solid header. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 1px solid var(--navy-border);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .mh-nav.mh-nav-scrolled {
   background: rgba(10, 15, 30, 0.97);
@@ -4019,7 +4023,8 @@ button { cursor: pointer; }
     gap: 8px;
     padding-bottom: 8px;
     margin-bottom: 24px;
-    border-bottom: 1px solid var(--navy-border);
+    border-bottom: 1px solid #E5E7EB; /* was var(--navy-border) — a dark-theme
+      value never updated when this page moved to the light system */
   }
   .mh-hub-nav-link {
     white-space: nowrap;
@@ -4210,44 +4215,3 @@ button { cursor: pointer; }
   }
   .mh-why-pillar-grid { grid-template-columns: 1fr; }
 }
-
-/* ============================================================
-   WHY MEDHAIQ — LIGHT TREATMENT (SCOPE REDUCED PER REVIEW)
-   ------------------------------------------------------------
-   Scoped under body.mh-why-refined, set only in views/why.ejs.
-   Per explicit review of the staging screenshot: ONLY two
-   sections go light — the Philosophy quote ("Professionals
-   don't need...") and the Three Pillars cards. Everything else
-   on this page (The Problem, The Paradigm Shift, the Comparison
-   table, the Manifesto) is DELIBERATELY NOT touched here — those
-   sections use their original, unmodified dark base rules
-   (.mh-why-problem, .mh-why-shift, .mh-why-compare,
-   .mh-why-manifesto all stay var(--navy-rich)/var(--navy-deep),
-   exactly as they already are above in this file).
-   ============================================================ */
-
-body.mh-why-refined .mh-why-philosophy,
-body.mh-why-refined .mh-why-pillars {
-  background: #FFFFFF;
-}
-
-body.mh-why-refined .mh-why-philosophy .mh-section-title,
-body.mh-why-refined .mh-why-pillars .mh-section-title {
-  color: #0F172A;
-}
-body.mh-why-refined .mh-why-quote { color: #0F172A; }
-body.mh-why-refined .mh-why-quote-mark { color: #CBD5E1; }
-body.mh-why-refined .mh-why-philosophy .mh-why-body { color: #3F4A5A; }
-
-body.mh-why-refined .mh-why-pillar-card {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-}
-body.mh-why-refined .mh-why-pillar-card:hover {
-  border-color: #CBD5E1;
-  transform: translateY(-4px);
-}
-body.mh-why-refined .mh-why-pillar-title { color: #0F172A; }
-body.mh-why-refined .mh-why-pillar-desc { color: #3F4A5A; }
-/* .mh-why-pillar-icon stays var(--blue-bright) — semantic/brand accent,
-   already reads fine on white, intentionally left untouched. */

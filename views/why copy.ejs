@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/hero-v2.css">
   <link rel="stylesheet" href="/css/value-footer.css">
+  <link rel="stylesheet" href="/css/why.css">
 </head>
 <body>
   <%- include('partials/header') %>
@@ -28,40 +29,50 @@
   }) %>
 
   <!-- ============================================
-       02 — THE PROBLEM: THE TRANSACTIONAL TRAP
+       02/03 — THE PROBLEM + THE PARADIGM SHIFT
+       Two side-by-side dark cards, matching the approved reference
+       layout. Same eyebrows, headings, and body copy as before —
+       only the composition changed (no more separate cycle-diagram
+       or comparison-card visuals; each card is now self-contained
+       with icon + eyebrow + title + body, per the reference).
        ============================================ -->
-  <section class="mh-why-problem reveal">
-    <div class="mh-why-narrow mh-section-center">
-      <div class="mh-eyebrow">The Problem</div>
-      <h2 class="mh-section-title">The Transactional Trap</h2>
-      <p class="mh-why-body">
-        Most interview preparation is optimized for a single event. Once the interview ends, the learning disappears with it.
-      </p>
-      <p class="mh-why-body">
-        The next opportunity starts from zero — again.
-      </p>
-      <p class="mh-why-body mh-why-body-emphasis">
-        That's the transactional trap.
-      </p>
-    </div>
-  </section>
+  <section class="mh-why-twocard reveal">
+    <div class="mh-why-twocard-grid">
 
-  <!-- ============================================
-       03 — THE PARADIGM SHIFT: FROM CRAMMING TO PROGRESSION
-       ============================================ -->
-  <section class="mh-why-shift reveal">
-    <div class="mh-why-narrow mh-section-center">
-      <div class="mh-eyebrow">The Paradigm Shift</div>
-      <h2 class="mh-section-title">From Cramming to Progression</h2>
-      <p class="mh-why-body">
-        Traditional prep is episodic: one script, one outcome, then it's gone.
-      </p>
-      <p class="mh-why-body">
-        MedhaIQ treats readiness as something built, not crammed — each session compounding into the next. Not a single verdict. A growth curve.
-      </p>
-      <p class="mh-why-body mh-why-body-emphasis">
-        That's the shift: from a test survived once, to a skill that keeps compounding.
-      </p>
+      <div class="mh-why-card">
+        <div class="mh-why-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.5" fill="currentColor"/></svg>
+        </div>
+        <div class="mh-eyebrow">The Problem</div>
+        <h2 class="mh-section-title">The Transactional Trap</h2>
+        <p class="mh-why-body">
+          Most interview preparation is optimized for a single event. Once the interview ends, the learning disappears with it.
+        </p>
+        <p class="mh-why-body">
+          The next opportunity starts from zero — again.
+        </p>
+        <p class="mh-why-body mh-why-body-emphasis">
+          That's the transactional trap.
+        </p>
+      </div>
+
+      <div class="mh-why-card">
+        <div class="mh-why-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17 9 11 13 15 21 7"/><path d="M15 7h6v6"/></svg>
+        </div>
+        <div class="mh-eyebrow">The Paradigm Shift</div>
+        <h2 class="mh-section-title">From Cramming to Progression</h2>
+        <p class="mh-why-body">
+          Traditional prep is episodic: one script, one outcome, then it's gone.
+        </p>
+        <p class="mh-why-body">
+          MedhaIQ treats readiness as something built, not crammed — each session compounding into the next. Not a single verdict. A growth curve.
+        </p>
+        <p class="mh-why-body mh-why-body-emphasis">
+          That's the shift: from a test survived once, to a skill that keeps compounding.
+        </p>
+      </div>
+
     </div>
   </section>
 
@@ -70,20 +81,16 @@
        ============================================ -->
   <section class="mh-why-philosophy reveal">
     <div class="mh-why-narrow">
+      <div class="mh-why-quote-card">
       <blockquote class="mh-why-quote">
         <span class="mh-why-quote-mark">&#8220;</span>
-        Professionals don't need another answer generator. They need a better thinking system.
+        Professionals don't need another answer generator. <span class="mh-why-quote-accent">They need a better thinking system.</span>
       </blockquote>
 
       <p class="mh-why-body">
-        Most tools optimize for the next thirty minutes — a sharper line, a better script. MedhaIQ optimizes for the thinking underneath the answer: how someone reasons under pressure, structures a response, and communicates judgment. That's what carries from one room to the next.
-      </p>
-      <p class="mh-why-body">
         Our objective isn't helping someone pass one isolated interview; it's helping someone become the kind of professional who naturally succeeds in every interview.
       </p>
-      <p class="mh-why-body">
-        This philosophy is reflected throughout MedhaIQ—from adaptive interview simulations and structured STAR coaching to multi-vector performance analysis and longitudinal career tracking.
-      </p>
+      </div>
     </div>
   </section>
 
@@ -140,6 +147,7 @@
         <h2 class="mh-section-title">Why We're Different</h2>
       </div>
 
+      <div class="mh-why-compare-panel">
       <div class="mh-matrix-table-wrap">
         <table class="mh-matrix-table">
           <thead>
@@ -201,6 +209,7 @@
           </tbody>
         </table>
       </div>
+      </div>
     </div>
   </section>
 
@@ -209,9 +218,11 @@
        ============================================ -->
   <section class="mh-why-manifesto reveal">
     <div class="mh-why-narrow mh-section-center">
-      <p class="mh-why-manifesto-text">
-        We aren't building another interview platform. We're building the intelligence layer professionals carry throughout their careers—helping them think more clearly, communicate more effectively, and grow with confidence over time.
-      </p>
+      <div class="mh-why-manifesto-panel">
+        <p class="mh-why-manifesto-text">
+          We aren't building another interview platform. We're building the intelligence layer professionals carry throughout their careers—helping them think more clearly, communicate more effectively, and grow with confidence over time.
+        </p>
+      </div>
     </div>
   </section>
 
