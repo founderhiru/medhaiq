@@ -21,7 +21,7 @@
   .mh-stage-4d {
     flex: 1.25;
     position: relative;
-    height: 600px; /* Increased to accommodate taller terminal */
+    height: 600px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -32,7 +32,7 @@
   .mh-card-group {
     position: relative;
     width: 100%;
-    max-width: 860px; /* Widened to fit larger terminal */
+    max-width: 860px;
     height: 580px;
     transform-style: preserve-3d;
     transform: rotateY(-18deg) rotateX(8deg) rotateZ(2deg);
@@ -49,12 +49,12 @@
     pointer-events: none;
   }
 
-  /* REAR CARD: Career Workspace (Standard Height) */
+  /* REAR CARD: Career Workspace */
   .mh-card-workspace {
     position: absolute;
     left: 0;
-    top: 40px; /* Pushed down to stagger */
-    width: 52%; /* Slightly narrower relative to terminal */
+    top: 40px;
+    width: 52%;
     height: 520px;
     background: linear-gradient(145deg, #0b1226 0%, #070d19 100%);
     border: 1px solid rgba(59, 130, 246, 0.35);
@@ -73,10 +73,10 @@
   /* FRONT CARD: Live Interview Terminal (10%+ Taller, Wider) */
   .mh-card-terminal {
     position: absolute;
-    right: -8%; /* Pushed further right */
-    top: -10px; /* Popped up higher */
-    width: 58%; /* Wider than Workspace */
-    height: 580px; /* Taller */
+    right: -8%;
+    top: -10px;
+    width: 58%;
+    height: 580px;
     background: #050a15;
     border: 1.5px solid #3b82f6;
     border-radius: 18px;
@@ -182,7 +182,7 @@
   <div class="mh-stage-4d">
     <div class="mh-card-group">
       
-      <!-- CAREER WORKSPACE (REAR CARD - TT_3 Layout) -->
+      <!-- CAREER WORKSPACE (REAR CARD) -->
       <div class="mh-card-workspace">
         <!-- Header -->
         <div>
@@ -191,10 +191,10 @@
           <p style="margin: 2px 0 12px 0; font-size: 11px; color: #64748b;">Track your progress, improve every day, and land your next opportunity.</p>
         </div>
 
-        <!-- Top Row: Profile & Upcoming -->
+        <!-- Row 1: Profile Strength & Upcoming Interview -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <div class="mh-metric-box" style="display: flex; align-items: center; gap: 12px;">
-            <div style="width: 44px; height: 44px; border-radius: 50%; border: 3px solid #3b82f6; display: flex; align-items: center; justify-content: center; position: relative;">
+            <div style="width: 44px; height: 44px; border-radius: 50%; border: 3px solid #3b82f6; display: flex; align-items: center; justify-content: center;">
                <span style="font-size: 12px; font-weight: 700; color: #fff;">68%</span>
             </div>
             <div>
@@ -218,7 +218,7 @@
           </div>
         </div>
 
-        <!-- Middle Row: Recent Practice & Recommended -->
+        <!-- Row 2: Recent Practice & Recommended -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <div class="mh-metric-box">
             <div style="font-size: 9px; color: #64748b; font-weight: 700; margin-bottom: 6px;">RECENT PRACTICE</div>
@@ -243,7 +243,7 @@
           </div>
         </div>
 
-        <!-- Bottom Filled Area: 3rd Level Progress Match -->
+        <!-- Row 3: Your Progress Metrics & Trend Graph -->
         <div style="padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.12);">
           <div style="font-size: 9.5px; color: #64748b; font-weight: 700; margin-bottom: 8px;">YOUR PROGRESS</div>
           
@@ -329,7 +329,6 @@
           <div class="mh-metric-box">
             <div style="font-size: 9px; color: #64748b; font-weight: 700; margin-bottom: 8px;">5-VECTOR INTELLIGENCE</div>
             
-            <!-- FIXED: Thunderbolt SVG replaced with a structural 4-box grid icon -->
             <div class="mh-vector-row">
               <div class="mh-vector-row-left">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
