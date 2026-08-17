@@ -114,21 +114,24 @@
    unchanged (still Engine, STAR, Score, Vectors, Feed in the HTML,
    exactly as before). Row 1: Engine + STAR. Row 2: Score + Feed.
    Row 3: Vectors, full width. */
+/* RESTORE ORIGINAL TALL VERTICAL TERMINAL LAYOUT */
 .mh-terminal-v2-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 24px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
 }
-.mh-terminal-v2-block:nth-child(1) { grid-column: 1; grid-row: 1; } /* AI Engine Status */
-.mh-terminal-v2-block:nth-child(2) { grid-column: 2; grid-row: 1; border-left: 1px solid var(--navy-border); padding-left: 24px; } /* STAR Progress */
-.mh-terminal-v2-block:nth-child(3) { grid-column: 1; grid-row: 2; } /* Overall Intelligence Score */
-.mh-terminal-v2-block-last { grid-column: 2; grid-row: 2; border-left: 1px solid var(--navy-border); padding-left: 24px; } /* AI Activity Feed */
-.mh-terminal-v2-block:nth-child(4) { grid-column: 1 / span 2; grid-row: 3; } /* 5-Vector Intelligence */
+
+.mh-terminal-v2-block,
+.mh-terminal-v2-block-last {
+  border-left: none !important;
+  padding-left: 0 !important;
+  width: 100% !important;
+}
 
 .mh-terminal-v2-vectors {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px 24px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
 }
 
 /* Value-footer strip directly below hero — quiet, subtle warm
@@ -312,5 +315,87 @@
     margin-top: 0;
     transform: none;
     margin-bottom: 20px;
+  }
+}
+/* ============================================================
+   EXACT 2(9).png MATCH — LAYERED 3D PRODUCT COMPOSITION
+   ============================================================ */
+
+.mh-hero-inner {
+  grid-template-columns: 40% 60% !important;
+  align-items: center;
+}
+
+.mh-hero-product-stack {
+  position: relative;
+  perspective: 1800px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 10px 0 40px;
+  width: 100%;
+}
+
+/* 1. CAREER WORKSPACE (REAR LAYER) */
+.mh-career-mock {
+  width: 58% !important;
+  flex-shrink: 0;
+  z-index: 1;
+  transform: perspective(1800px) rotateY(-5deg) rotateX(1deg);
+  transform-style: preserve-3d;
+  background: #0B1427 !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgba(59, 130, 246, 0.18),
+    0 30px 70px -25px rgba(0, 0, 0, 0.55),
+    0 0 55px -15px rgba(37, 99, 235, 0.25) !important;
+  padding: 20px 22px;
+  font-family: var(--font-body);
+}
+
+/* Workspace internal styling */
+.mh-career-mock-card {
+  background: #111A2D !important;
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+/* 2. LIVE INTERVIEW TERMINAL (FRONT LAYER - VISUALLY DOMINANT & TALL) */
+.mh-hero-mockup-wrap {
+  width: 38% !important;
+  flex-shrink: 0;
+  margin-left: -16% !important; /* Overlaps workspace right edge */
+  margin-top: 10px !important;
+  z-index: 2 !important; /* Above workspace */
+  filter: none;
+  transform: perspective(1800px) rotateY(-7deg) rotateX(1deg);
+  transform-style: preserve-3d;
+}
+
+.mh-terminal-v2 {
+  background: #0B1427 !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgba(59, 130, 246, 0.28),
+    0 40px 80px -25px rgba(0, 0, 0, 0.65),
+    0 0 65px -10px rgba(37, 99, 235, 0.35) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .mh-hero-product-stack {
+    perspective: none;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .mh-career-mock,
+  .mh-hero-mockup-wrap {
+    width: 100% !important;
+    margin-left: 0 !important;
+    transform: none !important;
+    margin-bottom: 24px;
   }
 }
