@@ -72,7 +72,7 @@
     padding: 12px 14px;
   }
 
-  /* FRONT CARD: LIVE INTERVIEW TERMINAL (10% Wider + Intense 4D Neon Edge Glow) */
+  /* FRONT CARD: LIVE INTERVIEW TERMINAL (10% Wider + Intense Neon Edge Glow) */
   .mh-hero-mockup-wrap {
     position: absolute;
     right: 0px;
@@ -90,12 +90,10 @@
     border: 1.5px solid #3B82F6;
     border-radius: 18px;
     padding: 14px 16px;
-    /* Elevated 4D/3D Neon Blue Highlight applied here */
     box-shadow: 
-      0 0 40px rgba(59, 130, 246, 0.75),
-      -20px 30px 60px rgba(0, 0, 0, 0.95),
-      inset 0 0 20px rgba(59, 130, 246, 0.5),
-      inset 0 0 5px rgba(255, 255, 255, 0.3);
+      0 0 35px rgba(59, 130, 246, 0.7),
+      -10px 20px 50px rgba(0, 0, 0, 0.9),
+      inset 0 0 18px rgba(59, 130, 246, 0.25);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -166,7 +164,7 @@
   }
 
   /* ========================================= */
-  /* INJECTED FIXES (HOVERS, COLORS, NEON)     */
+  /* NEW INJECTED FIXES (HOVERS, COLORS, 4D)   */
   /* ========================================= */
 
   /* Fix 1: Explore CTA Highlight (White Padded Hover) */
@@ -182,29 +180,37 @@
     stroke: #0F172A !important;
   }
 
-  /* Fix 2: 4 Pillar Card Icons Brightness (Darker base with intense bright glow) */
-  .mh-hero-chip-icon-purple { color: #7E22CE !important; }
-  .mh-hero-chip-icon-purple svg { filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.9)) brightness(1.4); }
-
-  .mh-hero-chip-icon-green { color: #047857 !important; }
-  .mh-hero-chip-icon-green svg { filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.9)) brightness(1.4); }
-
-  .mh-hero-chip-icon-amber { color: #B45309 !important; }
-  .mh-hero-chip-icon-amber svg { filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.9)) brightness(1.4); }
-
-  .mh-hero-chip-icon-magenta { color: #BE123C !important; }
-  .mh-hero-chip-icon-magenta svg { filter: drop-shadow(0 0 6px rgba(251, 113, 133, 0.9)) brightness(1.4); }
-
-  /* Fix 3: See How It Works Arrow & Text Highlight */
+  /* Fix 1.5: How It Works Arrow Highlight */
   .mh-hero-tertiary {
     transition: all 0.3s ease;
   }
-  .mh-hero-tertiary:hover {
-    color: #3B82F6 !important;
-  }
   .mh-hero-tertiary:hover .mh-hero-tertiary-icon svg {
     stroke: #3B82F6 !important;
-    filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8));
+    filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.6));
+  }
+
+  /* Fix 2: 4 Pillar Card Icons Brightness */
+  .mh-hero-chip-icon-purple { color: #C084FC !important; }
+  .mh-hero-chip-icon-purple svg { filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.8)); }
+
+  .mh-hero-chip-icon-green { color: #34D399 !important; }
+  .mh-hero-chip-icon-green svg { filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.8)); }
+
+  .mh-hero-chip-icon-amber { color: #FBBF24 !important; }
+  .mh-hero-chip-icon-amber svg { filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.8)); }
+
+  .mh-hero-chip-icon-magenta { color: #FB7185 !important; }
+  .mh-hero-chip-icon-magenta svg { filter: drop-shadow(0 0 6px rgba(251, 113, 133, 0.8)); }
+
+  /* Fix 3: Neon Blue 4D Matrix Card */
+  .mh-matrix-card-4d {
+    background: #060B17 !important;
+    border: 1.5px solid #3B82F6 !important;
+    border-radius: 12px;
+    box-shadow: 
+      0 0 20px rgba(59, 130, 246, 0.6),
+      inset 0 0 15px rgba(59, 130, 246, 0.3),
+      inset 0 0 4px rgba(255, 255, 255, 0.1) !important;
   }
 
   /* Responsive Fallback */
@@ -353,8 +359,8 @@
           </div>
         </div>
 
-        <!-- NEW YOUR PROGRESS MATRIX CARD (Removed Neon 4D Class) -->
-        <div class="mh-career-mock-card" style="margin-top:14px; padding:12px 14px;">
+        <!-- NEW YOUR PROGRESS MATRIX CARD -->
+        <div class="mh-career-mock-card mh-matrix-card-4d" style="margin-top:14px; padding:12px 14px;">
           <div style="font-size:8.5px; color:#64748B; margin-bottom:8px; font-weight:600; text-transform:uppercase;">Your Progress</div>
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div>
