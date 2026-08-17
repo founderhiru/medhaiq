@@ -2,6 +2,34 @@
   HERO — 100% Matched to TT.png Design Target
 -->
 <style>
+  /* 1. Pulsing Green Indicator Animation */
+  @keyframes mh-live-pulse {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    50% {
+      opacity: 0.4;
+      transform: scale(0.85);
+      box-shadow: 0 0 8px 2px rgba(16, 185, 129, 0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+  }
+
+  .mh-live-dot {
+    width: 7px;
+    height: 7px;
+    background-color: #10B981;
+    border-radius: 50%;
+    display: inline-block;
+    animation: mh-live-pulse 1.8s infinite ease-in-out;
+  }
+
   /* Hero Container Setup */
   .mh-hero-product-stack {
     position: relative;
@@ -13,27 +41,27 @@
     height: 520px;
     margin-top: -10px;
     perspective: 1400px;
-    perspective-origin: 60% 40%;
+    perspective-origin: 55% 45%;
   }
 
-  /* REAR CARD: CAREER WORKSPACE (3D Incline) */
+  /* REAR CARD: CAREER WORKSPACE (Jointed to Terminal with Neon Glow) */
   .mh-career-mock {
     position: absolute;
-    left: 10px;
+    right: 220px; /* Jointed/snapped flush behind the Terminal card */
     top: 15px;
-    width: 66%;
-    height: 480px;
-    background: #0B132B;
-    border: 1px solid rgba(148, 163, 184, 0.22);
+    width: 480px;
+    height: 475px;
+    background: #0B1226;
+    border: 1.5px solid rgba(59, 130, 246, 0.5);
     border-radius: 18px;
     padding: 22px;
     z-index: 1;
     transform-style: preserve-3d;
     transform: rotateY(-16deg) rotateX(6deg) rotateZ(2deg);
     box-shadow: 
-      -15px 30px 60px rgba(0, 0, 0, 0.7),
-      0 0 30px rgba(15, 23, 42, 0.8),
-      inset 0 1px 1px rgba(255, 255, 255, 0.15);
+      0 0 20px rgba(59, 130, 246, 0.35),
+      -20px 30px 60px rgba(0, 0, 0, 0.8),
+      inset 0 0 15px rgba(59, 130, 246, 0.15);
     overflow: hidden;
   }
 
@@ -44,13 +72,13 @@
     padding: 12px 14px;
   }
 
-  /* FRONT CARD: LIVE INTERVIEW TERMINAL (3D Overlay & Perimeter Neon Glow) */
+  /* FRONT CARD: LIVE INTERVIEW TERMINAL (Seamless 3D Joint & Perimeter Neon Glow) */
   .mh-hero-mockup-wrap {
     position: absolute;
-    right: -10px;
+    right: 0px;
     top: 0px;
-    width: 42%;
-    height: 510px;
+    width: 310px;
+    height: 505px;
     z-index: 2;
     transform-style: preserve-3d;
     transform: rotateY(-16deg) rotateX(6deg) rotateZ(2deg);
@@ -58,14 +86,14 @@
 
   .mh-terminal-v2 {
     height: 100%;
-    background: #070C18;
+    background: #060B17;
     border: 1.5px solid #3B82F6;
     border-radius: 18px;
     padding: 14px 16px;
     box-shadow: 
-      0 0 25px rgba(59, 130, 246, 0.5),
-      -10px 20px 40px rgba(0, 0, 0, 0.8),
-      inset 0 0 12px rgba(59, 130, 246, 0.2);
+      0 0 30px rgba(59, 130, 246, 0.65),
+      -10px 20px 50px rgba(0, 0, 0, 0.85),
+      inset 0 0 15px rgba(59, 130, 246, 0.25);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -207,7 +235,7 @@
       </div>
     </div>
 
-    <!-- Right Column: Product Cards Stack Matching TT.png -->
+    <!-- Right Column: Jointed Product Cards Stack Matching TT.png -->
     <div class="mh-hero-product-stack">
       
       <!-- REAR LAYER: CAREER WORKSPACE -->
@@ -290,8 +318,8 @@
         <div class="mh-terminal-v2">
           <div class="mh-terminal-v2-header">
             <span class="mh-terminal-v2-title" style="font-size:11px; font-weight:700; color:#F8FAFC;">⚡ LIVE INTERVIEW TERMINAL</span>
-            <span style="font-size:9.5px; color:#10B981; display:flex; align-items:center; gap:4px; font-weight:600;">
-              <span style="width:6px; height:6px; background:#10B981; border-radius:50%; display:inline-block;"></span>LIVE
+            <span style="font-size:9.5px; color:#10B981; display:flex; align-items:center; gap:5px; font-weight:700;">
+              <span class="mh-live-dot"></span>LIVE
             </span>
           </div>
 
