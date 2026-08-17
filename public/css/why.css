@@ -215,7 +215,7 @@
 }
 /* 2. Bottommost Manifesto Card Text */
 .mh-why-manifesto-text {
-  font-size: 20px; /* Reduced font size */
+  font-size: 24px; /* Reduced font size */
   line-height: 1.6;
   font-weight: 500;
   color: #FFFFFF;
@@ -300,7 +300,7 @@
 .mh-why-quote-card .mh-why-quote {
   text-align: left;
   margin: 0 0 12px;
-  font-size: 20px; /* Reduced to match bottommost manifesto text */
+  font-size: 24px; /* Reduced to match bottommost manifesto text */
   line-height: 1.5;
   font-weight: 700;
   color: #0B1020;
