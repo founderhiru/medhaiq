@@ -1,409 +1,383 @@
-/* ==========================================================================
-   WHY MEDHAIQ — PAGE SPECIFIC STYLES
-   Precision Visual Refinement Round 3
-   ========================================================================== */
+/* ============================================================
+   WHY MEDHAIQ — VISUAL REFINEMENT (ROUND 2)
+   ============================================================ */
 
-/* --------------------------------------------------------------------------
-   01 — Layout & Vertical Whitespace Reduction (~20-25%)
-   -------------------------------------------------------------------------- */
-.mh-why-twocard,
-.mh-why-philosophy,
-.mh-why-pillars,
-.mh-why-compare {
-  width: 100%;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-}
-
+/* Base Section Backgrounds */
 .mh-why-twocard {
-  padding-top: 2.25rem;
-  padding-bottom: 2.25rem;
+  background: #FAF9F6;
+  padding: 48px var(--section-pad-x);
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .mh-why-philosophy {
-  padding-top: 1.75rem;
-  padding-bottom: 1.75rem;
+  background: #FFFFFF;
+  padding: 52px var(--section-pad-x);
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .mh-why-pillars {
-  padding-top: 2.25rem;
-  padding-bottom: 2.25rem;
+  background: #FAF9F6;
+  padding: 56px var(--section-pad-x);
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .mh-why-compare {
-  padding-top: 2.25rem;
-  padding-bottom: 3rem;
+  background: #F7F6F2;
+  padding: 56px var(--section-pad-x);
 }
 
-.mh-why-twocard-wrapper,
-.mh-why-pillars-inner,
-.mh-matrix-inner {
-  max-width: 1120px;
-  margin-left: auto;
-  margin-right: auto;
+/* ============================================================
+   01 — PROBLEM & SHIFT CONNECTED PANELS
+   ============================================================ */
+
+.mh-why-twocard-wrapper {
+  max-width: 1140px;
+  margin: 0 auto;
 }
 
-.mh-why-narrow {
-  max-width: 840px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.mh-section-center {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-/* Eyebrow & Titles */
-.mh-eyebrow {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #3B82F6;
-  margin-bottom: 0.375rem;
-}
-
-.mh-eyebrow-problem {
-  color: #F87171;
-}
-
-.mh-eyebrow-shift {
-  color: #34D399;
-}
-
-.mh-section-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #F8FAFC;
-  letter-spacing: -0.02em;
-  margin: 0 0 0.875rem 0;
-}
-
-@media (min-width: 768px) {
-  .mh-section-title {
-    font-size: 1.75rem;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   02 — PROBLEM VS SHIFT PANELS
-   -------------------------------------------------------------------------- */
 .mh-why-twocard-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.25rem;
-  position: relative;
+  grid-template-columns: 1fr auto 1fr;
   align-items: stretch;
-}
-
-@media (min-width: 768px) {
-  .mh-why-twocard-grid {
-    grid-template-columns: 1fr auto 1fr;
-    gap: 1rem;
-  }
+  gap: 0;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px -6px rgba(11, 16, 32, 0.04);
+  overflow: hidden;
+  position: relative;
 }
 
 .mh-why-card {
-  background: #0D1322;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 0.875rem;
-  padding: 1.75rem 1.5rem;
+  padding: 36px 40px;
   display: flex;
   flex-direction: column;
-  position: relative;
+  box-sizing: border-box;
+  height: 100%;
 }
 
+/* Restrained Warm/Red Accent for Problem */
 .mh-why-card-problem {
-  border-top: 3px solid rgba(239, 68, 68, 0.5);
-}
-
-.mh-why-card-shift {
-  border-top: 3px solid rgba(16, 185, 129, 0.5);
-  background: linear-gradient(180deg, rgba(16, 185, 129, 0.03) 0%, #0D1322 100%);
-}
-
-.mh-why-card-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.875rem;
+  background: linear-gradient(180deg, #FFFDFD 0%, #FFFFFF 100%);
 }
 
 .mh-icon-problem {
-  background: rgba(239, 68, 68, 0.12);
-  color: #F87171;
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  color: #DC2626;
+}
+
+.mh-eyebrow-problem {
+  color: #991B1B !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 11px;
+}
+
+.mh-bullet-problem {
+  color: #EF4444;
+  background: #FEF2F2;
+  border: 1px solid #FEE2E2;
+}
+
+/* Restrained Green Accent for Shift */
+.mh-why-card-shift {
+  background: linear-gradient(180deg, #F9FBF9 0%, #FFFFFF 100%);
 }
 
 .mh-icon-shift {
-  background: rgba(16, 185, 129, 0.12);
-  color: #34D399;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: #F0FDF4;
+  border: 1px solid #86EFAC;
+  color: #16A34A;
 }
 
-.mh-why-connector {
+.mh-eyebrow-shift {
+  color: #166534 !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 11px;
+}
+
+.mh-bullet-shift {
+  color: #16A34A;
+  background: #F0FDF4;
+  border: 1px solid #DCFCE7;
+}
+
+/* Common Card Internal Elements */
+.mh-why-card-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.25rem 0;
+  margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
-.mh-why-arrow-badge {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: #161F33;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #94A3B8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+.mh-why-card .mh-eyebrow {
+  margin-bottom: 6px;
 }
 
-@media (max-width: 767px) {
-  .mh-why-arrow-badge {
-    transform: rotate(90deg);
-  }
+.mh-why-card .mh-section-title {
+  color: #0B1020;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0 0 20px 0;
 }
 
 .mh-why-bullet-list {
   list-style: none;
   padding: 0;
-  margin: 1rem 0 0 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 14px;
 }
 
 .mh-why-bullet-item {
   display: flex;
   align-items: flex-start;
-  gap: 0.625rem;
-  font-size: 0.9375rem;
-  line-height: 1.45;
-  color: #CBD5E1;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #475569;
 }
 
 .mh-bullet-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
   font-weight: 700;
-  font-size: 0.8125rem;
-  line-height: 1.4;
   flex-shrink: 0;
+  margin-top: 1px;
 }
 
-.mh-bullet-problem { color: #EF4444; }
-.mh-bullet-shift { color: #10B981; }
-
-/* --------------------------------------------------------------------------
-   03 — POSITIONING QUOTE
-   -------------------------------------------------------------------------- */
-.mh-why-quote-card {
-  background: radial-gradient(100% 100% at 50% 0%, rgba(37, 99, 235, 0.08) 0%, rgba(13, 19, 34, 0.6) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.22);
-  border-radius: 1rem;
-  padding: 2rem 1.75rem;
-  text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+/* Center Directional Connector */
+.mh-why-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 1px;
+  background: #E2E8F0;
+  z-index: 2;
 }
 
-.mh-why-quote {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.375rem;
-  font-weight: 700;
-  line-height: 1.35;
-  color: #F8FAFC;
-  margin: 0 0 0.875rem 0;
-  letter-spacing: -0.015em;
+.mh-why-arrow-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(11, 16, 32, 0.08);
+  position: absolute;
 }
 
-@media (min-width: 768px) {
-  .mh-why-quote {
-    font-size: 1.625rem;
-  }
-}
+/* ============================================================
+   02 — PHILOSOPHY BLOCK
+   ============================================================ */
 
-.mh-why-quote-accent {
-  color: #60A5FA;
-}
-
-.mh-why-quote-sub {
-  font-size: 0.9375rem;
-  line-height: 1.55;
-  color: #94A3B8;
-  max-width: 640px;
+.mh-why-narrow {
+  max-width: 860px;
   margin: 0 auto;
 }
 
-/* --------------------------------------------------------------------------
-   04 — THREE PILLARS (PRODUCT MINI VISUALS)
-   -------------------------------------------------------------------------- */
-.mh-why-pillar-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.25rem;
+.mh-why-quote-card {
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 36px 44px;
+  text-align: center;
 }
 
-@media (min-width: 768px) {
-  .mh-why-pillar-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
-  }
-}
-
-.mh-why-pillar-card {
-  background: #0D1322;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 0.875rem;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-height: 200px;
-  transition: transform 0.2s ease, border-color 0.2s ease;
-}
-
-.mh-why-pillar-card:hover {
-  border-color: rgba(59, 130, 246, 0.35);
-  transform: translateY(-2px);
-}
-
-.mh-pillar-mini-visual {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 1rem;
-}
-
-.mh-why-pillar-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.125rem;
+.mh-why-quote {
+  margin: 0 0 14px 0;
+  font-size: 24px;
+  line-height: 1.4;
   font-weight: 700;
-  color: #F8FAFC;
-  margin: 0 0 0.5rem 0;
+  color: #0B1020;
   letter-spacing: -0.01em;
 }
 
+.mh-why-quote-accent {
+  color: #2563EB;
+}
+
+.mh-why-quote-sub {
+  font-size: 14.5px;
+  color: #64748B;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ============================================================
+   03 — THREE PILLARS (NO NUMBERING, PROMINENT ICONS)
+   ============================================================ */
+
+.mh-why-pillars-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+.mh-why-pillars .mh-section-title {
+  color: #0B1020;
+  font-size: 26px;
+}
+
+.mh-why-pillar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 36px;
+}
+
+.mh-why-pillar-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 32px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.mh-why-pillar-card:hover {
+  border-color: #93C5FD;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -10px rgba(37, 99, 235, 0.12);
+}
+
+.mh-pillar-icon-container {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.mh-why-pillar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0B1020;
+  line-height: 1.35;
+  margin: 0 0 10px 0;
+}
+
 .mh-why-pillar-desc {
-  font-size: 0.875rem;
+  font-size: 14px;
+  color: #64748B;
   line-height: 1.55;
-  color: #94A3B8;
   margin: 0;
 }
 
-/* --------------------------------------------------------------------------
-   05 — COMPARISON MATRIX
-   -------------------------------------------------------------------------- */
+/* ============================================================
+   04 — COMPARISON TABLE (DARK EXECUTIVE PANEL)
+   ============================================================ */
+
+.mh-matrix-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+.mh-why-compare .mh-section-title {
+  font-size: 26px;
+  color: #0B1020;
+}
+
 .mh-why-compare-panel {
-  background: #0D1322;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 0.875rem;
-  overflow: hidden;
+  background: #0A0F1E;
+  border-radius: 20px;
+  padding: 12px 20px 20px;
+  margin-top: 32px;
+  box-shadow: 0 20px 40px -15px rgba(11, 16, 32, 0.2);
 }
 
-.mh-matrix-table-wrap {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+.mh-why-compare-panel .mh-matrix-table-wrap {
+  border: none;
+  margin-top: 0;
 }
 
-.mh-matrix-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  min-width: 640px;
+.mh-why-compare-panel .mh-matrix-th-label { color: #FFFFFF; font-size: 12px; }
+.mh-why-compare-panel .mh-matrix-th-legacy,
+.mh-why-compare-panel .mh-matrix-th-platform { color: #94A3B8; background: transparent; }
+.mh-why-compare-panel .mh-matrix-row { border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.mh-why-compare-panel .mh-matrix-cell-label { color: #FFFFFF; font-size: 13px; font-weight: 600; }
+.mh-why-compare-panel .mh-matrix-cell-legacy { color: #7C89A3; font-size: 13px; }
+.mh-why-compare-panel .mh-matrix-cell-platform { color: #FFFFFF; font-size: 13px; background: rgba(59, 130, 246, 0.08); border-left: 3px solid #3B82F6; }
+.mh-why-compare-panel .mh-matrix-check { color: #60A5FA; font-size: 14px; margin-right: 6px; }
+
+.mh-matrix-cell { padding: 14px 16px; }
+
+/* ============================================================
+   RESPONSIVE LAYOUT (MOBILE & TABLET)
+   ============================================================ */
+
+@media (max-width: 900px) {
+  .mh-why-twocard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mh-why-connector {
+    width: 100%;
+    height: 1px;
+    background: #E2E8F0;
+    margin: 0;
+  }
+
+  .mh-why-arrow-badge {
+    transform: rotate(90deg);
+  }
+
+  .mh-why-pillar-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .mh-why-card {
+    padding: 28px 24px;
+  }
+
+  .mh-why-quote-card {
+    padding: 28px 20px;
+  }
+
+  .mh-why-quote {
+    font-size: 20px;
+  }
 }
 
-/* Typography increased by ~10–15% */
-.mh-matrix-th {
-  padding: 1.125rem 1.5rem;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
+@media (max-width: 390px) {
+  .mh-why-card {
+    padding: 24px 18px;
+  }
 
-.mh-matrix-th-label {
-  color: #64748B;
-  width: 26%;
-}
+  .mh-why-bullet-item {
+    font-size: 13.5px;
+  }
 
-.mh-matrix-th-legacy {
-  color: #64748B;
-  width: 34%;
-}
-
-.mh-matrix-th-platform {
-  color: #60A5FA;
-  background: rgba(37, 99, 235, 0.12);
-  border-left: 1px solid rgba(59, 130, 246, 0.2);
-  width: 40%;
-}
-
-.mh-matrix-row {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.mh-matrix-row-last {
-  border-bottom: none;
-}
-
-.mh-matrix-cell {
-  padding: 1.125rem 1.5rem;
-  font-size: 0.9375rem;
-  line-height: 1.5;
-}
-
-.mh-matrix-cell-label {
-  font-weight: 600;
-  color: #E2E8F0;
-}
-
-.mh-matrix-cell-legacy {
-  color: #64748B;
-  font-style: italic;
-}
-
-/* MedhaIQ Column Visual Prominence */
-.mh-matrix-cell-platform {
-  color: #F8FAFC;
-  font-weight: 500;
-  background: rgba(37, 99, 235, 0.06);
-  border-left: 1px solid rgba(59, 130, 246, 0.15);
-}
-
-.mh-matrix-check {
-  color: #3B82F6;
-  font-weight: 800;
-  margin-right: 0.5rem;
-}
-
-/* --------------------------------------------------------------------------
-   Scroll Animations
-   -------------------------------------------------------------------------- */
-.reveal {
-  opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.reveal-item {
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-}
-
-.reveal-item.visible {
-  opacity: 1;
-  transform: translateY(0);
+  .mh-why-pillar-card {
+    padding: 24px 20px;
+  }
 }
