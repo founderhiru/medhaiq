@@ -1,4 +1,4 @@
-<%- include('partials/workspace-shell-top', { pageTitle: 'Career Workspace — MedhaIQ', activeNav: 'dashboard', bodyClass: 'career-workspace', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'] }) %>
+<%- include('partials/workspace-shell-top', { pageTitle: 'Career Workspace — MedhaIQ', activeNav: 'dashboard', bodyClass: 'career-workspace', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'], previewMode: typeof previewMode !== 'undefined' ? previewMode : false }) %>
 
 <%
 /* Dynamic greeting — server renders a fallback using its own clock so
@@ -17,9 +17,16 @@ const _initialGreeting = (_srvHour >= 5 && _srvHour < 12) ? `Good morning, ${_fi
   <div>
     <h1 id="dashGreeting"><%= _initialGreeting %></h1>
     <p class="subtitle">Track your progress, improve every day, and land your next opportunity.</p>
+    <% if (typeof previewMode !== 'undefined' && previewMode) { %>
+      <span style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 12px;border-radius:20px;background:rgba(59,130,246,0.15);color:#3b82f6;font-size:12px;font-weight:600;letter-spacing:0.02em;">● Sample Account — Demo Data</span>
+    <% } %>
   </div>
   <div class="page-header-actions">
-    <a href="/interview" class="new-interview-btn">＋ New Interview</a>
+    <% if (typeof previewMode !== 'undefined' && previewMode) { %>
+      <span class="new-interview-btn" aria-disabled="true" title="Create a free account to start your own interview" style="opacity:0.5;cursor:not-allowed;pointer-events:none;">＋ New Interview</span>
+    <% } else { %>
+      <a href="/interview" class="new-interview-btn">＋ New Interview</a>
+    <% } %>
     <!-- Notifications -- icon only, no backend notification system exists
          yet, so no unread dot is shown (would be fabricated status). -->
     <button type="button" class="db-bell-btn" aria-label="Notifications" title="Notifications">
@@ -103,8 +110,10 @@ const _initialGreeting = (_srvHour >= 5 && _srvHour < 12) ? `Good morning, ${_fi
         <div class="label">Resume Intelligence</div>
         <% if (resumeIntelActive) { %>
           <div class="sublabel"><%= resumeIntelSubLabel %></div>
+        <% } else if (typeof previewMode !== 'undefined' && previewMode) { %>
+          <span class="sublabel resume-intel-cta" aria-disabled="true" title="Create a free account to upload your resume" style="opacity:0.5;cursor:not-allowed;">Upload Resume →</span>
         <% } else { %>
-          <a href="/interview" class="sublabel resume-intel-cta">Upload Resume →</a>
+          <a href="/resume" class="sublabel resume-intel-cta">Upload Resume →</a>
         <% } %>
       </div>
     </div>
@@ -303,35 +312,52 @@ const _initialGreeting = (_srvHour >= 5 && _srvHour < 12) ? `Good morning, ${_fi
     <div class="panel qa-panel">
       <h3>Quick Actions</h3>
       <div class="quick-actions">
+        <% const _previewDisabled = typeof previewMode !== 'undefined' && previewMode; %>
         <% if (interruptedSession) { %>
+          <% if (_previewDisabled) { %>
+          <span class="qa-card violet" aria-disabled="true" title="Create a free account to continue" style="opacity:0.5;cursor:not-allowed;">
+          <% } else { %>
           <a href="/interview/session/<%= interruptedSession.id %>" class="qa-card violet">
+          <% } %>
             <div class="qa-icon"><%- include('partials/icon', { name: 'play', svgSize: 20 }) %></div>
             <div class="qa-title">Continue Interview</div>
             <div class="qa-desc">Pick back up where you left off</div>
             <div class="qa-arrow">→</div>
-          </a>
+          <%- _previewDisabled ? '</span>' : '</a>' %>
         <% } else { %>
+          <% if (_previewDisabled) { %>
+          <span class="qa-card violet" aria-disabled="true" title="Create a free account to start your own interview" style="opacity:0.5;cursor:not-allowed;">
+          <% } else { %>
           <a href="/interview" class="qa-card violet">
+          <% } %>
             <div class="qa-icon"><%- include('partials/icon', { name: 'mic', svgSize: 20 }) %></div>
             <div class="qa-title">Start Interview</div>
             <div class="qa-desc">Practice with AI interviewer and get instant feedback</div>
             <div class="qa-arrow">→</div>
-          </a>
+          <%- _previewDisabled ? '</span>' : '</a>' %>
         <% } %>
         <% if (resumeIntelActive) { %>
+          <% if (_previewDisabled) { %>
+          <span class="qa-card green" aria-disabled="true" title="Create a free account to update your resume" style="opacity:0.5;cursor:not-allowed;">
+          <% } else { %>
           <a href="/resume" class="qa-card green">
+          <% } %>
             <div class="qa-icon"><%- include('partials/icon', { name: 'upload', svgSize: 20 }) %></div>
             <div class="qa-title">Update Resume</div>
             <div class="qa-desc">Refresh Resume Intelligence with your latest resume</div>
             <div class="qa-arrow">→</div>
-          </a>
+          <%- _previewDisabled ? '</span>' : '</a>' %>
         <% } else { %>
+          <% if (_previewDisabled) { %>
+          <span class="qa-card green" aria-disabled="true" title="Create a free account to upload your resume" style="opacity:0.5;cursor:not-allowed;">
+          <% } else { %>
           <a href="/resume" class="qa-card green">
+          <% } %>
             <div class="qa-icon"><%- include('partials/icon', { name: 'upload', svgSize: 20 }) %></div>
             <div class="qa-title">Upload Resume</div>
             <div class="qa-desc">Complete your AI profile before starting your interview</div>
             <div class="qa-arrow">→</div>
-          </a>
+          <%- _previewDisabled ? '</span>' : '</a>' %>
         <% } %>
       </div>
     </div>
@@ -532,5 +558,9 @@ const _initialGreeting = (_srvHour >= 5 && _srvHour < 12) ? `Good morning, ${_fi
     });
   })();
 </script>
+
+<% if (typeof previewMode !== 'undefined' && previewMode) { %>
+  <%- include('partials/preview-conversion-panel') %>
+<% } %>
 
 <%- include('partials/workspace-shell-bottom') %>

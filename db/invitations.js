@@ -1,6 +1,11 @@
 // db/invitations.js
-// Private beta invite gate. One invitation per email (re-invite = update the
-// existing row, don't create a second one — enforced by the unique index).
+// Founder/admin invitation tracking (Founder Dashboard "Invite User" /
+// "Add to Beta Allowlist"). NOTE: this is no longer an enforced gate — the
+// private-beta invite requirement was removed from the signup/login paths
+// in routes/auth.js and config/passport.js. createInvitation/
+// acceptInvitation remain wired up for founder-side tracking of who was
+// invited and whether they've since signed up, but getValidInvitation is
+// no longer called anywhere on the authentication path.
 const { pool } = require('./index');
 
 async function getValidInvitation(email) {

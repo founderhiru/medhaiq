@@ -355,6 +355,16 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
    ).length;
    const isFinalQuestion = isPrimaryQuestionType(currentQ.question_type) &&
      (answeredPrimaryCount + 1) >= (visibleQuestionBudget + executiveExtensionBudget);
+    // Authoritative Adaptive Follow-up signal — same primary-only source
+    // (answeredPrimaryCount) as isFinalQuestion just above, same
+    // reasoning: phase-based, true once primary-only progress has
+    // reached the visible budget, independent of whether currentQ itself
+    // is a follow-up or a primary. Never derived from question_order,
+    // which also counts ordinary follow-ups and would overcount (the
+    // exact bug this fixes — see session 250, a Growth interview with
+    // one ordinary follow-up before Q5, previously mislabeled).
+    const isExecutiveExtension = answeredPrimaryCount >= visibleQuestionBudget;
+    const extensionQuestionNumber = answeredPrimaryCount - visibleQuestionBudget + 1;
     // Progress-counter denominator — REVERTED per explicit product
     // direction: the sidebar/progress-bar always shows "X of 5", frozen,
     // never exposing the total ceiling or that an extension occurred.
@@ -379,6 +389,8 @@ app.get('/interview/session/:id', requireAuthPage, async (req, res) => {
   questionBudget,
   totalQuestionCeiling,
   isFinalQuestion,
+  isExecutiveExtension,
+  extensionQuestionNumber,
   sessionDurationMinutes,
   sessionStartedAtMs,
   personaId:        persona.id,

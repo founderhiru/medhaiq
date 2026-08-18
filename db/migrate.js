@@ -911,6 +911,20 @@ async function runMigrations() {
           `);
         },
       },
+      {
+        name: '026_cost_analytics_elevenlabs',
+        up: async (c) => {
+          // ElevenLabs (TTS) is a distinct billed provider from Vapi
+          // (STT/transport) in the voice pipeline — custom voice profiles
+          // are streamed via a direct ElevenLabs token handoff, so its cost
+          // is NOT included in vapi_cost. Purely additive column, defaults
+          // to 0 so existing rows and the upsert path keep working.
+          await c.query(`
+            ALTER TABLE cost_analytics
+              ADD COLUMN IF NOT EXISTS elevenlabs_cost NUMERIC(10,4) DEFAULT 0
+          `);
+        },
+      },
     ];
 
     for (const m of migrations) {

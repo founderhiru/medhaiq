@@ -113,7 +113,7 @@
 
   .cover-topbar { display:flex; align-items:center; justify-content:space-between; padding:26px 48px 0; gap:12px; flex-wrap:wrap; }
   .brand-mark { display:flex; align-items:center; gap:8px; }
-  .brand-dot { width:20px; height:20px; border-radius:6px; background:var(--signal); display:inline-block; flex-shrink:0; }
+  .brand-dot { width:20px; height:20px; border-radius:6px; display:inline-block; flex-shrink:0; object-fit:contain; }
   .brand-name { font-family:'Plus Jakarta Sans'; font-weight:700; letter-spacing:-0.04em; font-size:16px; color:var(--ink); }
   .brand-name .iq { color: var(--signal); }
   .exec-summary-box { background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--signal); }
@@ -206,7 +206,7 @@
 <section class="page">
   <div class="cover-topbar">
     <div class="brand-mark">
-      <span class="brand-dot"></span>
+      <img src="/assets/branding/medhaiq-icon.png" alt="MedhaIQ" class="brand-dot" />
       <span class="brand-name">Medha<span class="iq">IQ</span></span>
     </div>
     <div class="flex items-center gap-8" style="flex-wrap:wrap;">

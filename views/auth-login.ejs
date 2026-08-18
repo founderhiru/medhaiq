@@ -537,9 +537,10 @@
   // already shown — same #authMsg element, same 'auth-msg error' class, same
   // spacing. The backend (routes/auth.js google/callback) only ever redirects
   // here with a short error code, not a message, so the mapping to
-  // user-facing text lives here on the client. No auth/redirect logic changed.
+  // user-facing text lives here on the client. The private-beta invite gate
+  // has been removed (routes/auth.js, config/passport.js), so 'no-invite' is
+  // no longer sent by the backend; only genuine failure/config states remain.
   const GOOGLE_OAUTH_ERROR_MESSAGES = {
-    'no-invite': 'This email does not have an active private beta invitation.',
     'google-auth-failed': 'Google sign-in failed. Please try again.',
     'google-not-configured': 'Google sign-in is not available right now. Please use email instead.',
   };

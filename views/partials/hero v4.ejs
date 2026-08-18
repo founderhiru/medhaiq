@@ -1,12 +1,11 @@
-<!-- HERO COMPONENT — MedhaIQ Continuous Career Intelligence -->
 <style>
-  /* Base Hero Container & Background Transition */
+  /* Base Hero Container & Smooth Clean Transition */
   .mh-hero {
     position: relative;
     width: 100%;
     background: linear-gradient(105deg, #F7F8F6 0%, #F7F8F6 46%, #E1EBF7 58%, #C5DCF5 72%, #1C2F4D 86%, #0D172B 100%);
     color: #0F172A;
-    padding: 56px 24px 88px; /* Increased top padding to ensure clearance below fixed nav at 100% zoom */
+    padding: 72px 24px 88px;
     overflow: hidden;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   }
@@ -22,19 +21,18 @@
     z-index: 2;
   }
 
-  /* Badge Styling: Black font, Light Grey background & border, ample top clearance */
+  /* Badge & Typography */
   .mh-hero-badge {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 6px 14px;
     border-radius: 9999px;
-    background: #F1F5F9; /* Clean light grey background */
-    border: 1px solid #E2E8F0; /* Soft grey border */
-    margin-top: 24px; /* Ample vertical offset below header */
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(59, 130, 246, 0.3);
     margin-bottom: 20px;
     backdrop-filter: blur(8px);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
   }
 
   .mh-hero-badge-dot {
@@ -42,17 +40,17 @@
     height: 6px;
     border-radius: 50%;
     background-color: #2563EB;
-    box-shadow: 0 0 6px rgba(37, 99, 235, 0.5);
+    box-shadow: 0 0 8px #2563EB;
   }
 
   .mh-hero-badge-text {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.08em;
-    color: #0F172A; /* Solid black font */
+    color: #1D4ED8;
   }
 
-  /* Compact Editorial Typography */
+  /* Reduced by ~12% (48px down from 56px) for compact, editorial feel */
   .mh-hero-h1 {
     font-size: 48px;
     line-height: 1.08;
@@ -72,24 +70,23 @@
     font-size: 16.5px;
     line-height: 1.55;
     color: #475569;
-    margin: 0 0 24px 0;
+    margin: 0 0 28px 0;
     max-width: 530px;
   }
 
-  /* 2x2 Feature Pills Grid Layout */
+  /* Feature Chips */
   .mh-hero-chips {
-    display: grid;
-    grid-template-columns: repeat(2, auto);
-    justify-content: start;
+    display: flex;
+    flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 32px;
   }
 
   .mh-hero-chip {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 7px 14px;
+    padding: 7px 13px;
     background: rgba(255, 255, 255, 0.85);
     border: 1px solid rgba(203, 213, 225, 0.8);
     border-radius: 8px;
@@ -123,7 +120,7 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
   }
 
   .mh-btn-primary {
@@ -197,7 +194,7 @@
     filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8));
   }
 
-  /* Live Pulse Indicator */
+  /* Pulsing Green Live Indicator */
   @keyframes mh-live-pulse {
     0% {
       opacity: 1;
@@ -225,7 +222,7 @@
     animation: mh-live-pulse 1.8s infinite ease-in-out;
   }
 
-  /* 3D Product Stage Visual Anchor */
+  /* 3D Stage Canvas Settings (Height adjusted 540px -> 490px) */
   .mh-hero-product-stack {
     position: relative;
     display: flex;
@@ -239,14 +236,14 @@
     perspective-origin: 55% 45%;
   }
 
-  /* REAR LAYER: CAREER WORKSPACE */
+  /* REAR CARD: CAREER WORKSPACE (Height adjusted 495px -> 450px) */
   .mh-career-mock {
     position: absolute;
     right: 250px;
     top: 12px;
     width: 530px;
     height: 450px;
-    background: #0B1226;
+    background: #111D32;
     border: 1.5px solid rgba(59, 130, 246, 0.45);
     border-radius: 18px;
     padding: 18px 20px;
@@ -267,7 +264,7 @@
     padding: 10px 12px;
   }
 
-  /* FRONT LAYER: LIVE INTERVIEW TERMINAL */
+  /* FRONT CARD: LIVE INTERVIEW TERMINAL (Height adjusted 525px -> 475px) */
   .mh-hero-mockup-wrap {
     position: absolute;
     right: 0px;
@@ -358,7 +355,7 @@
     margin: 0 4px;
   }
 
-  /* Responsive Fallback */
+  /* Responsive Adjustments */
   @media (max-width: 1024px) {
     .mh-hero-inner {
       grid-template-columns: 1fr;
@@ -366,10 +363,6 @@
     }
     .mh-hero-h1 {
       font-size: 40px;
-    }
-    .mh-hero-chips {
-      grid-template-columns: repeat(2, 1fr);
-      width: 100%;
     }
     .mh-hero-product-stack {
       height: auto;
@@ -396,13 +389,10 @@
 
   @media (max-width: 640px) {
     .mh-hero {
-      padding: 40px 16px 64px;
+      padding: 48px 16px 64px;
     }
     .mh-hero-h1 {
       font-size: 32px;
-    }
-    .mh-hero-chips {
-      grid-template-columns: 1fr;
     }
     .mh-hero-actions {
       flex-direction: column;
@@ -416,7 +406,6 @@
 
 <section class="mh-hero">
   <div class="mh-hero-inner">
-    <!-- Left Column: Copy & Actions -->
     <div>
       <div class="mh-hero-badge">
         <span class="mh-hero-badge-dot"></span>
@@ -427,9 +416,7 @@
 
       <p class="mh-hero-h2">Move beyond interview practice. MedhaIQ adapts to your role, experience, and career goals—delivering continuous career intelligence that helps you perform, grow, and advance with confidence.</p>
       
-      <!-- 2x2 Feature Pills Arrangement -->
       <div class="mh-hero-chips">
-        <!-- Row 1 -->
         <div class="mh-hero-chip">
           <span class="mh-hero-chip-icon mh-hero-chip-icon-purple">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -442,7 +429,6 @@
           </span>
           <span>Personalized Feedback</span>
         </div>
-        <!-- Row 2 -->
         <div class="mh-hero-chip">
           <span class="mh-hero-chip-icon mh-hero-chip-icon-amber">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
@@ -478,10 +464,8 @@
       </div>
     </div>
 
-    <!-- Right Column: Embedded 3D Stage Stack -->
     <div class="mh-hero-product-stack">
       
-      <!-- REAR LAYER: CAREER WORKSPACE -->
       <div class="mh-career-mock" aria-hidden="true">
         <div class="mh-career-mock-header">
           <span class="mh-career-mock-title" style="font-size:10px; color:#64748B; letter-spacing:0.05em;">CAREER WORKSPACE</span>
@@ -490,7 +474,6 @@
         </div>
 
         <div class="mh-career-mock-row" style="display:flex; gap:10px;">
-          <!-- AI Interview Minutes Meter -->
           <div class="mh-career-mock-card" style="flex:1;">
             <div style="font-size:8.5px; color:#64748B; margin-bottom:3px; font-weight:600;">⚡ AI INTERVIEW MINUTES</div>
             <div style="display:flex; align-items:center; gap:8px;">
@@ -502,7 +485,6 @@
             <div style="font-size:8px; color:#64748B; margin-top:3px;">Used 10 mins · 120 Total</div>
           </div>
 
-          <!-- Interview Readiness -->
           <div class="mh-career-mock-card" style="flex:1;">
             <div style="font-size:8.5px; color:#64748B; margin-bottom:3px; font-weight:600;">INTERVIEW READINESS</div>
             <div style="display:flex; align-items:baseline; gap:4px;">
@@ -515,7 +497,6 @@
         </div>
 
         <div class="mh-career-mock-row" style="display:flex; gap:10px; margin-top:8px;">
-          <!-- Recent Activity -->
           <div class="mh-career-mock-card" style="flex:1;">
             <div class="mh-career-mock-label" style="font-size:8.5px; color:#64748B; margin-bottom:5px;">RECENT ACTIVITY</div>
             <div style="display:flex; justify-content:space-between; font-size:9px; color:#CBD5E1; margin-bottom:2px;">
@@ -528,7 +509,6 @@
             </div>
           </div>
 
-          <!-- Quick Start Practice -->
           <div class="mh-career-mock-card" style="flex:1; background:rgba(30, 41, 59, 0.6);">
             <div class="mh-career-mock-label" style="font-size:8.5px; color:#64748B; margin-bottom:3px;">QUICK ACTIONS</div>
             <div style="font-size:9.5px; font-weight:700; color:#F8FAFC;">Start Interview</div>
@@ -536,7 +516,6 @@
           </div>
         </div>
 
-        <!-- YOUR PROGRESS MATRIX CARD -->
         <div class="mh-career-mock-card" style="margin-top:10px; padding:10px 12px;">
           <div style="font-size:8.5px; color:#64748B; margin-bottom:6px; font-weight:600; text-transform:uppercase;">Your Progress</div>
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -560,7 +539,6 @@
 
       </div>
 
-      <!-- FRONT LAYER: LIVE INTERVIEW TERMINAL -->
       <div class="mh-hero-mockup-wrap">
         <div class="mh-terminal-v2">
           <div class="mh-terminal-v2-header">

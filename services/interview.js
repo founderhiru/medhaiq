@@ -2189,13 +2189,27 @@ async function scoreAnswer(answer, personaId, sessionContext) {
     return { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0, star_components: NO_COMPONENTS };
   }
 
-  const prompt = `Answer being evaluated:\n"${answer}"\n\nPersona archetype: ${personaId}\nRole: ${sessionContext.roleTitle || 'General'}\nExperience Level: ${sessionContext.experienceLevel || 'mid'}\nOrganisation: ${sessionContext.orgPreset || 'Generic Global Enterprise'}`;
+ const prompt = `Answer being evaluated:\n"${answer}"\n\nPersona archetype: ${personaId}\nRole: ${sessionContext.roleTitle || 'General'}\nExperience Level: ${sessionContext.experienceLevel || 'mid'}\nOrganisation: ${sessionContext.orgPreset || 'Generic Global Enterprise'}`;
+
+  const onUsage = sessionContext.sessionId
+    ? (usage, latencyMs) => {
+        recordPromptCacheMetrics({
+          sessionId: sessionContext.sessionId,
+          turnLabel: 'scoreAnswer',
+          capability: 'scoreAnswer',
+          usage,
+          latencyMs,
+        }).catch((e) => console.error('[cost-metrics] scoreAnswer persist failed:', e.message));
+      }
+    : undefined;
 
   let result;
   try {
     result = await chatJSON(prompt, {
       system: SCORING_SYSTEM,
       maxTokens: 1024,
+      onUsage,
+      capability: 'scoreAnswer',
     });
   } catch (e) {
     console.error('[interview] score parse error:', e.message);
@@ -2320,11 +2334,23 @@ Overall Weighted Score: ${weightedAvg.toFixed(1)}/100
 
 Produce the structured debrief in valid JSON format.`;
 
+  const onUsage = (usage, latencyMs) => {
+    recordPromptCacheMetrics({
+      sessionId,
+      turnLabel: 'generateReport',
+      capability: 'generateReport',
+      usage,
+      latencyMs,
+    }).catch((e) => console.error('[cost-metrics] generateReport persist failed:', e.message));
+  };
+
   let result;
   try {
     result = await chatJSON(prompt, {
       system: REPORT_SYSTEM,
       maxTokens: 2048,
+      onUsage,
+      capability: 'generateReport',
     });
   } catch (e) {
     console.error('[interview] report parse error:', e.message);
