@@ -236,13 +236,13 @@
     height: 490px;
     margin-top: -5px;
     perspective: 1600px;
-    perspective-origin: 50% 50%;
+    perspective-origin: 55% 45%;
   }
 
   /* REAR LAYER: CAREER WORKSPACE */
   .mh-career-mock {
     position: absolute;
-    right: 235px;
+    right: 250px;
     top: 12px;
     width: 530px;
     height: 450px;
@@ -270,7 +270,7 @@
   /* FRONT LAYER: LIVE INTERVIEW TERMINAL */
   .mh-hero-mockup-wrap {
     position: absolute;
-    right: 30px;
+    right: 0px;
     top: 0px;
     width: 340px;
     height: 475px;
@@ -358,14 +358,6 @@
     margin: 0 4px;
   }
 
-  /* Dynamic View Adjustments */
-  @media (max-width: 1280px) and (min-width: 1025px) {
-    .mh-hero-product-stack {
-      transform: scale(0.85);
-      transform-origin: right center;
-    }
-  }
-
   /* Responsive Fallback */
   @media (max-width: 1024px) {
     .mh-hero-inner {
@@ -385,7 +377,6 @@
       align-items: center;
       margin-top: 0;
       perspective: none;
-      transform: none;
     }
     .mh-career-mock,
     .mh-hero-mockup-wrap {
