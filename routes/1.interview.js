@@ -222,16 +222,6 @@ async function pickAndPersistNextQuestion(session) {
       order: pending.question_order,
       isFinalQuestion: isPrimaryQuestionType(pending.question_type) &&
   (_guard1AnsweredPrimaries + 1) >= totalQuestionCeiling,
-      // Authoritative Adaptive Follow-up signal — reuses the same
-      // primary-only count already computed above for isFinalQuestion.
-      // Phase-based, not per-question: true once primary-only progress
-      // has reached the visible budget, regardless of whether THIS turn
-      // happens to be a follow-up (a follow-up occurring during a
-      // genuine extension should still read as Adaptive Follow-up) or a
-      // primary. Never derived from raw question_order, which also
-      // counts ordinary follow-ups and would overcount.
-      isExecutiveExtension: _guard1AnsweredPrimaries >= visibleQuestionBudget,
-      extensionQuestionNumber: _guard1AnsweredPrimaries - visibleQuestionBudget + 1,
       competency: pending.competency || null,
       audio_url: null,
       question: {
@@ -242,8 +232,6 @@ async function pickAndPersistNextQuestion(session) {
         order: pending.question_order,
         isFinalQuestion: isPrimaryQuestionType(pending.question_type) &&
   (_guard1AnsweredPrimaries + 1) >= totalQuestionCeiling,
-        isExecutiveExtension: _guard1AnsweredPrimaries >= visibleQuestionBudget,
-        extensionQuestionNumber: _guard1AnsweredPrimaries - visibleQuestionBudget + 1,
         competency: pending.competency || null
       }
     };
@@ -475,17 +463,6 @@ async function pickAndPersistNextQuestion(session) {
   // (views/interview-session.ejs), which used the visible budget instead
   // of the real ceiling and could be wrong during a Leadership extension.
   const isFinalQuestion = !isFollowupTurn && (answeredPrimaryCount + 1) >= totalQuestionCeiling;
-  // Authoritative Adaptive Follow-up signal — same reasoning and same
-  // primary-only source (answeredPrimaryCount) as isFinalQuestion just
-  // above. Phase-based: true once primary-only progress has reached the
-  // visible budget, independent of whether THIS specific turn is a
-  // follow-up or a primary — a follow-up occurring during a genuine
-  // extension should still read as Adaptive Follow-up (existing header
-  // behavior, unchanged), while an ordinary follow-up occurring BEFORE
-  // the visible budget is reached must not inflate this. Never derived
-  // from question_order, which also counts ordinary follow-ups.
-  const isExecutiveExtension = answeredPrimaryCount >= visibleQuestionBudget;
-  const extensionQuestionNumber = answeredPrimaryCount - visibleQuestionBudget + 1;
 
   return {
     done: false,
@@ -495,8 +472,6 @@ async function pickAndPersistNextQuestion(session) {
     isFollowup: isFollowupTurn,
     order: savedQuestion.question_order,
     isFinalQuestion,
-    isExecutiveExtension,
-    extensionQuestionNumber,
     competency: generated.competency || null,
     audio_url: null,
     question: {
@@ -506,8 +481,6 @@ async function pickAndPersistNextQuestion(session) {
       isFollowup: isFollowupTurn,
       order: savedQuestion.question_order,
       isFinalQuestion,
-      isExecutiveExtension,
-      extensionQuestionNumber,
       competency: generated.competency || null,
     },
   };
@@ -1176,8 +1149,6 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
         type: picked.type,
         order: picked.order,
         isFinalQuestion: picked.isFinalQuestion,
-        isExecutiveExtension: picked.isExecutiveExtension,
-        extensionQuestionNumber: picked.extensionQuestionNumber,
       },
       text: picked.text,
       audio_url: picked.audio_url,

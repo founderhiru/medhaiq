@@ -412,18 +412,19 @@
   var QID    = '<%= questionId %>';
   var QN     = <%= answeredCount %> + 1;
   var MAXQ   = <%= questionBudget %>;
-  // Adaptive Follow-up state — authoritative, read directly from the
-  // backend (routes/interview.js's pickAndPersistNextQuestion), never
-  // computed client-side. Previously this compared answeredCount/
-  // data.question.order (which count ordinary follow-ups too) against
-  // MAXQ (a primary-only budget) — a unit mismatch that mislabeled a
-  // Growth interview's real, legitimate final primary question as
-  // Adaptive Follow-up whenever an ordinary follow-up happened to occur
-  // earlier in the session (confirmed against real data, session 250).
-  // Same fix pattern as CURRENT_QUESTION_IS_FINAL below: read once at
-  // render, updated (never recomputed) from the response on each turn.
-  var IS_EXECUTIVE_EXTENSION = <%= isExecutiveExtension ? 'true' : 'false' %>;
-  var EXTENSION_QUESTION_NUMBER = <%= extensionQuestionNumber %>;
+  // Adaptive Follow-up state — derived entirely from values that already
+  // exist and are already sent by the current server.js (answeredCount,
+  // MAXQ) plus a field the answer-submission API response already
+  // includes today (data.question.order, the question's true, uncapped
+  // 0-indexed position — see routes/interview.js's savedQuestion.question_order).
+  // No new server locals, no TOTAL_CEILING, no manually-incremented
+  // counter: <%= answeredCount %> IS the true 0-indexed position of the
+  // question currently being shown, and every subsequent question's true
+  // position arrives for free in data.question.order. Recomputed at the
+  // one place QN already gets updated (below), so header/sidebar/topbar
+  // all read the same two values.
+  var IS_EXECUTIVE_EXTENSION = <%= answeredCount %> >= MAXQ;
+  var EXTENSION_QUESTION_NUMBER = <%= answeredCount %> - MAXQ + 1;
   // Authoritative "is this question final" — read once here from the
   // server-rendered initial value, then updated (not predicted) each
   // time a new question arrives from data.question.isFinalQuestion below.
@@ -1387,21 +1388,16 @@
       if (typeof data.question.isFinalQuestion === 'boolean') {
         CURRENT_QUESTION_IS_FINAL = data.question.isFinalQuestion;
       }
-      // Adaptive Follow-up state — same direct-read pattern as
-      // CURRENT_QUESTION_IS_FINAL just above, and deliberately updated
-      // unconditionally (not nested inside the "not follow-up" branch
-      // below) — a follow-up occurring during a genuine extension must
-      // still read as Adaptive Follow-up (existing header behavior,
-      // unchanged), so this can't be skipped just because the current
-      // turn happens to be a follow-up. Previously derived from
-      // data.question.order, which also counts ordinary follow-ups and
-      // mislabeled a Growth interview's real final question (session 250).
-      if (typeof data.question.isExecutiveExtension === 'boolean') {
-        IS_EXECUTIVE_EXTENSION = data.question.isExecutiveExtension;
-        EXTENSION_QUESTION_NUMBER = data.question.extensionQuestionNumber;
-      }
       if (data.question.type !== 'follow_up') {
         QN = Math.min(QN + 1, MAXQ); // clamp — never display past MAXQ even if something upstream misbehaves
+        // data.question.order is the question's true, uncapped 0-indexed
+        // position — already present in the existing API response
+        // (routes/interview.js's savedQuestion.question_order). No
+        // manually-maintained counter needed.
+        if (typeof data.question.order === 'number') {
+          IS_EXECUTIVE_EXTENSION = data.question.order >= MAXQ;
+          EXTENSION_QUESTION_NUMBER = data.question.order - MAXQ + 1;
+        }
       }
       updateCounter();
       var nextQ = { text: data.text || data.question.text, type: data.question.type, id: data.question.id, order: data.question.order };
