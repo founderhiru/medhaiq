@@ -1,13 +1,13 @@
 /* ==========================================================================
    WHY MEDHAIQ — PAGE SPECIFIC STYLES
-   Warm Light-Theme Canvas — Precision Layout & Spacing System
+   Warm Light-Theme Canvas — Precision Layout & Compact Spacing
    ========================================================================== */
 
 .mh-why-body {
   background-color: #0A0F1E;
 }
 
-/* Continuous Light Canvas Wrapper for Sections 02 through 05 */
+/* Continuous Warm Light Canvas Wrapper for Main Content */
 .mh-why-main-light {
   background-color: #F8FAFC !important;
   color: #0F172A;
@@ -21,7 +21,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   01 — Section Padding & Whitespace (Tightened for ~10–15% Compact Density)
+   01 — Section Padding & Compact Whitespace System
    -------------------------------------------------------------------------- */
 .mh-why-twocard,
 .mh-why-philosophy,
@@ -33,31 +33,31 @@
   background-color: transparent !important;
 }
 
-/* Hero → Problem/Shift (Gap reduced ~30%) */
+/* 1. Hero → Problem/Shift (Gap reduced ~28%) */
 .mh-why-twocard {
-  padding-top: 2rem;
-  padding-bottom: 1.625rem;
+  padding-top: 1.75rem;
+  padding-bottom: 1.25rem;
 }
 
-/* Problem/Shift → Manifesto (Gap reduced ~18%) */
+/* 2. Problem/Shift → Manifesto (Gap reduced ~18%) */
 .mh-why-philosophy {
-  padding-top: 1.25rem;
-  padding-bottom: 1.625rem;
+  padding-top: 1.0rem;
+  padding-bottom: 1.25rem;
 }
 
-/* Manifesto → Three Pillars (Gap reduced ~18.7%) */
+/* 3. Manifesto → Three Pillars (Gap reduced ~18.5%) */
 .mh-why-pillars {
-  padding-top: 1.625rem;
-  padding-bottom: 2rem;
+  padding-top: 1.25rem;
+  padding-bottom: 1.5rem;
 }
 
-/* Three Pillars → Comparison Matrix (Gap reduced ~19.4%) */
+/* 5. Three Pillars → Comparison (Gap reduced ~18.5%) */
 .mh-why-compare {
-  padding-top: 1.625rem;
-  padding-bottom: 2.875rem;
+  padding-top: 1.25rem;
+  padding-bottom: 2.25rem;
 }
 
-/* Normalized Content Width System (1120px unified max-width) */
+/* 6. Normalized Content Width System (1120px unified max-width) */
 .mh-why-twocard-wrapper,
 .mh-why-pillars-inner,
 .mh-matrix-inner {
@@ -66,7 +66,6 @@
   margin-right: auto;
 }
 
-/* Narrow Container for Quote Manifesto */
 .mh-why-narrow {
   max-width: 860px;
   margin-left: auto;
@@ -75,7 +74,7 @@
 
 .mh-section-center {
   text-align: center;
-  margin-bottom: 1.625rem;
+  margin-bottom: 1.25rem;
 }
 
 /* Eyebrows & Section Titles */
@@ -88,15 +87,12 @@
   margin-bottom: 0.375rem;
 }
 
-.mh-eyebrow-problem { color: #DC2626; }
-.mh-eyebrow-shift { color: #16A34A; }
-
 .mh-section-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.625rem;
+  font-size: 1.5rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.5rem 0;
 }
 
 .mh-title-dark {
@@ -105,155 +101,99 @@
 
 @media (min-width: 768px) {
   .mh-section-title {
-    font-size: 1.875rem;
+    font-size: 1.75rem;
   }
 }
 
 /* --------------------------------------------------------------------------
-   02 — PROBLEM VS SHIFT CARD
+   02 — TOP 2 CARDS (2-COLUMN PARAGRAPH LAYOUT)
    -------------------------------------------------------------------------- */
-.mh-why-twocard-container {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 1rem;
-  padding: 1.75rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-}
-
 .mh-why-twocard-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.25rem;
-  align-items: stretch;
 }
 
 @media (min-width: 768px) {
   .mh-why-twocard-grid {
-    grid-template-columns: 1fr auto 1fr;
-    gap: 1.5rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
   }
 }
 
-.mh-why-card {
+.mh-why-card-light {
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 0.875rem;
+  padding: 1.375rem 1.5rem;
   display: flex;
   flex-direction: column;
-  position: relative;
-  padding: 0.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
 .mh-why-card-icon {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 0.75rem;
-}
-
-.mh-icon-problem {
-  background: #FEF2F2;
-  color: #EF4444;
-  border: 1px solid #FCA5A5;
-}
-
-.mh-icon-shift {
-  background: #F0FDF4;
-  color: #10B981;
-  border: 1px solid #86EFAC;
-}
-
-.mh-why-connector {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.mh-why-arrow-badge {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
   background: #FFFFFF;
+  color: #2563EB;
   border: 1px solid #CBD5E1;
-  color: #475569;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
-@media (max-width: 767px) {
-  .mh-why-arrow-badge {
-    transform: rotate(90deg);
-  }
+.mh-why-card-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 0.875rem 0;
+  letter-spacing: -0.01em;
 }
 
-.mh-why-bullet-list {
-  list-style: none;
-  padding: 0;
-  margin: 0.875rem 0 0 0;
+.mh-why-card-body {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.mh-why-bullet-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.625rem;
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: #334155;
+.mh-why-card-text {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #475569;
+  margin: 0;
 }
 
-.mh-bullet-icon {
-  font-weight: 800;
-  font-size: 0.8125rem;
-  line-height: 1.4;
-  flex-shrink: 0;
+.mh-why-card-text-bold {
+  font-weight: 700;
+  color: #0F172A;
 }
-
-.mh-bullet-problem { color: #EF4444; }
-.mh-bullet-shift { color: #10B981; }
 
 /* --------------------------------------------------------------------------
-   03 — POSITIONING QUOTE (MANIFESTO)
+   03 — POSITIONING QUOTE (MANIFESTO — FONT +8% INCREASED)
    -------------------------------------------------------------------------- */
 .mh-why-quote-card-light {
   background: #EFF6FF;
   border: 1px solid #DBEAFE;
   border-radius: 1rem;
-  padding: 2rem 1.875rem;
+  padding: 1.75rem 1.75rem;
   text-align: center;
   position: relative;
   overflow: hidden;
 }
 
-.mh-quote-mark {
-  position: absolute;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 4.5rem;
-  font-weight: 800;
-  line-height: 1;
-  color: #3B82F6;
-  opacity: 0.35;
-  user-select: none;
-  pointer-events: none;
+.mh-quote-mark-icon {
+  display: inline-flex;
+  margin-bottom: 0.5rem;
+  color: #93C5FD;
 }
 
-.mh-quote-left {
-  top: 0.5rem;
-  left: 1.5rem;
-}
-
-.mh-quote-right {
-  bottom: -0.5rem;
-  right: 1.5rem;
-}
-
+/* Quote title font size increased ~8% (from 1.5rem/1.75rem to 1.625rem/1.9rem) */
 .mh-why-quote-light {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.625rem;
   font-weight: 800;
   line-height: 1.35;
   color: #0F172A;
@@ -265,7 +205,7 @@
 
 @media (min-width: 768px) {
   .mh-why-quote-light {
-    font-size: 1.75rem;
+    font-size: 1.9rem;
   }
 }
 
@@ -274,17 +214,17 @@
 }
 
 .mh-why-quote-sub-light {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   line-height: 1.55;
   color: #475569;
-  max-width: 620px;
+  max-width: 640px;
   margin: 0 auto;
   position: relative;
   z-index: 1;
 }
 
 /* --------------------------------------------------------------------------
-   04 — THREE PILLARS (Efficient Space Utilization & ~15% Larger Visuals)
+   04 — THREE PILLARS (Efficient Card Space & ~15-20% Larger Visuals)
    -------------------------------------------------------------------------- */
 .mh-why-pillar-grid {
   display: grid;
@@ -315,28 +255,27 @@
   transform: translateY(-2px);
 }
 
-/* Image/Visual Container (~15–20% area increase) */
 .mh-pillar-mini-visual-light {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 0.875rem;
+  margin-bottom: 0.75rem;
   background: #FAFAFC;
   border: 1px solid #F1F5F9;
   border-radius: 0.625rem;
-  padding: 0.75rem 0.5rem;
+  padding: 0.625rem 0.5rem;
 }
 
 .mh-pillar-mini-visual-light svg {
   max-width: 100%;
-  height: 138px; /* Increased graphic height from 120px to 138px */
+  height: 138px; /* Increased graphic height from 120px to 138px (+15%) */
   width: auto;
 }
 
 .mh-why-pillar-title-dark {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   color: #0F172A;
   margin: 0 0 0.375rem 0;
@@ -344,7 +283,7 @@
 }
 
 .mh-why-pillar-desc-dark {
-  font-size: 0.875rem;
+  font-size: 0.84375rem;
   line-height: 1.5;
   color: #64748B;
   margin: 0;
@@ -374,7 +313,7 @@
 }
 
 .mh-matrix-th {
-  padding: 0.9375rem 1.375rem;
+  padding: 0.875rem 1.25rem;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -408,8 +347,8 @@
 }
 
 .mh-matrix-cell {
-  padding: 0.9375rem 1.375rem;
-  font-size: 0.875rem;
+  padding: 0.875rem 1.25rem;
+  font-size: 0.84375rem;
   line-height: 1.5;
 }
 
@@ -434,24 +373,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #2563EB;
   color: #FFFFFF;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   margin-right: 0.5rem;
   flex-shrink: 0;
 }
 
-/* --------------------------------------------------------------------------
-   Scroll Animations
-   -------------------------------------------------------------------------- */
+/* Animations */
 .reveal {
   opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(12px);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reveal.visible {
@@ -462,7 +399,7 @@
 .reveal-item {
   opacity: 0;
   transform: translateY(10px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .reveal-item.visible {
