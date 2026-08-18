@@ -152,7 +152,7 @@
       cardTemplate({
         label: "Today's AI cost",
         value: money(d.todays_total_ai_cost),
-        sub: `Vapi ${money(d.todays_vapi_cost)} · Claude ${money(d.todays_claude_cost)}`,
+        sub: `Vapi ${money(d.todays_vapi_cost)} · Claude ${money(d.todays_claude_cost)} · ElevenLabs ${money(d.todays_elevenlabs_cost)}`,
         accentClass: 'text-warn',
       }),
       cardTemplate({
@@ -185,15 +185,17 @@
     // 3. Granular Spends & Flags
     const vapiCost = Number(d.todays_vapi_cost) || 0;
     const claudeCost = Number(d.todays_claude_cost) || 0;
-    const totalCost = vapiCost + claudeCost;
+    const elevenlabsCost = Number(d.todays_elevenlabs_cost) || 0;
+    const totalCost = vapiCost + claudeCost + elevenlabsCost;
     const vapiPct = totalCost > 0 ? (vapiCost / totalCost) * 100 : 0;
     const claudePct = totalCost > 0 ? (claudeCost / totalCost) * 100 : 0;
+    const elevenlabsPct = totalCost > 0 ? (elevenlabsCost / totalCost) * 100 : 0;
 
     spendGrid.innerHTML = `
       <div class="rounded-xl border border-border card px-6 py-5">
         <p class="text-xs uppercase tracking-wide text-gray-500 mb-3">AI spend breakdown</p>
         <div class="flex justify-between text-sm mb-1">
-          <span class="text-gray-300">Vapi (voice)</span>
+          <span class="text-gray-300">Vapi (voice transport)</span>
           <span class="font-medium text-white">${money(vapiCost)}</span>
         </div>
         <div class="w-full h-1.5 rounded-full bg-white/5 mb-3">
@@ -203,8 +205,15 @@
           <span class="text-gray-300">Claude (context/tokens)</span>
           <span class="font-medium text-white">${money(claudeCost)}</span>
         </div>
-        <div class="w-full h-1.5 rounded-full bg-white/5">
+        <div class="w-full h-1.5 rounded-full bg-white/5 mb-3">
           <div class="h-1.5 rounded-full bg-warn" style="width:${num(claudePct, 0)}%"></div>
+        </div>
+        <div class="flex justify-between text-sm mb-1">
+          <span class="text-gray-300">ElevenLabs (TTS)</span>
+          <span class="font-medium text-white">${money(elevenlabsCost)}</span>
+        </div>
+        <div class="w-full h-1.5 rounded-full bg-white/5">
+          <div class="h-1.5 rounded-full bg-good" style="width:${num(elevenlabsPct, 0)}%"></div>
         </div>
       </div>
       ${cardTemplate({
