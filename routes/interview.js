@@ -17,6 +17,7 @@ const {
   hasSufficientCoverage,
   PERSONAS,
 } = require('../services/interview');
+const { recordClaudeSessionCost } = require('../lib/cost-recorder');
 
 const {
   createSession,
@@ -753,7 +754,8 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
   const shouldScoreThisTurn = !isDiscoveryQuestion && !effectiveSkip;
   if (shouldScoreThisTurn) {
     if (answerText && answerText.trim()) {
-      scores = await scoreAnswer(answerText, session.persona_id, {
+     scores = await scoreAnswer(answerText, session.persona_id, {
+        sessionId,
         roleTitle: session.role_title,
         experienceLevel: session.experience_level,
         orgPreset: session.org_preset,
@@ -883,6 +885,8 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     });
 
     await completeSession(sessionId, reportData.overall_score);
+
+    await recordClaudeSessionCost({ interviewId: sessionId, userId: session.user_id });
 
     try {
       const persona = PERSONAS[session.persona_id];
