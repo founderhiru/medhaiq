@@ -29,51 +29,89 @@
   }) %>
 
   <!-- ============================================
-       02 — THE PROBLEM & THE SHIFT
+       02 — THE PROBLEM & THE SHIFT (CONNECTED PANELS)
        ============================================ -->
   <section class="mh-why-twocard reveal">
-    <div class="mh-why-twocard-grid">
+    <div class="mh-why-twocard-wrapper">
+      <div class="mh-why-twocard-grid">
 
-      <div class="mh-why-card mh-why-card-problem">
-        <div class="mh-why-card-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.5" fill="currentColor"/></svg>
+        <!-- LEFT PANEL: THE PROBLEM -->
+        <div class="mh-why-card mh-why-card-problem">
+          <div class="mh-why-card-icon mh-icon-problem" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <div class="mh-eyebrow mh-eyebrow-problem">THE PROBLEM</div>
+          <h2 class="mh-section-title">The Transactional Trap</h2>
+          
+          <ul class="mh-why-bullet-list">
+            <li class="mh-why-bullet-item">
+              <span class="mh-bullet-icon mh-bullet-problem" aria-hidden="true">✕</span>
+              <span>Most interview preparation is optimized for a single event.</span>
+            </li>
+            <li class="mh-why-bullet-item">
+              <span class="mh-bullet-icon mh-bullet-problem" aria-hidden="true">✕</span>
+              <span>Once the interview ends, learning disappears with it.</span>
+            </li>
+            <li class="mh-why-bullet-item">
+              <span class="mh-bullet-icon mh-bullet-problem" aria-hidden="true">✕</span>
+              <span>Every new opportunity forces you to start from zero again.</span>
+            </li>
+          </ul>
         </div>
-        <div class="mh-eyebrow">The Problem</div>
-        <h2 class="mh-section-title">The Transactional Trap</h2>
-        <p class="mh-why-body">
-          Most interview preparation is optimized for a single event. Once the interview ends, the learning disappears with it.
-        </p>
-        <p class="mh-why-body mh-why-body-emphasis">
-          Every new opportunity forces you to start from zero again.
-        </p>
-      </div>
 
-      <div class="mh-why-card mh-why-card-shift">
-        <div class="mh-why-card-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17 9 11 13 15 21 7"/><path d="M15 7h6v6"/></svg>
+        <!-- CENTER DIRECTIONAL ARROW INDICATOR -->
+        <div class="mh-why-connector" aria-hidden="true">
+          <div class="mh-why-arrow-badge">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
         </div>
-        <div class="mh-eyebrow">The Shift</div>
-        <h2 class="mh-section-title">From Cramming to Progression</h2>
-        <p class="mh-why-body">
-          True readiness comes from treating interview capability as a compounding asset, built over time through structured practice.
-        </p>
-        <p class="mh-why-body mh-why-body-emphasis">
-          Every session builds forward into a continuous curve of growth.
-        </p>
-      </div>
 
+        <!-- RIGHT PANEL: THE SHIFT -->
+        <div class="mh-why-card mh-why-card-shift">
+          <div class="mh-why-card-icon mh-icon-shift" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+              <polyline points="17 6 23 6 23 12"/>
+            </svg>
+          </div>
+          <div class="mh-eyebrow mh-eyebrow-shift">THE SHIFT</div>
+          <h2 class="mh-section-title">From Cramming to Progression</h2>
+          
+          <ul class="mh-why-bullet-list">
+            <li class="mh-why-bullet-item">
+              <span class="mh-bullet-icon mh-bullet-shift" aria-hidden="true">✓</span>
+              <span>Treating interview capability as a compounding asset built over time.</span>
+            </li>
+            <li class="mh-why-bullet-item">
+              <span class="mh-bullet-icon mh-bullet-shift" aria-hidden="true">✓</span>
+              <span>Structured practice that retains strategic depth beyond one session.</span>
+            </li>
+            <li class="mh-why-bullet-item">
+              <span class="mh-bullet-icon mh-bullet-shift" aria-hidden="true">✓</span>
+              <span>Every session builds forward into a continuous curve of growth.</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
     </div>
   </section>
 
   <!-- ============================================
-       03 — PHILOSOPHY
+       03 — PHILOSOPHY BLOCK
        ============================================ -->
   <section class="mh-why-philosophy reveal">
     <div class="mh-why-narrow">
       <div class="mh-why-quote-card">
         <blockquote class="mh-why-quote">
-          <span class="mh-why-quote-mark">&#8220;</span>
-          Professionals don't need another answer generator. <span class="mh-why-quote-accent">They need a better thinking system.</span>
+          “Professionals don't need another answer generator. <span class="mh-why-quote-accent">They need a better thinking system.</span>”
         </blockquote>
         <p class="mh-why-body mh-why-quote-sub">
           We believe true career readiness comes from developing deep, adaptable reasoning — transforming how professionals evaluate problems, structure answers, and communicate under pressure.
@@ -83,43 +121,54 @@
   </section>
 
   <!-- ============================================
-       04 — THE THREE PILLARS
+       04 — THE THREE PILLARS (VISUAL CAPABILITY CARDS - NO NUMBERS)
        ============================================ -->
   <section class="mh-why-pillars reveal">
     <div class="mh-why-pillars-inner">
       <div class="mh-section-center">
-        <div class="mh-eyebrow">Core Principles</div>
-        <h2 class="mh-section-title">The Three Pillars</h2>
+        <div class="mh-eyebrow">Core Mechanisms</div>
+        <h2 class="mh-section-title">Three Pillars of MedhaIQ</h2>
       </div>
 
       <div class="mh-why-pillar-grid">
 
+        <!-- PILLAR 1 -->
         <div class="mh-why-pillar-card reveal-item">
-          <div class="mh-pillar-header">
-            <span class="mh-pillar-num">01</span>
-            <div class="mh-why-pillar-icon" aria-hidden="true">&#9889;</div>
+          <div class="mh-pillar-icon-container" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
           </div>
-          <h3 class="mh-why-pillar-title">Real–Time Stress Testing</h3>
+          <h3 class="mh-why-pillar-title">Real-Time Stress Testing</h3>
           <p class="mh-why-pillar-desc">
             Simulating high-stakes evaluation environments to reveal true performance and build genuine composure under pressure.
           </p>
         </div>
 
+        <!-- PILLAR 2 -->
         <div class="mh-why-pillar-card reveal-item">
-          <div class="mh-pillar-header">
-            <span class="mh-pillar-num">02</span>
-            <div class="mh-why-pillar-icon" aria-hidden="true">&#9737;</div>
+          <div class="mh-pillar-icon-container" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+              <path d="M3 20h18"/>
+            </svg>
           </div>
-          <h3 class="mh-why-pillar-title">5–Vector Intelligence</h3>
+          <h3 class="mh-why-pillar-title">5-Vector Intelligence</h3>
           <p class="mh-why-pillar-desc">
             Evaluating responses across structure, domain depth, strategic thinking, communication, and leadership execution.
           </p>
         </div>
 
+        <!-- PILLAR 3 -->
         <div class="mh-why-pillar-card reveal-item">
-          <div class="mh-pillar-header">
-            <span class="mh-pillar-num">03</span>
-            <div class="mh-why-pillar-icon" aria-hidden="true">&#8734;</div>
+          <div class="mh-pillar-icon-container" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="6"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
           </div>
           <h3 class="mh-why-pillar-title">Living Profile of Mastery</h3>
           <p class="mh-why-pillar-desc">
@@ -132,7 +181,7 @@
   </section>
 
   <!-- ============================================
-       05 — WHY WE'RE DIFFERENT (THE COMPARISON MATRIX)
+       05 — COMPARISON MATRIX (PROOF OF DIFFERENTIATION)
        ============================================ -->
   <section class="mh-why-compare reveal" id="why-compare">
     <div class="mh-matrix-inner">
