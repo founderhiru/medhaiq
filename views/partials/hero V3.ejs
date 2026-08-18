@@ -1,5 +1,199 @@
 <style>
-  /* 1. Pulsing Green Indicator Animation */
+  /* Base Hero Container & Smooth Clean Transition (No Grid / Dots / Overlay Haze) */
+  .mh-hero {
+    position: relative;
+    width: 100%;
+    background: linear-gradient(105deg, #F7F8F6 0%, #F7F8F6 46%, #E1EBF7 58%, #C5DCF5 72%, #1C2F4D 86%, #0D172B 100%);
+    color: #0F172A;
+    padding: 80px 24px 100px;
+    overflow: hidden;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+
+  .mh-hero-inner {
+    position: relative;
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+    z-index: 2;
+  }
+
+  /* Badge & Typography */
+  .mh-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    margin-bottom: 24px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  }
+
+  .mh-hero-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #2563EB;
+    box-shadow: 0 0 8px #2563EB;
+  }
+
+  .mh-hero-badge-text {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #1D4ED8;
+  }
+
+  .mh-hero-h1 {
+    font-size: 56px;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 20px 0;
+    color: #0F172A;
+  }
+
+  .mh-hero-h1-accent {
+    background: linear-gradient(135deg, #2563EB 0%, #4F46E5 50%, #7C3AED 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .mh-hero-h2 {
+    font-size: 17px;
+    line-height: 1.6;
+    color: #475569;
+    margin: 0 0 32px 0;
+    max-width: 540px;
+  }
+
+  /* Feature Chips */
+  .mh-hero-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+
+  .mh-hero-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(203, 213, 225, 0.8);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1E293B;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  }
+
+  .mh-hero-chip-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mh-hero-chip-icon-purple { color: #7E22CE !important; }
+  .mh-hero-chip-icon-purple svg { filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.9)) brightness(1.4); }
+
+  .mh-hero-chip-icon-green { color: #047857 !important; }
+  .mh-hero-chip-icon-green svg { filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.9)) brightness(1.4); }
+
+  .mh-hero-chip-icon-amber { color: #B45309 !important; }
+  .mh-hero-chip-icon-amber svg { filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.9)) brightness(1.4); }
+
+  .mh-hero-chip-icon-magenta { color: #BE123C !important; }
+  .mh-hero-chip-icon-magenta svg { filter: drop-shadow(0 0 6px rgba(251, 113, 133, 0.9)) brightness(1.4); }
+
+  /* CTAs & Actions */
+  .mh-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .mh-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 10px;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(29, 78, 216, 0.35);
+    transition: all 0.25s ease;
+  }
+
+  .mh-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(29, 78, 216, 0.5);
+  }
+
+  .mh-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #0F172A;
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  }
+
+  .mh-btn-outline:hover {
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+  }
+
+  .mh-btn-outline:hover svg {
+    stroke: #0F172A !important;
+  }
+
+  .mh-hero-tertiary-row {
+    display: flex;
+    align-items: center;
+  }
+
+  .mh-hero-tertiary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .mh-hero-tertiary:hover {
+    color: #3B82F6 !important;
+  }
+
+  .mh-hero-tertiary:hover .mh-hero-tertiary-icon svg {
+    stroke: #3B82F6 !important;
+    filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8));
+  }
+
+  /* Pulsing Green Live Indicator */
   @keyframes mh-live-pulse {
     0% {
       opacity: 1;
@@ -27,7 +221,7 @@
     animation: mh-live-pulse 1.8s infinite ease-in-out;
   }
 
-  /* 2. Hero Stage (10% Wider & Enhanced 3D Perspective) */
+  /* 3D Stage Canvas Settings */
   .mh-hero-product-stack {
     position: relative;
     display: flex;
@@ -41,14 +235,14 @@
     perspective-origin: 55% 45%;
   }
 
-  /* REAR CARD: CAREER WORKSPACE (Jointed & 4D Embedded Shadow) */
+  /* REAR CARD: CAREER WORKSPACE (Lifted surface background tone to #111D32) */
   .mh-career-mock {
     position: absolute;
     right: 250px;
     top: 15px;
     width: 530px;
     height: 495px;
-    background: #0B1226;
+    background: #111D32;
     border: 1.5px solid rgba(59, 130, 246, 0.45);
     border-radius: 18px;
     padding: 22px;
@@ -69,7 +263,7 @@
     padding: 12px 14px;
   }
 
-  /* FRONT CARD: LIVE INTERVIEW TERMINAL (10% Wider + Intense 4D Neon Edge Glow) */
+  /* FRONT CARD: LIVE INTERVIEW TERMINAL */
   .mh-hero-mockup-wrap {
     position: absolute;
     right: 0px;
@@ -87,7 +281,6 @@
     border: 1.5px solid #3B82F6;
     border-radius: 18px;
     padding: 14px 16px;
-    /* Elevated 4D/3D Neon Blue Highlight applied here */
     box-shadow: 
       0 0 40px rgba(59, 130, 246, 0.75),
       -20px 30px 60px rgba(0, 0, 0, 0.95),
@@ -136,7 +329,6 @@
     flex-shrink: 0;
   }
 
-  /* 5-Vector List Styles matching Live Engine */
   .mh-terminal-v2-vectors {
     list-style: none;
     padding: 0;
@@ -162,55 +354,21 @@
     margin: 0 4px;
   }
 
-  /* ========================================= */
-  /* INJECTED FIXES (HOVERS, COLORS, NEON)     */
-  /* ========================================= */
-
-  /* Fix 1: Explore CTA Highlight (White Padded Hover) */
-  .mh-btn-outline {
-    transition: all 0.3s ease;
-  }
-  .mh-btn-outline:hover {
-    background-color: #FFFFFF !important;
-    color: #0F172A !important;
-    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
-  }
-  .mh-btn-outline:hover svg {
-    stroke: #0F172A !important;
-  }
-
-  /* Fix 2: 4 Pillar Card Icons Brightness (Darker base with intense bright glow) */
-  .mh-hero-chip-icon-purple { color: #7E22CE !important; }
-  .mh-hero-chip-icon-purple svg { filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.9)) brightness(1.4); }
-
-  .mh-hero-chip-icon-green { color: #047857 !important; }
-  .mh-hero-chip-icon-green svg { filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.9)) brightness(1.4); }
-
-  .mh-hero-chip-icon-amber { color: #B45309 !important; }
-  .mh-hero-chip-icon-amber svg { filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.9)) brightness(1.4); }
-
-  .mh-hero-chip-icon-magenta { color: #BE123C !important; }
-  .mh-hero-chip-icon-magenta svg { filter: drop-shadow(0 0 6px rgba(251, 113, 133, 0.9)) brightness(1.4); }
-
-  /* Fix 3: See How It Works Arrow & Text Highlight */
-  .mh-hero-tertiary {
-    transition: all 0.3s ease;
-  }
-  .mh-hero-tertiary:hover {
-    color: #3B82F6 !important;
-  }
-  .mh-hero-tertiary:hover .mh-hero-tertiary-icon svg {
-    stroke: #3B82F6 !important;
-    filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8));
-  }
-
-  /* Responsive Fallback */
+  /* Responsive Adjustments */
   @media (max-width: 1024px) {
+    .mh-hero-inner {
+      grid-template-columns: 1fr;
+      gap: 60px;
+    }
+    .mh-hero-h1 {
+      font-size: 42px;
+    }
     .mh-hero-product-stack {
       height: auto;
       flex-direction: column;
       align-items: center;
       margin-top: 0;
+      perspective: none;
     }
     .mh-career-mock,
     .mh-hero-mockup-wrap {
@@ -219,6 +377,7 @@
       right: auto;
       top: auto;
       width: 100%;
+      max-width: 530px;
       height: auto;
       transform: none;
     }
@@ -226,12 +385,25 @@
       margin-top: -20px;
     }
   }
+
+  @media (max-width: 640px) {
+    .mh-hero {
+      padding: 48px 16px 64px;
+    }
+    .mh-hero-h1 {
+      font-size: 34px;
+    }
+    .mh-hero-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .mh-btn-primary, .mh-btn-outline {
+      justify-content: center;
+    }
+  }
 </style>
 
 <section class="mh-hero">
-  <div class="mh-hero-grid"></div>
-  <div class="mh-hero-glow"></div>
-
   <div class="mh-hero-inner">
     <div>
       <div class="mh-hero-badge">
@@ -244,25 +416,25 @@
       <p class="mh-hero-h2">Move beyond interview practice. MedhaIQ adapts to your role, experience, and career goals—delivering continuous career intelligence that helps you perform, grow, and advance with confidence.</p>
       
       <div class="mh-hero-chips">
-        <div class="mh-hero-chip mh-hero-chip-purple">
+        <div class="mh-hero-chip">
           <span class="mh-hero-chip-icon mh-hero-chip-icon-purple">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           </span>
           <span>AI-Powered Interviews</span>
         </div>
-        <div class="mh-hero-chip mh-hero-chip-green">
+        <div class="mh-hero-chip">
           <span class="mh-hero-chip-icon mh-hero-chip-icon-green">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
           </span>
           <span>Personalized Feedback</span>
         </div>
-        <div class="mh-hero-chip mh-hero-chip-gold">
+        <div class="mh-hero-chip">
           <span class="mh-hero-chip-icon mh-hero-chip-icon-amber">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
           </span>
           <span>Actionable Insights</span>
         </div>
-        <div class="mh-hero-chip mh-hero-chip-magenta">
+        <div class="mh-hero-chip">
           <span class="mh-hero-chip-icon mh-hero-chip-icon-magenta">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           </span>
@@ -339,7 +511,7 @@
           <div class="mh-career-mock-card" style="flex:1; background:rgba(30, 41, 59, 0.6);">
             <div class="mh-career-mock-label" style="font-size:8.5px; color:#64748B; margin-bottom:4px;">QUICK ACTIONS</div>
             <div style="font-size:10px; font-weight:700; color:#F8FAFC;">Start Interview</div>
-            <div style="font-size:8.5px; color:#94A3B8;">Practice with AI interviewer & get instant feedback</div>
+            <div style="font-size:8.5px; color:#94A3B8;">Practice with AI interviewer &amp; get instant feedback</div>
           </div>
         </div>
 
@@ -443,7 +615,7 @@
                   <span style="color:#64748B;">--</span>
                 </li>
                 <li>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 18z"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg>
                   <span>Domain Expertise</span>
                   <div class="mh-vector-bar"></div>
                   <span style="color:#64748B;">--</span>
