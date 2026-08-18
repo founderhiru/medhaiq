@@ -1,281 +1,262 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Why MedhaIQ | MedhaIQ.ai</title>
-  <meta name="description" content="Why MedhaIQ exists: the philosophy behind Continuous Career Intelligence, and how it's built into every interview, score, and session.">
-  <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#0A0F1E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/medhaiq.css">
-  <link rel="stylesheet" href="/css/components.css">
-  <link rel="stylesheet" href="/css/hero-v2.css">
-  <link rel="stylesheet" href="/css/value-footer.css">
-  <link rel="stylesheet" href="/css/why.css">
-</head>
-<body>
-  <%- include('partials/header') %>
+<!-- HERO SECTION -->
+<section class="bg-[#0A0D14] text-white py-12 md:py-16 border-b border-slate-800/60">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+    <span class="text-xs font-semibold tracking-widest text-blue-400 uppercase mb-3 inline-block">WHY MEDHAIQ</span>
+    <h1 class="text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">Why MedhaIQ Exists</h1>
+    <p class="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto font-normal">
+      Interview preparation shouldn't be a one-time event.<br class="hidden sm:inline"/>
+      It should be <span class="text-blue-400 font-medium">Continuous Career Intelligence</span>.
+    </p>
+  </div>
+</section>
 
-  <!-- ============================================
-       01 — HERO
-       ============================================ -->
-  <%- include('partials/page-hero', {
-    eyebrow: 'Why MedhaIQ',
-    title: 'Why MedhaIQ Exists',
-    sub: "Interview preparation shouldn't be a one-time event. It should be Continuous Career Intelligence."
-  }) %>
-
-  <!-- ============================================
-       02 — THE PROBLEM & THE SHIFT (CONNECTED PANELS)
-       ============================================ -->
-  <section class="mh-why-twocard reveal">
-    <div class="mh-why-twocard-wrapper">
-      <div class="mh-why-twocard-grid">
-
-        <!-- LEFT PANEL: THE PROBLEM -->
-        <div class="mh-why-card mh-why-card-problem">
-          <div class="mh-why-card-icon mh-icon-problem" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-          </div>
-          <div class="mh-eyebrow mh-eyebrow-problem">THE PROBLEM</div>
-          <h2 class="mh-section-title">The Transactional Trap</h2>
-          
-          <ul class="mh-why-bullet-list">
-            <li class="mh-why-bullet-item">
-              <span class="mh-bullet-icon mh-bullet-problem" aria-hidden="true">✕</span>
-              <span>Most interview preparation is optimized for a single event.</span>
-            </li>
-            <li class="mh-why-bullet-item">
-              <span class="mh-bullet-icon mh-bullet-problem" aria-hidden="true">✕</span>
-              <span>Once the interview ends, learning disappears with it.</span>
-            </li>
-            <li class="mh-why-bullet-item">
-              <span class="mh-bullet-icon mh-bullet-problem" aria-hidden="true">✕</span>
-              <span>Every new opportunity forces you to start from zero again.</span>
-            </li>
-          </ul>
-        </div>
-
-        <!-- CENTER DIRECTIONAL ARROW INDICATOR -->
-        <div class="mh-why-connector" aria-hidden="true">
-          <div class="mh-why-arrow-badge">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
-            </svg>
+<!-- PROBLEM VS SHIFT SECTION -->
+<section class="py-10 md:py-12 bg-slate-50">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center relative">
+      <!-- The Problem -->
+      <div class="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-lg bg-red-50 border border-red-200 flex items-center justify-center text-red-500 font-bold text-sm">!</div>
+          <div>
+            <span class="text-[11px] font-bold text-red-600 uppercase tracking-wider block">THE PROBLEM</span>
+            <h3 class="text-lg font-bold text-slate-900">The Transactional Trap</h3>
           </div>
         </div>
+        <ul class="space-y-2.5 text-sm text-slate-600">
+          <li class="flex items-start gap-2.5"><span class="text-red-400 font-bold">✕</span> Most interview preparation is optimized for a single event.</li>
+          <li class="flex items-start gap-2.5"><span class="text-red-400 font-bold">✕</span> Once the interview ends, learning disappears with it.</li>
+          <li class="flex items-start gap-2.5"><span class="text-red-400 font-bold">✕</span> Every new opportunity forces you to start from zero again.</li>
+        </ul>
+      </div>
 
-        <!-- RIGHT PANEL: THE SHIFT -->
-        <div class="mh-why-card mh-why-card-shift">
-          <div class="mh-why-card-icon mh-icon-shift" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-              <polyline points="17 6 23 6 23 12"/>
-            </svg>
+      <!-- Center Arrow -->
+      <div class="hidden md:flex absolute left-1/2 -translate-x-1/2 z-10 w-9 h-9 rounded-full bg-white border border-slate-200 shadow-sm items-center justify-center text-slate-500">
+        ➔
+      </div>
+
+      <!-- The Shift -->
+      <div class="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 font-bold text-sm">📈</div>
+          <div>
+            <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">THE SHIFT</span>
+            <h3 class="text-lg font-bold text-slate-900">From Cramming to Progression</h3>
           </div>
-          <div class="mh-eyebrow mh-eyebrow-shift">THE SHIFT</div>
-          <h2 class="mh-section-title">From Cramming to Progression</h2>
-          
-          <ul class="mh-why-bullet-list">
-            <li class="mh-why-bullet-item">
-              <span class="mh-bullet-icon mh-bullet-shift" aria-hidden="true">✓</span>
-              <span>Treating interview capability as a compounding asset built over time.</span>
-            </li>
-            <li class="mh-why-bullet-item">
-              <span class="mh-bullet-icon mh-bullet-shift" aria-hidden="true">✓</span>
-              <span>Structured practice that retains strategic depth beyond one session.</span>
-            </li>
-            <li class="mh-why-bullet-item">
-              <span class="mh-bullet-icon mh-bullet-shift" aria-hidden="true">✓</span>
-              <span>Every session builds forward into a continuous curve of growth.</span>
-            </li>
-          </ul>
         </div>
-
+        <ul class="space-y-2.5 text-sm text-slate-600">
+          <li class="flex items-start gap-2.5"><span class="text-emerald-500 font-bold">✓</span> Treating interview capability as a compounding asset built over time.</li>
+          <li class="flex items-start gap-2.5"><span class="text-emerald-500 font-bold">✓</span> Structured practice that retains strategic depth beyond one session.</li>
+          <li class="flex items-start gap-2.5"><span class="text-emerald-500 font-bold">✓</span> Every session builds forward into a continuous curve of growth.</li>
+        </ul>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ============================================
-       03 — PHILOSOPHY BLOCK
-       ============================================ -->
-  <section class="mh-why-philosophy reveal">
-    <div class="mh-why-narrow">
-      <div class="mh-why-quote-card">
-        <blockquote class="mh-why-quote">
-          “Professionals don't need another answer generator. <span class="mh-why-quote-accent">They need a better thinking system.</span>”
-        </blockquote>
-        <p class="mh-why-body mh-why-quote-sub">
-          We believe true career readiness comes from developing deep, adaptable reasoning — transforming how professionals evaluate problems, structure answers, and communicate under pressure.
-        </p>
-      </div>
+<!-- POSITIONING QUOTE -->
+<section class="py-10 bg-slate-50 border-t border-slate-200/60">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6">
+    <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-8 text-center relative overflow-hidden">
+      <span class="absolute top-4 left-6 text-6xl text-blue-200 font-serif leading-none select-none">“</span>
+      <span class="absolute bottom-2 right-6 text-6xl text-blue-200 font-serif leading-none select-none">”</span>
+      <blockquote class="text-xl md:text-2xl font-bold text-slate-900 max-w-2xl mx-auto mb-3 relative z-10 leading-snug">
+        “Professionals don't need another answer generator. They need a <span class="text-blue-600">better thinking system</span>.”
+      </blockquote>
+      <p class="text-sm md:text-base text-slate-600 max-w-xl mx-auto relative z-10 font-normal">
+        MedhaIQ is built to develop the reasoning, adaptability and judgment required to perform under pressure—not simply generate better answers.
+      </p>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ============================================
-       04 — THE THREE PILLARS (VISUAL CAPABILITY CARDS - NO NUMBERS)
-       ============================================ -->
-  <section class="mh-why-pillars reveal">
-    <div class="mh-why-pillars-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Core Mechanisms</div>
-        <h2 class="mh-section-title">Three Pillars of MedhaIQ</h2>
-      </div>
+<!-- THREE PILLARS OF MEDHAIQ -->
+<section class="py-12 md:py-16 bg-white border-t border-slate-100">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="text-center mb-10">
+      <span class="text-xs font-bold text-blue-600 uppercase tracking-widest block mb-1">CORE MECHANISMS</span>
+      <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Three Pillars of MedhaIQ</h2>
+    </div>
 
-      <div class="mh-why-pillar-grid">
-
-        <!-- PILLAR 1 -->
-        <div class="mh-why-pillar-card reveal-item">
-          <div class="mh-pillar-icon-container" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-            </svg>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- Pillar 1: Real-Time Stress Testing -->
+      <div class="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between hover:shadow-sm transition">
+        <!-- Mini Visual (Fixed ~200px container) -->
+        <div class="h-[195px] w-full bg-white rounded-xl border border-slate-200/70 p-4 flex flex-col justify-between mb-5 shadow-inner overflow-hidden relative">
+          <!-- Waveform SVG -->
+          <div class="flex items-center justify-center gap-1 h-10 pt-2">
+            <span class="w-1 h-3 bg-blue-300 rounded-full"></span>
+            <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+            <span class="w-1 h-4 bg-blue-400 rounded-full"></span>
+            <span class="w-1 h-8 bg-blue-600 rounded-full"></span>
+            <span class="w-1 h-10 bg-blue-500 rounded-full"></span>
+            <span class="w-1 h-5 bg-blue-400 rounded-full"></span>
+            <span class="w-1 h-9 bg-blue-600 rounded-full"></span>
+            <span class="w-1 h-4 bg-blue-300 rounded-full"></span>
+            <span class="w-1 h-7 bg-blue-500 rounded-full"></span>
+            <span class="w-1 h-3 bg-blue-300 rounded-full"></span>
           </div>
-          <h3 class="mh-why-pillar-title">Real-Time Stress Testing</h3>
-          <p class="mh-why-pillar-desc">
-            Simulating high-stakes evaluation environments to reveal true performance and build genuine composure under pressure.
+          <!-- Question Box Simulation -->
+          <div class="bg-slate-50 rounded-lg p-3 border border-slate-200 flex items-center justify-between gap-3 shadow-2xs">
+            <div class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs">🎙️</div>
+            <div class="flex-1 space-y-1.5">
+              <div class="text-[11px] font-bold text-slate-700 leading-none">Q.</div>
+              <div class="h-1.5 bg-slate-200 rounded w-full"></div>
+              <div class="h-1.5 bg-slate-200 rounded w-3/4"></div>
+            </div>
+            <div class="bg-slate-200/80 text-[10px] font-mono text-slate-700 px-2 py-1 rounded font-semibold">00:45</div>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900 mb-2">Real-Time Stress Testing</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Simulating high-stakes evaluation environments to reveal true performance and build genuine confidence under pressure.
           </p>
         </div>
+      </div>
 
-        <!-- PILLAR 2 -->
-        <div class="mh-why-pillar-card reveal-item">
-          <div class="mh-pillar-icon-container" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10"/>
-              <line x1="12" y1="20" x2="12" y2="4"/>
-              <line x1="6" y1="20" x2="6" y2="14"/>
-              <path d="M3 20h18"/>
-            </svg>
-          </div>
-          <h3 class="mh-why-pillar-title">5-Vector Intelligence</h3>
-          <p class="mh-why-pillar-desc">
+      <!-- Pillar 2: 5-Vector Intelligence -->
+      <div class="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between hover:shadow-sm transition">
+        <!-- Radar Visual -->
+        <div class="h-[195px] w-full bg-white rounded-xl border border-slate-200/70 p-3 flex items-center justify-center mb-5 shadow-inner relative overflow-hidden">
+          <svg class="w-44 h-44" viewBox="0 0 100 100">
+            <!-- Background Pentagon Grid -->
+            <polygon points="50,15 85,40 72,80 28,80 15,40" fill="none" stroke="#E2E8F0" stroke-width="1"/>
+            <polygon points="50,28 73,45 64,70 36,70 27,45" fill="none" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="2 2"/>
+            <!-- Center Spokes -->
+            <line x1="50" y1="50" x2="50" y2="15" stroke="#E2E8F0" stroke-width="1"/>
+            <line x1="50" y1="50" x2="85" y2="40" stroke="#E2E8F0" stroke-width="1"/>
+            <line x1="50" y1="50" x2="72" y2="80" stroke="#E2E8F0" stroke-width="1"/>
+            <line x1="50" y1="50" x2="28" y2="80" stroke="#E2E8F0" stroke-width="1"/>
+            <line x1="50" y1="50" x2="15" y2="40" stroke="#E2E8F0" stroke-width="1"/>
+            <!-- Radar Polygon -->
+            <polygon points="50,20 78,42 66,75 32,72 20,42" fill="rgba(37, 99, 235, 0.18)" stroke="#2563EB" stroke-width="2"/>
+            <circle cx="50" cy="20" r="2.5" fill="#2563EB"/>
+            <circle cx="78" cy="42" r="2.5" fill="#2563EB"/>
+            <circle cx="66" cy="75" r="2.5" fill="#2563EB"/>
+            <circle cx="32" cy="72" r="2.5" fill="#2563EB"/>
+            <circle cx="20" cy="42" r="2.5" fill="#2563EB"/>
+          </svg>
+          <!-- Vertex Icon Labels -->
+          <span class="absolute top-2 left-1/2 -translate-x-1/2 text-xs">👤</span>
+          <span class="absolute top-8 right-6 text-xs">🎯</span>
+          <span class="absolute bottom-3 right-10 text-xs">👥</span>
+          <span class="absolute bottom-3 left-10 text-xs">💡</span>
+          <span class="absolute top-8 left-6 text-xs">💬</span>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900 mb-2">5-Vector Intelligence</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
             Evaluating responses across structure, domain depth, strategic thinking, communication, and leadership execution.
           </p>
         </div>
+      </div>
 
-        <!-- PILLAR 3 -->
-        <div class="mh-why-pillar-card reveal-item">
-          <div class="mh-pillar-icon-container" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <circle cx="12" cy="12" r="6"/>
-              <circle cx="12" cy="12" r="2"/>
-            </svg>
+      <!-- Pillar 3: Living Profile of Mastery -->
+      <div class="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between hover:shadow-sm transition">
+        <!-- Curve Visual -->
+        <div class="h-[195px] w-full bg-white rounded-xl border border-slate-200/70 p-4 flex items-center justify-center mb-5 shadow-inner relative overflow-hidden">
+          <svg class="w-full h-full" viewBox="0 0 200 120" preserveAspectRatio="none">
+            <!-- Grid Lines -->
+            <line x1="0" y1="30" x2="200" y2="30" stroke="#F1F5F9" stroke-width="1"/>
+            <line x1="0" y1="60" x2="200" y2="60" stroke="#F1F5F9" stroke-width="1"/>
+            <line x1="0" y1="90" x2="200" y2="90" stroke="#F1F5F9" stroke-width="1"/>
+            <!-- Trend Line -->
+            <path d="M 20 95 L 50 80 L 80 88 L 110 55 L 140 62 L 180 25" fill="none" stroke="#3B82F6" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Nodes -->
+            <circle cx="20" cy="95" r="3" fill="#3B82F6"/>
+            <circle cx="50" cy="80" r="3" fill="#3B82F6"/>
+            <circle cx="80" cy="88" r="3" fill="#3B82F6"/>
+            <circle cx="110" cy="55" r="3" fill="#3B82F6"/>
+            <circle cx="140" cy="62" r="3" fill="#3B82F6"/>
+            <circle cx="180" cy="25" r="4" fill="#2563EB" stroke="#FFFFFF" stroke-width="1.5"/>
+          </svg>
+          <!-- Growth Callout Badge -->
+          <div class="absolute top-4 right-5 bg-slate-900 text-white border border-slate-700 px-2.5 py-1 rounded-md text-[10px] font-medium shadow-md">
+            Session 8 <span class="text-emerald-400 font-bold ml-1">Growth +22%</span>
           </div>
-          <h3 class="mh-why-pillar-title">Living Profile of Mastery</h3>
-          <p class="mh-why-pillar-desc">
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900 mb-2">Living Profile of Mastery</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
             Tracking long-term skill acquisition and decision-making clarity across every session and career stage.
           </p>
         </div>
-
       </div>
+
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ============================================
-       05 — COMPARISON MATRIX (PROOF OF DIFFERENTIATION)
-       ============================================ -->
-  <section class="mh-why-compare reveal" id="why-compare">
-    <div class="mh-matrix-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">The Comparison</div>
-        <h2 class="mh-section-title">Why We're Different</h2>
-      </div>
-
-      <div class="mh-why-compare-panel">
-        <div class="mh-matrix-table-wrap">
-          <table class="mh-matrix-table">
-            <thead>
-              <tr>
-                <th class="mh-matrix-th mh-matrix-th-label">Dimension</th>
-                <th class="mh-matrix-th mh-matrix-th-legacy">Legacy Approaches</th>
-                <th class="mh-matrix-th mh-matrix-th-platform">MedhaIQ Platform</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="mh-matrix-row">
-                <td class="mh-matrix-cell mh-matrix-cell-label">Career Lifecycle</td>
-                <td class="mh-matrix-cell mh-matrix-cell-legacy">Static one-time preparation</td>
-                <td class="mh-matrix-cell mh-matrix-cell-platform">
-                  <span class="mh-matrix-check">&#10003;</span>
-                  Continuous Career Intelligence across your entire career
-                </td>
-              </tr>
-              <tr class="mh-matrix-row">
-                <td class="mh-matrix-cell mh-matrix-cell-label">Assessment Depth</td>
-                <td class="mh-matrix-cell mh-matrix-cell-legacy">Basic conversational mock interviews</td>
-                <td class="mh-matrix-cell mh-matrix-cell-platform">
-                  <span class="mh-matrix-check">&#10003;</span>
-                  Multi-layered Executive Leadership Readiness simulations
-                </td>
-              </tr>
-              <tr class="mh-matrix-row">
-                <td class="mh-matrix-cell mh-matrix-cell-label">Personal Brand</td>
-                <td class="mh-matrix-cell mh-matrix-cell-legacy">Mechanical resume formatting checks</td>
-                <td class="mh-matrix-cell mh-matrix-cell-platform">
-                  <span class="mh-matrix-check">&#10003;</span>
-                  Strategic Executive Persona &amp; Personal Brand Development
-                </td>
-              </tr>
-              <tr class="mh-matrix-row">
-                <td class="mh-matrix-cell mh-matrix-cell-label">Career Strategy</td>
-                <td class="mh-matrix-cell mh-matrix-cell-legacy">Linear entry-level placement focus</td>
-                <td class="mh-matrix-cell mh-matrix-cell-platform">
-                  <span class="mh-matrix-check">&#10003;</span>
-                  Long-term Enterprise &amp; Executive Career Lifecycle
-                </td>
-              </tr>
-              <tr class="mh-matrix-row">
-                <td class="mh-matrix-cell mh-matrix-cell-label">Leadership Readiness</td>
-                <td class="mh-matrix-cell mh-matrix-cell-legacy">Fragmented generic coaching</td>
-                <td class="mh-matrix-cell mh-matrix-cell-platform">
-                  <span class="mh-matrix-check">&#10003;</span>
-                  Deeply calibrated Global Leadership Readiness Blueprints
-                </td>
-              </tr>
-              <tr class="mh-matrix-row mh-matrix-row-last">
-                <td class="mh-matrix-cell mh-matrix-cell-label">Continuous Intelligence</td>
-                <td class="mh-matrix-cell mh-matrix-cell-legacy">No structured feedback</td>
-                <td class="mh-matrix-cell mh-matrix-cell-platform">
-                  <span class="mh-matrix-check">&#10003;</span>
-                  5-Vector AI Scoring with quantified career diagnostics
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+<!-- WHY WE'RE DIFFERENT COMPARISON TABLE -->
+<section class="py-12 md:py-16 bg-slate-900 text-white">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6">
+    <div class="text-center mb-8">
+      <span class="text-xs font-bold text-blue-400 uppercase tracking-widest block mb-1">THE COMPARISON</span>
+      <h2 class="text-2xl md:text-3xl font-bold text-white">Why We're Different</h2>
     </div>
-  </section>
 
-  <%- include('partials/footer') %>
-
-  <!-- Scroll-reveal script -->
-  <script>
-  (function() {
-    var reveals = document.querySelectorAll('.reveal');
-    if (!reveals.length) return;
-    var observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          var items = entry.target.querySelectorAll('.reveal-item');
-          items.forEach(function(item, i) {
-            setTimeout(function() { item.classList.add('visible'); }, i * 100);
-          });
-        }
-      });
-    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-    reveals.forEach(function(el) { observer.observe(el); });
-  })();
-  </script>
-</body>
-</html>
+    <div class="overflow-x-auto rounded-xl border border-slate-800 shadow-xl bg-[#0B0F19]">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-800 bg-slate-950/80 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            <th class="p-4 w-1/3">DIMENSION</th>
+            <th class="p-4 w-1/3 italic text-slate-500">LEGACY APPROACHES</th>
+            <th class="p-4 w-1/3 text-blue-400 bg-blue-950/20">MEDHAIQ PLATFORM</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60 text-[15px] leading-snug">
+          <tr>
+            <td class="p-4 font-semibold text-slate-200">Career Lifecycle</td>
+            <td class="p-4 text-slate-400 italic">Static, one-time preparation</td>
+            <td class="p-4 font-medium text-slate-100 bg-blue-950/10 flex items-center gap-2">
+              <span class="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">✓</span>
+              Continuous Career Intelligence across your entire career
+            </td>
+          </tr>
+          <tr>
+            <td class="p-4 font-semibold text-slate-200">Assessment Depth</td>
+            <td class="p-4 text-slate-400 italic">Basic conversational mock interviews</td>
+            <td class="p-4 font-medium text-slate-100 bg-blue-950/10 flex items-center gap-2">
+              <span class="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">✓</span>
+              Multi-layered Executive Readiness simulations
+            </td>
+          </tr>
+          <tr>
+            <td class="p-4 font-semibold text-slate-200">Personal Brand</td>
+            <td class="p-4 text-slate-400 italic">Mechanical resume formatting checks</td>
+            <td class="p-4 font-medium text-slate-100 bg-blue-950/10 flex items-center gap-2">
+              <span class="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">✓</span>
+              Strategic Executive Persona &amp; Personal Brand Development
+            </td>
+          </tr>
+          <tr>
+            <td class="p-4 font-semibold text-slate-200">Career Strategy</td>
+            <td class="p-4 text-slate-400 italic">Linear entry-level placement focus</td>
+            <td class="p-4 font-medium text-slate-100 bg-blue-950/10 flex items-center gap-2">
+              <span class="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">✓</span>
+              Long-term Enterprise &amp; Executive Career Lifecycle
+            </td>
+          </tr>
+          <tr>
+            <td class="p-4 font-semibold text-slate-200">Leadership Readiness</td>
+            <td class="p-4 text-slate-400 italic">Fragmented generic coaching</td>
+            <td class="p-4 font-medium text-slate-100 bg-blue-950/10 flex items-center gap-2">
+              <span class="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">✓</span>
+              Deeply calibrated Global Leadership Readiness Blueprints
+            </td>
+          </tr>
+          <tr>
+            <td class="p-4 font-semibold text-slate-200">Continuous Intelligence</td>
+            <td class="p-4 text-slate-400 italic">No structured feedback</td>
+            <td class="p-4 font-medium text-slate-100 bg-blue-950/10 flex items-center gap-2">
+              <span class="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">✓</span>
+              5-Vector AI Scoring with quantified career diagnostics
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
