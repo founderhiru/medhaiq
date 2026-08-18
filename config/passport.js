@@ -1,7 +1,7 @@
 const passport = require('passport');
 const GoogleOAuth2Strategy = require('passport-google-oauth20').Strategy;
 const { findOrCreateUserFromGoogle, getUserByEmail, getUserById } = require('../db/auth');
-const { getValidInvitation, acceptInvitation } = require('../db/invitations');
+const { acceptInvitation } = require('../db/invitations');
 const { ensureUserBootstrap } = require('../db/profile-bootstrap');
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -19,13 +19,6 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
       const email = profile?.emails?.[0]?.value;
       const existingUser = email ? await getUserByEmail(email) : null;
       const isNewUser = !existingUser;
-
-      if (isNewUser) {
-        const invite = await getValidInvitation(email);
-        if (!invite) {
-          return done(null, false, { message: 'This email does not have an active private beta invitation.' });
-        }
-      }
 
       const user = await findOrCreateUserFromGoogle(profile);
 

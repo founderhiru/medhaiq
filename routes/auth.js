@@ -6,7 +6,7 @@ const {
   createUserWithPassword, hashPassword, createToken, validateToken,
   markEmailVerified,
 } = require('../db/auth');
-const { getValidInvitation, acceptInvitation } = require('../db/invitations');
+const { acceptInvitation } = require('../db/invitations');
 const { ensureUserBootstrap } = require('../db/profile-bootstrap');
 const { logUserActivity } = require('../services/activity-logger');
 const { sendMagicLinkEmail, sendVerificationEmail } = require('../services/email');
@@ -105,13 +105,6 @@ router.post('/login', authLimiter, async (req, res) => {
     const existingUser = await getUserByEmail(cleanEmail);
     const isNewUser = !existingUser;
 
-    if (isNewUser) {
-      const invite = await getValidInvitation(cleanEmail);
-      if (!invite) {
-        return res.status(403).json({ error: 'This email does not have an active private beta invitation.' });
-      }
-    }
-
     const user = await findOrCreateUser(cleanEmail, name?.trim() || null);
 
     if (isNewUser) {
@@ -178,11 +171,6 @@ router.post('/signup', authLimiter, async (req, res) => {
   const cleanEmail = trimmed.toLowerCase();
 
   try {
-    const invite = await getValidInvitation(cleanEmail);
-    if (!invite) {
-      return res.status(403).json({ error: 'This email does not have an active private beta invitation.' });
-    }
-
     const hash = await hashPassword(password);
     const user = await createUserWithPassword(cleanEmail, name?.trim() || null, hash);
 

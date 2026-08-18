@@ -72,7 +72,7 @@
     padding: 12px 14px;
   }
 
-  /* FRONT CARD: LIVE INTERVIEW TERMINAL (10% Wider + Intense Neon Edge Glow) */
+  /* FRONT CARD: LIVE INTERVIEW TERMINAL (10% Wider + Intense 4D Neon Edge Glow) */
   .mh-hero-mockup-wrap {
     position: absolute;
     right: 0px;
@@ -90,10 +90,12 @@
     border: 1.5px solid #3B82F6;
     border-radius: 18px;
     padding: 14px 16px;
+    /* Elevated 4D/3D Neon Blue Highlight applied here */
     box-shadow: 
-      0 0 35px rgba(59, 130, 246, 0.7),
-      -10px 20px 50px rgba(0, 0, 0, 0.9),
-      inset 0 0 18px rgba(59, 130, 246, 0.25);
+      0 0 40px rgba(59, 130, 246, 0.75),
+      -20px 30px 60px rgba(0, 0, 0, 0.95),
+      inset 0 0 20px rgba(59, 130, 246, 0.5),
+      inset 0 0 5px rgba(255, 255, 255, 0.3);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -161,6 +163,48 @@
     background: rgba(148, 163, 184, 0.15);
     border-radius: 2px;
     margin: 0 4px;
+  }
+
+  /* ========================================= */
+  /* INJECTED FIXES (HOVERS, COLORS, NEON)     */
+  /* ========================================= */
+
+  /* Fix 1: Explore CTA Highlight (White Padded Hover) */
+  .mh-btn-outline {
+    transition: all 0.3s ease;
+  }
+  .mh-btn-outline:hover {
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+  }
+  .mh-btn-outline:hover svg {
+    stroke: #0F172A !important;
+  }
+
+  /* Fix 2: 4 Pillar Card Icons Brightness (Darker base with intense bright glow) */
+  .mh-hero-chip-icon-purple { color: #7E22CE !important; }
+  .mh-hero-chip-icon-purple svg { filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.9)) brightness(1.4); }
+
+  .mh-hero-chip-icon-green { color: #047857 !important; }
+  .mh-hero-chip-icon-green svg { filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.9)) brightness(1.4); }
+
+  .mh-hero-chip-icon-amber { color: #B45309 !important; }
+  .mh-hero-chip-icon-amber svg { filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.9)) brightness(1.4); }
+
+  .mh-hero-chip-icon-magenta { color: #BE123C !important; }
+  .mh-hero-chip-icon-magenta svg { filter: drop-shadow(0 0 6px rgba(251, 113, 133, 0.9)) brightness(1.4); }
+
+  /* Fix 3: See How It Works Arrow & Text Highlight */
+  .mh-hero-tertiary {
+    transition: all 0.3s ease;
+  }
+  .mh-hero-tertiary:hover {
+    color: #3B82F6 !important;
+  }
+  .mh-hero-tertiary:hover .mh-hero-tertiary-icon svg {
+    stroke: #3B82F6 !important;
+    filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8));
   }
 
   /* Responsive Fallback */
@@ -236,7 +280,7 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
         <a href="/explore" class="mh-btn-outline">
-          Explore MedhaIQ
+          <span aria-hidden="true">🧭</span> Explore MedhaIQ
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
       </div>
@@ -258,7 +302,7 @@
       <div class="mh-career-mock" aria-hidden="true">
         <div class="mh-career-mock-header">
           <span class="mh-career-mock-title" style="font-size:10px; color:#64748B; letter-spacing:0.05em;">CAREER WORKSPACE</span>
-          <h3 class="mh-career-mock-greeting" style="margin:2px 0 0 0; font-size:15px; color:#F8FAFC;">Good evening, Ron 🌙</h3>
+          <h3 class="mh-career-mock-greeting" style="margin:2px 0 0 0; font-size:15px; color:#F8FAFC;">Good evening, Alex 🌙</h3>
           <p class="mh-career-mock-sub" style="margin:2px 0 12px 0; font-size:10.5px; color:#94A3B8;">Track your progress, improve every day, and land your next opportunity.</p>
         </div>
 
@@ -309,21 +353,28 @@
           </div>
         </div>
 
-        <!-- Progress Metrics Footer -->
-        <div class="mh-career-mock-footer" style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(148,163,184,0.12); display:flex; justify-content:space-between;">
-          <div>
-            <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">3</span>
-            <span style="font-size:8.5px; color:#64748B;">Interviews Completed</span>
-          </div>
-          <div>
-            <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">15m</span>
-            <span style="font-size:8.5px; color:#64748B;">Total Practice Time</span>
-          </div>
-          <div>
-            <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">3</span>
-            <span style="font-size:8.5px; color:#64748B;">Reports Generated</span>
+        <!-- NEW YOUR PROGRESS MATRIX CARD (Removed Neon 4D Class) -->
+        <div class="mh-career-mock-card" style="margin-top:14px; padding:12px 14px;">
+          <div style="font-size:8.5px; color:#64748B; margin-bottom:8px; font-weight:600; text-transform:uppercase;">Your Progress</div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span style="font-size:15px; font-weight:700; color:#F8FAFC; display:block;">24</span>
+              <span style="font-size:8px; color:#94A3B8;">Interviews Completed</span>
+              <span style="font-size:8px; color:#10B981; display:block; margin-top:3px; font-weight:600;">↑ 12%</span>
+            </div>
+            <div>
+              <span style="font-size:15px; font-weight:700; color:#F8FAFC; display:block;">14h 30m</span>
+              <span style="font-size:8px; color:#94A3B8;">Total Practice Time</span>
+              <span style="font-size:8px; color:#10B981; display:block; margin-top:3px; font-weight:600;">↑ 8%</span>
+            </div>
+            <div>
+              <span style="font-size:15px; font-weight:700; color:#F8FAFC; display:block;">78%</span>
+              <span style="font-size:8px; color:#94A3B8;">Average Score</span>
+              <span style="font-size:8px; color:#10B981; display:block; margin-top:3px; font-weight:600;">↑ 15%</span>
+            </div>
           </div>
         </div>
+
       </div>
 
       <!-- FRONT LAYER: LIVE INTERVIEW TERMINAL -->
