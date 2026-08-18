@@ -16,245 +16,362 @@
   <link rel="stylesheet" href="/css/value-footer.css">
   <link rel="stylesheet" href="/css/why.css">
 </head>
-<body>
+<body class="mh-why-body">
   <%- include('partials/header') %>
 
   <!-- ============================================
-       01 — HERO
+       01 — HERO (DARK THEME)
        ============================================ -->
   <%- include('partials/page-hero', {
-    eyebrow: 'Why MedhaIQ',
+    eyebrow: 'WHY MEDHAIQ',
     title: 'Why MedhaIQ Exists',
-    sub: "Interview preparation shouldn't be a one-time event. It should be Continuous Career Intelligence."
+    sub: 'Interview preparation shouldn\'t be a one-time event.<br>It should be <span class="mh-hero-highlight">Continuous Career Intelligence</span>.'
   }) %>
 
   <!-- ============================================
-       02 — THE PROBLEM & THE SHIFT (CONNECTED PANELS)
+       LIGHT THEME CONTENT AREA
        ============================================ -->
-  <section class="mh-why-twocard reveal">
-    <div class="mh-why-twocard-wrapper">
-      <div class="mh-why-twocard-grid">
+  <main class="mh-why-content-light">
 
-        <!-- LEFT PANEL: THE PROBLEM -->
-        <div class="mh-why-card mh-why-card-problem">
-          <div class="mh-why-card-icon mh-icon-problem" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
+    <!-- ============================================
+         02 — THE PROBLEM & THE SHIFT
+         ============================================ -->
+    <section class="mh-why-twocard reveal">
+      <div class="mh-why-twocard-wrapper">
+        <div class="mh-why-twocard-container">
+          <div class="mh-why-twocard-grid">
+
+            <!-- LEFT PANEL: THE PROBLEM -->
+            <div class="mh-why-card mh-why-card-problem">
+              <div class="mh-why-card-icon mh-icon-problem" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <div class="mh-eyebrow mh-eyebrow-problem">THE PROBLEM</div>
+              <h2 class="mh-section-title mh-title-dark">The Transactional Trap</h2>
+              
+              <ul class="mh-why-bullet-list">
+                <li class="mh-why-bullet-item mh-bullet-dark">
+                  <span class="mh-bullet-icon mh-bullet-problem" aria-hidden="true">✕</span>
+                  <span>Most interview preparation is optimized for a single event.</span>
+                </li>
+                <li class="mh-why-bullet-item mh-bullet-dark">
+                  <span class="mh-bullet-icon mh-bullet-problem" aria-hidden="true">✕</span>
+                  <span>Once the interview ends, learning disappears with it.</span>
+                </li>
+                <li class="mh-why-bullet-item mh-bullet-dark">
+                  <span class="mh-bullet-icon mh-bullet-problem" aria-hidden="true">✕</span>
+                  <span>Every new opportunity forces you to start from zero again.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- CENTER CONNECTOR -->
+            <div class="mh-why-connector" aria-hidden="true">
+              <div class="mh-why-arrow-badge">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- RIGHT PANEL: THE SHIFT -->
+            <div class="mh-why-card mh-why-card-shift">
+              <div class="mh-why-card-icon mh-icon-shift" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                  <polyline points="17 6 23 6 23 12"/>
+                </svg>
+              </div>
+              <div class="mh-eyebrow mh-eyebrow-shift">THE SHIFT</div>
+              <h2 class="mh-section-title mh-title-dark">From Cramming to Progression</h2>
+              
+              <ul class="mh-why-bullet-list">
+                <li class="mh-why-bullet-item mh-bullet-dark">
+                  <span class="mh-bullet-icon mh-bullet-shift" aria-hidden="true">✓</span>
+                  <span>Treating interview capability as a compounding asset built over time.</span>
+                </li>
+                <li class="mh-why-bullet-item mh-bullet-dark">
+                  <span class="mh-bullet-icon mh-bullet-shift" aria-hidden="true">✓</span>
+                  <span>Structured practice that retains strategic depth beyond one session.</span>
+                </li>
+                <li class="mh-why-bullet-item mh-bullet-dark">
+                  <span class="mh-bullet-icon mh-bullet-shift" aria-hidden="true">✓</span>
+                  <span>Every session builds forward into a continuous curve of growth.</span>
+                </li>
+              </ul>
+            </div>
+
           </div>
-          <div class="mh-eyebrow mh-eyebrow-problem">THE PROBLEM</div>
-          <h2 class="mh-section-title">The Transactional Trap</h2>
-          
-          <ul class="mh-why-bullet-list">
-            <li class="mh-why-bullet-item">
-              <span class="mh-bullet-icon mh-bullet-problem" aria-hidden="true">✕</span>
-              <span>Most interview preparation is optimized for a single event.</span>
-            </li>
-            <li class="mh-why-bullet-item">
-              <span class="mh-bullet-icon mh-bullet-problem" aria-hidden="true">✕</span>
-              <span>Once the interview ends, learning disappears with it.</span>
-            </li>
-            <li class="mh-why-bullet-item">
-              <span class="mh-bullet-icon mh-bullet-problem" aria-hidden="true">✕</span>
-              <span>Every new opportunity forces you to start from zero again.</span>
-            </li>
-          </ul>
         </div>
-
-        <!-- CENTER DIRECTIONAL ARROW INDICATOR -->
-        <div class="mh-why-connector" aria-hidden="true">
-          <div class="mh-why-arrow-badge">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </div>
-        </div>
-
-        <!-- RIGHT PANEL: THE SHIFT -->
-        <div class="mh-why-card mh-why-card-shift">
-          <div class="mh-why-card-icon mh-icon-shift" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-              <polyline points="17 6 23 6 23 12"/>
-            </svg>
-          </div>
-          <div class="mh-eyebrow mh-eyebrow-shift">THE SHIFT</div>
-          <h2 class="mh-section-title">From Cramming to Progression</h2>
-          
-          <ul class="mh-why-bullet-list">
-            <li class="mh-why-bullet-item">
-              <span class="mh-bullet-icon mh-bullet-shift" aria-hidden="true">✓</span>
-              <span>Treating interview capability as a compounding asset built over time.</span>
-            </li>
-            <li class="mh-why-bullet-item">
-              <span class="mh-bullet-icon mh-bullet-shift" aria-hidden="true">✓</span>
-              <span>Structured practice that retains strategic depth beyond one session.</span>
-            </li>
-            <li class="mh-why-bullet-item">
-              <span class="mh-bullet-icon mh-bullet-shift" aria-hidden="true">✓</span>
-              <span>Every session builds forward into a continuous curve of growth.</span>
-            </li>
-          </ul>
-        </div>
-
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============================================
-       03 — PHILOSOPHY BLOCK
-       ============================================ -->
-  <section class="mh-why-philosophy reveal">
-    <div class="mh-why-narrow">
-      <div class="mh-why-quote-card">
-        <blockquote class="mh-why-quote">
-          “Professionals don't need another answer generator. <span class="mh-why-quote-accent">They need a better thinking system.</span>”
-        </blockquote>
-        <p class="mh-why-body mh-why-quote-sub">
-          We believe true career readiness comes from developing deep, adaptable reasoning — transforming how professionals evaluate problems, structure answers, and communicate under pressure.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================
-       04 — THE THREE PILLARS (VISUAL CAPABILITY CARDS - NO NUMBERS)
-       ============================================ -->
-  <section class="mh-why-pillars reveal">
-    <div class="mh-why-pillars-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">Core Mechanisms</div>
-        <h2 class="mh-section-title">Three Pillars of MedhaIQ</h2>
-      </div>
-
-      <div class="mh-why-pillar-grid">
-
-        <!-- PILLAR 1 -->
-        <div class="mh-why-pillar-card reveal-item">
-          <div class="mh-pillar-icon-container" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-            </svg>
-          </div>
-          <h3 class="mh-why-pillar-title">Real-Time Stress Testing</h3>
-          <p class="mh-why-pillar-desc">
-            Simulating high-stakes evaluation environments to reveal true performance and build genuine composure under pressure.
+    <!-- ============================================
+         03 — POSITIONING QUOTE
+         ============================================ -->
+    <section class="mh-why-philosophy reveal">
+      <div class="mh-why-narrow">
+        <div class="mh-why-quote-card-light">
+          <div class="mh-quote-mark mh-quote-left" aria-hidden="true">“</div>
+          <blockquote class="mh-why-quote-light">
+            “Professionals don't need another answer generator.<br>They need a <span class="mh-why-quote-blue">better thinking system</span>.”
+          </blockquote>
+          <p class="mh-why-quote-sub-light">
+            MedhaIQ is built to develop the reasoning, adaptability and judgment required to perform under pressure—not simply generate better answers.
           </p>
+          <div class="mh-quote-mark mh-quote-right" aria-hidden="true">”</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+         04 — THREE PILLARS
+         ============================================ -->
+    <section class="mh-why-pillars reveal">
+      <div class="mh-why-pillars-inner">
+        <div class="mh-section-center">
+          <div class="mh-eyebrow">CORE MECHANISMS</div>
+          <h2 class="mh-section-title mh-title-dark">Three Pillars of MedhaIQ</h2>
         </div>
 
-        <!-- PILLAR 2 -->
-        <div class="mh-why-pillar-card reveal-item">
-          <div class="mh-pillar-icon-container" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10"/>
-              <line x1="12" y1="20" x2="12" y2="4"/>
-              <line x1="6" y1="20" x2="6" y2="14"/>
-              <path d="M3 20h18"/>
-            </svg>
+        <div class="mh-why-pillar-grid">
+
+          <!-- PILLAR 1: Real-Time Stress Testing -->
+          <div class="mh-why-pillar-card-light reveal-item">
+            <div class="mh-pillar-mini-visual-light" aria-hidden="true">
+              <svg viewBox="0 0 220 120" width="220" height="120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Top Waveform -->
+                <line x1="20" y1="18" x2="20" y2="26" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <line x1="27" y1="14" x2="27" y2="30" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <line x1="34" y1="20" x2="34" y2="24" stroke="#93C5FD" stroke-width="2" stroke-linecap="round"/>
+                <line x1="41" y1="10" x2="41" y2="34" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <line x1="48" y1="16" x2="48" y2="28" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <line x1="55" y1="20" x2="55" y2="24" stroke="#93C5FD" stroke-width="2" stroke-linecap="round"/>
+                <line x1="62" y1="12" x2="62" y2="32" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <line x1="69" y1="18" x2="69" y2="26" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <line x1="76" y1="20" x2="76" y2="24" stroke="#93C5FD" stroke-width="2" stroke-linecap="round"/>
+                <line x1="83" y1="8" x2="83" y2="36" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="90" y1="16" x2="90" y2="28" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <line x1="97" y1="20" x2="97" y2="24" stroke="#93C5FD" stroke-width="2" stroke-linecap="round"/>
+                <line x1="104" y1="12" x2="104" y2="32" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <line x1="111" y1="18" x2="111" y2="26" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <line x1="118" y1="20" x2="118" y2="24" stroke="#93C5FD" stroke-width="2" stroke-linecap="round"/>
+                <line x1="125" y1="14" x2="125" y2="30" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <line x1="132" y1="18" x2="132" y2="26" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <line x1="139" y1="20" x2="139" y2="24" stroke="#93C5FD" stroke-width="2" stroke-linecap="round"/>
+                <line x1="146" y1="16" x2="146" y2="28" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <line x1="153" y1="20" x2="153" y2="24" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round"/>
+                <line x1="160" y1="21" x2="160" y2="23" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round"/>
+                <line x1="167" y1="21" x2="167" y2="23" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+
+                <!-- Prompt UI Card -->
+                <rect x="20" y="46" width="180" height="60" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.03))"/>
+                
+                <!-- Mic Icon Circle -->
+                <circle cx="44" cy="76" r="14" fill="#EFF6FF" stroke="#DBEAFE" stroke-width="1"/>
+                <path d="M44 69a2.5 2.5 0 00-2.5 2.5v4a2.5 2.5 0 005 0v-4A2.5 2.5 0 0044 69z" fill="#2563EB"/>
+                <path d="M40 75.5a4 4 0 008 0M44 79.5v2" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"/>
+                
+                <!-- Line placeholders -->
+                <rect x="68" y="66" width="60" height="5" rx="2.5" fill="#94A3B8"/>
+                <rect x="68" y="78" width="45" height="5" rx="2.5" fill="#CBD5E1"/>
+
+                <!-- Timer Badge -->
+                <rect x="142" y="66" width="46" height="20" rx="4" fill="#F8FAFC" stroke="#E2E8F0"/>
+                <text x="165" y="79" fill="#334155" font-size="10" font-family="sans-serif" font-weight="600" text-anchor="middle">00:45</text>
+              </svg>
+            </div>
+            <h3 class="mh-why-pillar-title-dark">Real-Time Stress Testing</h3>
+            <p class="mh-why-pillar-desc-dark">
+              Simulating high-stakes evaluation environments to reveal true performance and build genuine confidence under pressure.
+            </p>
           </div>
-          <h3 class="mh-why-pillar-title">5-Vector Intelligence</h3>
-          <p class="mh-why-pillar-desc">
-            Evaluating responses across structure, domain depth, strategic thinking, communication, and leadership execution.
-          </p>
-        </div>
 
-        <!-- PILLAR 3 -->
-        <div class="mh-why-pillar-card reveal-item">
-          <div class="mh-pillar-icon-container" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <circle cx="12" cy="12" r="6"/>
-              <circle cx="12" cy="12" r="2"/>
-            </svg>
+          <!-- PILLAR 2: 5-Vector Intelligence -->
+          <div class="mh-why-pillar-card-light reveal-item">
+            <div class="mh-pillar-mini-visual-light" aria-hidden="true">
+              <svg viewBox="0 0 220 120" width="220" height="120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Center Radar Axis -->
+                <polygon points="110,22 148,48 134,90 86,90 72,48" fill="none" stroke="#E2E8F0" stroke-width="1"/>
+                <polygon points="110,36 135,53 125,80 95,80 85,53" fill="none" stroke="#F1F5F9" stroke-width="1"/>
+                
+                <!-- Radial Spokes -->
+                <line x1="110" y1="60" x2="110" y2="22" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="2 2"/>
+                <line x1="110" y1="60" x2="148" y2="48" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="2 2"/>
+                <line x1="110" y1="60" x2="134" y2="90" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="2 2"/>
+                <line x1="110" y1="60" x2="86" y2="90" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="2 2"/>
+                <line x1="110" y1="60" x2="72" y2="48" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="2 2"/>
+                
+                <!-- Polygon Fill -->
+                <polygon points="110,28 142,50 128,84 92,82 78,50" fill="rgba(59, 130, 246, 0.15)" stroke="#3B82F6" stroke-width="1.75"/>
+
+                <!-- Vector Node Points -->
+                <circle cx="110" cy="28" r="3" fill="#2563EB"/>
+                <circle cx="142" cy="50" r="3" fill="#2563EB"/>
+                <circle cx="128" cy="84" r="3" fill="#2563EB"/>
+                <circle cx="92" cy="82" r="3" fill="#2563EB"/>
+                <circle cx="78" cy="50" r="3" fill="#2563EB"/>
+
+                <!-- Outer Vector Node Icons -->
+                <!-- Top Node: User Icon -->
+                <circle cx="110" cy="12" r="9" fill="#F8FAFC" stroke="#E2E8F0"/>
+                <path d="M110 9a2 2 0 100 4 2 2 0 000-4zm-3.5 8a3.5 3.5 0 017 0" stroke="#475569" stroke-width="1.2" stroke-linecap="round"/>
+
+                <!-- Top Right: Target Icon -->
+                <circle cx="162" cy="45" r="9" fill="#F8FAFC" stroke="#E2E8F0"/>
+                <circle cx="162" cy="45" r="4" stroke="#475569" stroke-width="1.2"/>
+                <circle cx="162" cy="45" r="1" fill="#475569"/>
+
+                <!-- Bottom Right: Group Icon -->
+                <circle cx="145" cy="100" r="9" fill="#F8FAFC" stroke="#E2E8F0"/>
+                <path d="M142 102a2.5 2.5 0 115 0M148 102a2.5 2.5 0 114 0" stroke="#475569" stroke-width="1.2" stroke-linecap="round"/>
+
+                <!-- Bottom Left: Lightbulb Icon -->
+                <circle cx="75" cy="100" r="9" fill="#F8FAFC" stroke="#E2E8F0"/>
+                <path d="M75 95a3 3 0 00-2 5.2v1.8h4v-1.8a3 3 0 00-2-5.2z" stroke="#475569" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+
+                <!-- Top Left: Display Icon -->
+                <circle cx="58" cy="45" r="9" fill="#F8FAFC" stroke="#E2E8F0"/>
+                <rect x="53.5" y="41.5" width="9" height="6" rx="1" stroke="#475569" stroke-width="1.2"/>
+                <line x1="58" y1="47.5" x2="58" y2="49.5" stroke="#475569" stroke-width="1.2"/>
+              </svg>
+            </div>
+            <h3 class="mh-why-pillar-title-dark">5-Vector Intelligence</h3>
+            <p class="mh-why-pillar-desc-dark">
+              Evaluating responses across structure, domain depth, strategic thinking, communication, and leadership execution.
+            </p>
           </div>
-          <h3 class="mh-why-pillar-title">Living Profile of Mastery</h3>
-          <p class="mh-why-pillar-desc">
-            Tracking long-term skill acquisition and decision-making clarity across every session and career stage.
-          </p>
-        </div>
 
-      </div>
-    </div>
-  </section>
+          <!-- PILLAR 3: Living Profile of Mastery (REPLICATED FROM REFERENCE SCREEN) -->
+          <div class="mh-why-pillar-card-light reveal-item">
+            <div class="mh-pillar-mini-visual-light" aria-hidden="true">
+              <svg viewBox="0 0 220 120" width="220" height="120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Background Container Card -->
+                <rect x="10" y="10" width="200" height="100" rx="6" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+                
+                <!-- Light Grid Lines -->
+                <line x1="10" y1="35" x2="210" y2="35" stroke="#F1F5F9" stroke-width="1"/>
+                <line x1="10" y1="60" x2="210" y2="60" stroke="#F1F5F9" stroke-width="1"/>
+                <line x1="10" y1="85" x2="210" y2="85" stroke="#F1F5F9" stroke-width="1"/>
 
-  <!-- ============================================
-       05 — COMPARISON MATRIX (PROOF OF DIFFERENTIATION)
-       ============================================ -->
-  <section class="mh-why-compare reveal" id="why-compare">
-    <div class="mh-matrix-inner">
-      <div class="mh-section-center">
-        <div class="mh-eyebrow">The Comparison</div>
-        <h2 class="mh-section-title">Why We're Different</h2>
-      </div>
+                <!-- Light Area Fill Gradient -->
+                <path d="M20 75 L50 65 L80 72 L110 52 L140 58 L180 25 L180 100 L20 100 Z" fill="url(#lightGraphGrad)" opacity="0.12"/>
+                <defs>
+                  <linearGradient id="lightGraphGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#2563EB"/>
+                    <stop offset="100%" stop-color="#2563EB" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
 
-      <div class="mh-why-compare-panel">
-        <div class="mh-matrix-table-wrap">
-          <table class="mh-matrix-table">
-            <thead>
-              <tr>
-                <th class="mh-matrix-th mh-matrix-th-label">Dimension</th>
-                <th class="mh-matrix-th mh-matrix-th-legacy">Legacy Approaches</th>
-                <th class="mh-matrix-th mh-matrix-th-platform">MedhaIQ Platform</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="mh-matrix-row">
-                <td class="mh-matrix-cell mh-matrix-cell-label">Career Lifecycle</td>
-                <td class="mh-matrix-cell mh-matrix-cell-legacy">Static one-time preparation</td>
-                <td class="mh-matrix-cell mh-matrix-cell-platform">
-                  <span class="mh-matrix-check">&#10003;</span>
-                  Continuous Career Intelligence across your entire career
-                </td>
-              </tr>
-              <tr class="mh-matrix-row">
-                <td class="mh-matrix-cell mh-matrix-cell-label">Assessment Depth</td>
-                <td class="mh-matrix-cell mh-matrix-cell-legacy">Basic conversational mock interviews</td>
-                <td class="mh-matrix-cell mh-matrix-cell-platform">
-                  <span class="mh-matrix-check">&#10003;</span>
-                  Multi-layered Executive Leadership Readiness simulations
-                </td>
-              </tr>
-              <tr class="mh-matrix-row">
-                <td class="mh-matrix-cell mh-matrix-cell-label">Personal Brand</td>
-                <td class="mh-matrix-cell mh-matrix-cell-legacy">Mechanical resume formatting checks</td>
-                <td class="mh-matrix-cell mh-matrix-cell-platform">
-                  <span class="mh-matrix-check">&#10003;</span>
-                  Strategic Executive Persona &amp; Personal Brand Development
-                </td>
-              </tr>
-              <tr class="mh-matrix-row">
-                <td class="mh-matrix-cell mh-matrix-cell-label">Career Strategy</td>
-                <td class="mh-matrix-cell mh-matrix-cell-legacy">Linear entry-level placement focus</td>
-                <td class="mh-matrix-cell mh-matrix-cell-platform">
-                  <span class="mh-matrix-check">&#10003;</span>
-                  Long-term Enterprise &amp; Executive Career Lifecycle
-                </td>
-              </tr>
-              <tr class="mh-matrix-row">
-                <td class="mh-matrix-cell mh-matrix-cell-label">Leadership Readiness</td>
-                <td class="mh-matrix-cell mh-matrix-cell-legacy">Fragmented generic coaching</td>
-                <td class="mh-matrix-cell mh-matrix-cell-platform">
-                  <span class="mh-matrix-check">&#10003;</span>
-                  Deeply calibrated Global Leadership Readiness Blueprints
-                </td>
-              </tr>
-              <tr class="mh-matrix-row mh-matrix-row-last">
-                <td class="mh-matrix-cell mh-matrix-cell-label">Continuous Intelligence</td>
-                <td class="mh-matrix-cell mh-matrix-cell-legacy">No structured feedback</td>
-                <td class="mh-matrix-cell mh-matrix-cell-platform">
-                  <span class="mh-matrix-check">&#10003;</span>
-                  5-Vector AI Scoring with quantified career diagnostics
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                <!-- Trend Line -->
+                <path d="M20 75 L50 65 L80 72 L110 52 L140 58 L180 25" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+                <!-- Circular Data Nodes -->
+                <circle cx="20" cy="75" r="3.5" fill="#3B82F6"/>
+                <circle cx="50" cy="65" r="3.5" fill="#3B82F6"/>
+                <circle cx="80" cy="72" r="3.5" fill="#3B82F6"/>
+                <circle cx="110" cy="52" r="3.5" fill="#3B82F6"/>
+                <circle cx="140" cy="58" r="3.5" fill="#3B82F6"/>
+                <circle cx="180" cy="25" r="4" fill="#2563EB" stroke="#93C5FD" stroke-width="2"/>
+
+                <!-- Tooltip / Overlay Badge (Session 8 Growth +22%) -->
+                <rect x="132" y="44" width="72" height="26" rx="5" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" filter="drop-shadow(0px 2px 4px rgba(0,0,0,0.06))"/>
+                <text x="168" y="55" fill="#64748B" font-size="7.5" font-family="sans-serif" font-weight="600" text-anchor="middle">Session 8</text>
+                <text x="168" y="64" fill="#0F172A" font-size="8.5" font-family="sans-serif" font-weight="700" text-anchor="middle">Growth +22%</text>
+              </svg>
+            </div>
+            <h3 class="mh-why-pillar-title-dark">Living Profile of Mastery</h3>
+            <p class="mh-why-pillar-desc-dark">
+              Tracking long-term skill acquisition and decision-making clarity across every session and career stage.
+            </p>
+          </div>
+
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+
+    <!-- ============================================
+         05 — COMPARISON MATRIX
+         ============================================ -->
+    <section class="mh-why-compare reveal" id="why-compare">
+      <div class="mh-matrix-inner">
+        <div class="mh-section-center">
+          <div class="mh-eyebrow">THE COMPARISON</div>
+          <h2 class="mh-section-title mh-title-dark">Why We're Different</h2>
+        </div>
+
+        <div class="mh-why-compare-panel-dark">
+          <div class="mh-matrix-table-wrap">
+            <table class="mh-matrix-table">
+              <thead>
+                <tr>
+                  <th class="mh-matrix-th mh-matrix-th-label">CAREER INTELLIGENCE DIMENSION</th>
+                  <th class="mh-matrix-th mh-matrix-th-legacy">LEGACY APPROACHES</th>
+                  <th class="mh-matrix-th mh-matrix-th-platform">MEDHAIQ PLATFORM</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="mh-matrix-row">
+                  <td class="mh-matrix-cell mh-matrix-cell-label">Career Lifecycle</td>
+                  <td class="mh-matrix-cell mh-matrix-cell-legacy">Static, one-time preparation</td>
+                  <td class="mh-matrix-cell mh-matrix-cell-platform">
+                    <span class="mh-matrix-check-badge">&#10003;</span>
+                    Continuous Career Intelligence across your entire career
+                  </td>
+                </tr>
+                <tr class="mh-matrix-row">
+                  <td class="mh-matrix-cell mh-matrix-cell-label">Assessment Depth</td>
+                  <td class="mh-matrix-cell mh-matrix-cell-legacy">Basic conversational mock interviews</td>
+                  <td class="mh-matrix-cell mh-matrix-cell-platform">
+                    <span class="mh-matrix-check-badge">&#10003;</span>
+                    Multi-layered Executive Leadership Readiness simulations
+                  </td>
+                </tr>
+                <tr class="mh-matrix-row">
+                  <td class="mh-matrix-cell mh-matrix-cell-label">Personal Brand</td>
+                  <td class="mh-matrix-cell mh-matrix-cell-legacy">Mechanical resume formatting checks</td>
+                  <td class="mh-matrix-cell mh-matrix-cell-platform">
+                    <span class="mh-matrix-check-badge">&#10003;</span>
+                    Strategic Executive Persona &amp; Personal Brand Development
+                  </td>
+                </tr>
+                <tr class="mh-matrix-row">
+                  <td class="mh-matrix-cell mh-matrix-cell-label">Career Strategy</td>
+                  <td class="mh-matrix-cell mh-matrix-cell-legacy">Linear entry-level placement focus</td>
+                  <td class="mh-matrix-cell mh-matrix-cell-platform">
+                    <span class="mh-matrix-check-badge">&#10003;</span>
+                    Long-term Enterprise &amp; Executive Career Lifecycle
+                  </td>
+                </tr>
+                <tr class="mh-matrix-row">
+                  <td class="mh-matrix-cell mh-matrix-cell-label">Leadership Readiness</td>
+                  <td class="mh-matrix-cell mh-matrix-cell-legacy">Fragmented generic coaching</td>
+                  <td class="mh-matrix-cell mh-matrix-cell-platform">
+                    <span class="mh-matrix-check-badge">&#10003;</span>
+                    Deeply calibrated Global Leadership Readiness Blueprints
+                  </td>
+                </tr>
+                <tr class="mh-matrix-row mh-matrix-row-last">
+                  <td class="mh-matrix-cell mh-matrix-cell-label">Continuous Intelligence</td>
+                  <td class="mh-matrix-cell mh-matrix-cell-legacy">No structured feedback</td>
+                  <td class="mh-matrix-cell mh-matrix-cell-platform">
+                    <span class="mh-matrix-check-badge">&#10003;</span>
+                    5-Vector AI Scoring with quantified career diagnostics
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
 
   <%- include('partials/footer') %>
 
@@ -269,11 +386,11 @@
           entry.target.classList.add('visible');
           var items = entry.target.querySelectorAll('.reveal-item');
           items.forEach(function(item, i) {
-            setTimeout(function() { item.classList.add('visible'); }, i * 100);
+            setTimeout(function() { item.classList.add('visible'); }, i * 80);
           });
         }
       });
-    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
     reveals.forEach(function(el) { observer.observe(el); });
   })();
   </script>
