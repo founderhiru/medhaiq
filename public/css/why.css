@@ -1,16 +1,18 @@
 /* ==========================================================================
    WHY MEDHAIQ — PAGE SPECIFIC STYLES
-   Restored Light-Theme System Matched to Reference Screen
+   Restored Warm Light-Theme System (Seamless Canvas)
    ========================================================================== */
 
 .mh-why-body {
   background-color: #0A0F1E;
 }
 
-.mh-why-content-light {
-  background-color: #F8FAFC;
+/* Continuous Light Canvas Wrapper for Sections 02 through 05 */
+.mh-why-main-light {
+  background-color: #F8FAFC !important;
   color: #0F172A;
   width: 100%;
+  display: block;
 }
 
 .mh-hero-highlight {
@@ -19,7 +21,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   01 — Section Padding
+   01 — Section Padding & Whitespace
    -------------------------------------------------------------------------- */
 .mh-why-twocard,
 .mh-why-philosophy,
@@ -28,11 +30,12 @@
   width: 100%;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
+  background-color: transparent !important;
 }
 
 .mh-why-twocard {
   padding-top: 3rem;
-  padding-bottom: 2.25rem;
+  padding-bottom: 2rem;
 }
 
 .mh-why-philosophy {
@@ -41,12 +44,12 @@
 }
 
 .mh-why-pillars {
-  padding-top: 2.25rem;
+  padding-top: 2rem;
   padding-bottom: 2.5rem;
 }
 
 .mh-why-compare {
-  padding-top: 2.25rem;
+  padding-top: 2rem;
   padding-bottom: 3.5rem;
 }
 
@@ -69,7 +72,7 @@
   margin-bottom: 2rem;
 }
 
-/* Eyebrows & Titles */
+/* Eyebrows & Section Titles */
 .mh-eyebrow {
   font-size: 0.75rem;
   font-weight: 700;
@@ -91,7 +94,7 @@
 }
 
 .mh-title-dark {
-  color: #0F172A;
+  color: #0F172A !important;
 }
 
 @media (min-width: 768px) {
@@ -107,7 +110,7 @@
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 1rem;
-  padding: 1.75rem;
+  padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
@@ -194,9 +197,6 @@
   gap: 0.625rem;
   font-size: 0.9375rem;
   line-height: 1.5;
-}
-
-.mh-bullet-dark {
   color: #334155;
 }
 
@@ -211,7 +211,7 @@
 .mh-bullet-shift { color: #10B981; }
 
 /* --------------------------------------------------------------------------
-   03 — POSITIONING QUOTE (LIGHT BLUE CARD WITH ICONIC 66/99)
+   03 — POSITIONING QUOTE (LIGHT BLUE CARD WITH 66/99 QUOTES)
    -------------------------------------------------------------------------- */
 .mh-why-quote-card-light {
   background: #EFF6FF;
@@ -343,7 +343,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   05 — COMPARISON MATRIX (DARK CONTAINER)
+   05 — COMPARISON MATRIX (DARK CONTAINER ON LIGHT CANVAS)
    -------------------------------------------------------------------------- */
 .mh-why-compare-panel-dark {
   background: #0A0F1E;
