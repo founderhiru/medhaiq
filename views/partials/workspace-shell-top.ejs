@@ -17,6 +17,11 @@ const _pageTitle = typeof pageTitle !== 'undefined' ? pageTitle : 'MedhaIQ';
 const _activeNav = typeof activeNav !== 'undefined' ? activeNav : '';
 const _shellUser = typeof shellUser !== 'undefined' && shellUser ? shellUser : { name: '' };
 const _extraStylesheets = typeof extraStylesheets !== 'undefined' ? extraStylesheets : [];
+// Only true when dashboard-history.ejs is rendered via /preview/workspace.
+// Every other consumer of this shared shell (interview-setup, live
+// interview, reports, settings) never passes this, so defaults to false
+// and behaves exactly as before.
+const _previewMode = typeof previewMode !== 'undefined' && previewMode;
 /* CSS scoping hook only — no logic/route/behavior tied to this. Explicit
    opt-in per page (not derived from activeNav) because activeNav:'dashboard'
    is shared by both dashboard-history.ejs (Career Workspace) and
@@ -79,7 +84,11 @@ const _bodyClass = typeof bodyClass !== 'undefined' && bodyClass ? bodyClass : '
     <% } %>
     <div class="shell-links">
       <a href="/dashboard/history" class="shell-link <%= _activeNav === 'dashboard' ? 'active' : '' %>"><span class="dot"></span> Workspace</a>
+      <% if (_previewMode) { %>
+      <span class="shell-link" aria-disabled="true" title="Create a free account to start an interview" style="opacity:0.5;cursor:not-allowed;"><span class="dot"></span> New Interview</span>
+      <% } else { %>
       <a href="/interview" class="shell-link <%= _activeNav === 'interview' ? 'active' : '' %>"><span class="dot"></span> New Interview</a>
+      <% } %>
       <a href="/dashboard/history" class="shell-link <%= _activeNav === 'reports' ? 'active' : '' %>"><span class="dot"></span> Reports</a>
       <a href="/resume" class="shell-link <%= _activeNav === 'resume' ? 'active' : '' %>"><span class="dot"></span> Resume Intelligence</a>
       <a href="/settings" class="shell-link <%= _activeNav === 'settings' ? 'active' : '' %>"><span class="dot"></span> Settings</a>
