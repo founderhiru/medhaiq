@@ -1,6 +1,6 @@
 /* ==========================================================================
    WHY MEDHAIQ — PAGE SPECIFIC STYLES
-   Warm Light-Theme Canvas — Precision Layout & Spacing System
+   Restored Warm Light-Theme System (Seamless Canvas)
    ========================================================================== */
 
 .mh-why-body {
@@ -21,7 +21,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   01 — Section Padding & Whitespace (Tightened for ~10–15% Compact Density)
+   01 — Section Padding & Whitespace
    -------------------------------------------------------------------------- */
 .mh-why-twocard,
 .mh-why-philosophy,
@@ -33,31 +33,26 @@
   background-color: transparent !important;
 }
 
-/* Hero → Problem/Shift (Gap reduced ~30%) */
 .mh-why-twocard {
-  padding-top: 2rem;
-  padding-bottom: 1.625rem;
-}
-
-/* Problem/Shift → Manifesto (Gap reduced ~18%) */
-.mh-why-philosophy {
-  padding-top: 1.25rem;
-  padding-bottom: 1.625rem;
-}
-
-/* Manifesto → Three Pillars (Gap reduced ~18.7%) */
-.mh-why-pillars {
-  padding-top: 1.625rem;
+  padding-top: 3rem;
   padding-bottom: 2rem;
 }
 
-/* Three Pillars → Comparison Matrix (Gap reduced ~19.4%) */
-.mh-why-compare {
-  padding-top: 1.625rem;
-  padding-bottom: 2.875rem;
+.mh-why-philosophy {
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
 }
 
-/* Normalized Content Width System (1120px unified max-width) */
+.mh-why-pillars {
+  padding-top: 2rem;
+  padding-bottom: 2.5rem;
+}
+
+.mh-why-compare {
+  padding-top: 2rem;
+  padding-bottom: 3.5rem;
+}
+
 .mh-why-twocard-wrapper,
 .mh-why-pillars-inner,
 .mh-matrix-inner {
@@ -66,7 +61,6 @@
   margin-right: auto;
 }
 
-/* Narrow Container for Quote Manifesto */
 .mh-why-narrow {
   max-width: 860px;
   margin-left: auto;
@@ -75,7 +69,7 @@
 
 .mh-section-center {
   text-align: center;
-  margin-bottom: 1.625rem;
+  margin-bottom: 2rem;
 }
 
 /* Eyebrows & Section Titles */
@@ -96,7 +90,7 @@
   font-size: 1.625rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.875rem 0;
 }
 
 .mh-title-dark {
@@ -110,13 +104,13 @@
 }
 
 /* --------------------------------------------------------------------------
-   02 — PROBLEM VS SHIFT CARD
+   02 — PROBLEM VS SHIFT (WHITE CONTAINER CARD)
    -------------------------------------------------------------------------- */
 .mh-why-twocard-container {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 1rem;
-  padding: 1.75rem;
+  padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
@@ -138,7 +132,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  padding: 0.25rem;
+  padding: 0.5rem;
 }
 
 .mh-why-card-icon {
@@ -191,10 +185,10 @@
 .mh-why-bullet-list {
   list-style: none;
   padding: 0;
-  margin: 0.875rem 0 0 0;
+  margin: 1rem 0 0 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.875rem;
 }
 
 .mh-why-bullet-item {
@@ -217,13 +211,13 @@
 .mh-bullet-shift { color: #10B981; }
 
 /* --------------------------------------------------------------------------
-   03 — POSITIONING QUOTE (MANIFESTO)
+   03 — POSITIONING QUOTE (LIGHT BLUE CARD WITH 66/99 QUOTES)
    -------------------------------------------------------------------------- */
 .mh-why-quote-card-light {
   background: #EFF6FF;
   border: 1px solid #DBEAFE;
   border-radius: 1rem;
-  padding: 2rem 1.875rem;
+  padding: 2.25rem 2rem;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -257,7 +251,7 @@
   font-weight: 800;
   line-height: 1.35;
   color: #0F172A;
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.875rem 0;
   letter-spacing: -0.015em;
   position: relative;
   z-index: 1;
@@ -284,7 +278,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   04 — THREE PILLARS (Efficient Space Utilization & ~15% Larger Visuals)
+   04 — THREE PILLARS (WHITE CARDS)
    -------------------------------------------------------------------------- */
 .mh-why-pillar-grid {
   display: grid;
@@ -303,7 +297,7 @@
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 0.875rem;
-  padding: 1.25rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
@@ -315,23 +309,21 @@
   transform: translateY(-2px);
 }
 
-/* Image/Visual Container (~15–20% area increase) */
 .mh-pillar-mini-visual-light {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 0.875rem;
+  margin-bottom: 1.25rem;
   background: #FAFAFC;
   border: 1px solid #F1F5F9;
   border-radius: 0.625rem;
-  padding: 0.75rem 0.5rem;
+  padding: 0.5rem 0;
 }
 
 .mh-pillar-mini-visual-light svg {
   max-width: 100%;
-  height: 138px; /* Increased graphic height from 120px to 138px */
-  width: auto;
+  height: auto;
 }
 
 .mh-why-pillar-title-dark {
@@ -339,19 +331,19 @@
   font-size: 1.125rem;
   font-weight: 700;
   color: #0F172A;
-  margin: 0 0 0.375rem 0;
+  margin: 0 0 0.5rem 0;
   letter-spacing: -0.01em;
 }
 
 .mh-why-pillar-desc-dark {
   font-size: 0.875rem;
-  line-height: 1.5;
+  line-height: 1.55;
   color: #64748B;
   margin: 0;
 }
 
 /* --------------------------------------------------------------------------
-   05 — COMPARISON MATRIX (DARK PANEL ON LIGHT CANVAS)
+   05 — COMPARISON MATRIX (DARK CONTAINER ON LIGHT CANVAS)
    -------------------------------------------------------------------------- */
 .mh-why-compare-panel-dark {
   background: #0A0F1E;
@@ -374,7 +366,7 @@
 }
 
 .mh-matrix-th {
-  padding: 0.9375rem 1.375rem;
+  padding: 1.125rem 1.5rem;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -408,7 +400,7 @@
 }
 
 .mh-matrix-cell {
-  padding: 0.9375rem 1.375rem;
+  padding: 1.125rem 1.5rem;
   font-size: 0.875rem;
   line-height: 1.5;
 }
