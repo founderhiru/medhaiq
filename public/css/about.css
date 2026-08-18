@@ -220,25 +220,16 @@
 }
 .mh-about-gap-text { font-size: 13.5px; line-height: 1.6; color: var(--text-muted); }
 
-.mh-about-origin-close {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 17px;
-  color: var(--white);
-  line-height: 1.5;
-  border-left: 2px solid var(--blue-bright);
-  padding-left: 18px;
-  max-width: 880px;
-}
-
-/* Founder byline — small, subtle, secondary to the story */
+/* Founder byline — photo sized/positioned as before; LinkedIn icon
+   unchanged. Quote added next to the photo, small and muted with
+   italic styling, distinct from the section's regular body copy. */
 .mh-about-byline {
   margin-top: 28px;
   padding-top: 22px;
   border-top: 1px solid var(--white-border);
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 16px;
 }
 .mh-about-byline-photo {
   width: 48px;
@@ -248,7 +239,15 @@
   flex-shrink: 0;
   border: 1px solid var(--white-border);
 }
-.mh-about-byline-text { display: flex; flex-direction: column; }
+.mh-about-byline-text { display: flex; flex-direction: column; flex: 1; }
+.mh-about-byline-quote {
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 640px;
+  margin-bottom: 10px;
+}
 .mh-about-byline-name { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; color: var(--white); }
 .mh-about-byline-role { font-size: 12px; color: var(--text-faint); margin-top: 1px; }
 .mh-about-byline-linkedin {
@@ -372,6 +371,17 @@
   line-height: 1.65;
   color: #52607A;
 }
+.mh-about-principles-privacy-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--royal-blue);
+}
+.mh-about-principles-privacy-link:hover { text-decoration: underline; }
 
 /* ============================================
    RESPONSIVE
@@ -389,4 +399,6 @@
   .mh-about-section { padding: 44px 24px; }
   .mh-about-flow { grid-template-columns: 1fr; }
   .mh-about-gaps { gap: 16px; }
+  .mh-about-byline { flex-wrap: wrap; }
+  .mh-about-byline-linkedin { margin-left: 0; }
 }
