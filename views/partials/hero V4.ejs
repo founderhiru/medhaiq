@@ -1,11 +1,11 @@
 <style>
-  /* Base Hero Container & Background Transition */
+  /* Base Hero Container & Smooth Clean Transition */
   .mh-hero {
     position: relative;
     width: 100%;
     background: linear-gradient(105deg, #F7F8F6 0%, #F7F8F6 46%, #E1EBF7 58%, #C5DCF5 72%, #1C2F4D 86%, #0D172B 100%);
     color: #0F172A;
-    padding: 24px 24px 88px; /* 24px top + badge margin creates ~40px clearance below nav */
+    padding: 72px 24px 88px;
     overflow: hidden;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   }
@@ -21,7 +21,7 @@
     z-index: 2;
   }
 
-  /* Badge Spacing (~35-45px breathing room from navigation) */
+  /* Badge & Typography */
   .mh-hero-badge {
     display: inline-flex;
     align-items: center;
@@ -30,7 +30,6 @@
     border-radius: 9999px;
     background: rgba(255, 255, 255, 0.85);
     border: 1px solid rgba(59, 130, 246, 0.3);
-    margin-top: 16px; /* Provides 40px total top clearance from nav */
     margin-bottom: 20px;
     backdrop-filter: blur(8px);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
@@ -51,7 +50,7 @@
     color: #1D4ED8;
   }
 
-  /* Compact Editorial Typography */
+  /* Reduced by ~12% (48px down from 56px) for compact, editorial feel */
   .mh-hero-h1 {
     font-size: 48px;
     line-height: 1.08;
@@ -71,24 +70,23 @@
     font-size: 16.5px;
     line-height: 1.55;
     color: #475569;
-    margin: 0 0 24px 0;
+    margin: 0 0 28px 0;
     max-width: 530px;
   }
 
-  /* 2x2 Feature Pills Grid Layout */
+  /* Feature Chips */
   .mh-hero-chips {
-    display: grid;
-    grid-template-columns: repeat(2, auto);
-    justify-content: start;
+    display: flex;
+    flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 32px;
   }
 
   .mh-hero-chip {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 7px 14px;
+    padding: 7px 13px;
     background: rgba(255, 255, 255, 0.85);
     border: 1px solid rgba(203, 213, 225, 0.8);
     border-radius: 8px;
@@ -122,7 +120,7 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
   }
 
   .mh-btn-primary {
@@ -196,7 +194,7 @@
     filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8));
   }
 
-  /* Live Pulse Indicator */
+  /* Pulsing Green Live Indicator */
   @keyframes mh-live-pulse {
     0% {
       opacity: 1;
@@ -224,7 +222,7 @@
     animation: mh-live-pulse 1.8s infinite ease-in-out;
   }
 
-  /* 3D Product Stage Visual Anchor */
+  /* 3D Stage Canvas Settings (Height adjusted 540px -> 490px) */
   .mh-hero-product-stack {
     position: relative;
     display: flex;
@@ -238,14 +236,14 @@
     perspective-origin: 55% 45%;
   }
 
-  /* REAR LAYER: CAREER WORKSPACE */
+  /* REAR CARD: CAREER WORKSPACE (Height adjusted 495px -> 450px) */
   .mh-career-mock {
     position: absolute;
     right: 250px;
     top: 12px;
     width: 530px;
     height: 450px;
-    background: #0B1226;
+    background: #111D32;
     border: 1.5px solid rgba(59, 130, 246, 0.45);
     border-radius: 18px;
     padding: 18px 20px;
@@ -266,7 +264,7 @@
     padding: 10px 12px;
   }
 
-  /* FRONT LAYER: LIVE INTERVIEW TERMINAL */
+  /* FRONT CARD: LIVE INTERVIEW TERMINAL (Height adjusted 525px -> 475px) */
   .mh-hero-mockup-wrap {
     position: absolute;
     right: 0px;
@@ -357,7 +355,7 @@
     margin: 0 4px;
   }
 
-  /* Responsive Fallback */
+  /* Responsive Adjustments */
   @media (max-width: 1024px) {
     .mh-hero-inner {
       grid-template-columns: 1fr;
@@ -365,10 +363,6 @@
     }
     .mh-hero-h1 {
       font-size: 40px;
-    }
-    .mh-hero-chips {
-      grid-template-columns: repeat(2, 1fr);
-      width: 100%;
     }
     .mh-hero-product-stack {
       height: auto;
@@ -395,13 +389,10 @@
 
   @media (max-width: 640px) {
     .mh-hero {
-      padding: 24px 16px 64px;
+      padding: 48px 16px 64px;
     }
     .mh-hero-h1 {
       font-size: 32px;
-    }
-    .mh-hero-chips {
-      grid-template-columns: 1fr;
     }
     .mh-hero-actions {
       flex-direction: column;
