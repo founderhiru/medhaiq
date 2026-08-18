@@ -1,0 +1,681 @@
+<!-- HERO COMPONENT — MedhaIQ Continuous Career Intelligence -->
+<style>
+  /* Base Hero Container & Background Transition */
+  .mh-hero {
+    position: relative;
+    width: 100%;
+    background: linear-gradient(105deg, #F7F8F6 0%, #F7F8F6 46%, #E1EBF7 58%, #C5DCF5 72%, #1C2F4D 86%, #0D172B 100%);
+    color: #0F172A;
+    padding: 56px 24px 88px; /* Increased top padding to ensure clearance below fixed nav at 100% zoom */
+    overflow: hidden;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+
+  .mh-hero-inner {
+    position: relative;
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+    z-index: 2;
+  }
+
+  /* Badge Styling: Black font, Light Grey background & border, ample top clearance */
+  .mh-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    background: #F1F5F9; /* Clean light grey background */
+    border: 1px solid #E2E8F0; /* Soft grey border */
+    margin-top: 24px; /* Ample vertical offset below header */
+    margin-bottom: 20px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  }
+
+  .mh-hero-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #2563EB;
+    box-shadow: 0 0 6px rgba(37, 99, 235, 0.5);
+  }
+
+  .mh-hero-badge-text {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #0F172A; /* Solid black font */
+  }
+
+  /* Compact Editorial Typography */
+  .mh-hero-h1 {
+    font-size: 48px;
+    line-height: 1.08;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin: 0 0 18px 0;
+    color: #0F172A;
+  }
+
+  .mh-hero-h1-accent {
+    background: linear-gradient(135deg, #2563EB 0%, #4F46E5 50%, #7C3AED 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .mh-hero-h2 {
+    font-size: 16.5px;
+    line-height: 1.55;
+    color: #475569;
+    margin: 0 0 24px 0;
+    max-width: 530px;
+  }
+
+  /* 2x2 Feature Pills Grid Layout */
+  .mh-hero-chips {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-content: start;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+
+  .mh-hero-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(203, 213, 225, 0.8);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1E293B;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  }
+
+  .mh-hero-chip-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mh-hero-chip-icon-purple { color: #7E22CE !important; }
+  .mh-hero-chip-icon-purple svg { filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.9)) brightness(1.4); }
+
+  .mh-hero-chip-icon-green { color: #047857 !important; }
+  .mh-hero-chip-icon-green svg { filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.9)) brightness(1.4); }
+
+  .mh-hero-chip-icon-amber { color: #B45309 !important; }
+  .mh-hero-chip-icon-amber svg { filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.9)) brightness(1.4); }
+
+  .mh-hero-chip-icon-magenta { color: #BE123C !important; }
+  .mh-hero-chip-icon-magenta svg { filter: drop-shadow(0 0 6px rgba(251, 113, 133, 0.9)) brightness(1.4); }
+
+  /* CTAs & Actions */
+  .mh-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .mh-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 10px;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(29, 78, 216, 0.35);
+    transition: all 0.25s ease;
+  }
+
+  .mh-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(29, 78, 216, 0.5);
+  }
+
+  .mh-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #0F172A;
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  }
+
+  .mh-btn-outline:hover {
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+  }
+
+  .mh-btn-outline:hover svg {
+    stroke: #0F172A !important;
+  }
+
+  .mh-hero-tertiary-row {
+    display: flex;
+    align-items: center;
+  }
+
+  .mh-hero-tertiary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .mh-hero-tertiary:hover {
+    color: #3B82F6 !important;
+  }
+
+  .mh-hero-tertiary:hover .mh-hero-tertiary-icon svg {
+    stroke: #3B82F6 !important;
+    filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8));
+  }
+
+  /* Live Pulse Indicator */
+  @keyframes mh-live-pulse {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    50% {
+      opacity: 0.4;
+      transform: scale(0.85);
+      box-shadow: 0 0 8px 2px rgba(16, 185, 129, 0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+  }
+
+  .mh-live-dot {
+    width: 7px;
+    height: 7px;
+    background-color: #10B981;
+    border-radius: 50%;
+    display: inline-block;
+    animation: mh-live-pulse 1.8s infinite ease-in-out;
+  }
+
+  /* 3D Product Stage Visual Anchor */
+  .mh-hero-product-stack {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    max-width: 900px;
+    height: 490px;
+    margin-top: -5px;
+    perspective: 1600px;
+    perspective-origin: 55% 45%;
+  }
+
+  /* REAR LAYER: CAREER WORKSPACE */
+  .mh-career-mock {
+    position: absolute;
+    right: 250px;
+    top: 12px;
+    width: 530px;
+    height: 450px;
+    background: #0B1226;
+    border: 1.5px solid rgba(59, 130, 246, 0.45);
+    border-radius: 18px;
+    padding: 18px 20px;
+    z-index: 1;
+    transform-style: preserve-3d;
+    transform: rotateY(-18deg) rotateX(7deg) rotateZ(2deg);
+    box-shadow: 
+      0 0 25px rgba(59, 130, 246, 0.35),
+      -25px 35px 70px rgba(0, 0, 0, 0.85),
+      inset 0 0 15px rgba(59, 130, 246, 0.15);
+    overflow: hidden;
+  }
+
+  .mh-career-mock-card {
+    background: #0F172A;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+
+  /* FRONT LAYER: LIVE INTERVIEW TERMINAL */
+  .mh-hero-mockup-wrap {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    width: 340px;
+    height: 475px;
+    z-index: 2;
+    transform-style: preserve-3d;
+    transform: rotateY(-18deg) rotateX(7deg) rotateZ(2deg);
+  }
+
+  .mh-terminal-v2 {
+    height: 100%;
+    background: #060B17;
+    border: 1.5px solid #3B82F6;
+    border-radius: 18px;
+    padding: 10px 14px;
+    box-shadow: 
+      0 0 40px rgba(59, 130, 246, 0.75),
+      -20px 30px 60px rgba(0, 0, 0, 0.95),
+      inset 0 0 20px rgba(59, 130, 246, 0.5),
+      inset 0 0 5px rgba(255, 255, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+
+  .mh-terminal-v2-body {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    height: calc(100% - 24px);
+    justify-content: space-between;
+  }
+
+  .mh-terminal-v2-block {
+    padding: 5px 9px !important;
+    margin-bottom: 0 !important;
+    background: rgba(15, 23, 42, 0.75);
+    border-radius: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+  }
+
+  .mh-terminal-v2-header {
+    padding-bottom: 3px;
+    margin-bottom: 3px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mh-terminal-v2-engine {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mh-terminal-v2-ring-svg {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+  }
+
+  .mh-terminal-v2-vectors {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5px;
+  }
+
+  .mh-terminal-v2-vectors li {
+    font-size: 9.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #CBD5E1;
+  }
+
+  .mh-vector-bar {
+    flex: 1;
+    height: 3px;
+    background: rgba(148, 163, 184, 0.15);
+    border-radius: 2px;
+    margin: 0 4px;
+  }
+
+  /* Responsive Fallback */
+  @media (max-width: 1024px) {
+    .mh-hero-inner {
+      grid-template-columns: 1fr;
+      gap: 50px;
+    }
+    .mh-hero-h1 {
+      font-size: 40px;
+    }
+    .mh-hero-chips {
+      grid-template-columns: repeat(2, 1fr);
+      width: 100%;
+    }
+    .mh-hero-product-stack {
+      height: auto;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 0;
+      perspective: none;
+    }
+    .mh-career-mock,
+    .mh-hero-mockup-wrap {
+      position: relative;
+      left: auto;
+      right: auto;
+      top: auto;
+      width: 100%;
+      max-width: 530px;
+      height: auto;
+      transform: none;
+    }
+    .mh-hero-mockup-wrap {
+      margin-top: -20px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .mh-hero {
+      padding: 40px 16px 64px;
+    }
+    .mh-hero-h1 {
+      font-size: 32px;
+    }
+    .mh-hero-chips {
+      grid-template-columns: 1fr;
+    }
+    .mh-hero-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .mh-btn-primary, .mh-btn-outline {
+      justify-content: center;
+    }
+  }
+</style>
+
+<section class="mh-hero">
+  <div class="mh-hero-inner">
+    <!-- Left Column: Copy & Actions -->
+    <div>
+      <div class="mh-hero-badge">
+        <span class="mh-hero-badge-dot"></span>
+        <span class="mh-hero-badge-text">ADAPTIVE CAREER INTELLIGENCE</span>
+      </div>
+
+      <h1 class="mh-hero-h1">Practice.<br>Polish.<br><span class="mh-hero-h1-accent">Place.</span></h1>
+
+      <p class="mh-hero-h2">Move beyond interview practice. MedhaIQ adapts to your role, experience, and career goals—delivering continuous career intelligence that helps you perform, grow, and advance with confidence.</p>
+      
+      <!-- 2x2 Feature Pills Arrangement -->
+      <div class="mh-hero-chips">
+        <!-- Row 1 -->
+        <div class="mh-hero-chip">
+          <span class="mh-hero-chip-icon mh-hero-chip-icon-purple">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </span>
+          <span>AI-Powered Interviews</span>
+        </div>
+        <div class="mh-hero-chip">
+          <span class="mh-hero-chip-icon mh-hero-chip-icon-green">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </span>
+          <span>Personalized Feedback</span>
+        </div>
+        <!-- Row 2 -->
+        <div class="mh-hero-chip">
+          <span class="mh-hero-chip-icon mh-hero-chip-icon-amber">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          </span>
+          <span>Actionable Insights</span>
+        </div>
+        <div class="mh-hero-chip">
+          <span class="mh-hero-chip-icon mh-hero-chip-icon-magenta">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </span>
+          <span>Continuous Growth</span>
+        </div>
+      </div>
+
+      <div class="mh-hero-actions">
+        <a href="/login" class="mh-btn-primary">
+          Start Free Trial
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="/explore" class="mh-btn-outline">
+          <span aria-hidden="true">🧭</span> Explore MedhaIQ
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <div class="mh-hero-tertiary-row">
+        <a href="#how-it-works" class="mh-hero-tertiary">
+          <span class="mh-hero-tertiary-icon">
+            <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4.2v11.6a1 1 0 0 0 1.53.85l9.2-5.8a1 1 0 0 0 0-1.7l-9.2-5.8A1 1 0 0 0 6 4.2Z" stroke-linejoin="round"/></svg>
+          </span>
+          See How It Works
+        </a>
+      </div>
+    </div>
+
+    <!-- Right Column: Embedded 3D Stage Stack -->
+    <div class="mh-hero-product-stack">
+      
+      <!-- REAR LAYER: CAREER WORKSPACE -->
+      <div class="mh-career-mock" aria-hidden="true">
+        <div class="mh-career-mock-header">
+          <span class="mh-career-mock-title" style="font-size:10px; color:#64748B; letter-spacing:0.05em;">CAREER WORKSPACE</span>
+          <h3 class="mh-career-mock-greeting" style="margin:2px 0 0 0; font-size:14.5px; color:#F8FAFC;">Good evening, Alex 🌙</h3>
+          <p class="mh-career-mock-sub" style="margin:2px 0 10px 0; font-size:10px; color:#94A3B8;">Track your progress, improve every day, and land your next opportunity.</p>
+        </div>
+
+        <div class="mh-career-mock-row" style="display:flex; gap:10px;">
+          <!-- AI Interview Minutes Meter -->
+          <div class="mh-career-mock-card" style="flex:1;">
+            <div style="font-size:8.5px; color:#64748B; margin-bottom:3px; font-weight:600;">⚡ AI INTERVIEW MINUTES</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="font-size:15px; font-weight:700; color:#F59E0B;">110 <span style="font-size:9px; color:#94A3B8;">mins</span></div>
+              <div style="flex:1; height:4px; background:#1E293B; border-radius:2px; overflow:hidden;">
+                <div style="width:91%; height:100%; background:#F59E0B;"></div>
+              </div>
+            </div>
+            <div style="font-size:8px; color:#64748B; margin-top:3px;">Used 10 mins · 120 Total</div>
+          </div>
+
+          <!-- Interview Readiness -->
+          <div class="mh-career-mock-card" style="flex:1;">
+            <div style="font-size:8.5px; color:#64748B; margin-bottom:3px; font-weight:600;">INTERVIEW READINESS</div>
+            <div style="display:flex; align-items:baseline; gap:4px;">
+              <span style="font-size:15px; font-weight:700; color:#10B981;">0</span>
+              <span style="font-size:9px; color:#64748B;">/100</span>
+              <span style="font-size:8px; color:#F43F5E; margin-left:auto;">Needs Focus</span>
+            </div>
+            <div style="font-size:8px; color:#94A3B8; margin-top:3px;">Focus next: <span style="color:#F59E0B;">Domain Expertise</span></div>
+          </div>
+        </div>
+
+        <div class="mh-career-mock-row" style="display:flex; gap:10px; margin-top:8px;">
+          <!-- Recent Activity -->
+          <div class="mh-career-mock-card" style="flex:1;">
+            <div class="mh-career-mock-label" style="font-size:8.5px; color:#64748B; margin-bottom:5px;">RECENT ACTIVITY</div>
+            <div style="display:flex; justify-content:space-between; font-size:9px; color:#CBD5E1; margin-bottom:2px;">
+              <span>Management Consultant</span>
+              <span style="color:#64748B;">Aug 15</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:9px; color:#CBD5E1;">
+              <span>Technical Program Manager</span>
+              <span style="color:#64748B;">Aug 13</span>
+            </div>
+          </div>
+
+          <!-- Quick Start Practice -->
+          <div class="mh-career-mock-card" style="flex:1; background:rgba(30, 41, 59, 0.6);">
+            <div class="mh-career-mock-label" style="font-size:8.5px; color:#64748B; margin-bottom:3px;">QUICK ACTIONS</div>
+            <div style="font-size:9.5px; font-weight:700; color:#F8FAFC;">Start Interview</div>
+            <div style="font-size:8px; color:#94A3B8;">Practice with AI interviewer &amp; get instant feedback</div>
+          </div>
+        </div>
+
+        <!-- YOUR PROGRESS MATRIX CARD -->
+        <div class="mh-career-mock-card" style="margin-top:10px; padding:10px 12px;">
+          <div style="font-size:8.5px; color:#64748B; margin-bottom:6px; font-weight:600; text-transform:uppercase;">Your Progress</div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">24</span>
+              <span style="font-size:8px; color:#94A3B8;">Interviews Completed</span>
+              <span style="font-size:8px; color:#10B981; display:block; margin-top:2px; font-weight:600;">↑ 12%</span>
+            </div>
+            <div>
+              <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">14h 30m</span>
+              <span style="font-size:8px; color:#94A3B8;">Total Practice Time</span>
+              <span style="font-size:8px; color:#10B981; display:block; margin-top:2px; font-weight:600;">↑ 8%</span>
+            </div>
+            <div>
+              <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">78%</span>
+              <span style="font-size:8px; color:#94A3B8;">Average Score</span>
+              <span style="font-size:8px; color:#10B981; display:block; margin-top:2px; font-weight:600;">↑ 15%</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FRONT LAYER: LIVE INTERVIEW TERMINAL -->
+      <div class="mh-hero-mockup-wrap">
+        <div class="mh-terminal-v2">
+          <div class="mh-terminal-v2-header">
+            <span class="mh-terminal-v2-title" style="font-size:10.5px; font-weight:700; color:#F8FAFC;">⚡ LIVE INTERVIEW TERMINAL</span>
+            <span style="font-size:9px; color:#10B981; display:flex; align-items:center; gap:5px; font-weight:700;">
+              <span class="mh-live-dot"></span>LIVE
+            </span>
+          </div>
+
+          <div class="mh-terminal-v2-body">
+
+            <div class="mh-terminal-v2-block">
+              <div style="font-size:8px; color:#64748B; margin-bottom:3px; font-weight:600;">AI ENGINE STATUS</div>
+              <div class="mh-terminal-v2-engine">
+                <svg width="30" height="30" viewBox="0 0 52 52" class="mh-terminal-v2-ring-svg">
+                  <defs>
+                    <linearGradient id="mh-ring-grad-tt" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#3B82F6"/>
+                      <stop offset="100%" stop-color="#8B5CF6"/>
+                    </linearGradient>
+                  </defs>
+                  <circle cx="26" cy="26" r="21" fill="none" stroke="url(#mh-ring-grad-tt)" stroke-width="4"/>
+                </svg>
+                <div>
+                  <div style="font-size:10.5px; font-weight:700; color:#F8FAFC;">Ready</div>
+                  <div style="font-size:8.5px; color:#94A3B8;">AI systems initialized</div>
+                  <div style="font-size:8.5px; color:#94A3B8;">Waiting for interview to begin&hellip;</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mh-terminal-v2-block">
+              <div style="font-size:8px; color:#64748B; margin-bottom:3px; font-weight:600;">STAR PROGRESS <span style="opacity:0.7;">(Real-time detection)</span></div>
+              <div style="display:flex; align-items:center; justify-content:space-between; padding:1px 0;">
+                <div style="text-align:center;">
+                  <div style="width:18px; height:18px; border-radius:50%; border:1px solid #3B82F6; color:#3B82F6; font-size:8.5px; display:flex; align-items:center; justify-content:center; margin:0 auto;">S</div>
+                  <span style="font-size:7.5px; color:#F8FAFC; margin-top:2px; display:block;">Situation</span>
+                </div>
+                <div style="height:1px; flex:1; background:rgba(148,163,184,0.2); margin:0 3px;"></div>
+                <div style="text-align:center;">
+                  <div style="width:18px; height:18px; border-radius:50%; border:1px solid rgba(148,163,184,0.3); color:#64748B; font-size:8.5px; display:flex; align-items:center; justify-content:center; margin:0 auto;">T</div>
+                  <span style="font-size:7.5px; color:#64748B; margin-top:2px; display:block;">Task</span>
+                </div>
+                <div style="height:1px; flex:1; background:rgba(148,163,184,0.2); margin:0 3px;"></div>
+                <div style="text-align:center;">
+                  <div style="width:18px; height:18px; border-radius:50%; border:1px solid rgba(148,163,184,0.3); color:#64748B; font-size:8.5px; display:flex; align-items:center; justify-content:center; margin:0 auto;">A</div>
+                  <span style="font-size:7.5px; color:#64748B; margin-top:2px; display:block;">Action</span>
+                </div>
+                <div style="height:1px; flex:1; background:rgba(148,163,184,0.2); margin:0 3px;"></div>
+                <div style="text-align:center;">
+                  <div style="width:18px; height:18px; border-radius:50%; border:1px solid rgba(148,163,184,0.3); color:#64748B; font-size:8.5px; display:flex; align-items:center; justify-content:center; margin:0 auto;">R</div>
+                  <span style="font-size:7.5px; color:#64748B; margin-top:2px; display:block;">Result</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mh-terminal-v2-block">
+              <div style="font-size:8px; color:#64748B; margin-bottom:3px; font-weight:600;">OVERALL INTELLIGENCE SCORE</div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:26px; height:26px; border-radius:50%; background:#0F172A; border:1px dashed rgba(148,163,184,0.3); display:flex; align-items:center; justify-content:center; font-size:9.5px; color:#64748B;">--</div>
+                <div>
+                  <div style="font-size:9.5px; color:#10B981; font-weight:600;">Score will appear here</div>
+                  <div style="font-size:8px; color:#64748B;">after your interview</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mh-terminal-v2-block">
+              <div style="font-size:8px; color:#64748B; margin-bottom:3px; font-weight:600;">5-VECTOR INTELLIGENCE</div>
+              <ul class="mh-terminal-v2-vectors">
+                <li>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  <span>Structure</span>
+                  <div class="mh-vector-bar"></div>
+                  <span style="color:#64748B;">--</span>
+                </li>
+                <li>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg>
+                  <span>Domain Expertise</span>
+                  <div class="mh-vector-bar"></div>
+                  <span style="color:#64748B;">--</span>
+                </li>
+                <li>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <span>Strategic Thinking</span>
+                  <div class="mh-vector-bar"></div>
+                  <span style="color:#64748B;">--</span>
+                </li>
+                <li>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <span>Communication</span>
+                  <div class="mh-vector-bar"></div>
+                  <span style="color:#64748B;">--</span>
+                </li>
+                <li>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>Leadership &amp; Execution</span>
+                  <div class="mh-vector-bar"></div>
+                  <span style="color:#64748B;">--</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="mh-terminal-v2-block">
+              <div style="font-size:8px; color:#64748B; margin-bottom:2px; font-weight:600;">AI ACTIVITY FEED</div>
+              <div style="font-size:8px; color:#CBD5E1; line-height:1.25; display:flex; align-items:center; gap:5px;">
+                <span style="width:4px; height:4px; background:#3B82F6; border-radius:50%; display:inline-block;"></span>
+                <span>AI systems ready. Click 'Start Free Trial' to begin.</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
