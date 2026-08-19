@@ -52,7 +52,7 @@ const frameworks = [
     ],
     resources: [
       { name: 'Harvard Career Services — Interviewing', url: 'https://careerservices.fas.harvard.edu/resources/interviewing/' },
-      { name: 'Understanding STAR Method', url: 'https://creately.com/guides/star-vs-car-method/' },
+      { name: 'Understanding STAR Method', url: 'https://capd.mit.edu/resources/the-star-method-for-behavioral-interviews/' },
     ],
     relatedRoles: ['product-manager', 'engineering-manager', 'management-consultant'],
   },
