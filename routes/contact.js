@@ -1,10 +1,15 @@
-// Contact form API — sends messages to company email via Polsia proxy.
+// Contact form API — sends messages to support@medhaiq.ai via the same
+// Resend infrastructure already used for magic link/verification/report
+// emails (services/email.js). Previously used a separate legacy Polsia
+// email proxy — replaced so there's one email transport in the product,
+// not two.
 const express = require('express');
 const router = express.Router();
-
-const EMAIL_TARGET = 'hiranya.talukdar@gmail.com';
+const { sendContactFormEmail } = require('../services/email');
 
 // POST /api/contact — submit contact form
+// Request/response contract is unchanged from before this change —
+// views/layout.ejs's modal JS needs no updates.
 router.post('/', async (req, res) => {
   const { name, email, message } = req.body || {};
 
@@ -18,40 +23,20 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Please enter a message (minimum 10 characters)' });
   }
 
-  const subject = `Contact Form: ${name.trim()} <${email.trim()}>`;
-  const body = `Name: ${name.trim()}\nEmail: ${email.trim()}\n\nMessage:\n${message.trim()}`;
-  const html = `<p><strong>Name:</strong> ${name.trim()}</p><p><strong>Email:</strong> ${email.trim()}</p><hr><p>${message.trim().replace(/\n/g, '<br>')}</p>`;
-
-  const emailPayload = JSON.stringify({
-    to: EMAIL_TARGET,
-    subject,
-    body,
-    html
-  });
-
-  const emailToken = process.env.POLSIA_API_KEY || process.env.POLSIA_API_TOKEN || '';
-  const emailUrl = process.env.POLSIA_EMAIL_PROXY_URL || 'https://polsia.com/api/proxy/email/send';
-
   try {
-    const response = await fetch(emailUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${emailToken}`
-      },
-      body: emailPayload
+    await sendContactFormEmail({
+      name: name.trim(),
+      email: email.trim(),
+      message: message.trim()
     });
-
-    if (!response.ok) {
-      const errText = await response.text().catch(() => '');
-      console.error('[contact] email send failed:', response.status, errText);
-      // Still return success to user — don't leak internal errors
-    }
-
     return res.json({ success: true, message: 'Message sent successfully' });
   } catch (err) {
+    // Unlike the previous Polsia implementation, a real delivery failure
+    // is now reported to the visitor as an error rather than a false
+    // "success" — the frontend's existing error path (alert + re-enabled
+    // submit button) already handles this shape.
     console.error('[contact] email error:', err);
-    return res.json({ success: true, message: 'Message sent successfully' });
+    return res.status(502).json({ error: 'Message could not be sent. Please try again or email support@medhaiq.ai directly.' });
   }
 });
 

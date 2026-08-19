@@ -5,8 +5,9 @@
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const FROM_EMAIL     = process.env.EMAIL_FROM    || 'noreply@medhaiq.ai';
 const APP_URL        = process.env.APP_URL       || 'https://www.medhaiq.ai';
+const SUPPORT_EMAIL  = process.env.SUPPORT_EMAIL || 'support@medhaiq.ai';
 
-async function _send({ to, subject, html, attachments }) {
+async function _send({ to, subject, html, attachments, replyTo }) {
   if (!RESEND_API_KEY) {
     // Graceful fallback: log instead of crash so dev mode still works
     console.warn('[email] RESEND_API_KEY not configured — email not sent to', to);
@@ -18,6 +19,10 @@ async function _send({ to, subject, html, attachments }) {
   // (Leadership PDF). The two other callers of _send() (magic link,
   // verification) never pass this, so their request body is unchanged.
   if (attachments && attachments.length) body.attachments = attachments;
+  // Reply-To — additive, only set when a caller passes it (contact form).
+  // Every other existing caller omits this, so their request body is
+  // unchanged.
+  if (replyTo) body.reply_to = replyTo;
   const resp = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -308,4 +313,25 @@ async function sendInterviewReportEmail({
   await _send({ to: toEmail, subject, html, attachments });
 }
 
-module.exports = { sendMagicLinkEmail, sendVerificationEmail, sendInterviewReportEmail };
+/* ── Contact form (footer "Get in touch" modal) ─────────────────────────── */
+// Replaces the legacy Polsia email proxy previously used by
+// routes/contact.js. Reuses the same Resend infra as every other
+// transactional email above — same subject/body shape the old Polsia
+// payload used, just delivered through _send(). Reply-To is set to the
+// submitter's own email so replying from the inbox goes straight back
+// to them, per the existing "within 1 business day" promise.
+async function sendContactFormEmail({ name, email, message }) {
+  // Unlike the other senders above, a silently-skipped contact-form email
+  // must NOT be reported to the visitor as sent — explicit guard here
+  // (routes/contact.js relies on this throwing) rather than relying on
+  // _send()'s existing dev-mode graceful fallback, which is intentionally
+  // left untouched for the other callers.
+  if (!RESEND_API_KEY) {
+    throw new Error('Email delivery not configured (RESEND_API_KEY missing)');
+  }
+  const subject = `Contact Form: ${name} <${email}>`;
+  const html = `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><hr><p>${message.replace(/\n/g, '<br>')}</p>`;
+  await _send({ to: SUPPORT_EMAIL, subject, html, replyTo: email });
+}
+
+module.exports = { sendMagicLinkEmail, sendVerificationEmail, sendInterviewReportEmail, sendContactFormEmail };
