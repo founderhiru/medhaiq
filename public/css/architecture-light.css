@@ -164,9 +164,13 @@
 .mh-bp-layer { padding: 26px 28px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); }
 .mh-bp-layer-desc { margin-top: 10px; }
 .mh-bp-divider { margin: 14px 0 18px; }
-/* Architecture-only: hide the Final CTA banner's "Get Started" button.
+/* Architecture-only: hide the ENTIRE Final CTA banner (the whole
+   <section class="mh-cta-banner"> from partials/cta-banner.ejs — headline,
+   subheadline, button, and blue background area), not just the button.
    Scoped via the .architecture-page body class (added in architecture.ejs)
    rather than editing partials/cta-banner.ejs directly, since that shared
    partial also renders on the Homepage, /experience, and
-   /professional-horizons — none of which should be affected. */
-.architecture-page .mh-cta-btn { display: none; }
+   /professional-horizons — none of which should be affected.
+   2026-08-19: replaces the earlier .mh-cta-btn-only rule, which left the
+   full blue banner area visible with just the button missing. */
+.architecture-page .mh-cta-banner { display: none; }
