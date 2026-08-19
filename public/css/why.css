@@ -1,369 +1,411 @@
-/* ============================================================
-   WHY MEDHAIQ — WARM LIGHT EDITORIAL
-   ------------------------------------------------------------
-   Dedicated file, loaded only by views/why.ejs. No body-class
-   scoping needed — every selector below (.mh-why-*) is confirmed
-   exclusive to this page (grepped across all views/*.ejs and
-   views/partials/*.ejs). Replaces the earlier scoped-override
-   approach in medhaiq.css, which was removed.
+/* ==========================================================================
+   WHY MEDHAIQ — PAGE SPECIFIC STYLES
+   Warm Light-Theme Canvas — Precision Layout & Compact Spacing
+   ========================================================================== */
 
-   Palette (warm, per latest direction — replaces the cool
-   #F8FAFC/--light-surface values used in the prior round):
-     page background   #F7F6F2
-     alt section        #F2F3F1
-     card                #FFFFFF
-     subtle warm surface #FAF9F6
-     border              #E5E7EB
-     primary text        #0B1020
-     secondary text      #5F6B82
-
-   Manifesto section intentionally stays var(--navy-deep) — dark
-   closing moment before the (already navy) footer, matching the
-   two-mode "Warm Light exploration / Deep Navy focus" architecture.
-
-   Semantic/brand colors NOT touched: .mh-why-pillar-icon (blue),
-   .mh-matrix-check (kept MedhaIQ blue per prior explicit review),
-   .mh-matrix-cell-platform's blue border-left.
-   ============================================================ */
-
-.mh-why-philosophy { background: #FFFFFF; }
-.mh-why-pillars { background: #FAF9F6; }
-.mh-why-compare { background: #F7F6F2; }
-/* .mh-why-manifesto: no override — stays navy, by design */
-
-.mh-why-philosophy .mh-section-title,
-.mh-why-pillars .mh-section-title,
-.mh-why-compare .mh-section-title {
-  color: #0B1020;
-}
-.mh-why-philosophy .mh-why-body {
-  color: #5F6B82;
-}
-.mh-why-body-emphasis { color: #0B1020; }
-
-.mh-why-quote { color: #0B1020; }
-.mh-why-quote-mark { color: #CBD5E1; }
-
-.mh-why-pillar-card {
-  background: #FFFFFF;
-  border: 1px solid #E5E7EB;
-}
-.mh-why-pillar-card:hover {
-  border-color: #D6DAE0;
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px -20px rgba(11, 16, 32, 0.12);
-}
-.mh-why-pillar-desc {
-  color: #5F6B82;
-  font-size: 14.5px;
-  line-height: 1.6;
-  margin: 0;
+.mh-why-body {
+  background-color: #0A0F1E;
 }
 
-/* Comparison table colors: see the dedicated, panel-scoped block near
-   the end of this file (search "COMPARISON TABLE — CONTRAST FIX").
-   The rules that used to be here were light-background-appropriate
-   colors (dark text) left over from before .mh-why-compare-panel's
-   dark navy background was added — that mismatch was the actual
-   invisible-text bug, not a design issue. */
-.mh-matrix-table-wrap { border: none; }
+/* Continuous Warm Light Canvas Wrapper for Main Content */
+.mh-why-main-light {
+  background-color: #F7F6F2 !important;
+  color: #0F172A;
+  width: 100%;
+  display: block;
+}
 
-/* ============================================================
-   FLOW / DENSITY / WIDTH CORRECTIONS (visual review round 2)
-   ------------------------------------------------------------
-   Page-scoped overrides only — --section-pad-y and --max-w are
-   shared global tokens (used by all 15 medhaiq.css consumers) and
-   were NOT touched; these overrides apply only within why.css,
-   loaded only by why.ejs.
-   ============================================================ */
+.mh-hero-highlight {
+  color: #3B82F6;
+  font-weight: 600;
+}
 
+/* --------------------------------------------------------------------------
+   01 — Section Padding & Compact Whitespace System
+   -------------------------------------------------------------------------- */
+.mh-why-twocard,
 .mh-why-philosophy,
 .mh-why-pillars,
 .mh-why-compare {
-  padding-top: 52px;
-  padding-bottom: 52px;
+  width: 100%;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  background-color: transparent !important;
 }
 
-.mh-why-philosophy { border-top: 2px solid #E5E7EB; }
-.mh-why-pillars { border-top: 1px solid #E5E7EB; }
-.mh-why-compare { border-top: 1px solid #E5E7EB; }
-
-.mh-matrix-table-wrap {
-  margin-top: 32px;
-  border: 1px solid #E5E7EB;
-  border-radius: 16px;
-}
-.mh-matrix-th {
-  padding-top: 18px;
-  padding-bottom: 18px;
-}
-.mh-matrix-th-label {
-  font-size: 12.5px;
-  font-weight: 700;
-}
-.mh-matrix-cell {
-  font-size: 14px;
-  padding-top: 16px;
-  padding-bottom: 16px;
-}
-.mh-why-compare .mh-section-title { font-size: 32px; }
-
-/* ============================================================
-   DENSITY + TABLE PROMINENCE PASS
-   ------------------------------------------------------------
-   .mh-why-narrow was 720px (global rule, why-exclusive class) —
-   widened for stronger heading presence. Section vertical padding
-   was --section-pad-y (76px, a GLOBAL token shared by every page
-   using medhaiq.css) — NOT changed globally; overridden per-section
-   here instead, since only Why's rhythm needed tightening.
-   ============================================================ */
-
-.mh-why-narrow { max-width: 860px; }
-.mh-why-pillars-inner { max-width: 1280px; }
-.mh-matrix-inner { max-width: 1280px; }
-
-.mh-why-philosophy,
-.mh-why-pillars,
-.mh-why-compare {
-  padding-top: 56px;
-  padding-bottom: 56px;
-}
-.mh-why-manifesto {
-  padding-top: 48px;
-  padding-bottom: 48px;
-}
-
-.mh-matrix-table-wrap { margin-top: 40px; }
-.mh-matrix-th { padding: 18px 20px; }
-
-/* ============================================================
-   LAYOUT RESTRUCTURE — two-column sections + floating dark panels
-   ------------------------------------------------------------
-   Matches the reference mockup's structure using only content
-   already in the page (verbatim quotes / words from existing
-   sentences — see comments in why.ejs at each usage).
-   ============================================================ */
-
-/* Comparison — floating dark panel on the light page, instead of a
-   full-bleed dark section */
-.mh-why-compare { background: #F7F6F2; border-top: none; }
-.mh-why-compare-panel {
-  background: var(--navy-deep);
-  border-radius: 24px;
-  padding: 8px 16px 16px;
-  margin-top: 32px;
-}
-.mh-why-compare-panel .mh-matrix-table-wrap {
-  border: none;
-  margin-top: 0;
-}
-
-/* ============================================================
-   COMPARISON TABLE — CONTRAST FIX (functional bug, not a
-   redesign)
-   ------------------------------------------------------------
-   Root cause: .mh-why-compare-panel's dark navy background was
-   added in an earlier round, but the matrix cell text colors were
-   never updated from their previous light-background values —
-   near-black text on navy is effectively invisible. This block is
-   the actual fix: every text element below is explicitly colored
-   for the dark panel it now sits inside. Table structure, rows,
-   and all existing comparison content are completely unchanged —
-   this is colors only.
-   ============================================================ */
-.mh-why-compare-panel .mh-matrix-th-label {
-  color: #FFFFFF;
-}
-.mh-why-compare-panel .mh-matrix-th-legacy,
-.mh-why-compare-panel .mh-matrix-th-platform {
-  color: #94A3B8;
-  background: transparent;
-}
-.mh-why-compare-panel .mh-matrix-row {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-.mh-why-compare-panel .mh-matrix-cell-label {
-  color: #FFFFFF;
-}
-.mh-why-compare-panel .mh-matrix-cell-legacy {
-  color: #7C89A3; /* muted grey/blue, deliberately quieter — "Typical
-    Platforms" per the requested hierarchy, but still legible, not
-    the near-invisible tone from before */
-}
-.mh-why-compare-panel .mh-matrix-cell-platform {
-  color: #FFFFFF;
-  background: rgba(59, 130, 246, 0.08);
-  border-left: 3px solid var(--blue-bright);
-}
-.mh-why-compare-panel .mh-matrix-check {
-  color: #60A5FA; /* bright MedhaIQ blue, clearly visible against navy —
-    darker blues (e.g. #1D4ED8, used in the earlier light-panel version)
-    lose contrast on a dark background */
-}
-.mh-matrix-th-label { font-size: 12px; }
-.mh-matrix-cell { font-size: 13px; padding: 15px 18px; }
-.mh-matrix-cell-platform { font-size: 13px; font-weight: 400; }
-.mh-matrix-check { font-size: 14px; }
-
-/* Manifesto — same floating-panel treatment as the closing card in
-   the reference */
-.mh-why-manifesto { background: #F7F6F2; padding-top: 0; padding-bottom: 64px; }
-.mh-why-manifesto-panel {
-  background: var(--navy-deep);
-  border-radius: 24px;
-  padding: 48px 40px;
-}
-/* 2. Bottommost Manifesto Card Text */
-.mh-why-manifesto-text {
-  font-size: 24px; /* Reduced font size */
-  line-height: 1.6;
-  font-weight: 500;
-  color: #FFFFFF;
-}
-/* ============================================================
-   SCALE-UP PASS (visual review round 3)
-   ------------------------------------------------------------
-   --h2-size (global token, all 15 medhaiq.css pages) caps out at
-   29px — too small for the large editorial headlines these two
-   sections need. Page-scoped override only; the token itself is
-   untouched, so every other page's section titles are unaffected.
-   ============================================================ */
-
-.mh-why-quote-accent { color: var(--royal-blue); }
-
-.mh-why-pillar-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #0B1020;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-  margin: 0 0 14px 0;
-}
-.mh-why-pillar-desc { font-size: 14.5px; line-height: 1.6; }
-.mh-why-pillar-grid { gap: 28px; }
-.mh-why-philosophy .mh-why-narrow { max-width: 900px; }
-
-/* ============================================================
-   TWO-CARD LAYOUT (replaces the split-with-visual composition)
-   ------------------------------------------------------------
-   Matches p.webp: two dark cards side by side on the light page,
-   each self-contained (icon + eyebrow + title + body). Same
-   verbatim copy as before — see why.ejs comments at each usage.
-   The quote/philosophy section becomes a soft pale-lavender card
-   instead of plain white, also per p.webp.
-   ============================================================ */
-
+/* 1. Hero → Problem/Shift (Gap reduced ~28%) */
 .mh-why-twocard {
-  background: #F7F6F2;
-  padding: 56px var(--section-pad-x);
-}
-.mh-why-twocard-grid {
-  max-width: 1280px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  padding-top: 1.75rem;
+  padding-bottom: 1.25rem;
 }
 
-.mh-why-card {
+/* 2. Problem/Shift → Manifesto (Gap reduced ~18%) */
+.mh-why-philosophy {
+  padding-top: 1.0rem;
+  padding-bottom: 1.25rem;
+}
+
+/* 3. Manifesto → Three Pillars (Gap reduced ~18.5%) */
+.mh-why-pillars {
+  padding-top: 1.25rem;
+  padding-bottom: 1.5rem;
+}
+
+/* 5. Three Pillars → Comparison (Gap reduced ~18.5%) */
+.mh-why-compare {
+  padding-top: 1.25rem;
+  padding-bottom: 2.25rem;
+}
+
+/* 6. Normalized Content Width System (1120px unified max-width) */
+.mh-why-twocard-wrapper,
+.mh-why-pillars-inner,
+.mh-matrix-inner {
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mh-why-narrow {
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mh-section-center {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+/* Eyebrows & Section Titles */
+.mh-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2563EB;
+  margin-bottom: 0.375rem;
+}
+
+.mh-why-card-light .mh-eyebrow {
+  font-size: 0.8125rem;
+}
+
+.mh-section-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem 0;
+}
+
+.mh-title-dark {
+  color: #0B1020 !important;
+}
+
+@media (min-width: 768px) {
+  .mh-section-title {
+    font-size: 1.75rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   02 — TOP 2 CARDS (2-COLUMN PARAGRAPH LAYOUT)
+   -------------------------------------------------------------------------- */
+.mh-why-twocard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .mh-why-twocard-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+}
+
+.mh-why-card-light {
   background: #F1F0EB;
   border: 1px solid #E5E3DA;
-  border-radius: 16px;
-  padding: 24px 26px 22px;
+  border-radius: 0.875rem;
+  padding: 1.375rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
+
 .mh-why-card-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 1.5px solid rgba(37, 99, 235, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--royal-blue);
-  margin-bottom: 14px;
+  margin-bottom: 0.75rem;
+  background: #FFFFFF;
+  color: #2563EB;
+  border: 1px solid #CBD5E1;
 }
-.mh-why-card .mh-eyebrow { color: var(--royal-blue); }
-.mh-why-card .mh-section-title {
-  color: #0B1020;
-  font-size: 24px;
-  margin: 6px 0 14px;
-}
-.mh-why-card .mh-why-body { color: #5F6B82; }
-.mh-why-card .mh-why-body-emphasis { color: #0B1020; font-weight: 700; }
 
-.mh-why-quote-card {
-  background: #EEF0FB;
-  border-radius: 20px;
-  padding: 24px 32px;
+.mh-why-card-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0B1020;
+  margin: 0 0 0.875rem 0;
+  letter-spacing: -0.01em;
 }
-/* 1. Quote Box Font Size & Bright Blue Accent */
-.mh-why-quote-card .mh-why-quote {
-  text-align: left;
-  margin: 0 0 12px;
-  font-size: 24px; /* Reduced to match bottommost manifesto text */
-  line-height: 1.5;
+
+.mh-why-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mh-why-card-text {
+  font-size: 1.125rem;
+  line-height: 1.55;
+  color: #5F6B82;
+  margin: 0;
+}
+
+.mh-why-card-text-bold {
   font-weight: 700;
   color: #0B1020;
 }
 
-.mh-why-quote-card .mh-why-body { color: #475569; margin: 0; font-size: 14px; }
-
-.mh-why-quote-accent {
-  color: #2563EB; /* Bright royal blue */
+/* --------------------------------------------------------------------------
+   03 — POSITIONING QUOTE (MANIFESTO — FONT +8% INCREASED)
+   -------------------------------------------------------------------------- */
+.mh-why-quote-card-light {
+  background: #EEF0FB;
+  border: 1px solid #DBEAFE;
+  border-radius: 1rem;
+  padding: 1.75rem 1.75rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
+.mh-quote-mark-icon {
+  display: inline-flex;
+  margin-bottom: 0.5rem;
+  color: #93C5FD;
+}
 
-.mh-why-pillar-card {
+/* Quote title font size increased ~8% (from 1.5rem/1.75rem to 1.625rem/1.9rem) */
+.mh-why-quote-light {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.625rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #0B1020;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.015em;
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  .mh-why-quote-light {
+    font-size: 1.9rem;
+  }
+}
+
+.mh-why-quote-blue {
+  color: #2563EB;
+}
+
+.mh-why-quote-sub-light {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #475569;
+  max-width: 640px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   04 — THREE PILLARS (Efficient Card Space & ~15-20% Larger Visuals)
+   -------------------------------------------------------------------------- */
+.mh-why-pillar-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .mh-why-pillar-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+.mh-why-pillar-card-light {
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
-  border-radius: 20px;
-  padding: 36px 32px 32px;
+  border-radius: 0.875rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.mh-why-pillar-card:hover {
-  border-color: #CBD5E1;
+.mh-why-pillar-card-light:hover {
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.08);
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -16px rgba(11, 16, 32, 0.08);
 }
 
-/* Pillar icons: single consolidated rule (previously three separate,
-   partially-overlapping declarations scattered across this file from
-   earlier rounds — removed for clarity). Brighter and larger per
-   review: bg opacity 12%->20%, icon color darkened to a more
-   saturated blue, size up. */
-/* Pillar Icons: Clean, un-bordered inline icons matching target design */
-.mh-why-pillar-icon {
+.mh-pillar-mini-visual-light {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  background: #FAFAFC;
+  border: 1px solid #F1F5F9;
+  border-radius: 0.625rem;
+  padding: 0.625rem 0.5rem;
+}
+
+.mh-pillar-mini-visual-light svg {
+  max-width: 100%;
+  height: 138px; /* Increased graphic height from 120px to 138px (+15%) */
   width: auto;
-  height: auto;
+}
+
+.mh-why-pillar-title-dark {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #0B1020;
+  margin: 0 0 0.375rem 0;
+  letter-spacing: -0.01em;
+}
+
+.mh-why-pillar-desc-dark {
+  font-size: 0.84375rem;
+  line-height: 1.5;
+  color: #5F6B82;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   05 — COMPARISON MATRIX (DARK PANEL ON LIGHT CANVAS)
+   -------------------------------------------------------------------------- */
+.mh-why-compare-panel-dark {
+  background: var(--navy-deep);
+  border: 1px solid var(--navy-border);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.mh-matrix-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mh-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 640px;
+}
+
+.mh-matrix-th {
+  padding: 0.875rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mh-matrix-th-label {
+  color: #FFFFFF;
+  width: 28%;
+}
+
+.mh-matrix-th-legacy {
+  color: #94A3B8;
+  width: 32%;
+}
+
+.mh-matrix-th-platform {
+  color: #94A3B8;
   background: transparent;
-  border-radius: 0;
-  display: block;
-  font-size: 26px;
-  line-height: 1;
-  color: #3B82F6; /* Bright accent blue */
-  margin-bottom: 24px;
+  width: 40%;
 }
 
-@media (max-width: 900px) {
-  .mh-why-twocard-grid { grid-template-columns: 1fr; }
+.mh-matrix-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* ============================================================
-   FURTHER COMPACTION (page overall too tall / too much empty space)
-   ------------------------------------------------------------
-   Tightens remaining generous gaps without touching --section-pad-y
-   (still a global token — page-scoped overrides only).
-   ============================================================ */
-.mh-why-twocard { padding: 40px var(--section-pad-x); }
-.mh-why-philosophy,
-.mh-why-pillars,
-.mh-why-compare { padding-top: 40px; padding-bottom: 40px; }
-.mh-why-pillar-grid { margin-top: 36px; }
-.mh-matrix-table-wrap { margin-top: 24px; }
-.mh-why-manifesto { padding-bottom: 48px; }
-.mh-why-manifesto-panel { padding: 36px 40px; }
+.mh-matrix-row-last {
+  border-bottom: none;
+}
+
+.mh-matrix-cell {
+  padding: 0.875rem 1.25rem;
+  font-size: 0.84375rem;
+  line-height: 1.5;
+}
+
+.mh-matrix-cell-label {
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.mh-matrix-cell-legacy {
+  color: #7C89A3;
+  font-style: italic;
+}
+
+.mh-matrix-cell-platform {
+  color: #FFFFFF;
+  font-weight: 500;
+  background: rgba(59, 130, 246, 0.08);
+  border-left: 3px solid var(--blue-bright);
+}
+
+.mh-matrix-check-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2563EB;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 800;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-item {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.reveal-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
