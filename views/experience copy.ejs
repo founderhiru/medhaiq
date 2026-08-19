@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Who It's For | MedhaIQ.ai</title>
-  <meta name="description" content="MedhaIQ is designed for scale across every professional horizon — students, early and mid-career professionals, and senior leaders.">
+  <title>The Experience | MedhaIQ.ai</title>
+  <meta name="description" content="What you'll unlock in your first evaluation — 3x AI mock interviews, communication scoring, and a full performance scorecard.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0A0F1E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,33 +13,25 @@
   <link rel="stylesheet" href="/css/medhaiq.css">
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/hero-v2.css">
-   <link rel="stylesheet" href="/css/value-footer.css">
+    <link rel="stylesheet" href="/css/value-footer.css">
   <style>
     /* Hide the entire Final CTA banner (partials/cta-banner.ejs's
        <section class="mh-cta-banner">) on this page only — headline,
        subheadline, button, and blue background area all removed, not
-       just the button. Scoped via .professional-horizons-page on
-       <body> so no other page (including Homepage, which must keep
-       this banner) is affected. cta-banner.ejs itself is not modified. */
-        .professional-horizons-page .mh-cta-banner { display: none; }
-
-    .professional-horizons-page .mh-audience { background: #F7F6F2; }
-    .professional-horizons-page .mh-section-title { color: #0B1020; }
-    .professional-horizons-page .mh-section-sub { color: #5F6B82; }
-    .professional-horizons-page .mh-audience-card { background: #F1F0EB; border-color: #E5E3DA; }
-    .professional-horizons-page .mh-audience-card:hover { border-color: #D6DAE0; }
-    .professional-horizons-page .mh-audience-name { color: #0B1020; }
-    .professional-horizons-page .mh-audience-desc { color: #5F6B82; }
+       just the button. Scoped via .experience-page on <body> so no
+       other page (including Homepage, which must keep this banner) is
+       affected. cta-banner.ejs itself is not modified. */
+    .experience-page .mh-cta-banner { display: none; }
   </style>
 </head>
-<body class="professional-horizons-page">
+<body class="experience-page">
   <%- include('partials/header') %>
 
-  <!-- No separate page hero here on purpose: partials/audience.ejs already
-       carries its own eyebrow ("Built for Everyone"), heading, and subtitle —
+  <!-- No separate page hero here on purpose: partials/experience.ejs already
+       carries its own eyebrow ("THE EXPERIENCE"), heading, and subtitle —
        adding another hero above it would duplicate that title verbatim.
        Reused exactly as it rendered on the homepage. -->
-  <%- include('partials/audience') %>
+  <%- include('partials/experience') %>
 
   <%- include('partials/cta-banner') %>
   <%- include('partials/footer') %>
