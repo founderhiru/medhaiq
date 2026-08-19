@@ -1,0 +1,119 @@
+<!--
+  views/partials/contact-modal.ejs
+  Extracted verbatim from views/layout.ejs (the "Contact Form Modal"
+  block + its wiring script). Markup, copy, and behavior are byte-for-byte
+  identical to what has always shipped on the homepage — nothing here was
+  redesigned or rewritten.
+
+  Why this exists: views/partials/footer.ejs renders the "Contact" button
+  (#mh-contact-btn) and is included on 14 pages, but this modal + its
+  click listener previously lived only inline in layout.ejs. Only the
+  homepage renders through layout.ejs, so the other 13 pages had the
+  button with no listener attached — clicking it did nothing. Any
+  template that includes partials/footer should also include this
+  partial, right after the footer include.
+-->
+<!-- Contact Form Modal -->
+<div class="mh-contact-modal-overlay" id="mh-contact-modal" style="display:none">
+  <div class="mh-contact-modal">
+    <button class="mh-contact-modal-close" id="mh-contact-close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="mh-contact-modal-title">Get in touch</div>
+    <div class="mh-contact-modal-sub">We'll get back to you within 1 business day.</div>
+    <div class="mh-contact-success" id="mh-contact-success" style="display:none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <span>Message sent! We'll be in touch soon.</span>
+    </div>
+    <form class="mh-contact-form" id="mh-contact-form">
+      <div class="mh-contact-field">
+        <label for="ct-name">Name <span>*</span></label>
+        <input type="text" id="ct-name" placeholder="Your name" required autocomplete="name">
+      </div>
+      <div class="mh-contact-field">
+        <label for="ct-email">Email <span>*</span></label>
+        <input type="email" id="ct-email" placeholder="you@company.com" required autocomplete="email">
+      </div>
+      <div class="mh-contact-field">
+        <label for="ct-message">Message <span>*</span></label>
+        <textarea id="ct-message" placeholder="How can we help?" required rows="4"></textarea>
+      </div>
+      <button type="submit" class="mh-contact-submit" id="mh-contact-submit">Send Message</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function() {
+  var contactBtn = document.getElementById('mh-contact-btn');
+  var contactModal = document.getElementById('mh-contact-modal');
+  var contactClose = document.getElementById('mh-contact-close');
+  var contactForm = document.getElementById('mh-contact-form');
+  var contactSuccess = document.getElementById('mh-contact-success');
+  var contactSubmit = document.getElementById('mh-contact-submit');
+
+  if (contactBtn && contactModal) {
+    contactBtn.addEventListener('click', function() {
+      contactModal.style.display = 'flex';
+      contactForm.style.display = 'flex';
+      if (contactSuccess) contactSuccess.style.display = 'none';
+    });
+  }
+  if (contactClose) {
+    contactClose.addEventListener('click', function() {
+      contactModal.style.display = 'none';
+    });
+  }
+  if (contactModal) {
+    contactModal.addEventListener('click', function(e) {
+      if (e.target === contactModal) contactModal.style.display = 'none';
+    });
+  }
+  if (contactForm) {
+    contactForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      contactSubmit.disabled = true;
+      contactSubmit.textContent = 'Sending...';
+      var name = document.getElementById('ct-name').value.trim();
+      var email = document.getElementById('ct-email').value.trim();
+      var message = document.getElementById('ct-message').value.trim();
+      if (!name || !email || !message) {
+        contactSubmit.disabled = false;
+        contactSubmit.textContent = 'Send Message';
+        return;
+      }
+      try {
+        var res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name, email: email, message: message })
+        });
+        var json = await res.json();
+        if (json.success) {
+          contactForm.style.display = 'none';
+          contactForm.reset();
+          contactSubmit.disabled = false;
+          contactSubmit.textContent = 'Send Message';
+          if (contactSuccess) {
+            contactSuccess.style.display = 'flex';
+            setTimeout(function() { contactModal.style.display = 'none'; }, 3000);
+          }
+        } else {
+          contactSubmit.disabled = false;
+          contactSubmit.textContent = 'Send Message';
+          alert(json.error || 'Failed to send message. Please try again.');
+        }
+      } catch(err) {
+        contactSubmit.disabled = false;
+        contactSubmit.textContent = 'Send Message';
+        alert('Network error. Please try again.');
+      }
+    });
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && contactModal && contactModal.style.display === 'flex') {
+      contactModal.style.display = 'none';
+    }
+  });
+})();
+</script>
