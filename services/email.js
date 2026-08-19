@@ -334,4 +334,128 @@ async function sendContactFormEmail({ name, email, message }) {
   await _send({ to: SUPPORT_EMAIL, subject, html, replyTo: email });
 }
 
-module.exports = { sendMagicLinkEmail, sendVerificationEmail, sendInterviewReportEmail, sendContactFormEmail };
+/* ── Founder notifications (post-launch monitoring) ─────────────────────── */
+// Two lightweight, fire-and-forget notifications to the founder's own
+// inbox — new signup, new purchase. Recipient is read ONLY from
+// process.env.FOUNDER_NOTIFICATION_EMAIL (never hardcoded), and reuses
+// the exact same Resend `_send()` every other email in this file goes
+// through — no new provider, no new infra.
+//
+// FIRE-AND-FORGET CONTRACT (same shape as services/activity-logger.js's
+// logUserActivity — the existing convention this codebase already uses
+// for "never let this break the real feature"): these two functions are
+// deliberately NOT `async` from the caller's perspective. Each kicks off
+// the actual send and attaches its own `.catch()` right here, then
+// returns immediately. Callers in routes/auth.js and routes/stripe.js
+// call these plainly, without `await` and without their own try/catch —
+// a Resend failure (missing key, network error, 4xx/5xx) can never
+// propagate back into the signup response or the Stripe webhook
+// handler. If FOUNDER_NOTIFICATION_EMAIL isn't configured, this logs a
+// warning and no-ops, exactly like _send()'s existing RESEND_API_KEY
+// fallback.
+function _founderRecipient() {
+  const to = process.env.FOUNDER_NOTIFICATION_EMAIL || '';
+  if (!to) {
+    console.warn('[email] FOUNDER_NOTIFICATION_EMAIL not configured — founder notification skipped');
+    return null;
+  }
+  return to;
+}
+
+function sendFounderSignupNotification({ name, email, signupMethod, createdAt }) {
+  const to = _founderRecipient();
+  if (!to) return;
+
+  const displayName = (name && name.trim()) ? name.trim() : email;
+  const timestamp = (createdAt instanceof Date ? createdAt : new Date()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+  const dashboardUrl = `${APP_URL}/founder`;
+
+  const subject = `🎉 New MedhaIQ signup — ${displayName}`;
+  const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>${subject}</title></head>
+<body style="margin:0;padding:0;background:#F7F8F6;font-family:'Inter',system-ui,sans-serif;">
+  <div style="max-width:480px;margin:32px auto;background:#FFFFFF;border-radius:12px;overflow:hidden;border:1px solid #E3E6EC;">
+    <div style="padding:24px 32px;border-bottom:1px solid #E3E6EC;">
+      <span style="font-size:16px;font-weight:800;color:#1B2130;">Medha<span style="color:#2554C7;">IQ</span></span>
+      <span style="color:#64748B;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-left:8px;">Founder Notification</span>
+    </div>
+    <div style="padding:28px 32px;">
+      <h2 style="color:#1B2130;margin:0 0 18px;font-size:18px;font-weight:700;">🎉 New signup</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;color:#3A4150;">
+        <tr><td style="padding:6px 0;color:#64748B;width:110px;">Name</td><td style="padding:6px 0;font-weight:600;">${displayName}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748B;">Email</td><td style="padding:6px 0;font-weight:600;">${email}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748B;">Package</td><td style="padding:6px 0;font-weight:600;">Explorer</td></tr>
+        <tr><td style="padding:6px 0;color:#64748B;">Signed up</td><td style="padding:6px 0;">${timestamp}</td></tr>
+        ${signupMethod ? `<tr><td style="padding:6px 0;color:#64748B;">Method</td><td style="padding:6px 0;">${signupMethod}</td></tr>` : ''}
+      </table>
+      <div style="margin-top:24px;">
+        <a href="${dashboardUrl}" style="display:inline-block;background:#2554C7;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;">Open Founder Dashboard →</a>
+      </div>
+    </div>
+  </div>
+</body></html>`;
+
+  _send({ to, subject, html }).catch(err => {
+    console.error('[email] founder signup notification failed (non-fatal):', err.message);
+  });
+}
+
+function sendFounderPurchaseNotification({
+  name, email, packageId, packageLabel, includedMinutes,
+  amountTotal, currency, purchaseReference, purchasedAt, expiresAt,
+}) {
+  const to = _founderRecipient();
+  if (!to) return;
+
+  const displayName = (name && name.trim()) ? name.trim() : email;
+  const timestamp = (purchasedAt instanceof Date ? purchasedAt : new Date()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+  const dashboardUrl = `${APP_URL}/founder`;
+  // amountTotal is the smallest currency unit (Stripe convention — paise/
+  // cents); divide by 100 for display only. No card, method, or other
+  // payment-instrument detail is included — amount + currency only.
+  const amountDisplay = typeof amountTotal === 'number'
+    ? `${(currency || '').toUpperCase()} ${(amountTotal / 100).toFixed(2)}`
+    : 'N/A';
+  const label = packageLabel || packageId;
+
+  const subject = `💳 New MedhaIQ purchase — ${label} — ${amountDisplay}`;
+  const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>${subject}</title></head>
+<body style="margin:0;padding:0;background:#F7F8F6;font-family:'Inter',system-ui,sans-serif;">
+  <div style="max-width:480px;margin:32px auto;background:#FFFFFF;border-radius:12px;overflow:hidden;border:1px solid #E3E6EC;">
+    <div style="padding:24px 32px;border-bottom:1px solid #E3E6EC;">
+      <span style="font-size:16px;font-weight:800;color:#1B2130;">Medha<span style="color:#2554C7;">IQ</span></span>
+      <span style="color:#64748B;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-left:8px;">Founder Notification</span>
+    </div>
+    <div style="padding:28px 32px;">
+      <h2 style="color:#1B2130;margin:0 0 18px;font-size:18px;font-weight:700;">💳 New purchase</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;color:#3A4150;">
+        <tr><td style="padding:6px 0;color:#64748B;width:110px;">Name</td><td style="padding:6px 0;font-weight:600;">${displayName}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748B;">Email</td><td style="padding:6px 0;font-weight:600;">${email}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748B;">Package</td><td style="padding:6px 0;font-weight:600;">${label}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748B;">AI minutes</td><td style="padding:6px 0;">${includedMinutes != null ? includedMinutes : 'N/A'}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748B;">Amount</td><td style="padding:6px 0;font-weight:600;">${amountDisplay}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748B;">Reference</td><td style="padding:6px 0;">${purchaseReference || 'N/A'}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748B;">Purchased</td><td style="padding:6px 0;">${timestamp}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748B;">Expires</td><td style="padding:6px 0;">${expiresAt ? new Date(expiresAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) : 'No expiry'}</td></tr>
+      </table>
+      <div style="margin-top:24px;">
+        <a href="${dashboardUrl}" style="display:inline-block;background:#2554C7;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;">Open Founder Dashboard →</a>
+      </div>
+    </div>
+  </div>
+</body></html>`;
+
+  _send({ to, subject, html }).catch(err => {
+    console.error('[email] founder purchase notification failed (non-fatal):', err.message);
+  });
+}
+
+module.exports = {
+  sendMagicLinkEmail,
+  sendVerificationEmail,
+  sendInterviewReportEmail,
+  sendContactFormEmail,
+  sendFounderSignupNotification,
+  sendFounderPurchaseNotification,
+};

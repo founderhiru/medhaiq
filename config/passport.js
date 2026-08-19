@@ -27,7 +27,13 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
         await ensureUserBootstrap(user.id);
       }
 
-      return done(null, { id: user.id, email: user.email, name: user.name });
+      // isNewUser is additive here — passed through so the one-time call
+      // in routes/auth.js's /google/callback (founder signup notification)
+      // knows whether this is a genuine new account vs. a returning
+      // user's login, without a second DB lookup. Does not touch
+      // serializeUser/deserializeUser below, so session storage and every
+      // later request's req.user shape are unchanged.
+      return done(null, { id: user.id, email: user.email, name: user.name, isNewUser });
     } catch (err) {
       console.error('[passport] Google verify error:', err);
       return done(err);

@@ -42,6 +42,8 @@ const { createPackageAcquisition, getActivePackageAcquisition } = require('../db
 const { PRODUCT_PACKAGES, PACKAGE_TIER_RANK } = require('../config/product-packages');
 const { plans: PRICING_PLANS } = require('../config/pricing');
 const { resolveMarket } = require('../lib/pricing-market');
+const { getUserById } = require('../db/auth');
+const { sendFounderPurchaseNotification } = require('../services/email');
 
 // Explicit whitelist — the ONLY package IDs Stripe checkout will ever
 // create a session for or grant from. Adding a package to this list is
@@ -415,7 +417,7 @@ async function handleCheckoutCompleted(session) {
     // Leadership once) have two different session ids and both grant
     // normally; only a *repeated* delivery for the *same* session id is
     // ever treated as a duplicate.
-    await createPackageAcquisition({
+    const acquisitionRow = await createPackageAcquisition({
       userId: Number(userId),
       packageId,
       expiresAt,
@@ -424,6 +426,37 @@ async function handleCheckoutCompleted(session) {
       initialMinutes: includedMinutes,
     });
     console.log(`[stripe] granted ${packageId} package to user ${userId} (session ${session.id})`);
+
+    // Founder notification — only reached after a genuinely NEW,
+    // successfully-inserted acquisition row (the try block above throws
+    // on a duplicate session, caught below, which returns before this
+    // line ever runs — no notification on a retried/duplicate webhook).
+    // Fire-and-forget: sendFounderPurchaseNotification() attaches its
+    // own .catch() internally, so a delivery failure here can never turn
+    // into a webhook 500 (which would otherwise trigger a Stripe retry
+    // of an already-successful grant).
+    //
+    // Name/email come from the canonical users table (not
+    // session.customer_details), per the same "package_acquisitions /
+    // users table = source of truth" principle used everywhere else in
+    // this codebase.
+    getUserById(Number(userId)).then((user) => {
+      const plan = PRICING_PLANS.find((p) => p.id === packageId);
+      sendFounderPurchaseNotification({
+        name: user && user.name,
+        email: user ? user.email : null,
+        packageId,
+        packageLabel: plan && plan.title,
+        includedMinutes,
+        amountTotal: session.amount_total,
+        currency: session.currency,
+        purchaseReference: session.id,
+        purchasedAt: new Date(),
+        expiresAt: acquisitionRow && acquisitionRow.expires_at,
+      });
+    }).catch(err => {
+      console.error('[stripe] founder purchase notification lookup failed (non-fatal):', err && err.message);
+    });
   } catch (err) {
     // Postgres unique_violation on the partial index = this session was
     // already processed by an earlier webhook delivery. Not an error —

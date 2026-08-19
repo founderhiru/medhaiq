@@ -9,7 +9,7 @@ const {
 const { acceptInvitation } = require('../db/invitations');
 const { ensureUserBootstrap } = require('../db/profile-bootstrap');
 const { logUserActivity } = require('../services/activity-logger');
-const { sendMagicLinkEmail, sendVerificationEmail } = require('../services/email');
+const { sendMagicLinkEmail, sendVerificationEmail, sendFounderSignupNotification } = require('../services/email');
 // Anti-Abuse & Free-Offer Guardrail
 const { grantWelcomeOfferIfEligible } = require('../services/free-offer-guardrail');
 const { authLimiter } = require('../middleware/rate-limit');
@@ -82,6 +82,14 @@ router.get('/google/callback',
       sameSite: 'lax',
     });
     logUserActivity({ userId: req.user.id, action: 'login_google', page: '/auth/google/callback', req });
+    // Founder notification — genuinely new accounts only (isNewUser is
+    // passed through from config/passport.js's verify callback above).
+    // Fire-and-forget: sendFounderSignupNotification() attaches its own
+    // .catch() internally, so a delivery failure here can never affect
+    // this login/signup response.
+    if (req.user.isNewUser) {
+      sendFounderSignupNotification({ name: req.user.name, email: req.user.email, signupMethod: 'Google OAuth' });
+    }
     // Google has already confirmed this address — this call flips
     // email_verified and, on a first-time flip, attempts the Welcome
     // Offer grant. See handleFirstVerification's own comment.
@@ -110,6 +118,10 @@ router.post('/login', authLimiter, async (req, res) => {
     if (isNewUser) {
       await acceptInvitation(cleanEmail);
       await ensureUserBootstrap(user.id);
+      // Founder notification — new account only, never on a returning
+      // user's magic-link request. Fire-and-forget (see comment on the
+      // Google callback above).
+      sendFounderSignupNotification({ name: user.name, email: user.email, signupMethod: 'Magic link' });
     }
 
     const token = await createToken(user.id, 1);
@@ -176,6 +188,11 @@ router.post('/signup', authLimiter, async (req, res) => {
 
     await acceptInvitation(cleanEmail);
     await ensureUserBootstrap(user.id);
+    // Founder notification — createUserWithPassword() above throws if the
+    // email already exists, so reaching this line means the account is
+    // guaranteed new. Fire-and-forget (see comment on the Google callback
+    // above).
+    sendFounderSignupNotification({ name: user.name, email: user.email, signupMethod: 'Password' });
 
     res.cookie('user_id', user.id, {
       httpOnly: true,
