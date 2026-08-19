@@ -95,6 +95,7 @@ app.use('/api',            require('./routes/vapi-silent-model')); // tts_pipeli
 app.use('/api/voice',      require('./routes/voice-tts'));   // PR3: ElevenLabs proxy, requireAuth-gated
 app.use('/debug/voice',    require('./routes/debug-voice')); // PR3: internal diagnostic page, requireFounder-gated
 app.use('/api/debug/elevenlabs/voices', require('./routes/debug-elevenlabs-voices')); // TEMPORARY -- delete once a working voice is identified
+app.use('/api/presence',   require('./routes/presence')); // lightweight Online Now heartbeat, see db/presence.js
 app.use('/api/stripe',     require('./routes/stripe').router); // Sandbox/staging checkout only — webhook is mounted separately above, pre-express.json()
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
@@ -452,6 +453,7 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
 
     const { PERSONAS } = require('./services/interview');
     const { buildCareerIntelligenceReport } = require('./lib/career-intelligence-report');
+    const { shouldShowFeedbackPrompt } = require('./db/feedback');
     const persona = PERSONAS[report.persona_id] || PERSONAS.alex_chen;
     const scoresData = await getSessionScores(req.params.id);
     // Added for Step 3 (docs/MEDHAIQ_REPORTING_DESIGN_V1.md) — the canonical
@@ -531,6 +533,17 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
 
     res.render('interview-report', {
       report,
+      // Feedback prompt (Founder Dashboard Part 1) — the widget and its
+      // API already existed; this route simply never set the one flag
+      // that turns it on. shouldShowFeedbackPrompt (db/feedback.js,
+      // unchanged) already encodes the 30-day submitted/dismissed
+      // suppression — nothing new decided here.
+      showFeedbackPrompt: await shouldShowFeedbackPrompt(req.user.id),
+      // Interview/session identifier for tying feedback to the specific
+      // interview it was about (Part 2) — req.params.id is already the
+      // session id this whole route loads everything else by
+      // (getSessionScores/getSessionQuestions above use the same value).
+      sessionId: req.params.id,
       // Web report header simplification — candidate identity, sourced
       // exactly like the PDF route already does (req.user.name = the
       // logged-in candidate's own account, never persona data). PDF and
@@ -847,11 +860,13 @@ app.get('/founder', requireFounderPage, async (req, res) => {
     const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, getFounderAlerts } = require('./db/founder-stats');
     const { getFeedbackSummary, getRecentFeedback } = require('./db/founder-feedback');
     const { listUsers } = require('./db/founder-users');
+    const { getActivePackageAcquisitionsForUsers } = require('./db/package-acquisitions');
+    const { getOnlineUsers } = require('./db/presence');
     const { PRODUCT_PACKAGES } = require('./config/product-packages');
 
-    // All six sections' data depend only on shared, already-committed
+    // All sections' data depend only on shared, already-committed
     // database state, not on each other's results — fetched in parallel.
-    const [stats, activity, betaOverview, alerts, feedbackSummary, recentFeedback, users] = await Promise.all([
+    const [stats, activity, betaOverview, alerts, feedbackSummary, recentFeedback, users, onlineUsersRaw] = await Promise.all([
       getOverviewStats(),
       getRecentActivity(),
       getBetaAndSubscriptionOverview(),
@@ -859,7 +874,13 @@ app.get('/founder', requireFounderPage, async (req, res) => {
       getFeedbackSummary(),
       getRecentFeedback(),
       listUsers(),
+      getOnlineUsers(),
     ]);
+
+    // Package for each online user — same resolver everywhere else in the
+    // app uses, not re-derived here.
+    const onlinePackageMap = await getActivePackageAcquisitionsForUsers(onlineUsersRaw.map(u => u.user_id));
+    const onlineUsers = onlineUsersRaw.map(u => ({ ...u, package_id: onlinePackageMap[u.user_id] || 'explorer' }));
 
     res.render('founder-dashboard', {
       stats,
@@ -869,6 +890,7 @@ app.get('/founder', requireFounderPage, async (req, res) => {
       feedbackSummary,
       recentFeedback,
       users,
+      onlineUsers,
       // "Manage Package" dropdown source — Object.keys() preserves
       // config/product-packages.js's own definition order (explorer,
       // growth, leadership), so adding a future package there is the
@@ -882,6 +904,32 @@ app.get('/founder', requireFounderPage, async (req, res) => {
     });
   } catch (err) {
     console.error('[founder] dashboard render error:', err);
+    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
+  }
+});
+
+// GET /founder/feedback — paginated "View All Feedback", reusing the
+// existing getRecentFeedback(limit, offset) exactly as it was already
+// built (limit/offset params existed unused until now) and the existing
+// views/founder-feedback-all.ejs (existed unused until now). No new
+// query, no new template — this route is the only missing piece.
+app.get('/founder/feedback', requireFounderPage, async (req, res) => {
+  try {
+    const { getRecentFeedback } = require('./db/founder-feedback');
+    const PAGE_SIZE = 20;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    // Fetch one extra row to know whether an "Older →" page exists,
+    // without a separate COUNT(*) query.
+    const rows = await getRecentFeedback(PAGE_SIZE + 1, (page - 1) * PAGE_SIZE);
+    const hasNextPage = rows.length > PAGE_SIZE;
+    res.render('founder-feedback-all', {
+      feedback: rows.slice(0, PAGE_SIZE),
+      page,
+      hasNextPage,
+      shellUser: req.user,
+    });
+  } catch (err) {
+    console.error('[founder] feedback page error:', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });

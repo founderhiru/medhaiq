@@ -10,13 +10,13 @@ const { requireAuth } = require('../middleware/guards');
 // POST /api/feedback — submit a rating (1-5), optional short comment, and
 // an optional feature tag (which part of the app triggered the prompt).
 router.post('/', requireAuth, async (req, res) => {
-  const { rating, comment, feature, sessionId } = req.body || {};
+  const { rating, comment, feature } = req.body || {};
   const numericRating = Number(rating);
   if (!numericRating || numericRating < 1 || numericRating > 5) {
     return res.status(400).json({ error: 'A rating from 1 to 5 is required' });
   }
   try {
-    await submitFeedback({ userId: req.user.id, rating: numericRating, comment: comment || '', feature: feature || null, sessionId: sessionId || null, req });
+    await submitFeedback({ userId: req.user.id, rating: numericRating, comment: comment || '', feature: feature || null, req });
     return res.json({ success: true });
   } catch (err) {
     console.error('[feedback] submit error:', err);

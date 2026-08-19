@@ -5,6 +5,7 @@
    so new/removed backend fields never break this view. */
 const kpiConfig = [
   { key: 'totalUsers', title: 'Total Users', icon: 'users', accent: 'blue' },
+  { key: 'onlineNow', title: 'Online Now', icon: 'person', accent: 'green' },
   { key: 'activeUsersToday', title: 'Active Users Today', icon: 'person', accent: 'green' },
   { key: 'newBetaSignupsToday', title: 'New Beta Signups', icon: 'sparkle', accent: 'cyan' },
   { key: 'paidSubscribers', title: 'Paid Subscribers', icon: 'check', accent: 'gold' },
@@ -42,6 +43,7 @@ const _plans = Array.isArray(_betaOverview.plans) ? _betaOverview.plans : [];
 const _feedbackSummary = typeof feedbackSummary !== 'undefined' && feedbackSummary ? feedbackSummary : { total: 0, averageRating: null, newThisWeek: 0 };
 const _recentFeedback = typeof recentFeedback !== 'undefined' && recentFeedback ? recentFeedback : [];
 const _alerts = typeof alerts !== 'undefined' && alerts ? alerts : {};
+const _onlineUsers = typeof onlineUsers !== 'undefined' && Array.isArray(onlineUsers) ? onlineUsers : [];
 // NOTE: dates are deliberately NOT formatted here. This template renders on
 // the server (Render runs in UTC), but the person viewing this page is in
 // their own local timezone — formatting server-side would silently show
@@ -111,20 +113,56 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
   </div>
 </div>
 
+<!-- Who's Online Now — presence, db/presence.js. Placed immediately after
+     the Executive Snapshot per approved layout: KPIs give the numbers,
+     this gives the "is anyone actually here right now" detail. Empty
+     state shown when no one has a heartbeat inside the online window. -->
+<div class="fdash-section">
+  <div class="fdash-section-header">
+    <div class="fdash-section-title">🟢 Who's Online Now</div>
+  </div>
+  <% if (_onlineUsers.length === 0) { %>
+  <p class="fdash-activity-empty">No one is online right now.</p>
+  <% } else { %>
+  <table class="fdash-activity-table">
+    <thead>
+      <tr><th>Name</th><th>Package</th><th>Activity</th><th>Last Active</th></tr>
+    </thead>
+    <tbody id="fdash-online-body">
+      <% _onlineUsers.forEach(function(u) { %>
+      <tr>
+        <td class="fdash-user"><%= u.name || u.email %></td>
+        <td><span class="shell-package-pill pill-<%= u.package_id %>"><%= _pkgBadge(u.package_id) %></span></td>
+        <td><%= u.current_activity || 'Browsing' %></td>
+        <td class="fdash-ts" data-iso="<%= toISO(u.last_seen_at) %>" data-empty-text="just now"></td>
+      </tr>
+      <% }); %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
+
 <!-- Section 4 — Beta & Subscription Overview -->
 <div class="fdash-section">
   <div class="fdash-section-header">
     <div class="fdash-section-title">Beta & Subscription Overview</div>
   </div>
-  <p class="fdash-beta-note">These beta counts come from approvals via Quick Actions → "Add to Beta Allowlist" — separate from the "New Beta Signups" KPI above, which counts the public waitlist form on the marketing site. The two won't always match, and that's expected.</p>
+  <!-- The beta gate has been permanently removed (db/invitations.js —
+       getValidInvitation is no longer called anywhere on the auth path).
+       These two counts are therefore explicitly labeled Historical: they
+       record who was invited/approved before the gate came out, not
+       current pending/active beta users. Nothing here is deleted — same
+       query, same invitations data, only the presentation changed so
+       it's never mistaken for a live access metric. -->
+  <p class="fdash-beta-note">The beta gate has been removed — MedhaIQ is open. These two counts are historical records from when beta approval was required; they no longer reflect current access.</p>
   <div class="fdash-beta-grid">
     <div class="fdash-mini-card">
       <div class="fdash-mini-value"><%= _beta.pending || 0 %></div>
-      <div class="fdash-mini-title">Beta Pending</div>
+      <div class="fdash-mini-title">Historical Beta Requests</div>
     </div>
     <div class="fdash-mini-card">
       <div class="fdash-mini-value"><%= _beta.accepted || 0 %></div>
-      <div class="fdash-mini-title">Beta Accepted</div>
+      <div class="fdash-mini-title">Historical Beta Accepted</div>
     </div>
     <% if (_plans.length === 0) { %>
     <div class="fdash-mini-card fdash-mini-empty">
@@ -158,7 +196,7 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
           <tr>
             <td class="fdash-ts" data-iso="<%= toISO(a.created_at) %>"></td>
             <td class="fdash-user"><%= a.user_name || a.user_email || 'Unknown' %></td>
-            <td><%= a.action || '—' %><%= a.feature ? (' · ' + a.feature) : '' %></td>
+            <td><%= a.activityLabel || a.action || '—' %><%= a.feature ? (' · ' + a.feature) : '' %></td>
           </tr>
           <% }); %>
         </tbody>
@@ -202,13 +240,15 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
             <div class="fdash-fb-item-top">
               <span class="fdash-fb-stars"><%= f.rating ? '★'.repeat(f.rating) + '☆'.repeat(5 - f.rating) : 'No rating' %></span>
               <span class="fdash-fb-user"><%= f.userName %></span>
+              <span class="fdash-ts" data-iso="<%= toISO(f.createdAt) %>" data-empty-text="—" style="margin-left:auto; font-size:11px; color:var(--dim);"></span>
             </div>
             <% if (f.comment) { %><div class="fdash-fb-comment"><%= f.comment.slice(0, 100) %></div><% } %>
+            <% if (f.interviewSessionId) { %><div style="font-size:11px; color:var(--dim); margin-top:4px;">Re: interview #<%= f.interviewSessionId %></div><% } %>
           </div>
           <% }); %>
         </div>
       <% } %>
-      <button type="button" class="fdash-fb-view-all" disabled title="Coming soon">View All Feedback</button>
+      <a href="/founder/feedback" class="fdash-fb-view-all" style="display:block; text-align:center; text-decoration:none; box-sizing:border-box;">View All Feedback</a>
     </div>
 
     <!-- Right column: Founder Alerts -->
@@ -454,6 +494,30 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
       } catch (e) { /* silent — next tick will retry */ }
     }
 
+    async function refreshOnlineUsers() {
+      try {
+        const res = await fetch('/api/founder/online-users');
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('fdash-online-body');
+        if (!tbody || !data.onlineUsers) return;
+        if (data.onlineUsers.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="fdash-activity-empty">No one is online right now.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.onlineUsers.map(function (u) {
+          const name = escapeHtml(u.name || u.email);
+          const packageId = u.package_id || 'explorer';
+          const packageBadge = escapeHtml(pkgBadge(packageId));
+          const activity = escapeHtml(u.current_activity || 'Browsing');
+          const lastActive = escapeHtml(fmtDT(u.last_seen_at) || 'just now');
+          return '<tr><td class="fdash-user">' + name + '</td>' +
+            '<td><span class="shell-package-pill pill-' + packageId + '">' + packageBadge + '</span></td>' +
+            '<td>' + activity + '</td><td>' + lastActive + '</td></tr>';
+        }).join('');
+      } catch (e) { /* silent — next tick will retry */ }
+    }
+
     async function refreshActivity() {
       try {
         const res = await fetch('/api/founder/activity');
@@ -464,7 +528,7 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
         tbody.innerHTML = data.activity.map(function (a) {
           const time = escapeHtml(fmtDT(a.created_at));
           const user = escapeHtml(a.user_name || a.user_email || 'Unknown');
-          const act = escapeHtml((a.action || '—') + (a.feature ? (' · ' + a.feature) : ''));
+          const act = escapeHtml((a.activityLabel || a.action || '—') + (a.feature ? (' · ' + a.feature) : ''));
           return '<tr><td>' + time + '</td><td class="fdash-user">' + user + '</td><td>' + act + '</td></tr>';
         }).join('');
       } catch (e) { /* silent — next tick will retry */ }
@@ -488,8 +552,7 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
           const packageBadge = escapeHtml(pkgBadge(packageId));
           // Same rule as the server-rendered row: package_acquisitions
           // (via packageId, already resolved server-side) is the source
-          // of truth, not the legacy subscription_status field. Explorer
-          // stays Free / Trial; growth/leadership read as Paid.
+          // of truth, not the legacy subscription_status field.
           const status = packageId !== 'explorer' ? 'Paid' : 'Free / Trial';
           const lastLogin = escapeHtml(fmtDT(u.last_login) || 'Never logged in');
           const userNameAttr = escapeHtml(u.name || u.email);
@@ -733,7 +796,7 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
       });
     }
 
-    setInterval(function () { refreshOverview(); refreshActivity(); }, 45000);
+    setInterval(function () { refreshOverview(); refreshOnlineUsers(); refreshActivity(); }, 45000);
   })();
 </script>
 

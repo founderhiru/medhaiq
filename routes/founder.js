@@ -101,6 +101,23 @@ router.get('/activity', requireFounder, async (_req, res) => {
   }
 });
 
+// GET /api/founder/online-users — "Who's Online Now" auto-refresh.
+// Package resolved via the same shared getActivePackageAcquisitionsForUsers
+// every other package display in this app uses — not re-derived here.
+router.get('/online-users', requireFounder, async (_req, res) => {
+  try {
+    const { getOnlineUsers } = require('../db/presence');
+    const { getActivePackageAcquisitionsForUsers } = require('../db/package-acquisitions');
+    const raw = await getOnlineUsers();
+    const packageMap = await getActivePackageAcquisitionsForUsers(raw.map(u => u.user_id));
+    const onlineUsers = raw.map(u => ({ ...u, package_id: packageMap[u.user_id] || 'explorer' }));
+    return res.json({ onlineUsers });
+  } catch (err) {
+    console.error('[founder] online-users error:', err);
+    return res.status(500).json({ error: 'Failed to load online users' });
+  }
+});
+
 // GET /api/founder/users — Section 3 User Management (searchable list)
 router.get('/users', requireFounder, async (req, res) => {
   try {

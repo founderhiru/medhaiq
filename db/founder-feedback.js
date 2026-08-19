@@ -45,6 +45,11 @@ async function getRecentFeedback(limit = 5, offset = 0) {
     rating: row.metadata && row.metadata.rating != null ? row.metadata.rating : null,
     comment: (row.metadata && row.metadata.comment) || '',
     feature: (row.metadata && row.metadata.feature) || null,
+    // Ties this feedback back to the specific interview it was about
+    // (Part 2) — null for older feedback rows submitted before this
+    // field existed, or from any future trigger point that doesn't have
+    // a session to attach (e.g. general product feedback).
+    interviewSessionId: (row.metadata && row.metadata.interview_session_id) || null,
   }));
 }
 

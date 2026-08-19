@@ -7,8 +7,9 @@ const { pool } = require('./index');
 // the existing config-driven kpiConfig array, fetch, and auto-refresh in
 // views/founder-dashboard.ejs with zero new front-end code.
 const { getFreeOfferOverview } = require('./free-offer-claims');
+const { getOnlineUsersCount } = require('./presence');
 
-// Section 1 — Executive Snapshot (6 KPI cards + 3 free-offer guardrail counters).
+// Section 1 — Executive Snapshot (7 KPI cards + 3 free-offer guardrail counters).
 async function getOverviewStats() {
   const [
     totalUsers,
@@ -18,6 +19,7 @@ async function getOverviewStats() {
     interviewsCompleted,
     reportsGenerated,
     freeOffer,
+    onlineNow,
   ] = await Promise.all([
     pool.query('SELECT COUNT(*)::int AS count FROM users'),
     pool.query(
@@ -32,12 +34,11 @@ async function getOverviewStats() {
     // is the source of truth here, NOT users.subscription_status/plan.
     // Those legacy columns are never written to by the real purchase flow
     // (routes/stripe.js's createPackageAcquisition only ever touches
-    // package_acquisitions/credit_ledger), which is exactly why a
-    // genuinely paying customer could show 0 here before this fix.
-    // Explorer's 30-minute welcome grant is deliberately excluded — only
-    // a paid package_id counts as a subscriber. COUNT(DISTINCT user_id)
-    // so a user with more than one acquisition (e.g. a package plus a
-    // Buy More Minutes top-up) is never counted twice.
+    // package_acquisitions/credit_ledger). Explorer's 30-minute welcome
+    // grant is deliberately excluded — only a paid package_id counts.
+    // COUNT(DISTINCT user_id) so a user with more than one acquisition
+    // (e.g. a package plus a Buy More Minutes top-up) is never counted
+    // twice.
     pool.query(
       `SELECT COUNT(DISTINCT user_id)::int AS count
        FROM package_acquisitions
@@ -49,10 +50,12 @@ async function getOverviewStats() {
     ),
     pool.query('SELECT COUNT(*)::int AS count FROM interview_reports'),
     getFreeOfferOverview(),
+    getOnlineUsersCount(),
   ]);
 
   return {
     totalUsers: totalUsers.rows[0].count,
+    onlineNow,
     activeUsersToday: activeToday.rows[0].count,
     newBetaSignupsToday: betaSignupsToday.rows[0].count,
     paidSubscribers: paidSubscribers.rows[0].count,
@@ -62,6 +65,31 @@ async function getOverviewStats() {
     restrictedClaims: freeOffer.restrictedClaims,
     suspiciousDevices: freeOffer.suspiciousDevices,
   };
+}
+
+// Human-readable labels for the Founder Dashboard's Recent Activity feed
+// (Section 2) — presentation only. The raw `action` value is preserved
+// unchanged on every returned row; this only adds a derived
+// `activityLabel` alongside it. Only covers action values that actually
+// exist in user_activity_logs today (confirmed by inspection) —
+// interview-completion and purchase events are not currently logged to
+// this table at all (services/interview.js and routes/stripe.js don't
+// call insertActivityLog for those), and adding that logging would mean
+// touching the interview engine / Stripe webhook, both explicitly out of
+// scope here. When those are added in a future, separately-approved
+// task, they'll need their own entries in this map.
+const ACTIVITY_LABELS = {
+  login_google: 'Logged in',
+  login_password: 'Logged in',
+  login_magic_link_verified: 'Logged in',
+  signup_password: 'Signed up',
+  feedback_submitted: 'Submitted feedback',
+  feedback_dismissed: 'Dismissed the feedback prompt',
+  welcome_offer_granted: 'Received the welcome offer',
+};
+
+function humanizeActivity(row) {
+  return ACTIVITY_LABELS[row.action] || row.action;
 }
 
 // Section 2 — Recent User Activity. `offset` added for the paginated
@@ -80,25 +108,34 @@ async function getRecentActivity(limit = 10, offset = 0) {
      LIMIT $1 OFFSET $2`,
     [limit, offset]
   );
-  return res.rows;
+  // action/page/feature/created_at/user_name/user_email all preserved
+  // exactly as before — activityLabel is a pure addition.
+  return res.rows.map(row => ({ ...row, activityLabel: humanizeActivity(row) }));
 }
 
 // Section 4 — Beta & Subscription Overview.
-// Beta counts come straight from `invitations.status` as it actually
-// exists today (pending/accepted only — no invented "rejected" state).
-// Plan counts are grouped dynamically from whatever distinct
-// subscription_plan values are actually in use (currently 'professional'
-// and 'leadership', per db/cost-analytics.js) rather than hardcoding a
-// plan list that doesn't match real billing data — if a new plan name
-// appears later, it shows up here automatically, nothing to update.
+// Beta counts come straight from `invitations.status` — HISTORICAL only.
+// The beta gate has been permanently removed from the auth path
+// (db/invitations.js's own header comment confirms getValidInvitation is
+// no longer called anywhere) — these are no longer live/current-access
+// numbers, just a record of who was ever invited before the gate came
+// out. The Founder Dashboard view labels them accordingly ("Historical
+// Beta Requests"/"Historical Beta Accepted") rather than removing the
+// data or this query — nothing here is deleted, only how it's presented.
 async function getBetaAndSubscriptionOverview() {
   const [betaResult, plansResult] = await Promise.all([
     pool.query(`SELECT status, COUNT(*)::int AS count FROM invitations GROUP BY status`),
+    // Same source-of-truth fix as paidSubscribers above — package_id from
+    // package_acquisitions, not the legacy subscription_plan column
+    // (which produced a permanently-empty "No paid subscribers yet" card
+    // even when a real customer had genuinely purchased Growth). Explorer
+    // excluded — its welcome grant is not a purchase.
     pool.query(
-      `SELECT LOWER(subscription_plan) AS plan, COUNT(*)::int AS count
-       FROM users
-       WHERE subscription_status = 'active' AND subscription_plan IS NOT NULL
-       GROUP BY LOWER(subscription_plan)
+      `SELECT package_id AS plan, COUNT(DISTINCT user_id)::int AS count
+       FROM package_acquisitions
+       WHERE package_id IN ('growth', 'leadership')
+         AND (expires_at IS NULL OR expires_at > NOW())
+       GROUP BY package_id
        ORDER BY count DESC`
     ),
   ]);
@@ -110,7 +147,7 @@ async function getBetaAndSubscriptionOverview() {
 
   return {
     beta,
-    plans: plansResult.rows, // [{ plan: 'professional', count: 3 }, ...] — empty array if none yet
+    plans: plansResult.rows, // [{ plan: 'growth', count: 1 }, ...] — empty array if none yet
   };
 }
 
