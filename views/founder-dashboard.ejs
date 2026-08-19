@@ -275,7 +275,14 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
           <td class="fdash-user"><%= u.name || '—' %></td>
           <td><%= u.email %></td>
           <td><span class="shell-package-pill pill-<%= u.package_id %>"><%= _pkgBadge(u.package_id) %></span></td>
-          <td><%= u.subscription_status === 'active' ? 'Active Subscriber' : 'Free / Trial' %></td>
+          <!-- Status: package_acquisitions (via u.package_id, already
+               resolved by db/founder-users.js's listUsers) is the source
+               of truth — NOT u.subscription_status, a legacy field the
+               real purchase flow (routes/stripe.js) never writes to.
+               Explorer's 30-minute welcome grant is not a purchase, so
+               'explorer' still reads as Free / Trial; growth/leadership
+               read as Paid. -->
+          <td><%= u.package_id !== 'explorer' ? 'Paid' : 'Free / Trial' %></td>
           <td class="fdash-ts" data-iso="<%= toISO(u.last_login) %>" data-empty-text="Never logged in"></td>
           <td class="fdash-actions-cell">
             <button type="button" class="fdash-action-btn fdash-manage-package-btn"
@@ -479,7 +486,11 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
           const email = escapeHtml(u.email);
           const packageId = u.package_id || 'explorer';
           const packageBadge = escapeHtml(pkgBadge(packageId));
-          const status = u.subscription_status === 'active' ? 'Active Subscriber' : 'Free / Trial';
+          // Same rule as the server-rendered row: package_acquisitions
+          // (via packageId, already resolved server-side) is the source
+          // of truth, not the legacy subscription_status field. Explorer
+          // stays Free / Trial; growth/leadership read as Paid.
+          const status = packageId !== 'explorer' ? 'Paid' : 'Free / Trial';
           const lastLogin = escapeHtml(fmtDT(u.last_login) || 'Never logged in');
           const userNameAttr = escapeHtml(u.name || u.email);
           return '<tr><td class="fdash-user">' + name + '</td><td>' + email + '</td>' +

@@ -28,9 +28,21 @@ async function getOverviewStats() {
     pool.query(
       `SELECT COUNT(*)::int AS count FROM waitlist WHERE created_at >= CURRENT_DATE`
     ),
+    // Paid Subscribers — package_acquisitions (Architecture v1.5, ADR-013)
+    // is the source of truth here, NOT users.subscription_status/plan.
+    // Those legacy columns are never written to by the real purchase flow
+    // (routes/stripe.js's createPackageAcquisition only ever touches
+    // package_acquisitions/credit_ledger), which is exactly why a
+    // genuinely paying customer could show 0 here before this fix.
+    // Explorer's 30-minute welcome grant is deliberately excluded — only
+    // a paid package_id counts as a subscriber. COUNT(DISTINCT user_id)
+    // so a user with more than one acquisition (e.g. a package plus a
+    // Buy More Minutes top-up) is never counted twice.
     pool.query(
-      `SELECT COUNT(*)::int AS count FROM users
-       WHERE subscription_status = 'active' AND subscription_plan IS NOT NULL`
+      `SELECT COUNT(DISTINCT user_id)::int AS count
+       FROM package_acquisitions
+       WHERE package_id IN ('growth', 'leadership')
+         AND (expires_at IS NULL OR expires_at > NOW())`
     ),
     pool.query(
       `SELECT COUNT(*)::int AS count FROM interview_sessions WHERE status = 'completed'`
