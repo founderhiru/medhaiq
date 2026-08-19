@@ -17,9 +17,7 @@ const roleLibrary = [
     oneLiner: 'Drive product strategy, execution, and customer outcomes.',
     resources: [
       { name: 'Silicon Valley Product Group (SVPG)', url: 'https://www.svpg.com/articles/' },
-      { name: "Lenny's Newsletter", url: 'https://www.lennysnewsletter.com/' },
       { name: 'Product School', url: 'https://productschool.com/blog' },
-      { name: 'Reforge', url: 'https://www.reforge.com/blog' },
     ],
     seo: {
       title: 'Product Manager Interview Guide | MedhaIQ',
@@ -76,8 +74,6 @@ const roleLibrary = [
     oneLiner: 'Solve technical problems and design systems that scale.',
     resources: [
       { name: 'Microsoft Learn', url: 'https://learn.microsoft.com/' },
-      { name: 'AWS Architecture Center', url: 'https://aws.amazon.com/architecture/' },
-      { name: "Martin Fowler's Blog", url: 'https://martinfowler.com/' },
       { name: 'Google Engineering Blog', url: 'https://developers.googleblog.com/' },
     ],
     seo: {
@@ -136,7 +132,6 @@ const roleLibrary = [
     resources: [
       { name: 'AWS Architecture Center', url: 'https://aws.amazon.com/architecture/' },
       { name: 'Microsoft Learn', url: 'https://learn.microsoft.com/' },
-      { name: "Martin Fowler's Blog", url: 'https://martinfowler.com/' },
       { name: 'Google Cloud Architecture Center', url: 'https://cloud.google.com/architecture' },
     ],
     seo: {
@@ -193,7 +188,6 @@ const roleLibrary = [
     oneLiner: 'Coordinate cross-team delivery and manage program risk.',
     resources: [
       { name: 'Project Management Institute (PMI)', url: 'https://www.pmi.org/learning' },
-      { name: 'Google Project Management Certificate', url: 'https://grow.google/certificates/project-management/' },
       { name: 'Atlassian Agile Coach', url: 'https://www.atlassian.com/agile' },
     ],
     seo: {
@@ -250,7 +244,6 @@ const roleLibrary = [
     tags: ['Case Interviews', 'Client Impact', 'Executive Presence'],
     oneLiner: 'Structure ambiguous business problems into clear client recommendations.',
     resources: [
-      { name: 'Management Consulted', url: 'https://managementconsulted.com/' },
       { name: 'Case Interview Prep (CaseInterview.com)', url: 'https://www.caseinterview.com/' },
       { name: 'Harvard Business Review', url: 'https://hbr.org/' },
     ],
@@ -308,7 +301,6 @@ const roleLibrary = [
     tags: ['People Leadership', 'Technical Judgment', 'Delivery'],
     oneLiner: 'Lead engineering teams while staying accountable for delivery.',
     resources: [
-      { name: "Will Larson's Irrational Exuberance", url: 'https://lethain.com/' },
       { name: "The Manager's Path (O'Reilly)", url: 'https://www.oreilly.com/library/view/the-managers-path/9781491973882/' },
       { name: 'Google Engineering Blog', url: 'https://developers.googleblog.com/' },
     ],
