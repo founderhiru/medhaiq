@@ -13,9 +13,22 @@
   <link rel="stylesheet" href="/css/medhaiq.css">
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/hero-v2.css">
-  <link rel="stylesheet" href="/css/value-footer.css">
+   <link rel="stylesheet" href="/css/value-footer.css">
+  <style>
+    /* Hide the entire Final CTA banner (partials/cta-banner.ejs's
+       <section class="mh-cta-banner">) on this page only — headline,
+       subheadline, button, and blue background area all removed, not
+       just the button. Scoped via .professional-horizons-page on
+       <body> so no other page (including Homepage, which must keep
+       this banner) is affected. cta-banner.ejs itself is not modified. */
+        .professional-horizons-page .mh-cta-banner { display: none; }
+
+        .professional-horizons-page .mh-audience { background: #F7F6F2; }
+    .professional-horizons-page .mh-section-title { color: #0B1020; }
+    .professional-horizons-page .mh-section-sub { color: #5F6B82; }
+  </style>
 </head>
-<body>
+<body class="professional-horizons-page">
   <%- include('partials/header') %>
 
   <!-- No separate page hero here on purpose: partials/audience.ejs already

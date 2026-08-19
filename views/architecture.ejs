@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="/css/trust-architecture.css">
   <link rel="stylesheet" href="/css/architecture-light.css">
 </head>
-<body>
+<body class="architecture-page">
   <%- include('partials/header') %>
 
   <!-- Hero — shared PageHero partial (was hand-duplicated from Why MedhaIQ's
@@ -79,8 +79,32 @@
           });
         }
       });
-    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+       }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
     reveals.forEach(function(el) { observer.observe(el); });
+
+    function settleAndReveal() {
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          reveals.forEach(function(el) {
+            if (el.classList.contains('visible')) return;
+            var rect = el.getBoundingClientRect();
+            var inViewport = rect.top < (window.innerHeight || document.documentElement.clientHeight) && rect.bottom > 0;
+            if (inViewport) {
+              el.classList.add('visible');
+              var items = el.querySelectorAll('.reveal-item');
+              items.forEach(function(item, i) {
+                setTimeout(function() { item.classList.add('visible'); }, i * 100);
+              });
+            }
+          });
+        });
+      });
+    }
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(settleAndReveal);
+    } else {
+      settleAndReveal();
+    }
   })();
 
   // Sticky nav: highlight active section, smooth-scroll on click, no route change

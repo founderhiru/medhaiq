@@ -13,9 +13,23 @@
   <link rel="stylesheet" href="/css/medhaiq.css">
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/hero-v2.css">
-  <link rel="stylesheet" href="/css/value-footer.css">
+    <link rel="stylesheet" href="/css/value-footer.css">
+  <style>
+    /* Hide the entire Final CTA banner (partials/cta-banner.ejs's
+       <section class="mh-cta-banner">) on this page only — headline,
+       subheadline, button, and blue background area all removed, not
+       just the button. Scoped via .experience-page on <body> so no
+       other page (including Homepage, which must keep this banner) is
+       affected. cta-banner.ejs itself is not modified. */
+        .experience-page .mh-cta-banner { display: none; }
+        
+    .experience-page .mh-experience { background: #F7F6F2; }
+    .experience-page .mh-experience-pre { color: #5F6B82; }
+    .experience-page .mh-experience-heading { color: #0B1020; }
+    .experience-page .mh-experience-sub { color: #5F6B82; }
+  </style>
 </head>
-<body>
+<body class="experience-page">
   <%- include('partials/header') %>
 
   <!-- No separate page hero here on purpose: partials/experience.ejs already

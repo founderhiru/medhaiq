@@ -52,8 +52,7 @@ const frameworks = [
     ],
     resources: [
       { name: 'Harvard Career Services — Interviewing', url: 'https://careerservices.fas.harvard.edu/resources/interviewing/' },
-      { name: 'MIT Career Advising — Interview Prep', url: 'https://capd.mit.edu/interviewing/' },
-      { name: 'Toastmasters International', url: 'https://www.toastmasters.org/' },
+      { name: 'Understanding STAR Method', url: 'https://creately.com/guides/star-vs-car-method/' },
     ],
     relatedRoles: ['product-manager', 'engineering-manager', 'management-consultant'],
   },
@@ -99,7 +98,6 @@ const frameworks = [
     ],
     resources: [
       { name: 'Harvard Career Services — Interviewing', url: 'https://careerservices.fas.harvard.edu/resources/interviewing/' },
-      { name: 'Stanford Career Education', url: 'https://careereducation.stanford.edu/' },
       { name: 'Toastmasters International', url: 'https://www.toastmasters.org/' },
     ],
     relatedRoles: ['product-manager', 'software-engineer', 'solutions-architect'],
@@ -147,8 +145,8 @@ const frameworks = [
     ],
     resources: [
       { name: 'Harvard Career Services — Interviewing', url: 'https://careerservices.fas.harvard.edu/resources/interviewing/' },
-      { name: 'University of Michigan Career Center', url: 'https://careercenter.umich.edu/' },
-      { name: 'Toastmasters International', url: 'https://www.toastmasters.org/' },
+    
+   
     ],
     relatedRoles: ['engineering-manager', 'product-manager', 'management-consultant'],
   },
@@ -198,7 +196,6 @@ const frameworks = [
     resources: [
       { name: 'AWS Architecture Center', url: 'https://aws.amazon.com/architecture/' },
       { name: 'Google Cloud Architecture Center', url: 'https://cloud.google.com/architecture' },
-      { name: "Martin Fowler's Blog", url: 'https://martinfowler.com/' },
     ],
     relatedRoles: ['software-engineer', 'solutions-architect'],
   },
@@ -246,7 +243,6 @@ const frameworks = [
     ],
     resources: [
       { name: 'Silicon Valley Product Group (SVPG)', url: 'https://www.svpg.com/articles/' },
-      { name: "Lenny's Newsletter", url: 'https://www.lennysnewsletter.com/' },
       { name: 'Product School', url: 'https://productschool.com/blog' },
     ],
     relatedRoles: ['product-manager'],
@@ -294,7 +290,6 @@ const frameworks = [
       'End every story with a specific, honest reflection',
     ],
     resources: [
-      { name: "Will Larson's Irrational Exuberance", url: 'https://lethain.com/' },
       { name: "The Manager's Path (O'Reilly)", url: 'https://www.oreilly.com/library/view/the-managers-path/9781491973882/' },
       { name: 'Harvard Business Review', url: 'https://hbr.org/' },
     ],
