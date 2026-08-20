@@ -951,32 +951,22 @@ app.get('/checkout/success', requireAuthPage, async (req, res) => {
   res.render('purchase-success', { shellUser: req.user, capabilities: req.capabilities, context });
 });
 
-// Extracted from the /dashboard/history route body (previously inlined
-// there) so /dashboard/reports (new) can reuse the exact same computation
-// instead of a second, independently-maintained copy — guarantees the two
-// pages can never show different numbers for the same user's data. Zero
-// behavior change to /dashboard/history itself: same queries, same
-// derivations, same variable names, just returned as one object instead
-// of being local variables in the route handler. Buy-More-Minutes market
-// resolution (Workspace-modal-specific) stays OUT of this shared function
-// and is computed separately in /dashboard/history only — a Reports list
-// has no checkout/pricing UI, so there's no reason for that route to pull
-// in lib/pricing-market.js at all.
-async function computeDashboardHistoryData(req) {
-  const userId = req.cookies.user_id;
+app.get('/dashboard/history', requireAuthPage, async (req, res) => {
+  try {
+    const userId = req.cookies.user_id;
 
   const { getUserSessions, getUserAggregateScores } = require('./db/interview');
-  // req.user AND req.capabilities.careerProfile were already fetched by
-  // requireAuthPage (via getCapabilities()) — no need to query either
-  // again here. Only sessions/aggregateScores are still fetched fresh,
-  // since neither is part of the Capability Engine's shape.
-  const [sessions, aggregateScores] = await Promise.all([
-    getUserSessions(userId, { limit: 20 }),
-    getUserAggregateScores(userId),
-
-  ]);
-  const careerProfile = req.capabilities.careerProfile;
-  const user = req.user;
+    // req.user AND req.capabilities.careerProfile were already fetched by
+    // requireAuthPage (via getCapabilities()) — no need to query either
+    // again here. Only sessions/aggregateScores are still fetched fresh,
+    // since neither is part of the Capability Engine's shape.
+    const [sessions, aggregateScores] = await Promise.all([
+      getUserSessions(userId, { limit: 20 }),
+      getUserAggregateScores(userId),
+      
+    ]);
+    const careerProfile = req.capabilities.careerProfile;
+    const user = req.user;
     // Two bugs were compounding here:
     // 1) `s.overall_score || s.report_score || null` treats a real score of
     //    0 as falsy, silently discarding it (and `report_score` isn't even
@@ -1099,56 +1089,28 @@ async function computeDashboardHistoryData(req) {
     const preparingForSession = interruptedSession || history[0] || null;
     const preparingForRole = preparingForSession ? (preparingForSession.roleTitle || 'Mock Interview') : null;
 
-  return {
-    shellUser: user,
-    history, completedSessions, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY, trendLatest, trendAvg,
-    interviewsCompletedCount, reportsGeneratedCount, practiceTimeLabel,
-    readinessScore, readinessDeltaVsPrevious, interruptedSession, aggregateScores,
-    lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
-    resumeIntelActive, resumeIntelSubLabel,
-    bestCompetencyLabel, focusNextLabel,
-  };
-}
-
-app.get('/dashboard/history', requireAuthPage, async (req, res) => {
-  try {
-    const data = await computeDashboardHistoryData(req);
-
     // Resolved ONCE here, server-side, using the exact same
     // lib/pricing-market.js resolveMarket() the Buy More Minutes
     // top-up checkout routes use (routes/stripe.js) — so the price the
     // modal DISPLAYS is guaranteed to match the price actually CHARGED
     // if the user clicks through, since both come from the same
     // resolution call shape (req + req.user), not two independently
-    // maintained lookups that could drift apart. Kept out of
-    // computeDashboardHistoryData() — Workspace-modal-specific, not
-    // needed by /dashboard/reports below.
+    // maintained lookups that could drift apart.
     const { resolveMarket } = require('./lib/pricing-market');
     const market = resolveMarket(req, req.user);
 
-    res.render('dashboard-history', { ...data, market });
+    res.render('dashboard-history', {
+      shellUser: user,
+      history, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY, trendLatest, trendAvg,
+      interviewsCompletedCount, reportsGeneratedCount, practiceTimeLabel,
+      readinessScore, readinessDeltaVsPrevious, interruptedSession, aggregateScores,
+      lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
+      resumeIntelActive, resumeIntelSubLabel,
+      bestCompetencyLabel, focusNextLabel,
+      market,
+    });
   } catch (err) {
     console.error('[dashboard/history]', err);
-    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
-  }
-});
-
-// Dedicated Reports page — reuses the exact same computation as
-// /dashboard/history above (computeDashboardHistoryData), so the two
-// pages can never disagree on a user's own numbers. Renders a different,
-// smaller template (dashboard-reports.ejs): a compact report list instead
-// of the full Workspace overview. Same requireAuthPage guard, same
-// user-scoped query underneath (getUserSessions(userId, ...) — WHERE
-// s.user_id = $1) — no new authorization surface, no Founder data path,
-// no fabricated data. This is what "Reports" (sidebar) and "View all →"
-// (Recent Activity) now link to, replacing the previous self-referential
-// links to /dashboard/history.
-app.get('/dashboard/reports', requireAuthPage, async (req, res) => {
-  try {
-    const data = await computeDashboardHistoryData(req);
-    res.render('dashboard-reports', data);
-  } catch (err) {
-    console.error('[dashboard/reports]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });

@@ -278,7 +278,7 @@ const _initialGreeting = (_srvHour >= 5 && _srvHour < 12) ? `Good morning, ${_fi
        primary continuation point) -->
   <div class="pair-row pair-row--activity">
     <div class="panel">
-      <div class="panel-header-row"><h3>Recent Activity</h3><a href="/dashboard/reports" class="view-all-link">View all →</a></div>
+      <div class="panel-header-row"><h3>Recent Activity</h3><a href="/dashboard/history" class="view-all-link">View all →</a></div>
       <div class="activity-feed">
         <% history.slice(0, 3).forEach(function(s) { %>
           <% const isInterrupted = s.status === 'in_progress'; %>
