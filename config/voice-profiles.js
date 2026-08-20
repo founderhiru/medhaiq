@@ -18,14 +18,15 @@
 // to know the other's shape.
 //
 // Rollout (explicit, staged, per founder direction):
-//   Step 1 (this file, now): architecture correct, all six profiles point
-//     at the SAME existing ElevenLabs voice (CURRENT_DEFAULT_VOICE_ID) —
-//     zero behavior change to what candidates hear.
-//   Step 2 (separate): regression pass confirms interview behavior is
+//   Step 1 (done): architecture correct, all six profiles pointed at the
+//     SAME existing ElevenLabs voice (CURRENT_DEFAULT_VOICE_ID) — zero
+//     behavior change to what candidates hear.
+//   Step 2 (done): regression pass confirmed interview behavior was
 //     100% unchanged with this layer in place.
-//   Step 3 (separate, later): swap each profile's providerVoice for a
+//   Step 3 (this change): each profile's providerVoice swapped for a
 //     distinct real ElevenLabs ID. Configuration-only — no other file in
-//     the codebase changes for Step 3.
+//     the codebase changed for Step 3. CURRENT_DEFAULT_VOICE_ID is kept
+//     below only as the fallback (defaultProfile) voice.
 //
 // Extensible on purpose: fields beyond providerVoice are forward-looking
 // and safe to add to without touching any call site. Only .providerVoice
@@ -50,9 +51,9 @@ const CURRENT_DEFAULT_VOICE_ID = 'hpp4J3VqNfWAUOO0d1Us'; // "Bella" (premade)
 // }
 
 const VOICE_PROFILES = {
-  // TEMPORARY (Step 1): all six point at CURRENT_DEFAULT_VOICE_ID. Step 3
-  // replaces each providerVoice below with a distinct real ID — a
-  // configuration-only change, no code touched.
+  // Step 3: each persona now resolves to its own distinct ElevenLabs
+  // voice ID (below). defaultProfile, at the bottom of this object,
+  // intentionally still falls back to CURRENT_DEFAULT_VOICE_ID.
   alex: {
     provider: 'elevenlabs',
     providerVoice:'xXFOA11TH5EKg661vj6I',
@@ -61,31 +62,31 @@ const VOICE_PROFILES = {
   },
   priya: {
     provider: 'elevenlabs',
-    providerVoice: CURRENT_DEFAULT_VOICE_ID,
+    providerVoice: '299hhEjoz44O862N5H4G',
     pace: 1.05,
     style: 'structured executive',
   },
   marcus: {
     provider: 'elevenlabs',
-    providerVoice: CURRENT_DEFAULT_VOICE_ID,
+    providerVoice: 'xXFOA11TH5EKg661vj6I',
     pace: 1.0,
     style: 'conversational product leadership',
   },
   sanjeev: {
     provider: 'elevenlabs',
-    providerVoice: CURRENT_DEFAULT_VOICE_ID,
+    providerVoice: 'YlKsPt31o1mfk5M6i78o',
     pace: 0.95,
     style: 'engineering leadership',
   },
   sarah: {
     provider: 'elevenlabs',
-    providerVoice: CURRENT_DEFAULT_VOICE_ID,
+    providerVoice: 'qSeXEcewz7tA0Q0qk9fH',
     pace: 1.1,
     style: 'energetic founder',
   },
   raj: {
     provider: 'elevenlabs',
-    providerVoice: CURRENT_DEFAULT_VOICE_ID,
+    providerVoice: 'M50bdzdVCqNbr6HtbFB5',
     pace: 1.0,
     style: 'polished executive',
   },
