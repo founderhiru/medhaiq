@@ -95,6 +95,7 @@ app.use('/api',            require('./routes/vapi-silent-model')); // tts_pipeli
 app.use('/api/voice',      require('./routes/voice-tts'));   // PR3: ElevenLabs proxy, requireAuth-gated
 app.use('/debug/voice',    require('./routes/debug-voice')); // PR3: internal diagnostic page, requireFounder-gated
 app.use('/api/debug/elevenlabs/voices', require('./routes/debug-elevenlabs-voices')); // TEMPORARY -- delete once a working voice is identified
+app.use('/api/presence',   require('./routes/presence')); // lightweight Online Now heartbeat, see db/presence.js
 app.use('/api/stripe',     require('./routes/stripe').router); // Sandbox/staging checkout only — webhook is mounted separately above, pre-express.json()
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
@@ -452,6 +453,7 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
 
     const { PERSONAS } = require('./services/interview');
     const { buildCareerIntelligenceReport } = require('./lib/career-intelligence-report');
+    const { shouldShowFeedbackPrompt } = require('./db/feedback');
     const persona = PERSONAS[report.persona_id] || PERSONAS.alex_chen;
     const scoresData = await getSessionScores(req.params.id);
     // Added for Step 3 (docs/MEDHAIQ_REPORTING_DESIGN_V1.md) — the canonical
@@ -531,6 +533,17 @@ app.get('/interview/report/:id', requireAuthPage, async (req, res) => {
 
     res.render('interview-report', {
       report,
+      // Feedback prompt (Founder Dashboard Part 1) — the widget and its
+      // API already existed; this route simply never set the one flag
+      // that turns it on. shouldShowFeedbackPrompt (db/feedback.js,
+      // unchanged) already encodes the 30-day submitted/dismissed
+      // suppression — nothing new decided here.
+      showFeedbackPrompt: await shouldShowFeedbackPrompt(req.user.id),
+      // Interview/session identifier for tying feedback to the specific
+      // interview it was about (Part 2) — req.params.id is already the
+      // session id this whole route loads everything else by
+      // (getSessionScores/getSessionQuestions above use the same value).
+      sessionId: req.params.id,
       // Web report header simplification — candidate identity, sourced
       // exactly like the PDF route already does (req.user.name = the
       // logged-in candidate's own account, never persona data). PDF and
@@ -847,11 +860,13 @@ app.get('/founder', requireFounderPage, async (req, res) => {
     const { getOverviewStats, getRecentActivity, getBetaAndSubscriptionOverview, getFounderAlerts } = require('./db/founder-stats');
     const { getFeedbackSummary, getRecentFeedback } = require('./db/founder-feedback');
     const { listUsers } = require('./db/founder-users');
+    const { getActivePackageAcquisitionsForUsers } = require('./db/package-acquisitions');
+    const { getOnlineUsers } = require('./db/presence');
     const { PRODUCT_PACKAGES } = require('./config/product-packages');
 
-    // All six sections' data depend only on shared, already-committed
+    // All sections' data depend only on shared, already-committed
     // database state, not on each other's results — fetched in parallel.
-    const [stats, activity, betaOverview, alerts, feedbackSummary, recentFeedback, users] = await Promise.all([
+    const [stats, activity, betaOverview, alerts, feedbackSummary, recentFeedback, users, onlineUsersRaw] = await Promise.all([
       getOverviewStats(),
       getRecentActivity(),
       getBetaAndSubscriptionOverview(),
@@ -859,7 +874,13 @@ app.get('/founder', requireFounderPage, async (req, res) => {
       getFeedbackSummary(),
       getRecentFeedback(),
       listUsers(),
+      getOnlineUsers(),
     ]);
+
+    // Package for each online user — same resolver everywhere else in the
+    // app uses, not re-derived here.
+    const onlinePackageMap = await getActivePackageAcquisitionsForUsers(onlineUsersRaw.map(u => u.user_id));
+    const onlineUsers = onlineUsersRaw.map(u => ({ ...u, package_id: onlinePackageMap[u.user_id] || 'explorer' }));
 
     res.render('founder-dashboard', {
       stats,
@@ -869,6 +890,7 @@ app.get('/founder', requireFounderPage, async (req, res) => {
       feedbackSummary,
       recentFeedback,
       users,
+      onlineUsers,
       // "Manage Package" dropdown source — Object.keys() preserves
       // config/product-packages.js's own definition order (explorer,
       // growth, leadership), so adding a future package there is the
@@ -882,6 +904,32 @@ app.get('/founder', requireFounderPage, async (req, res) => {
     });
   } catch (err) {
     console.error('[founder] dashboard render error:', err);
+    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
+  }
+});
+
+// GET /founder/feedback — paginated "View All Feedback", reusing the
+// existing getRecentFeedback(limit, offset) exactly as it was already
+// built (limit/offset params existed unused until now) and the existing
+// views/founder-feedback-all.ejs (existed unused until now). No new
+// query, no new template — this route is the only missing piece.
+app.get('/founder/feedback', requireFounderPage, async (req, res) => {
+  try {
+    const { getRecentFeedback } = require('./db/founder-feedback');
+    const PAGE_SIZE = 20;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    // Fetch one extra row to know whether an "Older →" page exists,
+    // without a separate COUNT(*) query.
+    const rows = await getRecentFeedback(PAGE_SIZE + 1, (page - 1) * PAGE_SIZE);
+    const hasNextPage = rows.length > PAGE_SIZE;
+    res.render('founder-feedback-all', {
+      feedback: rows.slice(0, PAGE_SIZE),
+      page,
+      hasNextPage,
+      shellUser: req.user,
+    });
+  } catch (err) {
+    console.error('[founder] feedback page error:', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });
@@ -903,22 +951,32 @@ app.get('/checkout/success', requireAuthPage, async (req, res) => {
   res.render('purchase-success', { shellUser: req.user, capabilities: req.capabilities, context });
 });
 
-app.get('/dashboard/history', requireAuthPage, async (req, res) => {
-  try {
-    const userId = req.cookies.user_id;
+// Extracted from the /dashboard/history route body (previously inlined
+// there) so /dashboard/reports (new) can reuse the exact same computation
+// instead of a second, independently-maintained copy — guarantees the two
+// pages can never show different numbers for the same user's data. Zero
+// behavior change to /dashboard/history itself: same queries, same
+// derivations, same variable names, just returned as one object instead
+// of being local variables in the route handler. Buy-More-Minutes market
+// resolution (Workspace-modal-specific) stays OUT of this shared function
+// and is computed separately in /dashboard/history only — a Reports list
+// has no checkout/pricing UI, so there's no reason for that route to pull
+// in lib/pricing-market.js at all.
+async function computeDashboardHistoryData(req) {
+  const userId = req.cookies.user_id;
 
   const { getUserSessions, getUserAggregateScores } = require('./db/interview');
-    // req.user AND req.capabilities.careerProfile were already fetched by
-    // requireAuthPage (via getCapabilities()) — no need to query either
-    // again here. Only sessions/aggregateScores are still fetched fresh,
-    // since neither is part of the Capability Engine's shape.
-    const [sessions, aggregateScores] = await Promise.all([
-      getUserSessions(userId, { limit: 20 }),
-      getUserAggregateScores(userId),
-      
-    ]);
-    const careerProfile = req.capabilities.careerProfile;
-    const user = req.user;
+  // req.user AND req.capabilities.careerProfile were already fetched by
+  // requireAuthPage (via getCapabilities()) — no need to query either
+  // again here. Only sessions/aggregateScores are still fetched fresh,
+  // since neither is part of the Capability Engine's shape.
+  const [sessions, aggregateScores] = await Promise.all([
+    getUserSessions(userId, { limit: 20 }),
+    getUserAggregateScores(userId),
+
+  ]);
+  const careerProfile = req.capabilities.careerProfile;
+  const user = req.user;
     // Two bugs were compounding here:
     // 1) `s.overall_score || s.report_score || null` treats a real score of
     //    0 as falsy, silently discarding it (and `report_score` isn't even
@@ -1000,6 +1058,17 @@ app.get('/dashboard/history', requireAuthPage, async (req, res) => {
       return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
     const lastCompleted = completedSessions[0] || null; // history is already DESC by started_at
+
+    // Best Score — Math.max over completed sessions with a real (non-null)
+    // overall score, exactly as specified. Math.max(...[]) on an empty
+    // array is -Infinity, not a sane display value, so this explicitly
+    // guards for zero scored sessions and returns null instead (rendered
+    // as '—' by the template, same pattern already used for
+    // readinessScore when there's no data yet).
+    const scoredSessions = completedSessions
+      .map(s => s.overallScore)
+      .filter(v => typeof v === 'number' && !Number.isNaN(v));
+    const bestScore = scoredSessions.length ? Math.max(...scoredSessions) : null;
     const lastInterviewLabel = lastCompleted ? `Last interview ${relativeDayLabel(lastCompleted.startedAt)}` : 'No interviews yet';
     const lastSessionLabel = history[0] ? `Last session ${relativeDayLabel(history[0].startedAt)}` : 'No sessions yet';
     const lastReportLabel = lastCompleted ? `Last report ${relativeDayLabel(lastCompleted.startedAt)}` : 'No reports yet';
@@ -1041,28 +1110,56 @@ app.get('/dashboard/history', requireAuthPage, async (req, res) => {
     const preparingForSession = interruptedSession || history[0] || null;
     const preparingForRole = preparingForSession ? (preparingForSession.roleTitle || 'Mock Interview') : null;
 
+  return {
+    shellUser: user,
+    history, completedSessions, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY, trendLatest, trendAvg,
+    interviewsCompletedCount, reportsGeneratedCount, practiceTimeLabel, bestScore,
+    readinessScore, readinessDeltaVsPrevious, interruptedSession, aggregateScores,
+    lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
+    resumeIntelActive, resumeIntelSubLabel,
+    bestCompetencyLabel, focusNextLabel,
+  };
+}
+
+app.get('/dashboard/history', requireAuthPage, async (req, res) => {
+  try {
+    const data = await computeDashboardHistoryData(req);
+
     // Resolved ONCE here, server-side, using the exact same
     // lib/pricing-market.js resolveMarket() the Buy More Minutes
     // top-up checkout routes use (routes/stripe.js) — so the price the
     // modal DISPLAYS is guaranteed to match the price actually CHARGED
     // if the user clicks through, since both come from the same
     // resolution call shape (req + req.user), not two independently
-    // maintained lookups that could drift apart.
+    // maintained lookups that could drift apart. Kept out of
+    // computeDashboardHistoryData() — Workspace-modal-specific, not
+    // needed by /dashboard/reports below.
     const { resolveMarket } = require('./lib/pricing-market');
     const market = resolveMarket(req, req.user);
 
-    res.render('dashboard-history', {
-      shellUser: user,
-      history, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY, trendLatest, trendAvg,
-      interviewsCompletedCount, reportsGeneratedCount, practiceTimeLabel,
-      readinessScore, readinessDeltaVsPrevious, interruptedSession, aggregateScores,
-      lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
-      resumeIntelActive, resumeIntelSubLabel,
-      bestCompetencyLabel, focusNextLabel,
-      market,
-    });
+    res.render('dashboard-history', { ...data, market });
   } catch (err) {
     console.error('[dashboard/history]', err);
+    res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
+  }
+});
+
+// Dedicated Reports page — reuses the exact same computation as
+// /dashboard/history above (computeDashboardHistoryData), so the two
+// pages can never disagree on a user's own numbers. Renders a different,
+// smaller template (dashboard-reports.ejs): a compact report list instead
+// of the full Workspace overview. Same requireAuthPage guard, same
+// user-scoped query underneath (getUserSessions(userId, ...) — WHERE
+// s.user_id = $1) — no new authorization surface, no Founder data path,
+// no fabricated data. This is what "Reports" (sidebar) and "View all →"
+// (Recent Activity) now link to, replacing the previous self-referential
+// links to /dashboard/history.
+app.get('/dashboard/reports', requireAuthPage, async (req, res) => {
+  try {
+    const data = await computeDashboardHistoryData(req);
+    res.render('dashboard-reports', data);
+  } catch (err) {
+    console.error('[dashboard/reports]', err);
     res.status(500).render('error-boundary', { url: req.url, errorMessage: err.message });
   }
 });

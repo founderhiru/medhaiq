@@ -925,6 +925,29 @@ async function runMigrations() {
           `);
         },
       },
+      {
+        name: '027_user_presence',
+        up: async (c) => {
+          // Founder Dashboard "Online Now" — a deliberately small, single-
+          // row-per-user table, NOT an addition to user_activity_logs.
+          // user_activity_logs is an append-only historical event log
+          // (Recent Activity reads it unfiltered, ORDER BY created_at DESC
+          // — a heartbeat written there every ~30s per user would flood
+          // that feed). Presence is the opposite shape: one row per user,
+          // continuously overwritten in place, bounded by total user
+          // count, never growing. No existing table fits this — this is
+          // the smallest new table that does.
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS user_presence (
+              user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+              last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+              current_page VARCHAR(255),
+              current_activity VARCHAR(255)
+            )
+          `);
+          await c.query(`CREATE INDEX IF NOT EXISTS user_presence_last_seen_idx ON user_presence (last_seen_at)`);
+        },
+      },
     ];
 
     for (const m of migrations) {

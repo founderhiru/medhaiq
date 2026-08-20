@@ -20,8 +20,8 @@
   --white:        #FFFFFF;
   --white-soft:   rgba(255, 255, 255, 0.08);
   --white-border: rgba(255, 255, 255, 0.08);
-  --text-muted:   #94A3B8;
-  --text-faint:   #475569;
+  --text-muted:   #9DA8BA;
+  --text-faint:   #9AA6B8;
   --light-surface: #F8FAFC;
 
   /* Typography */
@@ -2268,10 +2268,10 @@ button { cursor: pointer; }
 .mh-footer-brand-col { display: flex; flex-direction: column; gap: 12px; }
 .mh-footer-logo { display: flex; align-items: center; gap: 8px; }
 .mh-footer-tagline { font-size: 13px; font-weight: 700; color: var(--white); }
-.mh-footer-desc { font-size: 12px; color: var(--text-faint); }
+.mh-footer-desc { font-size: 12px; color: #8F9BAF; }
 .mh-footer-links-col { display: flex; flex-wrap: wrap; gap: 32px 40px; }
 .mh-footer-link-group { display: flex; flex-direction: column; gap: 8px; }
-.mh-footer-link-heading { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+.mh-footer-link-heading { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #AEB8C8; margin-bottom: 12px; }
 .mh-footer-link { font-size: 13px; color: var(--text-faint); transition: color 0.15s ease; }
 .mh-footer-link:hover { color: var(--white); }
 .mh-footer-contact-btn { font-size: 13px; color: var(--text-faint); background: none; border: none; cursor: pointer; text-align: left; font-family: var(--font-body); transition: color 0.15s ease; padding: 0; }

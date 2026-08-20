@@ -1,0 +1,109 @@
+<%- include('partials/workspace-shell-top', { pageTitle: 'Interview Reports — MedhaIQ', activeNav: 'reports', bodyClass: 'career-workspace', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'] }) %>
+
+<!--
+  Dedicated Interview Reports page (dashboard-reports.ejs).
+
+  Data source: computeDashboardHistoryData(req) in server.js — the EXACT
+  same function that powers /dashboard/history (the Career Workspace
+  overview). Not a second, independently-maintained query or calculation;
+  this page renders a different slice/presentation of identical data, so
+  Workspace and Reports can never disagree on a user's own numbers.
+
+  Security: this route (/dashboard/reports) uses requireAuthPage, the same
+  guard as every other authenticated dashboard route, and the underlying
+  query (getUserSessions) is parameterized on req.cookies.user_id
+  (WHERE s.user_id = $1) — no Founder data path, no fabricated data, no
+  cross-user fallback. See server.js for the route itself.
+-->
+
+<div style="text-align:left; margin-bottom:28px;">
+  <h2 style="margin-bottom:6px;">Interview Reports</h2>
+  <p style="color:var(--muted); font-size:14px;">Review your interview performance, strengths, and areas to improve.</p>
+</div>
+
+<% if (!completedSessions || completedSessions.length === 0) { %>
+  <!-- Empty state — same visual pattern already used by
+       dashboard-history.ejs's own empty state (report-section, centered,
+       cta-btn primary → /interview, the existing authenticated Start
+       Interview route). Condition checks completedSessions specifically
+       (not history) — a user with only an in-progress/abandoned session
+       has no report to show yet either. -->
+  <div class="report-section" style="text-align:center; padding:48px 32px;">
+    <h3 style="margin-bottom:10px;">No interview reports yet</h3>
+    <p style="color:var(--muted); font-size:14px; max-width:440px; margin:0 auto 24px;">
+      Complete your first AI interview to see your performance report here.
+    </p>
+    <a href="/interview" class="cta-btn primary" style="display:inline-block;">＋ Start Interview</a>
+  </div>
+<% } else { %>
+
+  <!-- Compact summary strip — same overview-strip/overview-stat classes
+       already used on the Workspace page, same underlying values
+       (interviewsCompletedCount, bestScore, readinessScore,
+       lastInterviewLabel), no new computation except bestScore itself
+       (Math.max over completedSessions' real scores, empty-safe). -->
+  <div class="overview-strip">
+    <div class="overview-stat">
+      <div class="icon-sq square violet"><%- include('partials/icon', { name: 'calendar', svgSize: 20 }) %></div>
+      <div>
+        <div class="num"><%= interviewsCompletedCount %></div>
+        <div class="label">Interviews Completed</div>
+      </div>
+    </div>
+    <div class="overview-stat">
+      <div class="icon-sq square green"><%- include('partials/icon', { name: 'sparkle', svgSize: 20 }) %></div>
+      <div>
+        <div class="num"><%= bestScore !== null ? bestScore : '—' %></div>
+        <div class="label">Best Score</div>
+      </div>
+    </div>
+    <div class="overview-stat">
+      <div class="icon-sq square blue"><%- include('partials/icon', { name: 'document', svgSize: 20 }) %></div>
+      <div>
+        <div class="num"><%= readinessScore !== null ? readinessScore : '—' %></div>
+        <div class="label">Average Score</div>
+      </div>
+    </div>
+    <div class="overview-stat">
+      <div class="icon-sq square violet"><%- include('partials/icon', { name: 'calendar', svgSize: 20 }) %></div>
+      <div>
+        <div class="num" style="font-size:14px;"><%= lastInterviewLabel %></div>
+        <div class="label">Latest Interview</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report list — compact rows, same activity-row/activity-score/
+       activity-cta classes already used in Recent Activity on the
+       Workspace page, so this is visually consistent with existing design
+       rather than a new UI pattern. Deterministic, threshold-based status
+       label (same 60/80 score bands already used elsewhere in this file
+       for activity-score high/mid/low) — no AI call, no invented content. -->
+  <div class="panel" style="margin-top:24px;">
+    <div class="panel-header-row"><h3>All Reports</h3></div>
+    <div class="activity-feed">
+      <% completedSessions.forEach(function(s) { %>
+        <% const statusLabel = s.overallScore === null ? null : (s.overallScore >= 80 ? 'Strong Performance' : s.overallScore >= 60 ? 'Solid Progress' : 'Needs Focus'); %>
+        <div class="activity-row">
+          <div class="icon-sq sm <%= s.overallScore !== null && s.overallScore >= 80 ? 'violet' : 'orange' %>">
+            <%- include('partials/icon', { name: 'check', svgSize: 15 }) %>
+          </div>
+          <div class="activity-main">
+            <div class="title"><%= s.roleTitle || 'Mock Interview' %></div>
+            <div class="meta">
+              <%= new Date(s.startedAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) %>
+              <% if (statusLabel) { %> · <%= statusLabel %><% } %>
+            </div>
+          </div>
+          <% if (s.overallScore !== null) { %>
+            <span class="activity-score <%= s.overallScore >= 80 ? 'high' : s.overallScore >= 60 ? 'mid' : 'low' %>"><%= s.overallScore %><span class="of100">/100</span></span>
+          <% } %>
+          <a href="/interview/report/<%= s.id %>" class="activity-cta view">View Report</a>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+
+<% } %>
+
+<%- include('partials/workspace-shell-bottom') %>

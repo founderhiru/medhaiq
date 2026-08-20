@@ -473,7 +473,7 @@
       submitBtn.addEventListener('click', async function () {
         if (!selectedRating) return;
         submitBtn.disabled = true;
-        const ok = await postFeedback('/api/feedback', { rating: selectedRating, comment: commentInput.value, feature: 'interview_report' });
+        const ok = await postFeedback('/api/feedback', { rating: selectedRating, comment: commentInput.value, feature: 'interview_report', sessionId: <%- JSON.stringify(typeof sessionId !== 'undefined' ? sessionId : null) %> });
         if (ok) {
           card.innerHTML = '<div class="fbw-thanks">Thanks for the feedback — it genuinely helps.</div>';
         } else {

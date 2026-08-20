@@ -22,14 +22,23 @@ function reqMeta(req) {
 // part of the app the prompt was triggered from (e.g. 'interview_report'),
 // so future trigger points (Resume Intelligence, Dashboard) stay
 // distinguishable in the same metadata shape without any schema change.
-async function submitFeedback({ userId, rating, comment, feature, req }) {
+// `sessionId` (when available — currently only the interview report
+// trigger point has one) ties this feedback to the specific interview it
+// was about, stored inside the same existing metadata JSONB rather than
+// a new column/table.
+async function submitFeedback({ userId, rating, comment, feature, sessionId, req }) {
   const meta = reqMeta(req);
   await insertActivityLog({
     userId,
     action: 'feedback_submitted',
     page: '/interview/report',
     feature: feature || null,
-    metadata: { rating: rating || null, comment: (comment || '').slice(0, 500), feature: feature || null },
+    metadata: {
+      rating: rating || null,
+      comment: (comment || '').slice(0, 500),
+      feature: feature || null,
+      interview_session_id: sessionId || null,
+    },
     ipAddress: meta.ipAddress,
     userAgent: meta.userAgent,
   });

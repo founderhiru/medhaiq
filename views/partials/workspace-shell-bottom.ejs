@@ -1,4 +1,44 @@
   </main>
 </div>
+
+<script>
+  // Lightweight presence heartbeat — Founder Dashboard "Online Now"
+  // (db/presence.js, routes/presence.js). Included once here, in the
+  // shared authenticated-page shell, rather than duplicated per page.
+  // Sends only a pathname and a short derived label — no IP, no
+  // location, no fingerprinting, no keystroke/mouse tracking. A missed
+  // ping is harmless; the next one 30s later self-corrects, so no retry
+  // logic is needed. Not included on the live interview session page
+  // (views/interview-session.ejs uses its own frozen layout, not this
+  // shared shell, and is explicitly not touched here) — presence
+  // coverage is every other authenticated page (Workspace, Settings,
+  // Resume, Founder pages, purchase success), not the in-session
+  // experience itself.
+  (function () {
+    var ACTIVITY_LABELS = [
+      [/^\/dashboard/, 'Workspace'],
+      [/^\/interview-setup/, 'Setting up an interview'],
+      [/^\/interview\/report/, 'Viewing a report'],
+      [/^\/resume/, 'Resume Intelligence'],
+      [/^\/settings/, 'Settings'],
+      [/^\/api\/founder|^\/founder/, 'Founder Dashboard'],
+    ];
+    function currentActivityLabel(pathname) {
+      for (var i = 0; i < ACTIVITY_LABELS.length; i++) {
+        if (ACTIVITY_LABELS[i][0].test(pathname)) return ACTIVITY_LABELS[i][1];
+      }
+      return 'Browsing';
+    }
+    function sendHeartbeat() {
+      fetch('/api/presence/heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page: window.location.pathname, activity: currentActivityLabel(window.location.pathname) }),
+      }).catch(function () { /* silent — next heartbeat self-corrects */ });
+    }
+    sendHeartbeat();
+    setInterval(sendHeartbeat, 30000);
+  })();
+</script>
 </body>
 </html>
