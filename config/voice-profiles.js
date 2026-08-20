@@ -56,7 +56,7 @@ const VOICE_PROFILES = {
   // intentionally still falls back to CURRENT_DEFAULT_VOICE_ID.
   alex: {
     provider: 'elevenlabs',
-    providerVoice: 'Z2fsAwk7IblvPhYzfslC',
+    providerVoice:'xXFOA11TH5EKg661vj6I',
     pace: 0.95,
     style: 'analytical',
   },
