@@ -55,7 +55,7 @@ const VOICE_PROFILES = {
   // configuration-only change, no code touched.
   alex: {
     provider: 'elevenlabs',
-    providerVoice: CURRENT_DEFAULT_VOICE_ID,
+    providerVoice:'xXFOA11TH5EKg661vj6I',
     pace: 0.95,
     style: 'analytical',
   },
