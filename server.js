@@ -1058,6 +1058,17 @@ async function computeDashboardHistoryData(req) {
       return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
     const lastCompleted = completedSessions[0] || null; // history is already DESC by started_at
+
+    // Best Score — Math.max over completed sessions with a real (non-null)
+    // overall score, exactly as specified. Math.max(...[]) on an empty
+    // array is -Infinity, not a sane display value, so this explicitly
+    // guards for zero scored sessions and returns null instead (rendered
+    // as '—' by the template, same pattern already used for
+    // readinessScore when there's no data yet).
+    const scoredSessions = completedSessions
+      .map(s => s.overallScore)
+      .filter(v => typeof v === 'number' && !Number.isNaN(v));
+    const bestScore = scoredSessions.length ? Math.max(...scoredSessions) : null;
     const lastInterviewLabel = lastCompleted ? `Last interview ${relativeDayLabel(lastCompleted.startedAt)}` : 'No interviews yet';
     const lastSessionLabel = history[0] ? `Last session ${relativeDayLabel(history[0].startedAt)}` : 'No sessions yet';
     const lastReportLabel = lastCompleted ? `Last report ${relativeDayLabel(lastCompleted.startedAt)}` : 'No reports yet';
@@ -1102,7 +1113,7 @@ async function computeDashboardHistoryData(req) {
   return {
     shellUser: user,
     history, completedSessions, trend, trendPoints, trendPointsFill, trendWidth, trendX, trendY, trendLatest, trendAvg,
-    interviewsCompletedCount, reportsGeneratedCount, practiceTimeLabel,
+    interviewsCompletedCount, reportsGeneratedCount, practiceTimeLabel, bestScore,
     readinessScore, readinessDeltaVsPrevious, interruptedSession, aggregateScores,
     lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
     resumeIntelActive, resumeIntelSubLabel,

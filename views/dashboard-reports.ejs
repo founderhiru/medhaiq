@@ -39,8 +39,9 @@
 
   <!-- Compact summary strip — same overview-strip/overview-stat classes
        already used on the Workspace page, same underlying values
-       (interviewsCompletedCount, practiceTimeLabel, readinessScore,
-       lastInterviewLabel), no new computation. -->
+       (interviewsCompletedCount, bestScore, readinessScore,
+       lastInterviewLabel), no new computation except bestScore itself
+       (Math.max over completedSessions' real scores, empty-safe). -->
   <div class="overview-strip">
     <div class="overview-stat">
       <div class="icon-sq square violet"><%- include('partials/icon', { name: 'calendar', svgSize: 20 }) %></div>
@@ -50,10 +51,10 @@
       </div>
     </div>
     <div class="overview-stat">
-      <div class="icon-sq square green"><%- include('partials/icon', { name: 'clock', svgSize: 20 }) %></div>
+      <div class="icon-sq square green"><%- include('partials/icon', { name: 'sparkle', svgSize: 20 }) %></div>
       <div>
-        <div class="num"><%= practiceTimeLabel %></div>
-        <div class="label">Total Practice Time</div>
+        <div class="num"><%= bestScore !== null ? bestScore : '—' %></div>
+        <div class="label">Best Score</div>
       </div>
     </div>
     <div class="overview-stat">
@@ -64,7 +65,7 @@
       </div>
     </div>
     <div class="overview-stat">
-      <div class="icon-sq square blue"><%- include('partials/icon', { name: 'sparkle', svgSize: 20 }) %></div>
+      <div class="icon-sq square violet"><%- include('partials/icon', { name: 'calendar', svgSize: 20 }) %></div>
       <div>
         <div class="num" style="font-size:14px;"><%= lastInterviewLabel %></div>
         <div class="label">Latest Interview</div>
