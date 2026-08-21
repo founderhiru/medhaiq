@@ -54,7 +54,7 @@
 </head>
 <body class="min-h-screen font-sans text-ink antialiased">
 
-  <div class="max-w-5xl mx-auto px-6 py-6">
+  <div class="max-w-6xl mx-auto px-6 py-6">
 
     <!-- Header -->
     <div class="flex items-start justify-between mb-4">
@@ -96,53 +96,74 @@
     <!-- Revenue note (INR / unresolved purchases) -->
     <div id="revenueNote" class="hidden mb-4 rounded-lg border border-gold/30 bg-gold/5 text-inkSoft text-xs px-4 py-2"></div>
 
-    <!-- 1. Financial Overview — Revenue (selected month) / YTD / All Time /
-         AI Cost / Fixed Cost / True Profit, in that order -->
-    <section class="mb-5">
-      <div id="financialGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
-    </section>
+    <!-- Two-column layout: main dashboard (left) + AI Providers (right).
+         Stacks to a single column below the lg breakpoint — no horizontal
+         scrolling, per instruction. items-start so the right column's
+         height never stretches to match the (usually taller) left column. -->
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 items-start">
 
-    <!-- 2. Business & Unit Economics -->
-    <section class="mb-5">
-      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Business &amp; unit economics</h2>
-      <div id="unitGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
-      <p id="maxCostNote" class="hidden text-xs text-inkFaint mt-2"></p>
-    </section>
+      <!-- Left column: everything except AI Provider Status -->
+      <div class="min-w-0">
 
-    <!-- 3. Provider Spend + 4. Fixed Infrastructure, side by side -->
-    <section class="mb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <div class="card rounded-xl px-4 py-3">
-        <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Provider spend — <span id="providerMonthLabel"></span></h2>
-        <div id="providerTable"></div>
+        <!-- 1. Financial Overview — Revenue (selected month) / YTD / All Time /
+             AI Cost / Fixed Cost / True Profit, in that order -->
+        <section class="mb-5">
+          <div id="financialGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+        </section>
+
+        <!-- 2. Business & Unit Economics -->
+        <section class="mb-5">
+          <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Business &amp; unit economics</h2>
+          <div id="unitGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+          <p id="maxCostNote" class="hidden text-xs text-inkFaint mt-2"></p>
+        </section>
+
+        <!-- 3. Provider Spend + 4. Fixed Infrastructure, side by side -->
+        <section class="mb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="card rounded-xl px-4 py-3">
+            <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Provider spend — <span id="providerMonthLabel"></span></h2>
+            <div id="providerTable"></div>
+          </div>
+          <div class="card rounded-xl px-4 py-3">
+            <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Fixed infrastructure — <span id="fixedMonthLabel"></span></h2>
+            <div id="fixedTable"></div>
+          </div>
+        </section>
+
+        <!-- 5. Monthly Trend -->
+        <section class="mb-5">
+          <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Monthly trend</h2>
+          <div class="card rounded-xl px-4 py-3">
+            <div id="trendTable"></div>
+            <p class="text-xs text-inkFaint mt-2">Trend history builds up month over month — only months with real data will ever appear here.</p>
+          </div>
+        </section>
+
+        <!-- 6. Today strip (secondary, de-emphasized) -->
+        <section>
+          <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Today</h2>
+          <div id="todayStrip" class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-inkSoft"></div>
+        </section>
+
       </div>
-      <div class="card rounded-xl px-4 py-3">
-        <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Fixed infrastructure — <span id="fixedMonthLabel"></span></h2>
-        <div id="fixedTable"></div>
-      </div>
-    </section>
 
-    <!-- 5. Monthly Trend -->
-    <section class="mb-5">
-      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Monthly trend</h2>
+      <!-- Right column: AI Provider Status — compact vertical panel,
+           visually secondary to the Financial Overview on the left -->
       <div class="card rounded-xl px-4 py-3">
-        <div id="trendTable"></div>
-        <p class="text-xs text-inkFaint mt-2">Trend history builds up month over month — only months with real data will ever appear here.</p>
-      </div>
-    </section>
-
-    <!-- 6. Today strip (secondary, de-emphasized) -->
-    <section class="mb-5">
-      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Today</h2>
-      <div id="todayStrip" class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-inkSoft"></div>
-    </section>
-
-    <!-- 7. AI Provider Status — compact, visually subordinate to Financial Overview -->
-    <section>
-      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">AI provider status</h2>
-      <div class="card rounded-xl px-4 py-3">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label">AI provider status</h2>
+            <p id="providerLastUpdated" class="text-[11px] text-inkFaint mt-0.5"></p>
+          </div>
+          <button id="providerRefreshBtn" class="text-[11px] px-2 py-1 rounded-md border border-hairline bg-card hover:bg-cardAlt transition text-inkSoft flex-shrink-0">
+            Refresh
+          </button>
+        </div>
         <div id="providerStatusTable"></div>
+        <p class="text-[10px] text-inkFaint mt-3 leading-snug">Balances shown when available from provider APIs. Usage is from your cost ledger.</p>
       </div>
-    </section>
+
+    </div>
 
   </div>
 
@@ -160,6 +181,8 @@
   const trendTable = document.getElementById('trendTable');
   const todayStrip = document.getElementById('todayStrip');
   const providerStatusTable = document.getElementById('providerStatusTable');
+  const providerRefreshBtn = document.getElementById('providerRefreshBtn');
+  const providerLastUpdated = document.getElementById('providerLastUpdated');
   const monthSelect = document.getElementById('monthSelect');
   const providerMonthLabel = document.getElementById('providerMonthLabel');
   const fixedMonthLabel = document.getElementById('fixedMonthLabel');
@@ -395,19 +418,61 @@
   // above. A failure here (provider API down, network error) must never
   // clear or block the main financial dashboard — it only ever touches
   // providerStatusTable's own content.
+  //
+  // Logos: simple, self-authored geometric marks (not copied brand
+  // artwork) in each provider's known accent color — Anthropic's rust/
+  // terracotta, Vapi's purple (already this app's own --accent color),
+  // ElevenLabs' minimalist near-black. No external image URLs.
   const PROVIDER_LABELS = { claude: 'Claude', vapi: 'Vapi', elevenlabs: 'ElevenLabs' };
+  const PROVIDER_LOGOS = {
+    claude: `
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#D97757">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <g stroke="white" stroke-width="2.3" stroke-linecap="round">
+            <line x1="12" y1="2" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="22"/>
+            <line x1="2" y1="12" x2="7" y2="12"/><line x1="17" y1="12" x2="22" y2="12"/>
+            <line x1="4.9" y1="4.9" x2="8.5" y2="8.5"/><line x1="15.5" y1="15.5" x2="19.1" y2="19.1"/>
+            <line x1="19.1" y1="4.9" x2="15.5" y2="8.5"/><line x1="8.5" y1="15.5" x2="4.9" y2="19.1"/>
+          </g>
+        </svg>
+      </div>`,
+    vapi: `
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#6750C8">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <path d="M3 5L12 20L21 5" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>`,
+    elevenlabs: `
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#1A1A1A">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <rect x="5" y="4" width="4" height="16" rx="1" fill="white"/>
+          <rect x="15" y="4" width="4" height="16" rx="1" fill="white"/>
+        </svg>
+      </div>`,
+  };
   const STATUS_DOT_CLASS = {
     active: 'bg-good',
     'no usage this month': 'bg-inkFaint',
     'balance check failed': 'bg-bad',
     unavailable: 'bg-inkFaint',
   };
+  // Display-only label mapping — the underlying status STRINGS returned by
+  // the backend are unchanged (see lib/provider-status.js); this only
+  // controls the words shown next to the dot, per "Used this month / No
+  // usage this month / Balance check unavailable" wording, never
+  // "Operational/Online/Healthy/Connected" without a real health signal.
+  const ACTIVITY_LABELS = {
+    active: 'Used this month',
+    'no usage this month': 'No usage this month',
+    'balance check failed': 'Balance check unavailable',
+    unavailable: 'Unavailable',
+  };
 
   function formatBalance(p) {
-    if (!p.balanceAvailable) return { text: 'Balance unavailable via API', cls: 'text-inkFaint' };
+    if (!p.balanceAvailable) return { text: 'Balance unavailable', cls: 'text-inkFaint' };
     const unit = p.balanceUnit === 'credits' ? 'credits' : (p.balanceUnit || '');
     const text = `${Number(p.balance).toLocaleString()} ${unit}`.trim();
-    return { text, cls: p.lowBalance ? 'text-warn' : 'text-ink' };
+    return { text, cls: p.lowBalance ? 'text-warn' : 'text-good' };
   }
 
   function formatUsage(p) {
@@ -420,37 +485,44 @@
       providerStatusTable.innerHTML = '<p class="text-sm text-inkFaint">Provider status unavailable right now.</p>';
       return;
     }
-    const rows = ['claude', 'vapi', 'elevenlabs'].filter((k) => status[k]);
-    providerStatusTable.innerHTML = `
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="text-inkFaint text-[11px] uppercase tracking-wide">
-            <th class="text-left font-medium pb-1.5">Provider</th>
-            <th class="text-right font-medium pb-1.5">Balance / credits</th>
-            <th class="text-right font-medium pb-1.5">Used this month</th>
-            <th class="text-right font-medium pb-1.5">Activity</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map((key) => {
-            const p = status[key];
-            const balance = formatBalance(p);
-            const dotClass = STATUS_DOT_CLASS[p.status] || 'bg-inkFaint';
-            const lowBalanceNote = p.lowBalance ? '<div class="text-[11px] text-warn mt-0.5">\u26a0 Low balance</div>' : '';
-            return `
-              <tr class="border-t border-hairline align-top">
-                <td class="py-1.5 text-ink">${PROVIDER_LABELS[key]}</td>
-                <td class="py-1.5 text-right num ${balance.cls}">${balance.text}${lowBalanceNote}</td>
-                <td class="py-1.5 text-right num text-ink">${formatUsage(p)}</td>
-                <td class="py-1.5 text-right text-[11px] text-inkSoft">
-                  <span class="inline-block w-1.5 h-1.5 rounded-full ${dotClass} mr-1.5 align-middle"></span>${p.status}
-                </td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    `;
+    const keys = ['claude', 'vapi', 'elevenlabs'].filter((k) => status[k]);
+    providerStatusTable.innerHTML = keys.map((key, i) => {
+      const p = status[key];
+      const balance = formatBalance(p);
+      const dotClass = STATUS_DOT_CLASS[p.status] || 'bg-inkFaint';
+      const activityLabel = ACTIVITY_LABELS[p.status] || p.status;
+      const lowBalanceNote = p.lowBalance ? '<div class="text-[11px] text-warn mt-0.5">\u26a0 Low balance</div>' : '';
+      // Notes line — reuses balanceUnavailableReason already computed
+      // server-side (no new backend data); a short explanatory note when
+      // a balance IS available, for parity/context.
+      const note = p.balanceAvailable
+        ? (key === 'elevenlabs' ? 'Balance via subscription endpoint' : null)
+        : p.balanceUnavailableReason;
+      return `
+        <div class="${i > 0 ? 'border-t border-hairline pt-3 mt-3' : ''}">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex items-center gap-2.5">
+              ${PROVIDER_LOGOS[key]}
+              <span class="text-sm font-medium text-ink">${PROVIDER_LABELS[key]}</span>
+            </div>
+            <span class="text-[11px] text-inkSoft flex items-center gap-1.5 mt-1.5">
+              <span class="inline-block w-1.5 h-1.5 rounded-full ${dotClass}"></span>${activityLabel}
+            </span>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-inkFaint mb-1">
+            <span>Balance / credits</span>
+            <span class="num font-medium ${balance.cls}">${balance.text}</span>
+          </div>
+          ${lowBalanceNote}
+          <div class="flex items-center justify-between text-[11px] text-inkFaint">
+            <span>Used this month</span>
+            <span class="num font-medium text-ink">${formatUsage(p)}</span>
+          </div>
+          ${note ? `<p class="text-[10px] text-inkFaint mt-1.5 leading-snug">${note}</p>` : ''}
+        </div>
+      `;
+    }).join('');
+    providerLastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   }
 
   function showError(msg) {
@@ -525,6 +597,7 @@
   }
 
   refreshBtn.addEventListener('click', () => { load(monthSelect.value || undefined); loadProviderStatus(); });
+  providerRefreshBtn.addEventListener('click', () => loadProviderStatus());
   monthSelect.addEventListener('change', () => load(monthSelect.value));
   secretSubmit.addEventListener('click', () => {
     sessionStorage.setItem(SECRET_KEY, secretInput.value.trim());
