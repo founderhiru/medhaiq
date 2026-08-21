@@ -76,6 +76,9 @@ app.set('views', path.join(__dirname, 'views'));
 // Health check (no DB — allows Neon auto-suspend)
 app.get('/health', (_req, res) => res.json({ status: 'healthy' }));
 
+app.get('/admin/founder-dashboard.html', requireFounderPage, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/admin/founder-dashboard.html'));
+});
 // Static files
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
