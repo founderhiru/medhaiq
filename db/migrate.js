@@ -948,6 +948,46 @@ async function runMigrations() {
           await c.query(`CREATE INDEX IF NOT EXISTS user_presence_last_seen_idx ON user_presence (last_seen_at)`);
         },
       },
+      {
+        name: '028_fixed_costs',
+        up: async (c) => {
+          // Configurable fixed infrastructure costs — replaces the
+          // hardcoded FIXED_MONTHLY_COSTS object in db/cost-analytics.js.
+          // One row per provider/cost line. Adding a new fixed-cost line
+          // (e.g. a domain renewal, an email provider) is a data insert
+          // from here forward, never a code change.
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS fixed_costs (
+              id SERIAL PRIMARY KEY,
+              provider VARCHAR(50) NOT NULL,
+              cost_type VARCHAR(30) NOT NULL DEFAULT 'fixed',
+              amount NUMERIC(10,2) NOT NULL,
+              currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+              billing_period VARCHAR(20) NOT NULL DEFAULT 'monthly',
+              active BOOLEAN NOT NULL DEFAULT true,
+              effective_date DATE NOT NULL DEFAULT CURRENT_DATE,
+              created_at TIMESTAMPTZ DEFAULT NOW(),
+              updated_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`CREATE INDEX IF NOT EXISTS fixed_costs_active_idx ON fixed_costs (active)`);
+
+          // Seed data — the actual current values, not accounting logic.
+          // Guarded by NOT EXISTS (provider) so this is safe to run again
+          // and never creates a duplicate row if the migration somehow
+          // runs twice (same pattern as migration 016's backfill guard).
+          await c.query(`
+            INSERT INTO fixed_costs (provider, cost_type, amount, currency, billing_period, active)
+            SELECT 'render', 'fixed', 7.00, 'USD', 'monthly', true
+            WHERE NOT EXISTS (SELECT 1 FROM fixed_costs WHERE provider = 'render')
+          `);
+          await c.query(`
+            INSERT INTO fixed_costs (provider, cost_type, amount, currency, billing_period, active)
+            SELECT 'supabase', 'fixed', 0.00, 'USD', 'monthly', true
+            WHERE NOT EXISTS (SELECT 1 FROM fixed_costs WHERE provider = 'supabase')
+          `);
+        },
+      },
     ];
 
     for (const m of migrations) {

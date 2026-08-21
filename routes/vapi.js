@@ -156,46 +156,54 @@ router.post('/vapi-webhook', async (req, res) => {
     // logic. Cost recording is fire-and-forget (see lib/cost-recorder.js);
     // a failure here can never affect the webhook's response to Vapi.
     //
-    // FIELD PATH NOTE: Vapi's documented end-of-call-report payload places
-    // the final call cost at message.cost (top-level on the message, a
-    // number in USD) and duration at message.durationSeconds, with the
-    // call object (including metadata.sessionId) at message.call — same
-    // location the assistant-request branch above already reads from. This
-    // has NOT yet been confirmed against a real payload from this Vapi
-    // account (paid plan/report format can vary) — the raw payload is
-    // logged below specifically so that can be confirmed against one real
-    // staging interview before this is trusted in production. If the cost
-    // field turns out to live somewhere else, only this logging/extraction
-    // block needs to change — lib/cost-recorder.js and the DB layer
-    // underneath are already correct for whatever number arrives here.
+    // FIELD PATH — CONFIRMED (2026-08-21 diagnostic pass) against Vapi's own
+    // current docs (docs.vapi.ai/server-url/events: the end-of-call-report
+    // payload is { message: { type, endedReason, call, artifact } } — there
+    // is NO top-level message.cost) and third-party debugging references
+    // ("the cost and costBreakdown fields" are documented as part of the
+    // Call object, delivered in this webhook's `call` field). So the
+    // authoritative path is message.call.cost / message.call.costBreakdown.
+    // The previous version tried message.cost FIRST — a field that does not
+    // exist per Vapi's documented schema — falling back to message.call.cost
+    // only if that lookup came back undefined. Functionally the fallback
+    // should already have reached the right value, but the priority was
+    // backwards versus the confirmed schema; swapped below so the primary
+    // path matches what Vapi actually sends, with the old message.cost
+    // check kept only as a legacy fallback in case some account/report
+    // version does place it there.
     if (payload.message && payload.message.type === 'end-of-call-report') {
-      const sessionId = payload.message.call && payload.message.call.metadata
-        ? payload.message.call.metadata.sessionId
-        : null;
+      const call = payload.message.call || null;
+      const sessionId = call && call.metadata ? call.metadata.sessionId : null;
 
-      // Defensive extraction — try the documented top-level field first,
-      // fall back to a nested call.cost in case this account's report
-      // shape differs. Logged either way so the real shape is visible in
-      // Render logs on the first live call.
-      const rawCost = (payload.message.cost !== undefined && payload.message.cost !== null)
-        ? payload.message.cost
-        : (payload.message.call && payload.message.call.cost);
-      const rawDurationSeconds = (payload.message.durationSeconds !== undefined && payload.message.durationSeconds !== null)
-        ? payload.message.durationSeconds
-        : (payload.message.call && payload.message.call.durationSeconds);
+      const rawCost = (call && call.cost !== undefined && call.cost !== null)
+        ? call.cost
+        : (payload.message.cost !== undefined ? payload.message.cost : undefined);
+      const rawDurationSeconds = (call && call.durationSeconds !== undefined && call.durationSeconds !== null)
+        ? call.durationSeconds
+        : payload.message.durationSeconds;
+      const costBreakdown = (call && call.costBreakdown) || payload.message.costBreakdown || null;
 
-      console.log('[WEBHOOK] end-of-call-report received', JSON.stringify({
+      // ── Diagnostic logging (temporary, per this investigation) ──────────
+      // Deliberately excludes: API keys/tokens, transcript/recording
+      // content, and any user PII beyond the internal sessionId already
+      // used for attribution elsewhere in this file. Safe to leave in
+      // place short-term; remove once a real staging call confirms the
+      // path end-to-end, per the same pattern the assistant-request branch
+      // above already used for its own temporary diagnostic logging.
+      console.log('[WEBHOOK][vapi-cost-diagnostic] end-of-call-report', JSON.stringify({
+        messageType: payload.message.type,
+        vapiCallId: call ? call.id : null,
+        endedReason: payload.message.endedReason || null,
         sessionId,
-        vapiCallId: payload.message.call ? payload.message.call.id : null,
         rawCost,
+        rawCostType: typeof rawCost,
         rawDurationSeconds,
-        // Full costBreakdown (if present) is genuinely useful for the
-        // first-real-call verification and costs nothing to log.
-        costBreakdown: payload.message.costBreakdown || (payload.message.call && payload.message.call.costBreakdown) || null,
+        costBreakdown,
+        willCallRecordVapiCallCost: !!sessionId,
       }));
 
       if (!sessionId) {
-        console.error('[Vapi Webhook] end-of-call-report has no sessionId in call.metadata — cannot attribute cost, skipping write.');
+        console.error('[Vapi Webhook][vapi-cost-diagnostic] no sessionId in call.metadata — recordVapiCallCost will NOT be called, cost cannot be attributed.');
         return res.status(200).json({ received: true });
       }
 
@@ -219,6 +227,7 @@ router.post('/vapi-webhook', async (req, res) => {
         console.error('[Vapi Webhook] Could not resolve user/plan for cost attribution (non-fatal, cost still recorded without it):', lookupErr.message);
       }
 
+      console.log(`[WEBHOOK][vapi-cost-diagnostic] calling recordVapiCallCost interviewId=${sessionId} vapiCost=${rawCost} durationMinutes=${durationMinutes}`);
       await recordVapiCallCost({
         interviewId: sessionId,
         userId: userIdForCost,

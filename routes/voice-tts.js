@@ -53,7 +53,7 @@ router.post('/synthesize', voiceInitLimiter, requireAuth, async (req, res) => {
   }
 
   try {
-    const { buffer, contentType } = await synthesizeViaElevenLabs({ text, voiceProfile, language, streaming });
+    const { buffer, contentType } = await synthesizeViaElevenLabs({ text, voiceProfile, language, streaming, userId: req.user.id });
     res.set('Content-Type', contentType);
     res.send(buffer);
   } catch (err) {
