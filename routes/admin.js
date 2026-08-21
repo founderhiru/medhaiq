@@ -5,6 +5,7 @@ const router = express.Router();
 const { getFounderDashboardStats } = require('../db/cost-analytics');
 const { createInvitation } = require('../db/invitations');
 const { getCacheEfficiencyStats, getSessionCacheMetrics } = require('../db/prompt-cache-metrics');
+const { getProviderStatus } = require('../lib/provider-status');
 function requireAdmin(req, res, next) {
   if (process.env.ADMIN_SECRET && req.headers['x-admin-secret'] !== process.env.ADMIN_SECRET) {
     return res.status(403).json({ error: 'Forbidden' });
@@ -64,6 +65,21 @@ router.post('/invitations', requireAdmin, async (req, res) => {
   } catch (err) {
     console.error('[admin] create invitation error:', err);
     return res.status(500).json({ error: 'Failed to create invitation' });
+  }
+});
+// GET /api/admin/provider-status — AI Provider Status panel (balance where
+// a legitimate API exists, usage always from the existing cost_analytics
+// ledger). Cached server-side (see lib/provider-status.js) so this never
+// hammers external provider APIs on every dashboard load/refresh. A
+// provider-status failure can never break this endpoint or the main
+// founder-dashboard endpoint — getProviderStatus() itself never throws.
+router.get('/provider-status', requireAdmin, async (_req, res) => {
+  try {
+    const status = await getProviderStatus();
+    return res.json(status);
+  } catch (err) {
+    console.error('[admin] provider-status error:', err);
+    return res.status(500).json({ error: 'Failed to load provider status' });
   }
 });
 module.exports = router;
