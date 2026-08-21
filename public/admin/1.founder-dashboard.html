@@ -54,12 +54,12 @@
 </head>
 <body class="min-h-screen font-sans text-ink antialiased">
 
-  <div class="max-w-5xl mx-auto px-6 py-6">
+  <div class="max-w-5xl mx-auto px-6 py-10">
 
     <!-- Header -->
-    <div class="flex items-start justify-between mb-4">
+    <div class="flex items-start justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-semibold tracking-tight text-ink">Founder Dashboard</h1>
+        <h1 class="text-xl font-semibold tracking-tight text-ink">Founder Dashboard</h1>
         <p class="text-xs text-inkFaint mt-1">Revenue, AI cost, and true profit — from your live cost ledger</p>
       </div>
       <div class="flex items-center gap-2">
@@ -71,10 +71,10 @@
     </div>
 
     <!-- Error banner -->
-    <div id="errorBanner" class="hidden mb-3 rounded-lg border border-bad/30 bg-bad/5 text-bad text-sm px-4 py-3"></div>
+    <div id="errorBanner" class="hidden mb-5 rounded-lg border border-bad/30 bg-bad/5 text-bad text-sm px-4 py-3"></div>
 
     <!-- Secret prompt -->
-    <div id="authPrompt" class="hidden mb-3 rounded-lg border border-hairline bg-card px-4 py-3">
+    <div id="authPrompt" class="hidden mb-5 rounded-lg border border-hairline bg-card px-4 py-4">
       <label class="block text-sm text-inkSoft mb-2">Admin secret required</label>
       <div class="flex gap-2">
         <input id="secretInput" type="password" placeholder="x-admin-secret"
@@ -86,60 +86,64 @@
     </div>
 
     <!-- Month selector strip -->
-    <div class="flex items-center justify-between mb-1.5">
+    <div class="flex items-center justify-between mb-2">
       <div class="flex items-center gap-2">
         <select id="monthSelect" class="text-sm font-medium text-ink bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-accent rounded cursor-pointer"></select>
       </div>
     </div>
-    <div class="hairline-gold rounded-full mb-4"></div>
+    <div class="hairline-gold rounded-full mb-6"></div>
 
     <!-- Revenue note (INR / unresolved purchases) -->
-    <div id="revenueNote" class="hidden mb-4 rounded-lg border border-gold/30 bg-gold/5 text-inkSoft text-xs px-4 py-2"></div>
+    <div id="revenueNote" class="hidden mb-6 rounded-lg border border-gold/30 bg-gold/5 text-inkSoft text-xs px-4 py-2.5"></div>
 
-    <!-- 1. Financial Overview — Revenue (selected month) / YTD / All Time /
-         AI Cost / Fixed Cost / True Profit, in that order -->
-    <section class="mb-5">
-      <div id="financialGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+    <!-- 1a. Revenue — This Month / YTD / All Time -->
+    <section class="mb-4">
+      <div id="revenueGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- 1b. Founder Financial Overview (cost/profit) -->
+    <section class="mb-8">
+      <div id="financialGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
     </section>
 
     <!-- 2. Business & Unit Economics -->
-    <section class="mb-5">
-      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Business &amp; unit economics</h2>
-      <div id="unitGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+    <section class="mb-8">
+      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Business &amp; unit economics</h2>
+      <div id="unitGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
       <p id="maxCostNote" class="hidden text-xs text-inkFaint mt-2"></p>
     </section>
 
     <!-- 3. Provider Spend + 4. Fixed Infrastructure, side by side -->
-    <section class="mb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <div class="card rounded-xl px-4 py-3">
-        <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Provider spend — <span id="providerMonthLabel"></span></h2>
+    <section class="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="card rounded-xl px-5 py-4">
+        <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Provider spend — <span id="providerMonthLabel"></span></h2>
         <div id="providerTable"></div>
       </div>
-      <div class="card rounded-xl px-4 py-3">
-        <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Fixed infrastructure — <span id="fixedMonthLabel"></span></h2>
+      <div class="card rounded-xl px-5 py-4">
+        <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Fixed infrastructure — <span id="fixedMonthLabel"></span></h2>
         <div id="fixedTable"></div>
       </div>
     </section>
 
     <!-- 5. Monthly Trend -->
-    <section class="mb-5">
-      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Monthly trend</h2>
-      <div class="card rounded-xl px-4 py-3">
+    <section class="mb-8">
+      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Monthly trend</h2>
+      <div class="card rounded-xl px-5 py-4">
         <div id="trendTable"></div>
-        <p class="text-xs text-inkFaint mt-2">Trend history builds up month over month — only months with real data will ever appear here.</p>
+        <p class="text-xs text-inkFaint mt-3">Trend history builds up month over month — only months with real data will ever appear here.</p>
       </div>
     </section>
 
     <!-- 6. Today strip (secondary, de-emphasized) -->
-    <section class="mb-5">
-      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Today</h2>
+    <section class="mb-8">
+      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Today</h2>
       <div id="todayStrip" class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-inkSoft"></div>
     </section>
 
     <!-- 7. AI Provider Status — compact, visually subordinate to Financial Overview -->
     <section>
-      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">AI provider status</h2>
-      <div class="card rounded-xl px-4 py-3">
+      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">AI provider status</h2>
+      <div class="card rounded-xl px-5 py-4">
         <div id="providerStatusTable"></div>
       </div>
     </section>
@@ -152,6 +156,7 @@
   const PROVIDER_STATUS_ENDPOINT = '/api/admin/provider-status';
   const SECRET_KEY = 'medhaiq_admin_secret';
 
+  const revenueGrid = document.getElementById('revenueGrid');
   const financialGrid = document.getElementById('financialGrid');
   const unitGrid = document.getElementById('unitGrid');
   const maxCostNote = document.getElementById('maxCostNote');
@@ -177,25 +182,26 @@
 
   function statCard({ label, value, sub, accentClass }) {
     return `
-      <div class="card rounded-xl px-4 py-3">
-        <p class="text-[11px] uppercase tracking-wide text-inkFaint mb-1">${label}</p>
+      <div class="card rounded-xl px-4 py-4">
+        <p class="text-[11px] uppercase tracking-wide text-inkFaint mb-1.5">${label}</p>
         <p class="text-2xl font-semibold num ${accentClass || 'text-ink'}">${value}</p>
-        ${sub ? `<p class="text-[11px] text-inkFaint mt-1 leading-snug">${sub}</p>` : ''}
+        ${sub ? `<p class="text-[11px] text-inkFaint mt-1.5 leading-snug">${sub}</p>` : ''}
       </div>
     `;
   }
 
   function skeletonCards(n) {
     return Array.from({ length: n }).map(() => `
-      <div class="card rounded-xl px-4 py-3">
-        <div class="skeleton h-2.5 w-16 bg-hairline rounded mb-2"></div>
+      <div class="card rounded-xl px-4 py-4">
+        <div class="skeleton h-2.5 w-16 bg-hairline rounded mb-3"></div>
         <div class="skeleton h-6 w-24 bg-hairline rounded"></div>
       </div>
     `).join('');
   }
 
   function skeletonAll() {
-    financialGrid.innerHTML = skeletonCards(6);
+    revenueGrid.innerHTML = skeletonCards(3);
+    financialGrid.innerHTML = skeletonCards(3);
     unitGrid.innerHTML = skeletonCards(4);
     providerTable.innerHTML = '<div class="skeleton h-20 bg-hairline rounded"></div>';
     fixedTable.innerHTML = '<div class="skeleton h-20 bg-hairline rounded"></div>';
@@ -222,20 +228,17 @@
       revenueNote.classList.add('hidden');
     }
 
-    // ── Financial Overview — one ordered set of 6 cards:
-    // Revenue (selected month) / YTD / All Time / AI Cost / Fixed Cost /
-    // True Profit. Revenue·YTD and Revenue·All Time are ALWAYS the current
-    // calendar year/lifetime — independent of the month selector, per
-    // instruction. Revenue·[Selected Month] is the ONLY monthly revenue
-    // card now (the previous separate "Revenue · this month" card was a
-    // duplicate of this one whenever the current month was selected, and
-    // has been removed rather than kept alongside it).
-    const trueMarginClass = d.month_true_margin_pct >= 0 ? 'text-good' : 'text-bad';
-    financialGrid.innerHTML = [
+    // ── 1a. Revenue — This Month / YTD / All Time. Same underlying source
+    // (package_acquisitions, source='purchase') for all three — only the
+    // date range differs, so YTD is never less than This Month, and All
+    // Time is never less than YTD, by construction, not enforcement. These
+    // are ALWAYS the current calendar month/year/lifetime — independent of
+    // the month selector above, per instruction.
+    revenueGrid.innerHTML = [
       statCard({
-        label: `Revenue · ${selected.label}`,
-        value: money(d.month_revenue_usd),
-        sub: d.month_revenue_inr > 0 ? `+ ₹${num(d.month_revenue_inr, 2)} (kept separate)` : `Real purchases in ${selected.label}`,
+        label: 'Revenue · this month',
+        value: money(d.monthly_revenue),
+        sub: d.monthly_revenue_inr > 0 ? `+ ₹${num(d.monthly_revenue_inr, 2)} (kept separate)` : 'Real purchases, month to date',
       }),
       statCard({
         label: 'Revenue · YTD',
@@ -246,6 +249,20 @@
         label: 'Revenue · all time',
         value: money(d.total_revenue_usd),
         sub: d.total_revenue_inr > 0 ? `+ ₹${num(d.total_revenue_inr, 2)} (kept separate)` : 'Since first purchase',
+      }),
+    ].join('');
+
+    // ── 1b. Founder Financial Overview — genuinely scoped to the SELECTED
+    // month (may differ from the current calendar month above). AI cost,
+    // fixed cost, and true profit/margin are all computed from real
+    // cost_analytics/fixed_costs rows filtered to that month's date range —
+    // no more "today" vs "all-time" mismatch against the provider table.
+    const trueMarginClass = d.month_true_margin_pct >= 0 ? 'text-good' : 'text-bad';
+    financialGrid.innerHTML = [
+      statCard({
+        label: `Revenue · ${selected.label}`,
+        value: money(d.month_revenue_usd),
+        sub: d.month_revenue_inr > 0 ? `+ ₹${num(d.month_revenue_inr, 2)} (kept separate)` : 'Real purchases this month',
       }),
       statCard({
         label: `AI cost · ${selected.label}`,
@@ -309,17 +326,17 @@
       <table class="w-full text-sm">
         <thead>
           <tr class="text-inkFaint text-[11px] uppercase tracking-wide">
-            <th class="text-left font-medium pb-1.5">Provider</th>
-            <th class="text-right font-medium pb-1.5">Cost</th>
-            <th class="text-right font-medium pb-1.5">Status</th>
+            <th class="text-left font-medium pb-2">Provider</th>
+            <th class="text-right font-medium pb-2">Cost</th>
+            <th class="text-right font-medium pb-2">Status</th>
           </tr>
         </thead>
         <tbody>
           ${payg.map((r) => `
             <tr class="border-t border-hairline">
-              <td class="py-1.5 text-ink">${r.provider}</td>
-              <td class="py-1.5 text-right num ${r.cost_usd === null ? 'text-inkFaint' : 'text-ink'}">${r.cost_usd === null ? '\u2014' : money(r.cost_usd)}</td>
-              <td class="py-1.5 text-right text-[11px] ${r.cost_usd === null ? 'text-inkFaint' : 'text-good'}">${r.cost_usd === null ? 'Not captured' : 'Captured'}</td>
+              <td class="py-2 text-ink">${r.provider}</td>
+              <td class="py-2 text-right num ${r.cost_usd === null ? 'text-inkFaint' : 'text-ink'}">${r.cost_usd === null ? '\u2014' : money(r.cost_usd)}</td>
+              <td class="py-2 text-right text-[11px] ${r.cost_usd === null ? 'text-inkFaint' : 'text-good'}">${r.cost_usd === null ? 'Not captured' : 'Captured'}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -335,17 +352,17 @@
       <table class="w-full text-sm">
         <thead>
           <tr class="text-inkFaint text-[11px] uppercase tracking-wide">
-            <th class="text-left font-medium pb-1.5">Provider</th>
-            <th class="text-right font-medium pb-1.5">This month</th>
-            <th class="text-right font-medium pb-1.5">Period</th>
+            <th class="text-left font-medium pb-2">Provider</th>
+            <th class="text-right font-medium pb-2">This month</th>
+            <th class="text-right font-medium pb-2">Period</th>
           </tr>
         </thead>
         <tbody>
           ${fixedRows.map((r) => `
             <tr class="border-t border-hairline">
-              <td class="py-1.5 text-ink">${r.provider.charAt(0).toUpperCase() + r.provider.slice(1)}</td>
-              <td class="py-1.5 text-right num text-ink">${r.currency === 'USD' ? money(r.monthly_allocation_usd) : `${r.currency} ${num(r.amount, 2)}`}</td>
-              <td class="py-1.5 text-right text-[11px] text-inkFaint">${r.billing_period}</td>
+              <td class="py-2 text-ink">${r.provider.charAt(0).toUpperCase() + r.provider.slice(1)}</td>
+              <td class="py-2 text-right num text-ink">${r.currency === 'USD' ? money(r.monthly_allocation_usd) : `${r.currency} ${num(r.amount, 2)}`}</td>
+              <td class="py-2 text-right text-[11px] text-inkFaint">${r.billing_period}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -359,21 +376,21 @@
       <table class="w-full text-sm">
         <thead>
           <tr class="text-inkFaint text-[11px] uppercase tracking-wide">
-            <th class="text-left font-medium pb-1.5">Month</th>
-            <th class="text-right font-medium pb-1.5">Revenue</th>
-            <th class="text-right font-medium pb-1.5">AI cost</th>
-            <th class="text-right font-medium pb-1.5">Fixed cost</th>
-            <th class="text-right font-medium pb-1.5">True profit</th>
+            <th class="text-left font-medium pb-2">Month</th>
+            <th class="text-right font-medium pb-2">Revenue</th>
+            <th class="text-right font-medium pb-2">AI cost</th>
+            <th class="text-right font-medium pb-2">Fixed cost</th>
+            <th class="text-right font-medium pb-2">True profit</th>
           </tr>
         </thead>
         <tbody>
           ${trend.map((m) => `
             <tr class="border-t border-hairline">
-              <td class="py-1.5 text-ink">${m.label}</td>
-              <td class="py-1.5 text-right num text-ink">${money(m.revenue_usd)}</td>
-              <td class="py-1.5 text-right num text-ink">${money(m.ai_cost)}</td>
-              <td class="py-1.5 text-right num text-ink">${money(m.fixed_cost)}</td>
-              <td class="py-1.5 text-right num ${m.true_profit >= 0 ? 'text-good' : 'text-bad'}">${money(m.true_profit)}</td>
+              <td class="py-2 text-ink">${m.label}</td>
+              <td class="py-2 text-right num text-ink">${money(m.revenue_usd)}</td>
+              <td class="py-2 text-right num text-ink">${money(m.ai_cost)}</td>
+              <td class="py-2 text-right num text-ink">${money(m.fixed_cost)}</td>
+              <td class="py-2 text-right num ${m.true_profit >= 0 ? 'text-good' : 'text-bad'}">${money(m.true_profit)}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -425,10 +442,10 @@
       <table class="w-full text-sm">
         <thead>
           <tr class="text-inkFaint text-[11px] uppercase tracking-wide">
-            <th class="text-left font-medium pb-1.5">Provider</th>
-            <th class="text-right font-medium pb-1.5">Balance / credits</th>
-            <th class="text-right font-medium pb-1.5">Used this month</th>
-            <th class="text-right font-medium pb-1.5">Status</th>
+            <th class="text-left font-medium pb-2">Provider</th>
+            <th class="text-right font-medium pb-2">Balance / credits</th>
+            <th class="text-right font-medium pb-2">Used this month</th>
+            <th class="text-right font-medium pb-2">Status</th>
           </tr>
         </thead>
         <tbody>
@@ -439,10 +456,10 @@
             const lowBalanceNote = p.lowBalance ? '<div class="text-[11px] text-warn mt-0.5">\u26a0 Low balance</div>' : '';
             return `
               <tr class="border-t border-hairline align-top">
-                <td class="py-1.5 text-ink">${PROVIDER_LABELS[key]}</td>
-                <td class="py-1.5 text-right num ${balance.cls}">${balance.text}${lowBalanceNote}</td>
-                <td class="py-1.5 text-right num text-ink">${formatUsage(p)}</td>
-                <td class="py-1.5 text-right text-[11px] text-inkSoft">
+                <td class="py-2 text-ink">${PROVIDER_LABELS[key]}</td>
+                <td class="py-2 text-right num ${balance.cls}">${balance.text}${lowBalanceNote}</td>
+                <td class="py-2 text-right num text-ink">${formatUsage(p)}</td>
+                <td class="py-2 text-right text-[11px] text-inkSoft">
                   <span class="inline-block w-1.5 h-1.5 rounded-full ${dotClass} mr-1.5 align-middle"></span>${p.status}
                 </td>
               </tr>
@@ -461,6 +478,7 @@
     errorBanner.classList.add('hidden');
   }
   function clearAll() {
+    revenueGrid.innerHTML = '';
     financialGrid.innerHTML = '';
     unitGrid.innerHTML = '';
     providerTable.innerHTML = '';
