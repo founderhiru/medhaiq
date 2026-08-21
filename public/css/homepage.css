@@ -462,45 +462,33 @@
 }
 
 .mh-perspective-card {
-  flex: 0 0 320px;
-  min-height: 122px;
+  flex: 0 0 300px;
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(11, 16, 32, 0.04);
-  padding: 14px 16px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  gap: 10px;
   text-align: left;
 }
-.mh-perspective-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.mh-perspective-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.mh-perspective-who {
-  min-width: 0;
+.mh-perspective-meta {
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid #EEF0F3;
+  font-family: var(--font-body);
+  font-size: 12px;
+  white-space: nowrap;
 }
 .mh-perspective-role {
   font-family: var(--font-display);
-  font-size: 13px;
   font-weight: 700;
   color: #0B1020;
-  margin: 0;
-  white-space: nowrap;
 }
 .mh-perspective-location {
-  font-family: var(--font-body);
-  font-size: 11.5px;
   color: #5F6B82;
-  margin: 1px 0 0;
 }
 .mh-perspective-quote {
   font-family: var(--font-body);
@@ -516,9 +504,8 @@
 
 @media (max-width: 900px) {
   .mh-perspective-card {
-    flex-basis: 280px;
-    min-height: 114px;
-    padding: 13px 15px;
+    flex-basis: 264px;
+    padding: 14px 16px;
   }
 }
 
@@ -527,8 +514,8 @@
     padding: 34px var(--section-pad-x) 38px;
   }
   .mh-perspective-card {
-    flex-basis: 250px;
-    min-height: 116px;
+    flex-basis: 240px;
+    padding: 14px 15px;
   }
 }
 

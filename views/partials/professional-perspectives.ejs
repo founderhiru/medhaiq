@@ -1,118 +1,43 @@
 <!-- Section — Professional Perspectives
      Staging-only. NOT a testimonial section — these are representative
-     professional perspectives, not verified customer statements. Avatars
-     are inline SVG illustrations (no external images, no stock/AI face
-     photos, no photorealism). Rendered as a continuous horizontal
-     marquee: two identical passes of the same 6 cards, translated by
-     exactly -50% of the track width, so the loop point is invisible.
-     Pauses on hover; falls back to a static wrapped layout for
-     prefers-reduced-motion. Sits between #pricing and the CTA banner. -->
+     professional perspectives, not verified customer statements.
+     No avatars/imagery (removed per review — illustrated headshots read
+     as low-quality/cartoonish at this size); quote-first compact cards
+     with role + location as a muted footer line. Rendered as a
+     continuous horizontal marquee: two identical passes of the same
+     6 cards, translated by exactly -50% of the track width, so the
+     loop point is invisible. Pauses on hover; falls back to a static
+     wrapped layout for prefers-reduced-motion. Sits between #pricing
+     and the CTA banner. -->
 <%
   const mhPerspectives = [
     {
-      role: 'Engineer Leader', geo: 'India', avatar: 'mhp-avatar-1',
+      role: 'Engineer Leader', geo: 'India',
       quote: 'I want realistic interview practice that reflects how strong companies actually evaluate.'
     },
     {
-      role: 'Product Manager', geo: 'USA', avatar: 'mhp-avatar-2',
+      role: 'Product Manager', geo: 'USA',
       quote: 'I want clear feedback on where I stand and what I need to improve next.'
     },
     {
-      role: 'Data Analyst', geo: 'Singapore', avatar: 'mhp-avatar-3',
+      role: 'Data Analyst', geo: 'Singapore',
       quote: 'I want to communicate my experience clearly and demonstrate my strengths with confidence.'
     },
     {
-      role: 'Management Consultant', geo: 'UK', avatar: 'mhp-avatar-4',
+      role: 'Management Consultant', geo: 'UK',
       quote: 'I want to know whether my thinking is as strong as the experience on my resume.'
     },
     {
-      role: 'Technical Program Manager', geo: 'USA', avatar: 'mhp-avatar-5',
+      role: 'Technical Program Manager', geo: 'USA',
       quote: 'I want practice that challenges my judgment, not just my ability to answer questions.'
     },
     {
-      role: 'Senior Business Leader', geo: 'India', avatar: 'mhp-avatar-6',
+      role: 'Senior Business Leader', geo: 'India',
       quote: 'I want a clear view of my leadership readiness before the next opportunity arrives.'
     }
   ];
 %>
 <section class="mh-perspectives">
-  <!-- Shared avatar sprite: gradients + persona groups defined once,
-       referenced everywhere via <use> so duplicating the card track
-       for the seamless loop never creates duplicate id attributes. -->
-  <svg class="mh-perspectives-sprite" aria-hidden="true" focusable="false">
-    <defs>
-      <linearGradient id="mhpBg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#EEF2FB"/><stop offset="100%" stop-color="#E2E8F5"/></linearGradient>
-      <linearGradient id="mhpSkin1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#B98A62"/><stop offset="100%" stop-color="#A6754E"/></linearGradient>
-      <linearGradient id="mhpBg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FBEEF2"/><stop offset="100%" stop-color="#F5E2E8"/></linearGradient>
-      <linearGradient id="mhpSkin2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F0C29B"/><stop offset="100%" stop-color="#E0A87B"/></linearGradient>
-      <linearGradient id="mhpBg3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#EAF2EF"/><stop offset="100%" stop-color="#DCEAE4"/></linearGradient>
-      <linearGradient id="mhpSkin3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E7B58C"/><stop offset="100%" stop-color="#D69A68"/></linearGradient>
-      <linearGradient id="mhpBg4" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F4EFFB"/><stop offset="100%" stop-color="#E8E1F5"/></linearGradient>
-      <linearGradient id="mhpSkin4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F3D3B8"/><stop offset="100%" stop-color="#E6BC98"/></linearGradient>
-      <linearGradient id="mhpBg5" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#EEF6FB"/><stop offset="100%" stop-color="#DFEDF5"/></linearGradient>
-      <linearGradient id="mhpSkin5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8C5B3B"/><stop offset="100%" stop-color="#744A2E"/></linearGradient>
-      <linearGradient id="mhpBg6" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FBF1EE"/><stop offset="100%" stop-color="#F5E4DE"/></linearGradient>
-      <linearGradient id="mhpSkin6" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C99169"/><stop offset="100%" stop-color="#B47B54"/></linearGradient>
-
-      <!-- 1 — Engineer Leader: short dark hair, defined side part -->
-      <g id="mhp-avatar-1">
-        <circle cx="20" cy="20" r="20" fill="url(#mhpBg1)"/>
-        <path d="M4 38c0-9.5 7.2-15.5 16-15.5S36 28.5 36 38z" fill="#3B4A63"/>
-        <circle cx="20" cy="17" r="8" fill="url(#mhpSkin1)"/>
-        <path d="M11.5 16.5c0-5.2 3.9-9 8.5-9s8.5 3.8 8.5 9c-1.2-1.6-2.6-2.6-4-3.1-1 1.6-2.9 2.6-5 2.6-2.4 0-4.5-1.2-5.6-3.1-1.3.7-2.2 2-2.4 3.6z" fill="#20140C"/>
-      </g>
-
-      <!-- 2 — Product Manager: hair past shoulders, center part -->
-      <g id="mhp-avatar-2">
-        <circle cx="20" cy="20" r="20" fill="url(#mhpBg2)"/>
-        <path d="M4 38c0-9.5 7.2-15.5 16-15.5S36 28.5 36 38z" fill="#6D3F5B"/>
-        <path d="M9 22c1.5-1.2 3.2-1.9 5-2.2-.6-1-1-2.2-1-3.4 0-3.9 3.1-7 7-7s7 3.1 7 7c0 1.6-.5 3.1-1.5 4.3 1.6.3 3 .9 4.2 1.8-.7-6.3-4.7-11-9.7-11-5.5 0-10 4.9-10 11 0 .2 0 .4.02.5z" fill="#3A2418"/>
-        <circle cx="20" cy="17.5" r="7.2" fill="url(#mhpSkin2)"/>
-      </g>
-
-      <!-- 3 — Data Analyst: short hair + glasses -->
-      <g id="mhp-avatar-3">
-        <circle cx="20" cy="20" r="20" fill="url(#mhpBg3)"/>
-        <path d="M4 38c0-9.5 7.2-15.5 16-15.5S36 28.5 36 38z" fill="#1F2937"/>
-        <circle cx="20" cy="17" r="8" fill="url(#mhpSkin3)"/>
-        <path d="M12 15.5c0-4.7 3.6-8.2 8-8.2s8 3.5 8 8.2c0 1-.2 1.9-.5 2.7-.5-2.7-2.2-4.3-3.8-4.3-1.1 0-2 .6-2.5 1.6-.9-1.1-2.3-1.8-3.9-1.8-2.1 0-3.9 1.2-4.8 3-.3-.4-.5-.8-.5-1.2z" fill="#150F0A"/>
-        <rect x="13.5" y="15.5" width="13" height="3.4" rx="1.2" fill="#1F2937" opacity="0.85"/>
-      </g>
-
-      <!-- 4 — Management Consultant: short bob, fair tone -->
-      <g id="mhp-avatar-4">
-        <circle cx="20" cy="20" r="20" fill="url(#mhpBg4)"/>
-        <path d="M4 38c0-9.5 7.2-15.5 16-15.5S36 28.5 36 38z" fill="#4A3B63"/>
-        <path d="M10.5 19c-.3-5.7 3.9-10.5 9.5-10.5s9.8 4.8 9.5 10.5c-1-1-2.1-1.7-3.3-2.1.3-.7.5-1.5.5-2.3 0-2.9-2.8-5.1-6.2-5.1-1 0-2 .2-2.8.5.5.5.8 1.2.8 2 0 1.7-1.5 3.1-3.4 3.1-.6 0-1.1-.1-1.6-.4-.6.9-1 2-1 3.2 0 .4 0 .8.1 1.1-.9.3-1.7.7-2.1 0z" fill="#2C2420"/>
-        <circle cx="20" cy="17.5" r="7.4" fill="url(#mhpSkin4)"/>
-        <circle cx="27.5" cy="14.5" r="1" fill="#C9A227"/>
-      </g>
-
-      <!-- 5 — Technical Program Manager: tight curls, deep tone -->
-      <g id="mhp-avatar-5">
-        <circle cx="20" cy="20" r="20" fill="url(#mhpBg5)"/>
-        <path d="M4 38c0-9.5 7.2-15.5 16-15.5S36 28.5 36 38z" fill="#2A3B4D"/>
-        <circle cx="20" cy="17.5" r="8" fill="url(#mhpSkin5)"/>
-        <circle cx="12" cy="12" r="2.6" fill="#140D07"/>
-        <circle cx="16.2" cy="9.6" r="2.9" fill="#140D07"/>
-        <circle cx="20.5" cy="8.6" r="3.1" fill="#140D07"/>
-        <circle cx="25" cy="9.6" r="2.9" fill="#140D07"/>
-        <circle cx="28.8" cy="12.2" r="2.6" fill="#140D07"/>
-        <circle cx="12.5" cy="16" r="2.2" fill="#140D07"/>
-        <circle cx="28.2" cy="16" r="2.2" fill="#140D07"/>
-      </g>
-
-      <!-- 6 — Senior Business Leader: hair tied back, small earring -->
-      <g id="mhp-avatar-6">
-        <circle cx="20" cy="20" r="20" fill="url(#mhpBg6)"/>
-        <path d="M4 38c0-9.5 7.2-15.5 16-15.5S36 28.5 36 38z" fill="#233240"/>
-        <path d="M11 17c0-5.5 4-9.7 9-9.7s9 4.2 9 9.7c0 1.2-.2 2.3-.6 3.4-.5-.7-1.2-1.2-2-1.5.2-.6.3-1.2.3-1.9 0-3.4-2.8-6.1-6.7-6.1s-6.7 2.7-6.7 6.1c0 .7.1 1.3.3 1.9-.8.3-1.5.8-2 1.5-.4-1.1-.6-2.2-.6-3.4z" fill="#241A14"/>
-        <circle cx="20" cy="18" r="7.2" fill="url(#mhpSkin6)"/>
-        <circle cx="12.6" cy="19.5" r="1" fill="#B8863F"/>
-      </g>
-    </defs>
-  </svg>
-
   <div class="mh-perspectives-inner mh-section-center">
     <div class="mh-eyebrow">Professional Perspectives</div>
     <h2 class="mh-section-title">What professionals are looking for</h2>
@@ -122,14 +47,8 @@
         <% [0, 1].forEach(function (pass) { %>
           <% mhPerspectives.forEach(function (p) { %>
             <div class="mh-perspective-card<% if (pass === 1) { %> mh-perspective-dup<% } %>"<% if (pass === 1) { %> aria-hidden="true"<% } %>>
-              <div class="mh-perspective-top">
-                <svg class="mh-perspective-avatar" viewBox="0 0 40 40" aria-hidden="true"><use href="#<%= p.avatar %>"/></svg>
-                <div class="mh-perspective-who">
-                  <p class="mh-perspective-role"><%= p.role %></p>
-                  <p class="mh-perspective-location"><%= p.geo %></p>
-                </div>
-              </div>
               <p class="mh-perspective-quote">“<%= p.quote %>”</p>
+              <p class="mh-perspective-meta"><span class="mh-perspective-role"><%= p.role %></span> · <span class="mh-perspective-location"><%= p.geo %></span></p>
             </div>
           <% }); %>
         <% }); %>
