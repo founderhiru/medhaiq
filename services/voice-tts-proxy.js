@@ -28,6 +28,11 @@ const { VOICE_SERVER_CONFIG } = require('../config/voice-server-config');
 // voiceProfile NAME -- see config/voice-profiles.js's own header for the
 // full rationale and the 3-step rollout.
 const { resolveVoiceProfile } = require('../config/voice-profiles');
+// Cost recording — the only cost_analytics touchpoint in this file goes
+// through this decoupled service, never db/cost-analytics.js directly.
+// Fire-and-forget: never awaited in a way that could delay the TTS
+// response, and the function itself never throws (see lib/cost-recorder.js).
+const { recordElevenLabsUsage } = require('../lib/cost-recorder');
 
 function logTTS(event, detail) {
   // eslint-disable-next-line no-console
@@ -101,11 +106,13 @@ function normalizeSpokenCurrency(text) {
 }
 
 /**
- * @param {{ text: string, voiceProfile: string, language: string, streaming: boolean }} params
+ * @param {{ text: string, voiceProfile: string, language: string, streaming: boolean, userId: string|number }} params
  *   voiceProfile is a provider-agnostic NAME (e.g. 'alex'), never a raw
  *   provider voice ID -- resolved to one right here, via
  *   config/voice-profiles.js, the only place in the codebase that touches
- *   both a voiceProfile name and a real ElevenLabs ID.
+ *   both a voiceProfile name and a real ElevenLabs ID. userId is optional
+ *   and used ONLY for cost attribution (see recordElevenLabsUsage below) —
+ *   never changes synthesis behavior.
  * @returns {Promise<{ buffer: Buffer, contentType: string }>}
  * @throws {Error} with a `.code` of 'CONFIG_MISSING' | 'UPSTREAM_AUTH' | 'UPSTREAM_ERROR' | 'TIMEOUT' | 'NETWORK_ERROR'
  */
@@ -192,6 +199,22 @@ async function synthesizeViaElevenLabs(params) {
   const arrayBuffer = await response.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   const contentType = response.headers.get('content-type') || 'audio/mpeg';
+
+  // Cost capture — fire-and-forget, deliberately NOT awaited so it can
+  // never delay returning audio to the caller, and wrapped so a recording
+  // failure can never surface as a TTS failure. Reads the actual
+  // character-cost ElevenLabs returns; never estimates from duration or
+  // audio size. See lib/cost-recorder.js for the full non-fabrication
+  // contract (missing header -> skipped, not zeroed).
+  const characterCost = response.headers.get('character-cost');
+  recordElevenLabsUsage({
+    userId: params.userId,
+    interviewId: null, // not available at this call site today — see header note in lib/cost-recorder.js
+    characterCost: characterCost !== null ? Number(characterCost) : null,
+    requestId: response.headers.get('request-id'),
+    traceId: response.headers.get('elevenlabs-trace-id') || response.headers.get('x-request-id'),
+    modelId: VOICE_SERVER_CONFIG.ttsModelId,
+  }).catch((err) => console.error('[TTS][server] cost capture failed (non-fatal, audio already returned):', err.message));
 
   logTTS('synthesize:complete', { elapsedMs: Date.now() - startedAt, bytes: buffer.length, contentType });
 
@@ -343,6 +366,21 @@ async function streamViaElevenLabsToken(params) {
   }
 
   logTTS('stream:first_response_headers', { elapsedMs: Date.now() - startedAt }); // headers back != first audio byte -- that's logged by the route once actual body bytes start flowing
+
+  // Cost capture — same fire-and-forget contract as the non-streaming path
+  // above. Headers arrive with the initial HTTP response, before the body
+  // stream is consumed, so this never touches or delays the actual
+  // streaming pipe (routes/voice-tts.js pipes upstreamResponse.body
+  // straight through, completely unchanged by this addition).
+  const characterCost = response.headers.get('character-cost');
+  recordElevenLabsUsage({
+    userId: params.userId,
+    interviewId: null, // not available at this call site today — see header note in lib/cost-recorder.js
+    characterCost: characterCost !== null ? Number(characterCost) : null,
+    requestId: response.headers.get('request-id'),
+    traceId: response.headers.get('elevenlabs-trace-id') || response.headers.get('x-request-id'),
+    modelId: VOICE_SERVER_CONFIG.ttsModelId,
+  }).catch((err) => console.error('[TTS][server] cost capture failed (non-fatal, stream unaffected):', err.message));
 
   return {
     upstreamResponse: response,
