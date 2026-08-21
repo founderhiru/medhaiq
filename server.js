@@ -100,6 +100,7 @@ app.use('/debug/voice',    require('./routes/debug-voice')); // PR3: internal di
 app.use('/api/debug/elevenlabs/voices', require('./routes/debug-elevenlabs-voices')); // TEMPORARY -- delete once a working voice is identified
 app.use('/api/presence',   require('./routes/presence')); // lightweight Online Now heartbeat, see db/presence.js
 app.use('/api/stripe',     require('./routes/stripe').router); // Sandbox/staging checkout only — webhook is mounted separately above, pre-express.json()
+app.use('/api/feedback',   require('./routes/feedback')); // 5-star post-interview feedback widget — was implemented but never mounted, so POST /api/feedback 404'd and the Submit button always showed "Something went wrong"
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/', async (req, res) => {
