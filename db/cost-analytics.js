@@ -274,6 +274,7 @@ async function getMonthScopedLedger(start, end) {
     `SELECT
        COUNT(*)::int AS interviews_count,
        COALESCE(SUM(COALESCE(vapi_cost, 0)), 0)::float AS vapi_cost,
+       COUNT(vapi_cost)::int AS vapi_capture_count,
        COALESCE(SUM(COALESCE(claude_cost, 0)), 0)::float AS claude_cost,
        COALESCE(SUM(COALESCE(elevenlabs_cost, 0)), 0)::float AS elevenlabs_cost,
        COUNT(elevenlabs_cost)::int AS elevenlabs_capture_count,
@@ -311,7 +312,8 @@ async function computeMonthFinancials(monthValue, purchaseRows, paidUsersCount) 
   const fixedCostUsd = fixedCostRows.reduce((sum, r) => sum + (r.monthly_allocation_usd || 0), 0);
 
   const elevenlabsCaptured = ledger.elevenlabs_capture_count > 0;
-  const aiCost = ledger.vapi_cost + ledger.claude_cost + (elevenlabsCaptured ? ledger.elevenlabs_cost : 0);
+  const vapiCaptured = ledger.vapi_capture_count > 0;
+  const aiCost = (vapiCaptured ? ledger.vapi_cost : 0) + ledger.claude_cost + (elevenlabsCaptured ? ledger.elevenlabs_cost : 0);
 
   const grossProfit = revenue.usd - aiCost;
   const trueProfit = grossProfit - fixedCostUsd;
@@ -321,7 +323,7 @@ async function computeMonthFinancials(monthValue, purchaseRows, paidUsersCount) 
 
   const providerBreakdown = [
     { provider: 'Claude', type: 'PAYG', cost_usd: ledger.claude_cost },
-    { provider: 'Vapi', type: 'PAYG', cost_usd: ledger.vapi_cost },
+    { provider: 'Vapi', type: 'PAYG', cost_usd: vapiCaptured ? ledger.vapi_cost : null },
     { provider: 'ElevenLabs', type: 'PAYG', cost_usd: elevenlabsCaptured ? ledger.elevenlabs_cost : null },
     ...fixedCostRows.map((r) => ({
       provider: r.provider.charAt(0).toUpperCase() + r.provider.slice(1),
@@ -335,7 +337,7 @@ async function computeMonthFinancials(monthValue, purchaseRows, paidUsersCount) 
     label,
     revenue_usd: revenue.usd,
     revenue_inr: revenue.inr,
-    vapi_cost: ledger.vapi_cost,
+    vapi_cost: vapiCaptured ? ledger.vapi_cost : null,
     claude_cost: ledger.claude_cost,
     elevenlabs_cost: elevenlabsCaptured ? ledger.elevenlabs_cost : null,
     ai_cost: aiCost,
