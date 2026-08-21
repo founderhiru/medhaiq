@@ -403,19 +403,15 @@
 /* ============================================================
    PROFESSIONAL PERSPECTIVES — supporting section, homepage only
    ------------------------------------------------------------
-   Sits between #pricing and the CTA banner. A continuous horizontal
-   marquee: the 6 cards render twice back-to-back (2nd pass has
-   aria-hidden + .mh-perspective-dup, see partial), and the track is
-   translated by exactly -50% of its own width — since both passes
-   are identical, that point is visually indistinguishable from the
-   start, so the loop has no visible seam. Deliberately compact:
-   small section padding, small card footprint, no large whitespace.
-   Illustrative-perspective cards, not customer testimonials (see
-   professional-perspectives.ejs header comment).
+   Sits between #pricing and the CTA banner. Deliberately compact:
+   small section padding, small card padding, no large whitespace —
+   reads as a supporting element, not a standalone testimonial
+   block. Illustrative-perspective cards, not customer testimonials
+   (see professional-perspectives.ejs header comment).
    ============================================================ */
 .mh-perspectives {
   background: #F2F3F1;
-  padding: 40px var(--section-pad-x) 44px;
+  padding: 48px var(--section-pad-x) 52px;
 }
 .mh-perspectives-inner {
   max-width: var(--max-w);
@@ -428,112 +424,72 @@
 .mh-perspectives .mh-section-title {
   color: #0B1020;
   font-size: clamp(20px, 3.4vw, 24px);
-  margin-bottom: 22px;
+  margin-bottom: 28px;
 }
 
-/* Sprite host: defs-only, never painted */
-.mh-perspectives-sprite {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-
-.mh-perspectives-viewport {
-  overflow: hidden;
-  width: 100%;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
-}
-
-.mh-perspective-track {
-  display: flex;
+.mh-perspectives-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  width: max-content;
-  animation: mh-perspective-scroll 30s linear infinite;
-}
-.mh-perspectives-viewport:hover .mh-perspective-track {
-  animation-play-state: paused;
-}
-
-@keyframes mh-perspective-scroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  text-align: left;
 }
 
 .mh-perspective-card {
-  flex: 0 0 300px;
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(11, 16, 32, 0.04);
-  padding: 16px 18px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 10px;
-  text-align: left;
+  height: 100%;
 }
-.mh-perspective-meta {
-  margin: 0;
-  padding-top: 8px;
-  border-top: 1px solid #EEF0F3;
-  font-family: var(--font-body);
-  font-size: 12px;
-  white-space: nowrap;
-}
-.mh-perspective-role {
-  font-family: var(--font-display);
-  font-weight: 700;
-  color: var(--royal-blue);
-}
-.mh-perspective-location {
-  color: #8A94A6;
+.mh-perspective-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-bottom: 12px;
 }
 .mh-perspective-quote {
   font-family: var(--font-body);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.55;
   color: #334155;
+  margin: 0 0 14px;
+  flex-grow: 1;
+}
+.mh-perspective-role {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: #0B1020;
   margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+}
+.mh-perspective-location {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: #5F6B82;
+  margin: 2px 0 0;
 }
 
 @media (max-width: 900px) {
-  .mh-perspective-card {
-    flex-basis: 264px;
-    padding: 14px 16px;
+  .mh-perspectives-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .mh-perspective-card:last-child {
+    grid-column: 1 / -1;
   }
 }
 
 @media (max-width: 640px) {
   .mh-perspectives {
-    padding: 34px var(--section-pad-x) 38px;
+    padding: 40px var(--section-pad-x) 44px;
   }
-  .mh-perspective-card {
-    flex-basis: 240px;
-    padding: 14px 15px;
+  .mh-perspectives-grid {
+    grid-template-columns: 1fr;
   }
-}
-
-/* Reduced motion: stop the marquee, drop the duplicated pass, and
-   let the six cards wrap into a stable static arrangement instead. */
-@media (prefers-reduced-motion: reduce) {
-  .mh-perspectives-viewport {
-    overflow: visible;
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-  .mh-perspective-track {
-    animation: none;
-    transform: none;
-    width: auto;
-    flex-wrap: wrap;
-  }
-  .mh-perspective-dup {
-    display: none;
+  .mh-perspective-card:last-child {
+    grid-column: auto;
   }
 }
