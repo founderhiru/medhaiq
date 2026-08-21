@@ -130,9 +130,11 @@ function summarizeRevenue(purchaseRows) {
   const now = new Date();
   const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const yearStart = new Date(now.getFullYear(), 0, 1);
 
   let revenueTodayUsd = 0, revenueTodayInr = 0;
   let revenueMonthUsd = 0, revenueMonthInr = 0;
+  let revenueYtdUsd = 0, revenueYtdInr = 0;
   let revenueTotalUsd = 0, revenueTotalInr = 0;
   let unresolvedCount = 0;
 
@@ -142,13 +144,18 @@ function summarizeRevenue(purchaseRows) {
     const acquiredAt = new Date(row.acquired_at);
     const isToday = acquiredAt >= dayStart;
     const isThisMonth = acquiredAt >= monthStart;
+    // Jan 1 of the current year through now — "now" is implicit since every
+    // row is a real past purchase, never in the future.
+    const isYtd = acquiredAt >= yearStart && acquiredAt <= now;
 
     if (priced.currency === 'USD') {
       revenueTotalUsd += priced.amount;
+      if (isYtd) revenueYtdUsd += priced.amount;
       if (isThisMonth) revenueMonthUsd += priced.amount;
       if (isToday) revenueTodayUsd += priced.amount;
     } else {
       revenueTotalInr += priced.amount;
+      if (isYtd) revenueYtdInr += priced.amount;
       if (isThisMonth) revenueMonthInr += priced.amount;
       if (isToday) revenueTodayInr += priced.amount;
     }
@@ -159,6 +166,8 @@ function summarizeRevenue(purchaseRows) {
     revenue_today_inr: revenueTodayInr,
     revenue_month_usd: revenueMonthUsd,
     revenue_month_inr: revenueMonthInr,
+    revenue_ytd_usd: revenueYtdUsd,
+    revenue_ytd_inr: revenueYtdInr,
     revenue_total_usd: revenueTotalUsd,
     revenue_total_inr: revenueTotalInr,
     unresolved_purchase_count: unresolvedCount,
@@ -290,6 +299,8 @@ async function getFounderDashboardStats() {
     revenue_today_inr: revenue.revenue_today_inr,
     monthly_revenue: revenue.revenue_month_usd,
     monthly_revenue_inr: revenue.revenue_month_inr,
+    revenue_ytd_usd: revenue.revenue_ytd_usd,
+    revenue_ytd_inr: revenue.revenue_ytd_inr,
     paying_users_count: userCounts.paid_users_count,
     trial_users_count: Math.max(0, userCounts.total_users - userCounts.paid_users_count),
     new_users_today: userCounts.new_users_today,

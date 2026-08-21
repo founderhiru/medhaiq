@@ -11,23 +11,26 @@
     theme: {
       extend: {
         colors: {
-          // Warm-light executive palette. Ivory page background, warm-white
-          // cards, warm-neutral borders/text — never stark white or dark
-          // gray. Semantic accents (good/warn/bad/accent) are the SAME
-          // tokens the dark theme used, per instruction: only the surface
-          // changed, not the meaning of a color.
+          // Warm-light executive palette — typography/color polish pass.
+          // Same structure as before (ivory page, warm-white cards, warm-
+          // neutral borders); values refined for stronger text contrast.
+          // Semantic accents keep their MEANING (positive/warning/negative/
+          // accent) — only the exact hex values were tuned, restrained on
+          // purpose: only used where a metric genuinely IS positive,
+          // costly, or negative — never applied to ordinary numbers.
           page: '#F7F3EC',
-          card: '#FFFDF9',
-          cardAlt: '#FBF7EF',
-          hairline: '#E7DFD0',
-          ink: '#2A241C',
-          inkSoft: '#6B6152',
-          inkFaint: '#948A78',
-          accent: '#6D4FE0',
+          card: '#FFFCF8',
+          cardAlt: '#F3ECDF',
+          hairline: '#E6DED2',
+          ink: '#29251F',
+          inkSoft: '#756D62',
+          inkFaint: '#958B7D',
+          label: '#817767',
+          accent: '#6750C8',
           gold: '#B08D57',
-          good: '#1F8A5F',
-          warn: '#B4790E',
-          bad: '#C4432B',
+          good: '#16845A',
+          warn: '#B97800',
+          bad: '#C84A3F',
         },
         fontFamily: {
           sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -39,9 +42,9 @@
 <style>
   body { background: #F7F3EC; }
   .card {
-    background: #FFFDF9;
-    border: 1px solid #E7DFD0;
-    box-shadow: 0 1px 2px rgba(42,36,28,0.04), 0 1px 0 rgba(42,36,28,0.02);
+    background: #FFFCF8;
+    border: 1px solid #E6DED2;
+    box-shadow: 0 1px 2px rgba(41,37,31,0.05), 0 1px 0 rgba(41,37,31,0.02);
   }
   .num { font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
   .skeleton { animation: pulse 1.4s ease-in-out infinite; }
@@ -94,14 +97,19 @@
     <!-- Revenue note (INR / unresolved purchases) -->
     <div id="revenueNote" class="hidden mb-6 rounded-lg border border-gold/30 bg-gold/5 text-inkSoft text-xs px-4 py-2.5"></div>
 
-    <!-- 1. Founder Financial Overview -->
+    <!-- 1a. Revenue — This Month / YTD / All Time -->
+    <section class="mb-4">
+      <div id="revenueGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- 1b. Founder Financial Overview (cost/profit) -->
     <section class="mb-8">
-      <div id="financialGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+      <div id="financialGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
     </section>
 
     <!-- 2. Business & Unit Economics -->
     <section class="mb-8">
-      <h2 class="text-xs font-semibold uppercase tracking-wide text-inkFaint mb-3">Business &amp; unit economics</h2>
+      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Business &amp; unit economics</h2>
       <div id="unitGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
       <p id="maxCostNote" class="hidden text-xs text-inkFaint mt-2"></p>
     </section>
@@ -109,18 +117,18 @@
     <!-- 3. Provider Spend + 4. Fixed Infrastructure, side by side -->
     <section class="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="card rounded-xl px-5 py-4">
-        <h2 class="text-xs font-semibold uppercase tracking-wide text-inkFaint mb-3">Provider spend — today</h2>
+        <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Provider spend — today</h2>
         <div id="providerTable"></div>
       </div>
       <div class="card rounded-xl px-5 py-4">
-        <h2 class="text-xs font-semibold uppercase tracking-wide text-inkFaint mb-3">Fixed infrastructure — this month</h2>
+        <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Fixed infrastructure — this month</h2>
         <div id="fixedTable"></div>
       </div>
     </section>
 
     <!-- 5. Monthly Trend -->
     <section class="mb-8">
-      <h2 class="text-xs font-semibold uppercase tracking-wide text-inkFaint mb-3">Monthly trend</h2>
+      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Monthly trend</h2>
       <div class="card rounded-xl px-5 py-4">
         <div id="trendTable"></div>
         <p class="text-xs text-inkFaint mt-3">Trend history builds up month over month — only months with real data will ever appear here.</p>
@@ -129,7 +137,7 @@
 
     <!-- 6. Today strip (secondary, de-emphasized) -->
     <section>
-      <h2 class="text-xs font-semibold uppercase tracking-wide text-inkFaint mb-3">Today</h2>
+      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Today</h2>
       <div id="todayStrip" class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-inkSoft"></div>
     </section>
 
@@ -140,6 +148,7 @@
   const ENDPOINT = '/api/admin/founder-dashboard';
   const SECRET_KEY = 'medhaiq_admin_secret';
 
+  const revenueGrid = document.getElementById('revenueGrid');
   const financialGrid = document.getElementById('financialGrid');
   const unitGrid = document.getElementById('unitGrid');
   const maxCostNote = document.getElementById('maxCostNote');
@@ -180,7 +189,8 @@
   }
 
   function skeletonAll() {
-    financialGrid.innerHTML = skeletonCards(4);
+    revenueGrid.innerHTML = skeletonCards(3);
+    financialGrid.innerHTML = skeletonCards(3);
     unitGrid.innerHTML = skeletonCards(4);
     providerTable.innerHTML = '<div class="skeleton h-20 bg-hairline rounded"></div>';
     fixedTable.innerHTML = '<div class="skeleton h-20 bg-hairline rounded"></div>';
@@ -200,18 +210,35 @@
       revenueNote.classList.add('hidden');
     }
 
-    // ── 1. Founder Financial Overview ─────────────────────────────────────
-    // Revenue and Fixed Cost are genuinely month-scoped fields from the
-    // backend. AI Cost / True Profit / Margin have no month-level figure
-    // yet in the backend (only "today" and "all-time" exist) — labeled
-    // honestly as all-time rather than mislabeled as "this month".
-    const trueMarginClass = d.total_true_margin_pct >= 0 ? 'text-good' : 'text-bad';
-    financialGrid.innerHTML = [
+    // ── 1a. Revenue — This Month / YTD / All Time. Same underlying source
+    // (package_acquisitions, source='purchase') for all three — only the
+    // date range differs, so YTD is never less than This Month, and All
+    // Time is never less than YTD, by construction, not enforcement.
+    revenueGrid.innerHTML = [
       statCard({
         label: 'Revenue · this month',
         value: money(d.monthly_revenue),
         sub: d.monthly_revenue_inr > 0 ? `+ ₹${num(d.monthly_revenue_inr, 2)} (kept separate)` : 'Real purchases, month to date',
       }),
+      statCard({
+        label: 'Revenue · YTD',
+        value: money(d.revenue_ytd_usd),
+        sub: d.revenue_ytd_inr > 0 ? `Jan 1 \u2192 today · + ₹${num(d.revenue_ytd_inr, 2)} (kept separate)` : 'Jan 1 \u2192 today',
+      }),
+      statCard({
+        label: 'Revenue · all time',
+        value: money(d.total_revenue_usd),
+        sub: d.total_revenue_inr > 0 ? `+ ₹${num(d.total_revenue_inr, 2)} (kept separate)` : 'Since first purchase',
+      }),
+    ].join('');
+
+    // ── 1b. Founder Financial Overview (cost / profit) ────────────────────
+    // Fixed Cost is genuinely month-scoped (the live configured monthly
+    // rate). AI Cost / True Profit / Margin have no month-level figure yet
+    // in the backend (only "today" and "all-time" exist) — labeled
+    // honestly as all-time rather than mislabeled as "this month".
+    const trueMarginClass = d.total_true_margin_pct >= 0 ? 'text-good' : 'text-bad';
+    financialGrid.innerHTML = [
       statCard({
         label: 'AI cost · all-time',
         value: money(d.total_ai_cost),
@@ -349,6 +376,7 @@
     errorBanner.classList.add('hidden');
   }
   function clearAll() {
+    revenueGrid.innerHTML = '';
     financialGrid.innerHTML = '';
     unitGrid.innerHTML = '';
     providerTable.innerHTML = '';
