@@ -12,10 +12,15 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// GET /api/admin/founder-dashboard — today's revenue/cost snapshot
-router.get('/founder-dashboard', requireAdmin, async (_req, res) => {
+// GET /api/admin/founder-dashboard?month=YYYY-MM — revenue/cost snapshot.
+// month is optional; the backend resolves it against real available months
+// and falls back safely if omitted or invalid (see getFounderDashboardStats).
+router.get('/founder-dashboard', requireAdmin, async (req, res) => {
   try {
-    const stats = await getFounderDashboardStats();
+    const monthParam = typeof req.query.month === 'string' && /^\d{4}-\d{2}$/.test(req.query.month)
+      ? req.query.month
+      : undefined;
+    const stats = await getFounderDashboardStats(monthParam);
     return res.json(stats);
   } catch (err) {
     console.error('[admin] founder-dashboard error:', err);

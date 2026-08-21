@@ -88,8 +88,7 @@
     <!-- Month selector strip -->
     <div class="flex items-center justify-between mb-2">
       <div class="flex items-center gap-2">
-        <span class="text-sm font-medium text-ink" id="monthLabel">—</span>
-        <span class="text-xs text-inkFaint" title="Historical months aren't tracked yet — only the current month is available. Tracking past months requires a small backend addition.">▾ only month available</span>
+        <select id="monthSelect" class="text-sm font-medium text-ink bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-accent rounded cursor-pointer"></select>
       </div>
     </div>
     <div class="hairline-gold rounded-full mb-6"></div>
@@ -117,11 +116,11 @@
     <!-- 3. Provider Spend + 4. Fixed Infrastructure, side by side -->
     <section class="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="card rounded-xl px-5 py-4">
-        <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Provider spend — today</h2>
+        <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Provider spend — <span id="providerMonthLabel"></span></h2>
         <div id="providerTable"></div>
       </div>
       <div class="card rounded-xl px-5 py-4">
-        <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Fixed infrastructure — this month</h2>
+        <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Fixed infrastructure — <span id="fixedMonthLabel"></span></h2>
         <div id="fixedTable"></div>
       </div>
     </section>
@@ -156,7 +155,9 @@
   const fixedTable = document.getElementById('fixedTable');
   const trendTable = document.getElementById('trendTable');
   const todayStrip = document.getElementById('todayStrip');
-  const monthLabel = document.getElementById('monthLabel');
+  const monthSelect = document.getElementById('monthSelect');
+  const providerMonthLabel = document.getElementById('providerMonthLabel');
+  const fixedMonthLabel = document.getElementById('fixedMonthLabel');
   const revenueNote = document.getElementById('revenueNote');
   const errorBanner = document.getElementById('errorBanner');
   const authPrompt = document.getElementById('authPrompt');
@@ -199,8 +200,15 @@
   }
 
   function renderStats(d) {
-    const now = new Date();
-    monthLabel.textContent = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    const months = d.available_months || [];
+    const selected = d.selected_month || { value: '', label: '\u2014' };
+
+    // Populate the selector fresh each load — only ever real months with
+    // activity (months[]), never a fabricated range. Re-populating on
+    // every render keeps it in sync if new months appear over time.
+    monthSelect.innerHTML = months.length
+      ? months.map((m) => `<option value="${m.value}" ${m.value === selected.value ? 'selected' : ''}>${m.label}</option>`).join('')
+      : `<option value="${selected.value}">${selected.label}</option>`;
 
     // ── Revenue note (INR tracked separately / unresolved purchases) ─────
     if (d.revenue_note) {
@@ -213,7 +221,9 @@
     // ── 1a. Revenue — This Month / YTD / All Time. Same underlying source
     // (package_acquisitions, source='purchase') for all three — only the
     // date range differs, so YTD is never less than This Month, and All
-    // Time is never less than YTD, by construction, not enforcement.
+    // Time is never less than YTD, by construction, not enforcement. These
+    // are ALWAYS the current calendar month/year/lifetime — independent of
+    // the month selector above, per instruction.
     revenueGrid.innerHTML = [
       statCard({
         label: 'Revenue · this month',
@@ -232,49 +242,56 @@
       }),
     ].join('');
 
-    // ── 1b. Founder Financial Overview (cost / profit) ────────────────────
-    // Fixed Cost is genuinely month-scoped (the live configured monthly
-    // rate). AI Cost / True Profit / Margin have no month-level figure yet
-    // in the backend (only "today" and "all-time" exist) — labeled
-    // honestly as all-time rather than mislabeled as "this month".
-    const trueMarginClass = d.total_true_margin_pct >= 0 ? 'text-good' : 'text-bad';
+    // ── 1b. Founder Financial Overview — genuinely scoped to the SELECTED
+    // month (may differ from the current calendar month above). AI cost,
+    // fixed cost, and true profit/margin are all computed from real
+    // cost_analytics/fixed_costs rows filtered to that month's date range —
+    // no more "today" vs "all-time" mismatch against the provider table.
+    const trueMarginClass = d.month_true_margin_pct >= 0 ? 'text-good' : 'text-bad';
     financialGrid.innerHTML = [
       statCard({
-        label: 'AI cost · all-time',
-        value: money(d.total_ai_cost),
-        sub: 'Month-level AI cost isn\u2019t tracked yet',
+        label: `Revenue · ${selected.label}`,
+        value: money(d.month_revenue_usd),
+        sub: d.month_revenue_inr > 0 ? `+ ₹${num(d.month_revenue_inr, 2)} (kept separate)` : 'Real purchases this month',
+      }),
+      statCard({
+        label: `AI cost · ${selected.label}`,
+        value: money(d.month_ai_cost),
+        sub: 'Vapi + Claude + ElevenLabs (if captured)',
         accentClass: 'text-warn',
       }),
       statCard({
-        label: 'Fixed cost · this month',
-        value: money(d.total_fixed_cost_monthly),
-        sub: 'Current configured monthly rate',
+        label: `Fixed cost · ${selected.label}`,
+        value: money(d.month_fixed_cost),
+        sub: 'Configured monthly rate, that month',
       }),
       statCard({
-        label: 'True profit · all-time',
-        value: money(d.total_true_profit),
-        sub: `${num(d.total_true_margin_pct, 1)}% true margin`,
+        label: `True profit · ${selected.label}`,
+        value: money(d.month_true_profit),
+        sub: `${num(d.month_true_margin_pct, 1)}% true margin`,
         accentClass: trueMarginClass,
       }),
     ].join('');
 
-    // ── 2. Business & unit economics ──────────────────────────────────────
-    const noInterviews = !d.interviews_total_count || d.interviews_total_count === 0;
+    // ── 2. Business & unit economics — also selected-month scoped, except
+    // Paid Users, which has no historical monthly snapshot (only "who
+    // currently holds a paid package" exists) — documented limitation.
+    const noInterviews = !d.month_interviews_count || d.month_interviews_count === 0;
     const noPaidUsers = !d.paying_users_count || d.paying_users_count === 0;
     unitGrid.innerHTML = [
       statCard({
         label: 'Interviews',
-        value: d.interviews_total_count ?? 0,
-        sub: 'All-time completed',
+        value: d.month_interviews_count ?? 0,
+        sub: selected.label,
       }),
       statCard({
         label: 'Paid users',
         value: d.paying_users_count ?? 0,
-        sub: `${d.trial_users_count ?? 0} on trial`,
+        sub: `${d.trial_users_count ?? 0} on trial \u00b7 current, not month-specific`,
       }),
       statCard({
         label: 'Cost / interview',
-        value: noInterviews ? '\u2014' : money(d.cost_per_interview_total),
+        value: noInterviews ? '\u2014' : money(d.month_cost_per_interview),
         sub: noInterviews ? 'No interviews yet' : 'AI cost \u00f7 interviews',
       }),
       statCard({
@@ -284,15 +301,17 @@
       }),
     ].join('');
 
-    if (hasData(d.most_expensive_interview_cost) && d.most_expensive_interview_cost > 0) {
-      maxCostNote.textContent = `Highest single interview cost today: ${money(d.most_expensive_interview_cost)}`;
-      maxCostNote.classList.remove('hidden');
-    } else {
-      maxCostNote.classList.add('hidden');
-    }
+    // Max Cost Session isn't tracked at month-scope yet (only "today" and
+    // "all-time" query it) — hidden rather than shown against the wrong
+    // period. See limitations.
+    maxCostNote.classList.add('hidden');
 
-    // ── 3. Provider spend — from provider_breakdown[], PAYG rows only ────
-    const payg = (d.provider_breakdown || []).filter((r) => r.type === 'PAYG');
+    // ── 3. Provider spend — month-scoped, from month_provider_breakdown[].
+    // Claude + Vapi + ElevenLabs (if captured) reconciles exactly with
+    // month_ai_cost above by construction (both come from the same
+    // computeMonthFinancials() call server-side).
+    providerMonthLabel.textContent = selected.label;
+    const payg = (d.month_provider_breakdown || []).filter((r) => r.type === 'PAYG');
     providerTable.innerHTML = payg.length ? `
       <table class="w-full text-sm">
         <thead>
@@ -312,16 +331,19 @@
           `).join('')}
         </tbody>
       </table>
-    ` : '<p class="text-sm text-inkFaint">No provider data yet.</p>';
+    ` : '<p class="text-sm text-inkFaint">No provider data for this month.</p>';
 
-    // ── 4. Fixed infrastructure — from fixed_cost_rows[], never hardcoded ─
-    const fixedRows = d.fixed_cost_rows || [];
+    // ── 4. Fixed infrastructure — month-scoped, from month_fixed_cost_rows[],
+    // never hardcoded. A fixed cost added after this month's end is
+    // excluded server-side (effective_date filter), not here.
+    fixedMonthLabel.textContent = selected.label;
+    const fixedRows = d.month_fixed_cost_rows || [];
     fixedTable.innerHTML = fixedRows.length ? `
       <table class="w-full text-sm">
         <thead>
           <tr class="text-inkFaint text-[11px] uppercase tracking-wide">
             <th class="text-left font-medium pb-2">Provider</th>
-            <th class="text-right font-medium pb-2">Rate</th>
+            <th class="text-right font-medium pb-2">This month</th>
             <th class="text-right font-medium pb-2">Period</th>
           </tr>
         </thead>
@@ -329,7 +351,7 @@
           ${fixedRows.map((r) => `
             <tr class="border-t border-hairline">
               <td class="py-2 text-ink">${r.provider.charAt(0).toUpperCase() + r.provider.slice(1)}</td>
-              <td class="py-2 text-right num text-ink">${r.currency === 'USD' ? money(r.amount) : `${r.currency} ${num(r.amount, 2)}`}</td>
+              <td class="py-2 text-right num text-ink">${r.currency === 'USD' ? money(r.monthly_allocation_usd) : `${r.currency} ${num(r.amount, 2)}`}</td>
               <td class="py-2 text-right text-[11px] text-inkFaint">${r.billing_period}</td>
             </tr>
           `).join('')}
@@ -337,25 +359,33 @@
       </table>
     ` : '<p class="text-sm text-inkFaint">No fixed costs configured.</p>';
 
-    // ── 5. Monthly trend — only real data, no fabricated history ─────────
-    trendTable.innerHTML = `
+    // ── 5. Monthly trend — real months only, from monthly_trend[], never
+    // fabricated. Grows automatically as more months accumulate real data.
+    const trend = d.monthly_trend || [];
+    trendTable.innerHTML = trend.length ? `
       <table class="w-full text-sm">
         <thead>
           <tr class="text-inkFaint text-[11px] uppercase tracking-wide">
             <th class="text-left font-medium pb-2">Month</th>
             <th class="text-right font-medium pb-2">Revenue</th>
+            <th class="text-right font-medium pb-2">AI cost</th>
             <th class="text-right font-medium pb-2">Fixed cost</th>
+            <th class="text-right font-medium pb-2">True profit</th>
           </tr>
         </thead>
         <tbody>
-          <tr class="border-t border-hairline">
-            <td class="py-2 text-ink">${now.toLocaleString('en-US', { month: 'short', year: 'numeric' })}</td>
-            <td class="py-2 text-right num text-ink">${money(d.monthly_revenue)}</td>
-            <td class="py-2 text-right num text-ink">${money(d.total_fixed_cost_monthly)}</td>
-          </tr>
+          ${trend.map((m) => `
+            <tr class="border-t border-hairline">
+              <td class="py-2 text-ink">${m.label}</td>
+              <td class="py-2 text-right num text-ink">${money(m.revenue_usd)}</td>
+              <td class="py-2 text-right num text-ink">${money(m.ai_cost)}</td>
+              <td class="py-2 text-right num text-ink">${money(m.fixed_cost)}</td>
+              <td class="py-2 text-right num ${m.true_profit >= 0 ? 'text-good' : 'text-bad'}">${money(m.true_profit)}</td>
+            </tr>
+          `).join('')}
         </tbody>
       </table>
-    `;
+    ` : '<p class="text-sm text-inkFaint">No months with data yet.</p>';
 
     // ── 6. Today strip ─────────────────────────────────────────────────────
     todayStrip.innerHTML = `
@@ -387,13 +417,14 @@
     revenueNote.classList.add('hidden');
   }
 
-  async function load() {
+  async function load(monthValue) {
     hideError();
     skeletonAll();
     const secret = sessionStorage.getItem(SECRET_KEY) || '';
+    const url = monthValue ? `${ENDPOINT}?month=${encodeURIComponent(monthValue)}` : ENDPOINT;
 
     try {
-      const res = await fetch(ENDPOINT, {
+      const res = await fetch(url, {
         headers: secret ? { 'x-admin-secret': secret } : {},
       });
 
@@ -419,10 +450,11 @@
     }
   }
 
-  refreshBtn.addEventListener('click', load);
+  refreshBtn.addEventListener('click', () => load(monthSelect.value || undefined));
+  monthSelect.addEventListener('change', () => load(monthSelect.value));
   secretSubmit.addEventListener('click', () => {
     sessionStorage.setItem(SECRET_KEY, secretInput.value.trim());
-    load();
+    load(monthSelect.value || undefined);
   });
   secretInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') secretSubmit.click();
