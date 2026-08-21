@@ -96,8 +96,12 @@
     <!-- Revenue note (INR / unresolved purchases) -->
     <div id="revenueNote" class="hidden mb-6 rounded-lg border border-gold/30 bg-gold/5 text-inkSoft text-xs px-4 py-2.5"></div>
 
-    <!-- 1. Financial Overview — Revenue (selected month) / YTD / All Time /
-         AI Cost / Fixed Cost / True Profit, in that order -->
+    <!-- 1a. Revenue — This Month / YTD / All Time -->
+    <section class="mb-4">
+      <div id="revenueGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- 1b. Founder Financial Overview (cost/profit) -->
     <section class="mb-8">
       <div id="financialGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
     </section>
@@ -131,9 +135,17 @@
     </section>
 
     <!-- 6. Today strip (secondary, de-emphasized) -->
-    <section>
+    <section class="mb-8">
       <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">Today</h2>
       <div id="todayStrip" class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-inkSoft"></div>
+    </section>
+
+    <!-- 7. AI Provider Status — compact, visually subordinate to Financial Overview -->
+    <section>
+      <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-3">AI provider status</h2>
+      <div class="card rounded-xl px-5 py-4">
+        <div id="providerStatusTable"></div>
+      </div>
     </section>
 
   </div>
@@ -141,8 +153,10 @@
 <script>
 (function () {
   const ENDPOINT = '/api/admin/founder-dashboard';
+  const PROVIDER_STATUS_ENDPOINT = '/api/admin/provider-status';
   const SECRET_KEY = 'medhaiq_admin_secret';
 
+  const revenueGrid = document.getElementById('revenueGrid');
   const financialGrid = document.getElementById('financialGrid');
   const unitGrid = document.getElementById('unitGrid');
   const maxCostNote = document.getElementById('maxCostNote');
@@ -150,6 +164,7 @@
   const fixedTable = document.getElementById('fixedTable');
   const trendTable = document.getElementById('trendTable');
   const todayStrip = document.getElementById('todayStrip');
+  const providerStatusTable = document.getElementById('providerStatusTable');
   const monthSelect = document.getElementById('monthSelect');
   const providerMonthLabel = document.getElementById('providerMonthLabel');
   const fixedMonthLabel = document.getElementById('fixedMonthLabel');
@@ -185,7 +200,8 @@
   }
 
   function skeletonAll() {
-    financialGrid.innerHTML = skeletonCards(6);
+    revenueGrid.innerHTML = skeletonCards(3);
+    financialGrid.innerHTML = skeletonCards(3);
     unitGrid.innerHTML = skeletonCards(4);
     providerTable.innerHTML = '<div class="skeleton h-20 bg-hairline rounded"></div>';
     fixedTable.innerHTML = '<div class="skeleton h-20 bg-hairline rounded"></div>';
@@ -212,20 +228,17 @@
       revenueNote.classList.add('hidden');
     }
 
-    // ── Financial Overview — one ordered set of 6 cards:
-    // Revenue (selected month) / YTD / All Time / AI Cost / Fixed Cost /
-    // True Profit. Revenue·YTD and Revenue·All Time are ALWAYS the current
-    // calendar year/lifetime — independent of the month selector, per
-    // instruction. Revenue·[Selected Month] is the ONLY monthly revenue
-    // card now (the previous separate "Revenue · this month" card was a
-    // duplicate of this one whenever the current month was selected, and
-    // has been removed rather than kept alongside it).
-    const trueMarginClass = d.month_true_margin_pct >= 0 ? 'text-good' : 'text-bad';
-    financialGrid.innerHTML = [
+    // ── 1a. Revenue — This Month / YTD / All Time. Same underlying source
+    // (package_acquisitions, source='purchase') for all three — only the
+    // date range differs, so YTD is never less than This Month, and All
+    // Time is never less than YTD, by construction, not enforcement. These
+    // are ALWAYS the current calendar month/year/lifetime — independent of
+    // the month selector above, per instruction.
+    revenueGrid.innerHTML = [
       statCard({
-        label: `Revenue · ${selected.label}`,
-        value: money(d.month_revenue_usd),
-        sub: d.month_revenue_inr > 0 ? `+ ₹${num(d.month_revenue_inr, 2)} (kept separate)` : `Real purchases in ${selected.label}`,
+        label: 'Revenue · this month',
+        value: money(d.monthly_revenue),
+        sub: d.monthly_revenue_inr > 0 ? `+ ₹${num(d.monthly_revenue_inr, 2)} (kept separate)` : 'Real purchases, month to date',
       }),
       statCard({
         label: 'Revenue · YTD',
@@ -236,6 +249,20 @@
         label: 'Revenue · all time',
         value: money(d.total_revenue_usd),
         sub: d.total_revenue_inr > 0 ? `+ ₹${num(d.total_revenue_inr, 2)} (kept separate)` : 'Since first purchase',
+      }),
+    ].join('');
+
+    // ── 1b. Founder Financial Overview — genuinely scoped to the SELECTED
+    // month (may differ from the current calendar month above). AI cost,
+    // fixed cost, and true profit/margin are all computed from real
+    // cost_analytics/fixed_costs rows filtered to that month's date range —
+    // no more "today" vs "all-time" mismatch against the provider table.
+    const trueMarginClass = d.month_true_margin_pct >= 0 ? 'text-good' : 'text-bad';
+    financialGrid.innerHTML = [
+      statCard({
+        label: `Revenue · ${selected.label}`,
+        value: money(d.month_revenue_usd),
+        sub: d.month_revenue_inr > 0 ? `+ ₹${num(d.month_revenue_inr, 2)} (kept separate)` : 'Real purchases this month',
       }),
       statCard({
         label: `AI cost · ${selected.label}`,
@@ -381,6 +408,68 @@
     asOfLabel.textContent = `As of ${new Date().toLocaleTimeString()}`;
   }
 
+  // ── AI Provider Status — deliberately independent of renderStats/load()
+  // above. A failure here (provider API down, network error) must never
+  // clear or block the main financial dashboard — it only ever touches
+  // providerStatusTable's own content.
+  const PROVIDER_LABELS = { claude: 'Claude', vapi: 'Vapi', elevenlabs: 'ElevenLabs' };
+  const STATUS_DOT_CLASS = {
+    active: 'bg-good',
+    'no usage this month': 'bg-inkFaint',
+    'balance check failed': 'bg-bad',
+    unavailable: 'bg-inkFaint',
+  };
+
+  function formatBalance(p) {
+    if (!p.balanceAvailable) return { text: 'Balance unavailable via API', cls: 'text-inkFaint' };
+    const unit = p.balanceUnit === 'credits' ? 'credits' : (p.balanceUnit || '');
+    const text = `${Number(p.balance).toLocaleString()} ${unit}`.trim();
+    return { text, cls: p.lowBalance ? 'text-warn' : 'text-ink' };
+  }
+
+  function formatUsage(p) {
+    if (p.usageThisMonth === null || p.usageThisMonth === undefined) return '\u2014';
+    return money(p.usageThisMonth);
+  }
+
+  function renderProviderStatus(status) {
+    if (!status) {
+      providerStatusTable.innerHTML = '<p class="text-sm text-inkFaint">Provider status unavailable right now.</p>';
+      return;
+    }
+    const rows = ['claude', 'vapi', 'elevenlabs'].filter((k) => status[k]);
+    providerStatusTable.innerHTML = `
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-inkFaint text-[11px] uppercase tracking-wide">
+            <th class="text-left font-medium pb-2">Provider</th>
+            <th class="text-right font-medium pb-2">Balance / credits</th>
+            <th class="text-right font-medium pb-2">Used this month</th>
+            <th class="text-right font-medium pb-2">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((key) => {
+            const p = status[key];
+            const balance = formatBalance(p);
+            const dotClass = STATUS_DOT_CLASS[p.status] || 'bg-inkFaint';
+            const lowBalanceNote = p.lowBalance ? '<div class="text-[11px] text-warn mt-0.5">\u26a0 Low balance</div>' : '';
+            return `
+              <tr class="border-t border-hairline align-top">
+                <td class="py-2 text-ink">${PROVIDER_LABELS[key]}</td>
+                <td class="py-2 text-right num ${balance.cls}">${balance.text}${lowBalanceNote}</td>
+                <td class="py-2 text-right num text-ink">${formatUsage(p)}</td>
+                <td class="py-2 text-right text-[11px] text-inkSoft">
+                  <span class="inline-block w-1.5 h-1.5 rounded-full ${dotClass} mr-1.5 align-middle"></span>${p.status}
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
   function showError(msg) {
     errorBanner.textContent = msg;
     errorBanner.classList.remove('hidden');
@@ -389,6 +478,7 @@
     errorBanner.classList.add('hidden');
   }
   function clearAll() {
+    revenueGrid.innerHTML = '';
     financialGrid.innerHTML = '';
     unitGrid.innerHTML = '';
     providerTable.innerHTML = '';
@@ -432,17 +522,39 @@
     }
   }
 
-  refreshBtn.addEventListener('click', () => load(monthSelect.value || undefined));
+  // Independent fetch — a failure here never shows the main error banner
+  // and never clears the financial dashboard above it. One provider (or
+  // all three) being unavailable just shows as such in this one panel.
+  async function loadProviderStatus() {
+    const secret = sessionStorage.getItem(SECRET_KEY) || '';
+    try {
+      const res = await fetch(PROVIDER_STATUS_ENDPOINT, {
+        headers: secret ? { 'x-admin-secret': secret } : {},
+      });
+      if (!res.ok) {
+        renderProviderStatus(null);
+        return;
+      }
+      const status = await res.json();
+      renderProviderStatus(status);
+    } catch (err) {
+      renderProviderStatus(null);
+    }
+  }
+
+  refreshBtn.addEventListener('click', () => { load(monthSelect.value || undefined); loadProviderStatus(); });
   monthSelect.addEventListener('change', () => load(monthSelect.value));
   secretSubmit.addEventListener('click', () => {
     sessionStorage.setItem(SECRET_KEY, secretInput.value.trim());
     load(monthSelect.value || undefined);
+    loadProviderStatus();
   });
   secretInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') secretSubmit.click();
   });
 
   load();
+  loadProviderStatus();
 })();
 </script>
 </body>
