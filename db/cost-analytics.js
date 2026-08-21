@@ -57,11 +57,11 @@ async function addOrUpdateFixedCost({ provider, costType = 'fixed', amount, curr
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// COST LEDGER WRITE PATH — UNCHANGED from prior sessions. Not touched by
-// this task. Idempotent upsert on interview_id; NULL (not 0) for an
-// omitted field so a partial write from one provider never overwrites
-// another provider's already-recorded cost. See lib/cost-recorder.js for
-// the only callers.
+// COST LEDGER WRITE PATH — preserved byte-for-byte from the live version.
+// Not touched by Phase 1. Idempotent upsert on interview_id; NULL (not 0)
+// for an omitted field so a partial write from one provider never
+// overwrites another provider's already-recorded cost. See
+// lib/cost-recorder.js for the only callers.
 // ─────────────────────────────────────────────────────────────────────────
 async function upsertCostEntry({ userId, interviewId, durationMinutes, vapiCost, claudeCost, elevenlabsCost, userPlan }) {
   const result = await pool.query(
@@ -99,6 +99,9 @@ async function upsertCostEntry({ userId, interviewId, durationMinutes, vapiCost,
 //
 // source = 'purchase' ONLY — excludes founder-granted access and
 // migration-backfill rows, which are real entitlements but not real money.
+// This is also what keeps a provider wallet recharge (Vapi/Claude/
+// ElevenLabs top-ups) from ever being mistaken for revenue: recharges
+// aren't package_acquisitions rows at all, so they can't leak in here.
 //
 // CURRENCY NOTE: INR and USD are NEVER summed together. INR revenue is
 // tracked and returned as its own field, not converted at a fabricated
@@ -190,9 +193,11 @@ async function getUserCounts() {
 
 // ─────────────────────────────────────────────────────────────────────────
 // FOUNDER DASHBOARD AGGREGATE — today's ledger (unchanged query shape from
-// prior sessions) + all-time ledger totals (new) + fixed costs from the DB
-// (new) + revenue from real purchases (new, replaces the old MRR/30
-// approximation entirely).
+// the live version) + all-time ledger totals (new) + fixed costs from the
+// DB (new) + revenue from real purchases (new, replaces the old MRR/30
+// approximation entirely). All existing dashboard-compatible field names
+// are preserved so the current founder-dashboard.html keeps working
+// unmodified.
 // ─────────────────────────────────────────────────────────────────────────
 async function getFounderDashboardStats() {
   const todayLedgerQuery = pool.query(
@@ -209,8 +214,8 @@ async function getFounderDashboardStats() {
        AND created_at < date_trunc('day', NOW()) + INTERVAL '1 day'`
   );
 
-  // All-time ledger — no date filter. Backs the new "Total" metrics
-  // (§10 of the founder spec), distinct from the existing "Today's" ones.
+  // All-time ledger — no date filter. Backs the new "Total" metrics,
+  // distinct from the existing "Today's" ones.
   const totalLedgerQuery = pool.query(
     `SELECT
        COUNT(*)::int AS interviews_total_count,
@@ -260,14 +265,13 @@ async function getFounderDashboardStats() {
   const totalAiCost = totalLedger.total_vapi_cost + totalLedger.total_claude_cost + totalLedger.total_elevenlabs_cost;
   const totalGrossProfit = revenue.revenue_total_usd - totalAiCost;
   const totalGrossMarginPct = revenue.revenue_total_usd > 0 ? (totalGrossProfit / revenue.revenue_total_usd) * 100 : 0;
-  const totalTrueProfit = totalGrossProfit - totalMonthlyFixedUsd; // lifetime fixed cost isn't tracked (no start date basis); shown as one period's worth, documented limitation
+  const totalTrueProfit = totalGrossProfit - totalMonthlyFixedUsd; // lifetime fixed cost isn't tracked (no MedhaIQ start date basis); shown as one period's worth, documented limitation
   const totalTrueMarginPct = revenue.revenue_total_usd > 0 ? (totalTrueProfit / revenue.revenue_total_usd) * 100 : 0;
   const costPerInterviewTotal = totalLedger.interviews_total_count > 0 ? totalAiCost / totalLedger.interviews_total_count : 0;
   const costPerPaidUser = userCounts.paid_users_count > 0 ? totalAiCost / userCounts.paid_users_count : 0;
 
   // ── Provider breakdown table (today-scoped costs; fixed costs shown at
-  // their configured recurring amount, not a daily slice, since that's
-  // what "Provider | Type | Usage | Cost" reads most naturally as) ───────
+  // their configured recurring amount, not a daily slice) ────────────────
   const providerBreakdown = [
     { provider: 'Claude', type: 'PAYG', usage: null, cost_usd: ledger.todays_claude_cost },
     { provider: 'Vapi', type: 'PAYG', usage: null, cost_usd: ledger.todays_vapi_cost },
