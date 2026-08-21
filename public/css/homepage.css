@@ -485,10 +485,10 @@
 .mh-perspective-role {
   font-family: var(--font-display);
   font-weight: 700;
-  color: #0B1020;
+  color: var(--royal-blue);
 }
 .mh-perspective-location {
-  color: #5F6B82;
+  color: #8A94A6;
 }
 .mh-perspective-quote {
   font-family: var(--font-body);
