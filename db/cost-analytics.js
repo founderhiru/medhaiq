@@ -2,35 +2,67 @@
 // Backs the founder cost dashboard (routes/admin.js).
 const { pool } = require('./index');
 
-// Plan pricing — keep in sync with actual billing plans.
-// Trial is $0; only Professional and Leadership are counted as paying.
-const PLAN_PRICES = {
-  professional: 15,
-  leadership: 35,
-};
+// Revenue pricing is read directly from config/pricing.js — the same file
+// that drives the live pricing page — never a second hardcoded price list.
+// If a plan's price changes there, revenue reporting picks it up on next
+// deploy with no change needed here. Read-only require; this file is never
+// written to.
+const { plans: PRICING_PLANS } = require('../config/pricing');
+const PACKAGE_PRICE_LOOKUP = PRICING_PLANS.reduce((acc, plan) => {
+  acc[plan.id] = plan.price; // { INR, USD }
+  return acc;
+}, {});
 
-// Fixed monthly infrastructure costs — flat bills that exist regardless of
-// usage volume. Deliberately separate from AI cost (Vapi/Claude/ElevenLabs),
-// which is usage-metered and already tracked per-interview in cost_analytics.
-//
-// NOTE: Claude API spend is NOT listed here. The Anthropic console balance
-// is prepaid credit funding the same token usage already captured in
-// cost_analytics.claude_cost — listing it again here would double-count it.
-// Vapi and ElevenLabs are both confirmed pay-as-you-go — no fixed line for
-// either; their real spend lives in vapi_cost / elevenlabs_cost above.
-const FIXED_MONTHLY_COSTS = {
-  render: 7,
-  supabase: 0,
-};
-const TOTAL_FIXED_MONTHLY = Object.values(FIXED_MONTHLY_COSTS).reduce((a, b) => a + b, 0);
+// ─────────────────────────────────────────────────────────────────────────
+// FIXED COSTS — now a configurable table (migration 028_fixed_costs),
+// replacing the previous hardcoded FIXED_MONTHLY_COSTS object. Adding a new
+// fixed-cost line (Stripe fixed fee, domain, email provider, a future Vapi
+// platform fee) is a row insert into `fixed_costs` from here forward —
+// never a code change.
+// ─────────────────────────────────────────────────────────────────────────
 
-// Insert or update today's ledger row for an interview. Safe to call multiple
-// times for the same interview_id — e.g. Vapi's end-of-call-report cost
-// lands first, Claude session cost is aggregated in later at report
-// completion. A field left out of a given call is passed as NULL (not 0),
-// so COALESCE(EXCLUDED.col, cost_analytics.col) on conflict correctly
-// preserves whatever was already recorded for that field — a NULL here
-// means "not written by THIS call", never "zero, overwrite what's there".
+async function getActiveFixedCosts() {
+  const result = await pool.query(
+    `SELECT id, provider, cost_type, amount, currency, billing_period, active, effective_date
+     FROM fixed_costs
+     WHERE active = true AND effective_date <= CURRENT_DATE
+     ORDER BY provider`
+  );
+  return result.rows;
+}
+
+// Daily allocation is an ACCOUNTING SPREAD for reporting purposes only —
+// it does not mean the provider actually charges this amount daily. See
+// billing_period on each row for the real cadence.
+function dailyAllocationUsd(row) {
+  const amount = Number(row.amount) || 0;
+  if (row.currency !== 'USD') return null; // don't silently mix currencies into a $ figure
+  switch (row.billing_period) {
+    case 'monthly': return amount / 30;
+    case 'yearly': return amount / 365;
+    case 'weekly': return amount / 7;
+    case 'daily': return amount;
+    default: return amount / 30; // conservative default — documented, not silent
+  }
+}
+
+async function addOrUpdateFixedCost({ provider, costType = 'fixed', amount, currency = 'USD', billingPeriod = 'monthly', active = true, effectiveDate }) {
+  const result = await pool.query(
+    `INSERT INTO fixed_costs (provider, cost_type, amount, currency, billing_period, active, effective_date)
+     VALUES ($1, $2, $3, $4, $5, $6, COALESCE($7, CURRENT_DATE))
+     RETURNING *`,
+    [provider, costType, amount, currency, billingPeriod, active, effectiveDate || null]
+  );
+  return result.rows[0];
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// COST LEDGER WRITE PATH — UNCHANGED from prior sessions. Not touched by
+// this task. Idempotent upsert on interview_id; NULL (not 0) for an
+// omitted field so a partial write from one provider never overwrites
+// another provider's already-recorded cost. See lib/cost-recorder.js for
+// the only callers.
+// ─────────────────────────────────────────────────────────────────────────
 async function upsertCostEntry({ userId, interviewId, durationMinutes, vapiCost, claudeCost, elevenlabsCost, userPlan }) {
   const result = await pool.query(
     `INSERT INTO cost_analytics (user_id, interview_id, duration_minutes, vapi_cost, claude_cost, elevenlabs_cost, user_plan)
@@ -57,10 +89,113 @@ async function upsertCostEntry({ userId, interviewId, durationMinutes, vapiCost,
   return result.rows[0];
 }
 
-// Aggregated stats for the founder dashboard — today's interview cost ledger
-// plus current active-plan counts from the users table.
+// ─────────────────────────────────────────────────────────────────────────
+// REVENUE — sourced from package_acquisitions (the real purchase/
+// entitlement ledger), never users.subscription_plan/subscription_status.
+// package_acquisitions itself stores no dollar amount, so each row's price
+// is resolved via PACKAGE_PRICE_LOOKUP (config/pricing.js) at query time,
+// keyed by the purchasing user's market (users.market: 'india' -> INR,
+// anything else -> USD, matching lib/pricing-market.js's own fallback).
+//
+// source = 'purchase' ONLY — excludes founder-granted access and
+// migration-backfill rows, which are real entitlements but not real money.
+//
+// CURRENCY NOTE: INR and USD are NEVER summed together. INR revenue is
+// tracked and returned as its own field, not converted at a fabricated
+// exchange rate. See getFounderDashboardStats' revenue_note field.
+// ─────────────────────────────────────────────────────────────────────────
+async function getPurchaseRecords() {
+  const result = await pool.query(
+    `SELECT pa.package_id, pa.acquired_at, pa.user_id, COALESCE(u.market, 'international') AS market
+     FROM package_acquisitions pa
+     JOIN users u ON u.id = pa.user_id
+     WHERE pa.source = 'purchase'`
+  );
+  return result.rows;
+}
+
+function priceForPurchase(row) {
+  const priceObj = PACKAGE_PRICE_LOOKUP[row.package_id];
+  if (!priceObj) return null; // unknown package_id — don't fabricate a price
+  const currency = row.market === 'india' ? 'INR' : 'USD';
+  const amount = priceObj[currency];
+  if (amount === undefined || amount === null) return null;
+  return { amount, currency };
+}
+
+function summarizeRevenue(purchaseRows) {
+  const now = new Date();
+  const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  let revenueTodayUsd = 0, revenueTodayInr = 0;
+  let revenueMonthUsd = 0, revenueMonthInr = 0;
+  let revenueTotalUsd = 0, revenueTotalInr = 0;
+  let unresolvedCount = 0;
+
+  for (const row of purchaseRows) {
+    const priced = priceForPurchase(row);
+    if (!priced) { unresolvedCount++; continue; }
+    const acquiredAt = new Date(row.acquired_at);
+    const isToday = acquiredAt >= dayStart;
+    const isThisMonth = acquiredAt >= monthStart;
+
+    if (priced.currency === 'USD') {
+      revenueTotalUsd += priced.amount;
+      if (isThisMonth) revenueMonthUsd += priced.amount;
+      if (isToday) revenueTodayUsd += priced.amount;
+    } else {
+      revenueTotalInr += priced.amount;
+      if (isThisMonth) revenueMonthInr += priced.amount;
+      if (isToday) revenueTodayInr += priced.amount;
+    }
+  }
+
+  return {
+    revenue_today_usd: revenueTodayUsd,
+    revenue_today_inr: revenueTodayInr,
+    revenue_month_usd: revenueMonthUsd,
+    revenue_month_inr: revenueMonthInr,
+    revenue_total_usd: revenueTotalUsd,
+    revenue_total_inr: revenueTotalInr,
+    unresolved_purchase_count: unresolvedCount,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// PAID USER COUNT — from package_acquisitions (currently active, non-
+// explorer package), not users.subscription_plan. Distinct user_id, so
+// multiple acquisitions for the same user never inflate the count.
+// ─────────────────────────────────────────────────────────────────────────
+async function getUserCounts() {
+  const result = await pool.query(
+    `SELECT
+       (SELECT COUNT(*)::int FROM users) AS total_users,
+       (SELECT COUNT(DISTINCT user_id)::int FROM package_acquisitions
+          WHERE package_id != 'explorer' AND (expires_at IS NULL OR expires_at > NOW())
+       ) AS paid_users_count,
+       (SELECT COUNT(*)::int FROM users
+          WHERE created_at >= date_trunc('day', NOW()) AND created_at < date_trunc('day', NOW()) + INTERVAL '1 day'
+       ) AS new_users_today,
+       (SELECT COUNT(*)::int FROM users u
+          WHERE u.created_at >= date_trunc('day', NOW()) AND u.created_at < date_trunc('day', NOW()) + INTERVAL '1 day'
+            AND NOT EXISTS (
+              SELECT 1 FROM package_acquisitions pa
+              WHERE pa.user_id = u.id AND pa.package_id != 'explorer' AND (pa.expires_at IS NULL OR pa.expires_at > NOW())
+            )
+       ) AS new_trial_users_today`
+  );
+  return result.rows[0];
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// FOUNDER DASHBOARD AGGREGATE — today's ledger (unchanged query shape from
+// prior sessions) + all-time ledger totals (new) + fixed costs from the DB
+// (new) + revenue from real purchases (new, replaces the old MRR/30
+// approximation entirely).
+// ─────────────────────────────────────────────────────────────────────────
 async function getFounderDashboardStats() {
-  const ledgerQuery = pool.query(
+  const todayLedgerQuery = pool.query(
     `SELECT
        COUNT(*)::int AS interviews_today_count,
        COALESCE(SUM(COALESCE(vapi_cost, 0)), 0)::float AS todays_vapi_cost,
@@ -74,80 +209,129 @@ async function getFounderDashboardStats() {
        AND created_at < date_trunc('day', NOW()) + INTERVAL '1 day'`
   );
 
-  const plansQuery = pool.query(
+  // All-time ledger — no date filter. Backs the new "Total" metrics
+  // (§10 of the founder spec), distinct from the existing "Today's" ones.
+  const totalLedgerQuery = pool.query(
     `SELECT
-       COUNT(*) FILTER (
-         WHERE LOWER(subscription_plan) = 'professional' AND subscription_status = 'active'
-       )::int AS professional_count,
-       COUNT(*) FILTER (
-         WHERE LOWER(subscription_plan) = 'leadership' AND subscription_status = 'active'
-       )::int AS leadership_count,
-       COUNT(*) FILTER (
-         WHERE LOWER(subscription_plan) IN ('professional', 'leadership') AND subscription_status = 'active'
-       )::int AS paying_users_count,
-       COUNT(*) FILTER (
-         WHERE NOT (LOWER(subscription_plan) IN ('professional', 'leadership') AND subscription_status = 'active')
-       )::int AS trial_users_count,
-       COUNT(*) FILTER (
-         WHERE created_at >= date_trunc('day', NOW())
-           AND created_at < date_trunc('day', NOW()) + INTERVAL '1 day'
-       )::int AS new_users_today,
-       COUNT(*) FILTER (
-         WHERE created_at >= date_trunc('day', NOW())
-           AND created_at < date_trunc('day', NOW()) + INTERVAL '1 day'
-           AND NOT (LOWER(subscription_plan) IN ('professional', 'leadership') AND subscription_status = 'active')
-       )::int AS new_trial_users_today
-     FROM users`
+       COUNT(*)::int AS interviews_total_count,
+       COALESCE(SUM(COALESCE(vapi_cost, 0)), 0)::float AS total_vapi_cost,
+       COALESCE(SUM(COALESCE(claude_cost, 0)), 0)::float AS total_claude_cost,
+       COALESCE(SUM(COALESCE(elevenlabs_cost, 0)), 0)::float AS total_elevenlabs_cost,
+       COALESCE(SUM(COALESCE(duration_minutes, 0)), 0)::float AS total_interview_minutes
+     FROM cost_analytics`
   );
 
-  const [ledgerResult, plansResult] = await Promise.all([ledgerQuery, plansQuery]);
+  const [todayLedgerResult, totalLedgerResult, purchaseRows, userCounts, fixedCosts] = await Promise.all([
+    todayLedgerQuery,
+    totalLedgerQuery,
+    getPurchaseRecords(),
+    getUserCounts(),
+    getActiveFixedCosts(),
+  ]);
 
-  const ledger = ledgerResult.rows[0];
-  const plans = plansResult.rows[0];
+  const ledger = todayLedgerResult.rows[0];
+  const totalLedger = totalLedgerResult.rows[0];
+  const revenue = summarizeRevenue(purchaseRows);
 
-  const monthlyRevenue =
-    plans.professional_count * PLAN_PRICES.professional +
-    plans.leadership_count * PLAN_PRICES.leadership;
+  // Fixed costs — from the DB now, not a hardcoded object. Only USD rows
+  // roll into the dollar totals below (see dailyAllocationUsd); a non-USD
+  // fixed cost would need its own explicit handling, not silent conversion.
+  const fixedCostRows = fixedCosts.map((row) => ({
+    provider: row.provider,
+    cost_type: row.cost_type,
+    amount: Number(row.amount),
+    currency: row.currency,
+    billing_period: row.billing_period,
+    daily_allocation_usd: dailyAllocationUsd(row),
+  }));
+  const fixedCostsTodayUsd = fixedCostRows.reduce((sum, r) => sum + (r.daily_allocation_usd || 0), 0);
+  const totalMonthlyFixedUsd = fixedCostRows
+    .filter((r) => r.currency === 'USD')
+    .reduce((sum, r) => sum + (r.billing_period === 'monthly' ? r.amount : (r.daily_allocation_usd || 0) * 30), 0);
 
-  // "Today's revenue" is approximated as a daily slice of MRR, per spec.
-  const revenueToday = monthlyRevenue / 30;
-
+  // ── Today ──────────────────────────────────────────────────────────────
   const todaysTotalAiCost = ledger.todays_vapi_cost + ledger.todays_claude_cost + ledger.todays_elevenlabs_cost;
-  const fixedCostsToday = TOTAL_FIXED_MONTHLY / 30;
+  const grossProfitToday = revenue.revenue_today_usd - todaysTotalAiCost;
+  const todayProfitMarginPct = revenue.revenue_today_usd > 0 ? (grossProfitToday / revenue.revenue_today_usd) * 100 : 0;
+  const trueProfitToday = grossProfitToday - fixedCostsTodayUsd;
+  const trueMarginPctToday = revenue.revenue_today_usd > 0 ? (trueProfitToday / revenue.revenue_today_usd) * 100 : 0;
 
-  // Gross profit/margin stays AI-cost-only — this is the number you're used
-  // to reading, unaffected by fixed overhead.
-  const grossProfit = revenueToday - todaysTotalAiCost;
-  const todayProfitMarginPct = revenueToday > 0 ? (grossProfit / revenueToday) * 100 : 0;
+  // ── All-time ("Total") ────────────────────────────────────────────────
+  const totalAiCost = totalLedger.total_vapi_cost + totalLedger.total_claude_cost + totalLedger.total_elevenlabs_cost;
+  const totalGrossProfit = revenue.revenue_total_usd - totalAiCost;
+  const totalGrossMarginPct = revenue.revenue_total_usd > 0 ? (totalGrossProfit / revenue.revenue_total_usd) * 100 : 0;
+  const totalTrueProfit = totalGrossProfit - totalMonthlyFixedUsd; // lifetime fixed cost isn't tracked (no start date basis); shown as one period's worth, documented limitation
+  const totalTrueMarginPct = revenue.revenue_total_usd > 0 ? (totalTrueProfit / revenue.revenue_total_usd) * 100 : 0;
+  const costPerInterviewTotal = totalLedger.interviews_total_count > 0 ? totalAiCost / totalLedger.interviews_total_count : 0;
+  const costPerPaidUser = userCounts.paid_users_count > 0 ? totalAiCost / userCounts.paid_users_count : 0;
 
-  // Separate ROI view — same profit, minus fixed monthly overhead. Kept as
-  // its own set of fields so it never gets mixed into the headline numbers.
-  const trueProfitToday = grossProfit - fixedCostsToday;
-  const trueMarginPct = revenueToday > 0 ? (trueProfitToday / revenueToday) * 100 : 0;
+  // ── Provider breakdown table (today-scoped costs; fixed costs shown at
+  // their configured recurring amount, not a daily slice, since that's
+  // what "Provider | Type | Usage | Cost" reads most naturally as) ───────
+  const providerBreakdown = [
+    { provider: 'Claude', type: 'PAYG', usage: null, cost_usd: ledger.todays_claude_cost },
+    { provider: 'Vapi', type: 'PAYG', usage: null, cost_usd: ledger.todays_vapi_cost },
+    { provider: 'ElevenLabs', type: 'PAYG', usage: null, cost_usd: ledger.todays_elevenlabs_cost === 0 ? null : ledger.todays_elevenlabs_cost },
+    ...fixedCostRows.map((r) => ({
+      provider: r.provider.charAt(0).toUpperCase() + r.provider.slice(1),
+      type: 'Fixed',
+      usage: r.billing_period,
+      cost_usd: r.currency === 'USD' ? r.amount : null,
+    })),
+  ];
 
   return {
-    revenue_today: revenueToday,
-    monthly_revenue: monthlyRevenue,
-    paying_users_count: plans.paying_users_count,
-    trial_users_count: plans.trial_users_count,
-    new_users_today: plans.new_users_today,
-    new_trial_users_today: plans.new_trial_users_today,
+    // ── Today ──
+    revenue_today: revenue.revenue_today_usd,
+    revenue_today_inr: revenue.revenue_today_inr,
+    monthly_revenue: revenue.revenue_month_usd,
+    monthly_revenue_inr: revenue.revenue_month_inr,
+    paying_users_count: userCounts.paid_users_count,
+    trial_users_count: Math.max(0, userCounts.total_users - userCounts.paid_users_count),
+    new_users_today: userCounts.new_users_today,
+    new_trial_users_today: userCounts.new_trial_users_today,
     todays_vapi_cost: ledger.todays_vapi_cost,
     todays_claude_cost: ledger.todays_claude_cost,
     todays_elevenlabs_cost: ledger.todays_elevenlabs_cost,
     todays_total_ai_cost: todaysTotalAiCost,
-    gross_profit: grossProfit,
+    gross_profit: grossProfitToday,
     interviews_today_count: ledger.interviews_today_count,
     avg_interview_duration: ledger.avg_interview_duration,
     avg_cost_per_interview: ledger.avg_cost_per_interview,
     most_expensive_interview_cost: ledger.most_expensive_interview_cost,
     today_profit_margin_pct: todayProfitMarginPct,
-    // Separate ROI block — fixed overhead included, kept apart from the
-    // AI-only numbers above.
-    fixed_costs_today: fixedCostsToday,
+    fixed_costs_today: fixedCostsTodayUsd,
     true_profit_today: trueProfitToday,
-    true_margin_pct: trueMarginPct,
+    true_margin_pct: trueMarginPctToday,
+
+    // ── Total / lifetime ──
+    total_revenue_usd: revenue.revenue_total_usd,
+    total_revenue_inr: revenue.revenue_total_inr,
+    total_ai_cost: totalAiCost,
+    total_fixed_cost_monthly: totalMonthlyFixedUsd,
+    total_gross_profit: totalGrossProfit,
+    total_gross_margin_pct: totalGrossMarginPct,
+    total_true_profit: totalTrueProfit,
+    total_true_margin_pct: totalTrueMarginPct,
+    interviews_total_count: totalLedger.interviews_total_count,
+    total_interview_minutes: totalLedger.total_interview_minutes,
+    cost_per_interview_total: costPerInterviewTotal,
+    cost_per_paid_user: costPerPaidUser,
+
+    // ── Breakdown & limitations ──
+    provider_breakdown: providerBreakdown,
+    fixed_cost_rows: fixedCostRows,
+    revenue_note: revenue.unresolved_purchase_count > 0 || revenue.revenue_total_inr > 0
+      ? `INR revenue (₹${revenue.revenue_total_inr.toFixed(2)} total) is tracked separately, not converted into the USD figures above.` +
+        (revenue.unresolved_purchase_count > 0 ? ` ${revenue.unresolved_purchase_count} purchase row(s) reference an unknown package_id and were excluded.` : '')
+      : null,
   };
 }
 
-module.exports = { upsertCostEntry, getFounderDashboardStats, PLAN_PRICES, FIXED_MONTHLY_COSTS };
+module.exports = {
+  upsertCostEntry,
+  getFounderDashboardStats,
+  getActiveFixedCosts,
+  addOrUpdateFixedCost,
+  PACKAGE_PRICE_LOOKUP,
+};
