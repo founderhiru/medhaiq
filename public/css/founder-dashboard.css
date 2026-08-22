@@ -389,3 +389,66 @@ a.fdash-qa-link:hover { background: var(--fdash-card-hover); }
 }
 .fdash-modal-checkbox-row { margin-bottom: 10px; font-size: 13px; color: var(--fdash-ink-soft); }
 .fdash-modal-checkbox-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+/* ============================================================
+   DELIBERATE TWO-TONE ACCENT — Quick Actions and User Management
+   stay dark navy (matching the sidebar), while the rest of this page
+   is warm-light. Explicit founder design decision, not an oversight.
+   Scoped by id (#fdash-quick-actions-section / #fdash-users-section,
+   both already present in the EJS) so nothing else on the page is
+   affected. Reuses the SAME shared dark tokens (--card/--white/
+   --muted/--dim/--navy) that were already globally available from
+   interview.css before this page went warm-light — no new colors
+   invented, no shared token redefined.
+   ============================================================ */
+
+#fdash-quick-actions-section .fdash-section-title,
+#fdash-users-section .fdash-section-title {
+  color: var(--white);
+}
+
+#fdash-quick-actions-section .fdash-qa-card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: none;
+}
+#fdash-quick-actions-section a.fdash-qa-link:hover { background: var(--card-hover); }
+#fdash-quick-actions-section .fdash-qa-label { color: var(--white); }
+#fdash-quick-actions-section .fdash-qa-sub { color: var(--dim); }
+#fdash-quick-actions-section .fdash-qa-invite-form input {
+  background: var(--navy);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--white);
+}
+#fdash-quick-actions-section .fdash-qa-invite-msg { color: var(--dim); }
+#fdash-quick-actions-section .fdash-qa-invite-msg.success { color: var(--emerald); }
+#fdash-quick-actions-section .fdash-qa-invite-msg.error { color: var(--danger); }
+
+#fdash-users-section .fdash-search-input {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--white);
+}
+#fdash-users-section .fdash-activity-card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: none;
+}
+#fdash-users-section .fdash-activity-table th {
+  color: var(--dim);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+#fdash-users-section .fdash-activity-table td {
+  color: var(--muted);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+#fdash-users-section .fdash-activity-table td.fdash-user { color: var(--white); }
+#fdash-users-section .fdash-activity-empty { color: var(--dim); }
+#fdash-users-section .fdash-action-btn {
+  background: rgba(255,255,255,0.04);
+  color: var(--muted);
+}
+#fdash-users-section .fdash-create-user-btn { background: var(--royal); color: var(--white); }
+#fdash-users-section .fdash-create-user-btn:hover { background: var(--bright); }
+#fdash-users-section .fdash-manage-package-btn { background: rgba(255,255,255,0.04); color: var(--muted); }
+#fdash-users-section .fdash-manage-package-btn:hover { background: rgba(255,255,255,0.08); color: var(--white); }

@@ -586,9 +586,18 @@ async function getFounderDashboardStats(selectedMonthValue) {
     // here as its own field so the frontend's persistent reconciliation
     // status can read the real value instead of guessing/duplicating it.
     unresolved_purchase_count: revenue.unresolved_purchase_count,
-    revenue_note: revenue.unresolved_purchase_count > 0 || revenue.revenue_total_inr > 0
-      ? `Original-currency INR total (₹${revenue.revenue_total_inr.toFixed(2)}) is shown for reference only, never added into the USD figures above.` +
-        (revenue.unresolved_purchase_count > 0 ? ` ${revenue.unresolved_purchase_count} purchase(s) are pending Stripe revenue reconciliation and excluded from every total until resolved.` : '')
+    // Only shown when something is actually actionable (a purchase still
+    // pending reconciliation). Once everything is resolved, the Revenue
+    // KPI cards' own "Includes ₹X INR — converted to USD at Stripe
+    // settlement" line already tells the complete, accurate story — an
+    // always-on banner saying INR is "never added" would then read as
+    // contradicting that line, even though both are technically true
+    // (the ₹ figure itself is never summed with $ — the USD-EQUIVALENT
+    // is). Showing it only when there's a real pending count avoids that
+    // confusion entirely.
+    revenue_note: revenue.unresolved_purchase_count > 0
+      ? `${revenue.unresolved_purchase_count} purchase(s) are pending Stripe revenue reconciliation and excluded from every total until resolved.` +
+        (revenue.revenue_total_inr > 0 ? ` Original-currency INR total (₹${revenue.revenue_total_inr.toFixed(2)}) is shown for reference only, never added into the USD figures above.` : '')
       : null,
 
     // ── Selected month (genuinely month-scoped — the core of this feature) ─
