@@ -13,13 +13,22 @@ const _menuHref = (key, fallback) => {
   const item = _megaMenuItems.find(i => i.key === key);
   return item ? item.href : fallback;
 };
-// Homepage session-awareness: homeCapabilities is passed explicitly by the
-// '/' route in server.js (calling the real lib/capabilities.js Capability
-// Engine) — distinct from megaMenuItems above, which comes from the
-// separate, tier-only mega-menu system. Only used to swap Sign In/Start
-// Free Trial for Workspace + avatar; homepage content itself is
-// unchanged, per spec ("Navigation Principles").
-const _homeCaps = typeof homeCapabilities !== 'undefined' && homeCapabilities ? homeCapabilities : null;
+// Site-wide session-awareness: middleware/capabilities.js (server.js:70)
+// runs on EVERY request and already attaches this exact same object as
+// res.locals.capabilities — automatically available in every res.render()
+// call, no per-route wiring needed. homeCapabilities is kept as a fallback
+// only: the '/' route in server.js additionally passes req.capabilities
+// under that name explicitly (homeCapabilities = req.capabilities, an
+// identical, untransformed copy), which is what this partial originally
+// keyed off. Routes like /why and /architecture never passed
+// homeCapabilities, so they always fell back to the guest header even for
+// a logged-in visitor — capabilities was there the whole time, just under
+// a different name. Preferring capabilities first (with homeCapabilities
+// as a safety net) fixes every page that includes this partial at once,
+// with no new auth mechanism and no change to session/login behavior.
+const _homeCaps = (typeof capabilities !== 'undefined' && capabilities)
+  ? capabilities
+  : (typeof homeCapabilities !== 'undefined' && homeCapabilities ? homeCapabilities : null);
 const _isHomeAuthed = !!(_homeCaps && _homeCaps.isAuthenticated);
 %>
 <header class="mh-nav" id="mh-nav">
