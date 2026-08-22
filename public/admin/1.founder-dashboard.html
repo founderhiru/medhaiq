@@ -90,12 +90,6 @@
       <div class="flex items-center gap-2">
         <select id="monthSelect" class="text-sm font-medium text-ink bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-accent rounded cursor-pointer"></select>
       </div>
-      <div class="flex items-center gap-2">
-        <span id="reconcileStatus" class="text-[11px] text-inkFaint"></span>
-        <button id="reconcileBtn" class="text-[11px] px-2.5 py-1 rounded-md border border-hairline bg-card hover:bg-cardAlt transition text-inkSoft flex-shrink-0">
-          Reconcile Revenue
-        </button>
-      </div>
     </div>
     <div class="hairline-gold rounded-full mb-4"></div>
 
@@ -177,7 +171,6 @@
 (function () {
   const ENDPOINT = '/api/admin/founder-dashboard';
   const PROVIDER_STATUS_ENDPOINT = '/api/admin/provider-status';
-  const RECONCILE_ENDPOINT = '/api/admin/reconcile-revenue';
   const SECRET_KEY = 'medhaiq_admin_secret';
 
   const financialGrid = document.getElementById('financialGrid');
@@ -190,8 +183,6 @@
   const providerStatusTable = document.getElementById('providerStatusTable');
   const providerRefreshBtn = document.getElementById('providerRefreshBtn');
   const providerLastUpdated = document.getElementById('providerLastUpdated');
-  const reconcileBtn = document.getElementById('reconcileBtn');
-  const reconcileStatus = document.getElementById('reconcileStatus');
   const monthSelect = document.getElementById('monthSelect');
   const providerMonthLabel = document.getElementById('providerMonthLabel');
   const fixedMonthLabel = document.getElementById('fixedMonthLabel');
@@ -605,82 +596,8 @@
     }
   }
 
-  // Reconcile Revenue — calls the EXISTING POST /api/admin/reconcile-revenue
-  // endpoint (lib/stripe-revenue-reconciliation.js). No new reconciliation
-  // logic, no new auth mechanism: same x-admin-secret header every other
-  // call on this page already uses. One-shot on click only — no polling.
-  async function handleReconcile() {
-    const secret = sessionStorage.getItem(SECRET_KEY) || '';
-    reconcileBtn.disabled = true;
-    reconcileBtn.classList.add('opacity-60', 'cursor-not-allowed');
-    reconcileStatus.textContent = 'Reconciling\u2026';
-    reconcileStatus.className = 'text-[11px] text-inkFaint';
-
-    try {
-      const res = await fetch(RECONCILE_ENDPOINT, {
-        method: 'POST',
-        headers: secret ? { 'x-admin-secret': secret } : {},
-      });
-
-      if (res.status === 403) {
-        reconcileStatus.textContent = 'Admin secret required or incorrect.';
-        reconcileStatus.className = 'text-[11px] text-bad';
-        return;
-      }
-      if (!res.ok) {
-        reconcileStatus.textContent = 'Reconciliation failed \u2014 try again shortly.';
-        reconcileStatus.className = 'text-[11px] text-bad';
-        return;
-      }
-
-      const summary = await res.json();
-
-      if (summary.error) {
-        reconcileStatus.textContent = 'Reconciliation failed \u2014 try again shortly.';
-        reconcileStatus.className = 'text-[11px] text-bad';
-        return;
-      }
-      if (summary.skipped) {
-        reconcileStatus.textContent = 'Reconciliation unavailable right now.';
-        reconcileStatus.className = 'text-[11px] text-inkFaint';
-        return;
-      }
-
-      const resolved = summary.resolved || 0;
-      const stillPending = summary.stillPending || 0;
-
-      if ((summary.checked || 0) === 0) {
-        reconcileStatus.textContent = 'Revenue is up to date';
-        reconcileStatus.className = 'text-[11px] text-good';
-      } else {
-        const parts = [`${resolved} purchase${resolved === 1 ? '' : 's'} reconciled`];
-        parts.push(stillPending > 0 ? `${stillPending} still pending` : '0 pending');
-        reconcileStatus.textContent = parts.join(' \u00b7 ');
-        reconcileStatus.className = resolved > 0 ? 'text-[11px] text-good' : 'text-[11px] text-inkFaint';
-      }
-
-      // Refresh revenue figures after a successful reconciliation — reuses
-      // the existing load() path, same as the main Refresh button. Only
-      // runs once, right here, never repeated/polled.
-      if (resolved > 0) {
-        load(monthSelect.value || undefined);
-      }
-    } catch (err) {
-      // Never surface err.message here — could echo network/proxy details
-      // that aren't secrets but also aren't useful to a founder; the
-      // failure itself is enough signal, same restraint as the rest of
-      // this page's error handling.
-      reconcileStatus.textContent = 'Network error \u2014 could not reach the server.';
-      reconcileStatus.className = 'text-[11px] text-bad';
-    } finally {
-      reconcileBtn.disabled = false;
-      reconcileBtn.classList.remove('opacity-60', 'cursor-not-allowed');
-    }
-  }
-
   refreshBtn.addEventListener('click', () => { load(monthSelect.value || undefined); loadProviderStatus(); });
   providerRefreshBtn.addEventListener('click', () => loadProviderStatus());
-  reconcileBtn.addEventListener('click', handleReconcile);
   monthSelect.addEventListener('change', () => load(monthSelect.value));
   secretSubmit.addEventListener('click', () => {
     sessionStorage.setItem(SECRET_KEY, secretInput.value.trim());
