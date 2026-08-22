@@ -1,0 +1,21 @@
+The Impact of Remote Work on Organizational Productivity: A Longitudinal Study
+
+Abstract
+This paper examines the relationship between remote work arrangements and
+measured productivity outcomes across 340 organizations over a five-year period.
+
+Introduction
+Since 2020, remote work has fundamentally altered how organizations structure
+labor. Prior research suggests mixed effects on output across sectors.
+
+Methodology
+We employed a mixed-methods approach combining survey data with productivity
+metrics collected from participating organizations across multiple industries.
+
+Results
+Our findings indicate a statistically significant correlation between hybrid
+work models and self-reported job satisfaction, though productivity effects
+varied considerably by industry sector and organizational size.
+
+Conclusion
+Further research is needed to establish causal mechanisms behind these effects.

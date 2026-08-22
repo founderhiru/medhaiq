@@ -1,29 +1,26 @@
 #!/bin/bash
 # tests/regenerate-fixtures.sh
 #
-# Regenerates the 4 realistic PDF fixtures from their plain-text sources in
-# tests/txt-source/ via LibreOffice headless conversion.
+# Regenerates the resume-preview-validation PDF fixtures from their
+# plain-text sources in tests/txt-source/, via LibreOffice headless
+# conversion.
 #
-# WHY LIBREOFFICE, NOT pdfkit/pdf-lib: the repo's pinned pdf-parse@1.1.1
-# bundles a pdf.js build from ~2017 that cannot read PDFs produced by
-# pdfkit or hand-rolled minimal PDFs (confirmed during test-suite setup —
-# even a bare "Hello World" pdfkit doc fails with "bad XRef entry", despite
-# qpdf confirming the file is spec-valid). LibreOffice-exported PDFs work
-# correctly and are also a much closer match to what real users actually
-# upload (resumes exported from Word/Google Docs/LibreOffice), so this is
-# the right fixture-generation method on both counts, not just a workaround.
+# WHY LIBREOFFICE: the repo's pinned pdf-parse@1.1.1 bundles an old pdf.js
+# build that cannot reliably read PDFs produced by pdfkit/pdf-lib or
+# hand-rolled minimal PDFs. LibreOffice-exported PDFs are confirmed
+# compatible and are also a closer match to what real users actually
+# upload (resumes exported from Word/Google Docs/LibreOffice).
 #
 # corrupted.pdf is NOT regenerated here — it's deliberately static invalid
-# bytes, committed as-is.
+# bytes, committed as-is, used to test graceful failure on unparseable input.
 #
 # Requires: libreoffice (soffice) installed locally / in CI.
 
 set -e
 cd "$(dirname "$0")"
 
-soffice --headless --convert-to pdf --outdir fixtures txt-source/strong-vp-resume.txt
-soffice --headless --convert-to pdf --outdir fixtures txt-source/average-manager-resume.txt
-soffice --headless --convert-to pdf --outdir fixtures txt-source/junior-engineer.txt
-soffice --headless --convert-to pdf --outdir fixtures txt-source/empty.txt
+for f in valid-resume thin-valid-resume user-guide academic-paper brochure empty; do
+  soffice --headless --convert-to pdf --outdir fixtures "txt-source/$f.txt"
+done
 
 echo "Fixtures regenerated in tests/fixtures/"
