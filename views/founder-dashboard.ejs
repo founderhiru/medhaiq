@@ -40,6 +40,18 @@ const _footer = typeof footerInfo !== 'undefined' && footerInfo ? footerInfo : {
 const _betaOverview = typeof betaOverview !== 'undefined' && betaOverview ? betaOverview : {};
 const _beta = _betaOverview.beta || {};
 const _plans = Array.isArray(_betaOverview.plans) ? _betaOverview.plans : [];
+// Customer & Plan Overview — pure display derivation from data the backend
+// already computes (getOverviewStats/getBetaAndSubscriptionOverview), no
+// new query. _plans is [{ plan: 'growth', count }, ...] (explorer excluded
+// there since it's not a purchase); Explorer's count is derived as
+// totalUsers - paidSubscribers, both already-fetched stats fields — every
+// user resolves to exactly one active tier (lib/capability-engine.js), so
+// this is exact, not an estimate.
+const _planCounts = {};
+_plans.forEach(function (p) { _planCounts[p.plan] = p.count; });
+const _explorerCount = (_stats.totalUsers !== undefined && _stats.paidSubscribers !== undefined)
+  ? Math.max(0, _stats.totalUsers - _stats.paidSubscribers)
+  : null;
 const _feedbackSummary = typeof feedbackSummary !== 'undefined' && feedbackSummary ? feedbackSummary : { total: 0, averageRating: null, newThisWeek: 0 };
 const _recentFeedback = typeof recentFeedback !== 'undefined' && recentFeedback ? recentFeedback : [];
 const _alerts = typeof alerts !== 'undefined' && alerts ? alerts : {};
@@ -81,15 +93,10 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
     <div class="fdash-section-title">Quick Actions</div>
   </div>
   <div class="fdash-quick-actions">
-    <div class="fdash-qa-card">
-      <div class="fdash-qa-label">Add to Beta Allowlist</div>
-      <div class="fdash-qa-sub">Approves an email to sign up. Does not send anything — you'll need to tell them yourself.</div>
-      <form id="fdash-invite-form" class="fdash-qa-invite-form">
-        <input type="email" id="fdash-invite-email" placeholder="name@company.com" required>
-        <button type="submit">Approve</button>
-      </form>
-      <div class="fdash-qa-invite-msg" id="fdash-invite-msg"></div>
-    </div>
+    <a href="#fdash-users-section" class="fdash-qa-card fdash-qa-link">
+      <div class="fdash-qa-label">Manage Plans</div>
+      <div class="fdash-qa-sub">Change a user's Explorer, Growth or Leadership access.</div>
+    </a>
     <a href="#fdash-users-section" class="fdash-qa-card fdash-qa-link">
       <div class="fdash-qa-label">Manage Users</div>
       <div class="fdash-qa-sub">Jump to User Management ↓</div>
@@ -142,41 +149,35 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
   <% } %>
 </div>
 
-<!-- Section 4 — Beta & Subscription Overview -->
+<!-- Section 4 — Customer & Plan Overview. Reuses the existing fdash-beta-grid
+     (already a 4-column equal-width grid) and fdash-mini-card/-value/-title
+     classes verbatim — no CSS changes. Descriptor line reuses fdash-qa-sub,
+     the same small/faint caption style already used in Quick Actions. -->
 <div class="fdash-section">
   <div class="fdash-section-header">
-    <div class="fdash-section-title">Beta & Subscription Overview</div>
+    <div class="fdash-section-title">Customer & Plan Overview</div>
   </div>
-  <!-- The beta gate has been permanently removed (db/invitations.js —
-       getValidInvitation is no longer called anywhere on the auth path).
-       These two counts are therefore explicitly labeled Historical: they
-       record who was invited/approved before the gate came out, not
-       current pending/active beta users. Nothing here is deleted — same
-       query, same invitations data, only the presentation changed so
-       it's never mistaken for a live access metric. -->
-  <p class="fdash-beta-note">The beta gate has been removed — MedhaIQ is open. These two counts are historical records from when beta approval was required; they no longer reflect current access.</p>
   <div class="fdash-beta-grid">
     <div class="fdash-mini-card">
-      <div class="fdash-mini-value"><%= _beta.pending || 0 %></div>
-      <div class="fdash-mini-title">Historical Beta Requests</div>
+      <div class="fdash-mini-value"><%= _explorerCount !== null ? _explorerCount : '—' %></div>
+      <div class="fdash-mini-title">Explorer</div>
+      <div class="fdash-qa-sub">Free users</div>
     </div>
     <div class="fdash-mini-card">
-      <div class="fdash-mini-value"><%= _beta.accepted || 0 %></div>
-      <div class="fdash-mini-title">Historical Beta Accepted</div>
+      <div class="fdash-mini-value"><%= _planCounts.growth || 0 %></div>
+      <div class="fdash-mini-title">Growth</div>
+      <div class="fdash-qa-sub">₹999 credit pack</div>
     </div>
-    <% if (_plans.length === 0) { %>
-    <div class="fdash-mini-card fdash-mini-empty">
-      <div class="fdash-mini-value">—</div>
-      <div class="fdash-mini-title">No paid subscribers yet</div>
-    </div>
-    <% } else { %>
-    <% _plans.forEach(function(p) { %>
     <div class="fdash-mini-card">
-      <div class="fdash-mini-value"><%= p.count %></div>
-      <div class="fdash-mini-title"><%= p.plan.charAt(0).toUpperCase() + p.plan.slice(1) %></div>
+      <div class="fdash-mini-value"><%= _planCounts.leadership || 0 %></div>
+      <div class="fdash-mini-title">Leadership</div>
+      <div class="fdash-qa-sub">₹2,999 credit pack</div>
     </div>
-    <% }); %>
-    <% } %>
+    <div class="fdash-mini-card">
+      <div class="fdash-mini-value"><%= (_stats.paidSubscribers !== undefined && _stats.paidSubscribers !== null) ? _stats.paidSubscribers : '—' %></div>
+      <div class="fdash-mini-title">Paid Customers</div>
+      <div class="fdash-qa-sub">Growth + Leadership</div>
+    </div>
   </div>
 </div>
 
@@ -571,36 +572,6 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
         clearTimeout(searchDebounce);
         const term = this.value;
         searchDebounce = setTimeout(function () { searchUsers(term); }, 300);
-      });
-    }
-
-    const inviteForm = document.getElementById('fdash-invite-form');
-    if (inviteForm) {
-      inviteForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const emailInput = document.getElementById('fdash-invite-email');
-        const msg = document.getElementById('fdash-invite-msg');
-        msg.textContent = 'Approving…';
-        msg.className = 'fdash-qa-invite-msg';
-        try {
-          const res = await fetch('/api/founder/invitations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: emailInput.value }),
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            msg.textContent = emailInput.value + ' can now sign up. Remember to tell them yourself — no email was sent automatically.';
-            msg.className = 'fdash-qa-invite-msg success';
-            emailInput.value = '';
-          } else {
-            msg.textContent = data.error || 'Failed to approve email';
-            msg.className = 'fdash-qa-invite-msg error';
-          }
-        } catch (err) {
-          msg.textContent = 'Failed to approve email';
-          msg.className = 'fdash-qa-invite-msg error';
-        }
       });
     }
 
