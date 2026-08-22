@@ -119,19 +119,37 @@ async function getMergedCreditPool(userId) {
 
 /**
  * Records a new package acquisition plus its initial credit grant, in a
- * single transaction — used by both the (future) real checkout flow and
- * any admin-driven "grant a package" action. Never used to grant zero
- * rows independently; a package and its starting credits are always
- * created together, per the "one bundle, one expiry" design.
+ * single transaction — used by both the real checkout flow and any
+ * admin-driven "grant a package" action. Never used to grant zero rows
+ * independently; a package and its starting credits are always created
+ * together, per the "one bundle, one expiry" design.
+ *
+ * Stripe revenue fields (paymentIntentId, chargeId, balanceTransactionId,
+ * originalAmount, originalCurrency, amountUsd, stripeFeeUsd) are all
+ * optional — an admin_grant (no real Stripe transaction behind it) simply
+ * omits them, which correctly stores NULL in every one of those columns
+ * rather than a fabricated value. See routes/stripe.js's webhook for the
+ * one real caller that populates them from an actual Stripe transaction.
  */
-async function createPackageAcquisition({ userId, packageId, expiresAt, source, grantedBy, purchaseReference, initialMinutes }) {
+async function createPackageAcquisition({
+  userId, packageId, expiresAt, source, grantedBy, purchaseReference, initialMinutes,
+  paymentIntentId, chargeId, balanceTransactionId, originalAmount, originalCurrency, amountUsd, stripeFeeUsd,
+}) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const acquisition = await client.query(
-      `INSERT INTO package_acquisitions (user_id, package_id, expires_at, source, granted_by, purchase_reference)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [userId, packageId, expiresAt || null, source || 'purchase', grantedBy || null, purchaseReference || null]
+      `INSERT INTO package_acquisitions (
+         user_id, package_id, expires_at, source, granted_by, purchase_reference,
+         payment_intent_id, charge_id, balance_transaction_id,
+         original_amount, original_currency, amount_usd, stripe_fee_usd
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+      [
+        userId, packageId, expiresAt || null, source || 'purchase', grantedBy || null, purchaseReference || null,
+        paymentIntentId || null, chargeId || null, balanceTransactionId || null,
+        originalAmount ?? null, originalCurrency || null, amountUsd ?? null, stripeFeeUsd ?? null,
+      ]
     );
     const acquisitionRow = acquisition.rows[0];
     if (initialMinutes) {
@@ -149,6 +167,49 @@ async function createPackageAcquisition({ userId, packageId, expiresAt, source, 
   } finally {
     client.release();
   }
+}
+
+/**
+ * Purchases whose actual Stripe settlement amount hasn't been captured
+ * yet — has a payment_intent_id on file (so we know a real transaction
+ * exists) but amount_usd is still NULL (Stripe's balance_transaction
+ * wasn't available at webhook-delivery time). Read-only; the actual
+ * Stripe re-fetch and the matching UPDATE (updateAcquisitionRevenue,
+ * below) are separate steps, kept in the caller (routes/stripe.js /
+ * lib/stripe-revenue-reconciliation.js) so this file never makes an
+ * outbound Stripe API call itself — it stays a pure DB-access module,
+ * same convention as every other function here.
+ */
+async function getAcquisitionsPendingRevenueReconciliation() {
+  const result = await pool.query(
+    `SELECT id, user_id, package_id, purchase_reference, payment_intent_id, acquired_at
+     FROM package_acquisitions
+     WHERE source = 'purchase' AND amount_usd IS NULL AND payment_intent_id IS NOT NULL
+     ORDER BY acquired_at ASC`
+  );
+  return result.rows;
+}
+
+/**
+ * Fills in the settled USD amount + fee for one already-existing
+ * acquisition row, once the Balance Transaction becomes available. Never
+ * touches package_id, entitlement, expiry, or credit_ledger — those were
+ * already correctly granted at purchase time regardless of whether
+ * revenue reconciliation has happened yet; this only ever updates the
+ * revenue-reporting columns.
+ */
+async function updateAcquisitionRevenue({ acquisitionId, chargeId, balanceTransactionId, amountUsd, stripeFeeUsd }) {
+  const result = await pool.query(
+    `UPDATE package_acquisitions
+     SET charge_id = COALESCE($2, charge_id),
+         balance_transaction_id = COALESCE($3, balance_transaction_id),
+         amount_usd = $4,
+         stripe_fee_usd = $5
+     WHERE id = $1
+     RETURNING *`,
+    [acquisitionId, chargeId || null, balanceTransactionId || null, amountUsd, stripeFeeUsd]
+  );
+  return result.rows[0] || null;
 }
 
 /**
@@ -238,4 +299,6 @@ module.exports = {
   createPackageAcquisition,
   getActivePackageAcquisitionsForUsers,
   reassignPackage,
+  getAcquisitionsPendingRevenueReconciliation,
+  updateAcquisitionRevenue,
 };

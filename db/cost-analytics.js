@@ -2,16 +2,17 @@
 // Backs the founder cost dashboard (routes/admin.js).
 const { pool } = require('./index');
 
-// Revenue pricing is read directly from config/pricing.js — the same file
-// that drives the live pricing page — never a second hardcoded price list.
-// If a plan's price changes there, revenue reporting picks it up on next
-// deploy with no change needed here. Read-only require; this file is never
-// written to.
-const { plans: PRICING_PLANS } = require('../config/pricing');
-const PACKAGE_PRICE_LOOKUP = PRICING_PLANS.reduce((acc, plan) => {
-  acc[plan.id] = plan.price; // { INR, USD }
-  return acc;
-}, {});
+// NOTE: revenue is NOT derived from config/pricing.js or users.market
+// anymore (see getPurchaseRecords/summarizeRevenue/revenueForRange below).
+// It comes directly from package_acquisitions.amount_usd — the actual
+// Stripe-settled amount captured at purchase time by routes/stripe.js's
+// webhook. This was a real, confirmed bug in the previous design: an INR
+// ₹999 purchase was being reported as its configured USD list price
+// ($19) whenever users.market wasn't set to exactly 'india' — which
+// migration 023_users_market's own comment notes is the common case,
+// since that column is nullable and never backfilled. See migration
+// 029_package_acquisitions_revenue_fields for the schema this replaces it
+// with.
 
 // ─────────────────────────────────────────────────────────────────────────
 // FIXED COSTS — now a configurable table (migration 028_fixed_costs),
@@ -159,12 +160,16 @@ async function upsertCostEntry({ userId, interviewId, durationMinutes, vapiCost,
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// REVENUE — sourced from package_acquisitions (the real purchase/
-// entitlement ledger), never users.subscription_plan/subscription_status.
-// package_acquisitions itself stores no dollar amount, so each row's price
-// is resolved via PACKAGE_PRICE_LOOKUP (config/pricing.js) at query time,
-// keyed by the purchasing user's market (users.market: 'india' -> INR,
-// anything else -> USD, matching lib/pricing-market.js's own fallback).
+// REVENUE — sourced ONLY from package_acquisitions.amount_usd: the actual
+// Stripe-settled USD amount captured at purchase time (routes/stripe.js's
+// webhook, via the PaymentIntent's Balance Transaction). NEVER derived
+// from users.market or config/pricing.js's configured list price — that
+// was the previous design, and it was a confirmed bug: an INR ₹999
+// purchase was reported as its configured USD list price ($19) whenever
+// users.market wasn't exactly 'india', which is the common case since
+// that column is nullable and never backfilled (see migration
+// 023_users_market's own comment). Fixed by capturing the real
+// transaction instead of reconstructing a guess from static config.
 //
 // source = 'purchase' ONLY — excludes founder-granted access and
 // migration-backfill rows, which are real entitlements but not real money.
@@ -172,27 +177,28 @@ async function upsertCostEntry({ userId, interviewId, durationMinutes, vapiCost,
 // ElevenLabs top-ups) from ever being mistaken for revenue: recharges
 // aren't package_acquisitions rows at all, so they can't leak in here.
 //
-// CURRENCY NOTE: INR and USD are NEVER summed together. INR revenue is
-// tracked and returned as its own field, not converted at a fabricated
-// exchange rate. See getFounderDashboardStats' revenue_note field.
+// CURRENCY NOTE: the Founder Dashboard is USD-only for now. amount_usd is
+// the one and only figure summed into every revenue total below.
+// original_amount/original_currency (e.g. ₹999/INR) are preserved on each
+// row and surfaced alongside (never added into) the USD totals, purely
+// for visibility today and to support an INR reporting toggle later
+// without any further schema change.
+//
+// UNRESOLVED: a purchase whose amount_usd is still NULL (Stripe's Balance
+// Transaction wasn't available yet at webhook time) is excluded from
+// every revenue total here — not zeroed, not estimated — and surfaced via
+// unresolved_purchase_count so it stays visible rather than silently
+// disappearing. See db/package-acquisitions.js's
+// getAcquisitionsPendingRevenueReconciliation() for the retry path that
+// resolves these.
 // ─────────────────────────────────────────────────────────────────────────
 async function getPurchaseRecords() {
   const result = await pool.query(
-    `SELECT pa.package_id, pa.acquired_at, pa.user_id, COALESCE(u.market, 'international') AS market
-     FROM package_acquisitions pa
-     JOIN users u ON u.id = pa.user_id
-     WHERE pa.source = 'purchase'`
+    `SELECT acquired_at, amount_usd, original_amount, original_currency
+     FROM package_acquisitions
+     WHERE source = 'purchase'`
   );
   return result.rows;
-}
-
-function priceForPurchase(row) {
-  const priceObj = PACKAGE_PRICE_LOOKUP[row.package_id];
-  if (!priceObj) return null; // unknown package_id — don't fabricate a price
-  const currency = row.market === 'india' ? 'INR' : 'USD';
-  const amount = priceObj[currency];
-  if (amount === undefined || amount === null) return null;
-  return { amount, currency };
 }
 
 function summarizeRevenue(purchaseRows) {
@@ -201,15 +207,11 @@ function summarizeRevenue(purchaseRows) {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const yearStart = new Date(now.getFullYear(), 0, 1);
 
-  let revenueTodayUsd = 0, revenueTodayInr = 0;
-  let revenueMonthUsd = 0, revenueMonthInr = 0;
-  let revenueYtdUsd = 0, revenueYtdInr = 0;
-  let revenueTotalUsd = 0, revenueTotalInr = 0;
+  let revenueTodayUsd = 0, revenueMonthUsd = 0, revenueYtdUsd = 0, revenueTotalUsd = 0;
+  let revenueTodayInr = 0, revenueMonthInr = 0, revenueYtdInr = 0, revenueTotalInr = 0;
   let unresolvedCount = 0;
 
   for (const row of purchaseRows) {
-    const priced = priceForPurchase(row);
-    if (!priced) { unresolvedCount++; continue; }
     const acquiredAt = new Date(row.acquired_at);
     const isToday = acquiredAt >= dayStart;
     const isThisMonth = acquiredAt >= monthStart;
@@ -217,16 +219,24 @@ function summarizeRevenue(purchaseRows) {
     // row is a real past purchase, never in the future.
     const isYtd = acquiredAt >= yearStart && acquiredAt <= now;
 
-    if (priced.currency === 'USD') {
-      revenueTotalUsd += priced.amount;
-      if (isYtd) revenueYtdUsd += priced.amount;
-      if (isThisMonth) revenueMonthUsd += priced.amount;
-      if (isToday) revenueTodayUsd += priced.amount;
+    if (row.amount_usd === null || row.amount_usd === undefined) {
+      unresolvedCount++; // pending Stripe reconciliation — never estimated
     } else {
-      revenueTotalInr += priced.amount;
-      if (isYtd) revenueYtdInr += priced.amount;
-      if (isThisMonth) revenueMonthInr += priced.amount;
-      if (isToday) revenueTodayInr += priced.amount;
+      const amt = Number(row.amount_usd);
+      revenueTotalUsd += amt;
+      if (isYtd) revenueYtdUsd += amt;
+      if (isThisMonth) revenueMonthUsd += amt;
+      if (isToday) revenueTodayUsd += amt;
+    }
+
+    // Original-currency INR total — informational only, shown alongside
+    // (never summed into) the USD figures above.
+    if (row.original_currency === 'INR' && row.original_amount !== null) {
+      const inrAmt = Number(row.original_amount);
+      revenueTotalInr += inrAmt;
+      if (isYtd) revenueYtdInr += inrAmt;
+      if (isThisMonth) revenueMonthInr += inrAmt;
+      if (isToday) revenueTodayInr += inrAmt;
     }
   }
 
@@ -243,20 +253,23 @@ function summarizeRevenue(purchaseRows) {
   };
 }
 
-// Generalized revenue-for-an-arbitrary-range — same pricing/currency rules
-// as summarizeRevenue above, but for any [start, end) window, not just
-// "now"-relative periods. Powers the selected-month card and Monthly Trend.
-// Reuses the SAME purchaseRows already fetched once — no extra DB query
-// per month.
+// Generalized revenue-for-an-arbitrary-range — same source/rules as
+// summarizeRevenue above, but for any [start, end) window, not just
+// "now"-relative periods. Powers the selected-month card and Monthly
+// Trend. Reuses the SAME purchaseRows already fetched once — no extra DB
+// query per month.
 function revenueForRange(purchaseRows, start, end) {
   let usd = 0, inr = 0, unresolvedCount = 0;
   for (const row of purchaseRows) {
-    const priced = priceForPurchase(row);
-    if (!priced) { unresolvedCount++; continue; }
     const acquiredAt = new Date(row.acquired_at);
-    if (acquiredAt >= start && acquiredAt < end) {
-      if (priced.currency === 'USD') usd += priced.amount;
-      else inr += priced.amount;
+    if (acquiredAt < start || acquiredAt >= end) continue;
+    if (row.amount_usd === null || row.amount_usd === undefined) {
+      unresolvedCount++;
+    } else {
+      usd += Number(row.amount_usd);
+    }
+    if (row.original_currency === 'INR' && row.original_amount !== null) {
+      inr += Number(row.original_amount);
     }
   }
   return { usd, inr, unresolved_purchase_count: unresolvedCount };
@@ -534,8 +547,8 @@ async function getFounderDashboardStats(selectedMonthValue) {
     provider_breakdown: providerBreakdown,
     fixed_cost_rows: fixedCostRows,
     revenue_note: revenue.unresolved_purchase_count > 0 || revenue.revenue_total_inr > 0
-      ? `INR revenue (₹${revenue.revenue_total_inr.toFixed(2)} total) is tracked separately, not converted into the USD figures above.` +
-        (revenue.unresolved_purchase_count > 0 ? ` ${revenue.unresolved_purchase_count} purchase row(s) reference an unknown package_id and were excluded.` : '')
+      ? `Original-currency INR total (₹${revenue.revenue_total_inr.toFixed(2)}) is shown for reference only, never added into the USD figures above.` +
+        (revenue.unresolved_purchase_count > 0 ? ` ${revenue.unresolved_purchase_count} purchase(s) are pending Stripe revenue reconciliation and excluded from every total until resolved.` : '')
       : null,
 
     // ── Selected month (genuinely month-scoped — the core of this feature) ─
@@ -579,5 +592,4 @@ module.exports = {
   getActiveFixedCosts,
   addOrUpdateFixedCost,
   getAvailableMonths,
-  PACKAGE_PRICE_LOOKUP,
 };
