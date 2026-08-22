@@ -7,7 +7,6 @@ const kpiConfig = [
   { key: 'totalUsers', title: 'Total Users', icon: 'users', accent: 'blue' },
   { key: 'onlineNow', title: 'Online Now', icon: 'person', accent: 'green' },
   { key: 'activeUsersToday', title: 'Active Users Today', icon: 'person', accent: 'green' },
-  { key: 'newBetaSignupsToday', title: 'New Beta Signups', icon: 'sparkle', accent: 'cyan' },
   { key: 'paidSubscribers', title: 'Paid Subscribers', icon: 'check', accent: 'gold' },
   { key: 'interviewsCompleted', title: 'Interviews Completed', icon: 'mic', accent: 'purple' },
   { key: 'reportsGenerated', title: 'Reports Generated', icon: 'document', accent: 'indigo' },
@@ -207,9 +206,60 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
   <p class="fdash-refresh-note">Showing latest 5 · refreshes automatically every 45 seconds.</p>
 </div>
 
-<!-- Feedback & Alerts (replaces the originally planned Product Usage
-     section per founder decision — beta-stage priority is sentiment +
-     operational visibility, not feature-adoption analytics yet) -->
+<!-- Section 3 — User Management (moved above Feedback & Alerts per
+     approved layout — everything inside is byte-for-byte unchanged:
+     same id, same search/create-user handlers, same table markup). -->
+<div class="fdash-section" id="fdash-users-section">
+  <div class="fdash-section-header">
+    <div class="fdash-section-title">User Management</div>
+    <div class="fdash-section-header-actions">
+      <input type="text" id="fdash-user-search" class="fdash-search-input" placeholder="Search name or email…">
+      <button type="button" class="fdash-create-user-btn" id="fdash-create-user-open">+ Create User</button>
+    </div>
+  </div>
+  <div class="fdash-activity-card">
+    <table class="fdash-activity-table" id="fdash-users-table">
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Package</th><th>Status</th><th>Last Login</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="fdash-users-body">
+        <% if (_users.length === 0) { %>
+        <tr><td colspan="6" class="fdash-activity-empty">No users found.</td></tr>
+        <% } else { %>
+        <% _users.forEach(function(u) { %>
+        <tr>
+          <td class="fdash-user"><%= u.name || '—' %></td>
+          <td><%= u.email %></td>
+          <td><span class="shell-package-pill pill-<%= u.package_id %>"><%= _pkgBadge(u.package_id) %></span></td>
+          <!-- Status: package_acquisitions (via u.package_id, already
+               resolved by db/founder-users.js's listUsers) is the source
+               of truth — NOT u.subscription_status, a legacy field the
+               real purchase flow (routes/stripe.js) never writes to.
+               Explorer's 30-minute welcome grant is not a purchase, so
+               'explorer' still reads as Free / Trial; growth/leadership
+               read as Paid. -->
+          <td><%= u.package_id !== 'explorer' ? 'Paid' : 'Free / Trial' %></td>
+          <td class="fdash-ts" data-iso="<%= toISO(u.last_login) %>" data-empty-text="Never logged in"></td>
+          <td class="fdash-actions-cell">
+            <button type="button" class="fdash-action-btn fdash-manage-package-btn"
+              data-user-id="<%= u.id %>"
+              data-user-name="<%= (u.name || u.email).replace(/"/g, '&quot;') %>"
+              data-current-package="<%= u.package_id %>">Manage Package</button>
+            <span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Suspend</span>
+          </td>
+        </tr>
+        <% }); %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Feedback & Alerts (moved to final main-content position, immediately
+     before the modals/footer, per approved layout — replaces the
+     originally planned Product Usage section per founder decision:
+     beta-stage priority is sentiment + operational visibility, not
+     feature-adoption analytics yet) -->
 <div class="fdash-section">
   <div class="fdash-section-header">
     <div class="fdash-section-title">Feedback & Alerts</div>
@@ -290,53 +340,6 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- Section 3 — User Management -->
-<div class="fdash-section" id="fdash-users-section">
-  <div class="fdash-section-header">
-    <div class="fdash-section-title">User Management</div>
-    <div class="fdash-section-header-actions">
-      <input type="text" id="fdash-user-search" class="fdash-search-input" placeholder="Search name or email…">
-      <button type="button" class="fdash-create-user-btn" id="fdash-create-user-open">+ Create User</button>
-    </div>
-  </div>
-  <div class="fdash-activity-card">
-    <table class="fdash-activity-table" id="fdash-users-table">
-      <thead>
-        <tr><th>Name</th><th>Email</th><th>Package</th><th>Status</th><th>Last Login</th><th>Actions</th></tr>
-      </thead>
-      <tbody id="fdash-users-body">
-        <% if (_users.length === 0) { %>
-        <tr><td colspan="6" class="fdash-activity-empty">No users found.</td></tr>
-        <% } else { %>
-        <% _users.forEach(function(u) { %>
-        <tr>
-          <td class="fdash-user"><%= u.name || '—' %></td>
-          <td><%= u.email %></td>
-          <td><span class="shell-package-pill pill-<%= u.package_id %>"><%= _pkgBadge(u.package_id) %></span></td>
-          <!-- Status: package_acquisitions (via u.package_id, already
-               resolved by db/founder-users.js's listUsers) is the source
-               of truth — NOT u.subscription_status, a legacy field the
-               real purchase flow (routes/stripe.js) never writes to.
-               Explorer's 30-minute welcome grant is not a purchase, so
-               'explorer' still reads as Free / Trial; growth/leadership
-               read as Paid. -->
-          <td><%= u.package_id !== 'explorer' ? 'Paid' : 'Free / Trial' %></td>
-          <td class="fdash-ts" data-iso="<%= toISO(u.last_login) %>" data-empty-text="Never logged in"></td>
-          <td class="fdash-actions-cell">
-            <button type="button" class="fdash-action-btn fdash-manage-package-btn"
-              data-user-id="<%= u.id %>"
-              data-user-name="<%= (u.name || u.email).replace(/"/g, '&quot;') %>"
-              data-current-package="<%= u.package_id %>">Manage Package</button>
-            <span class="fdash-action-btn fdash-action-disabled" title="Coming soon">Suspend</span>
-          </td>
-        </tr>
-        <% }); %>
-        <% } %>
-      </tbody>
-    </table>
   </div>
 </div>
 
