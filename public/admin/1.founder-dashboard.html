@@ -293,16 +293,6 @@
       revenueNote.classList.add('hidden');
     }
 
-    // ── Persistent reconciliation status — driven by unresolved_purchase_
-    // count, the EXACT SAME field the banner above already uses. This is
-    // the single source of truth for "up to date" vs "pending," set on
-    // every render (initial load, month switch, refresh, post-reconcile
-    // refresh) — never derived from a reconcile-button click's own scoped
-    // result, which only ever sees purchases that HAVE a payment_intent_id
-    // and would otherwise wrongly claim "up to date" when a purchase
-    // missing one (e.g. a legacy row never backfilled) is still pending.
-    updateReconcileStatus(d);
-
     // ── Financial Overview — one ordered set of 6 cards:
     // Revenue (selected month) / YTD / All Time / AI Cost / Fixed Cost /
     // True Profit. Revenue·YTD and Revenue·All Time are ALWAYS the current
@@ -526,21 +516,6 @@
     unavailable: 'Unavailable',
   };
 
-  // Single source of truth for the persistent "up to date / pending"
-  // status shown next to the Reconcile Revenue button. Deliberately reads
-  // the SAME field (unresolved_purchase_count) the revenue_note banner
-  // already uses, so the two can never contradict each other again.
-  function updateReconcileStatus(d) {
-    const pending = d.unresolved_purchase_count || 0;
-    if (pending > 0) {
-      reconcileStatus.textContent = `${pending} purchase${pending === 1 ? '' : 's'} pending reconciliation`;
-      reconcileStatus.className = 'text-[11px] text-warn';
-    } else {
-      reconcileStatus.textContent = 'Revenue is up to date';
-      reconcileStatus.className = 'text-[11px] text-good';
-    }
-  }
-
   function formatBalance(p) {
     if (!p.balanceAvailable) return { text: 'Balance unavailable', cls: 'text-inkFaint' };
     const unit = p.balanceUnit === 'credits' ? 'credits' : (p.balanceUnit || '');
@@ -712,20 +687,10 @@
 
       const resolved = summary.resolved || 0;
       const stillPending = summary.stillPending || 0;
-      const checked = summary.checked || 0;
 
-      // This message describes ONLY what this specific reconciliation
-      // attempt could act on (rows with a payment_intent_id on file) —
-      // it must never claim "Revenue is up to date" itself. A purchase
-      // missing payment_intent_id entirely (e.g. a legacy row never
-      // backfilled) can never be "checked" here, so checked===0 does NOT
-      // mean nothing is pending overall. The persistent, authoritative
-      // status (updateReconcileStatus, driven by unresolved_purchase_count)
-      // takes over immediately below via load() — this is just a
-      // transient note about the action itself.
-      if (checked === 0) {
-        reconcileStatus.textContent = 'No reconcilable purchases found right now.';
-        reconcileStatus.className = 'text-[11px] text-inkFaint';
+      if ((summary.checked || 0) === 0) {
+        reconcileStatus.textContent = 'Revenue is up to date';
+        reconcileStatus.className = 'text-[11px] text-good';
       } else {
         const parts = [`${resolved} purchase${resolved === 1 ? '' : 's'} reconciled`];
         parts.push(stillPending > 0 ? `${stillPending} still pending` : '0 pending');
@@ -733,11 +698,12 @@
         reconcileStatus.className = resolved > 0 ? 'text-[11px] text-good' : 'text-[11px] text-inkFaint';
       }
 
-      // Always refresh — regardless of whether anything was resolved —
-      // so the persistent pending/up-to-date status reflects the true
-      // current state right after this action, not just what this one
-      // attempt happened to find.
-      load(monthSelect.value || undefined);
+      // Refresh revenue figures after a successful reconciliation — reuses
+      // the existing load() path, same as the main Refresh button. Only
+      // runs once, right here, never repeated/polled.
+      if (resolved > 0) {
+        load(monthSelect.value || undefined);
+      }
     } catch (err) {
       // Never surface err.message here — could echo network/proxy details
       // that aren't secrets but also aren't useful to a founder; the

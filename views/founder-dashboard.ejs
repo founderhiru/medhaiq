@@ -54,7 +54,7 @@ const _onlineUsers = typeof onlineUsers !== 'undefined' && Array.isArray(onlineU
 // timezone. This keeps initial load and refreshed data visually consistent.
 const toISO = (d) => d ? new Date(d).toISOString() : '';
 %>
-<%- include('partials/workspace-shell-top', { pageTitle: 'Founder Dashboard — MedhaIQ', activeNav: 'founder', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css', '/css/founder-dashboard.css'] }) %>
+<%- include('partials/workspace-shell-top', { pageTitle: 'Founder Dashboard — MedhaIQ', activeNav: 'founder', shellUser: shellUser, bodyClass: 'founder-dashboard-page', extraStylesheets: ['/css/career-workspace.css', '/css/founder-dashboard.css'] }) %>
 
 <div class="fdash-header-row">
   <div>
@@ -95,8 +95,8 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
       <div class="fdash-qa-sub">Jump to User Management ↓</div>
     </a>
     <a href="/admin/founder-dashboard.html" target="_blank" rel="noopener" class="fdash-qa-card fdash-qa-link">
-      <div class="fdash-qa-label">Open Cost Analytics</div>
-      <div class="fdash-qa-sub">Existing dashboard, opens separately</div>
+      <div class="fdash-qa-label">Open Finance Dashboard</div>
+      <div class="fdash-qa-sub">Revenue, costs &amp; margins — opens separately</div>
     </a>
     <%
     /* Removed from the first screen per executive layout decision — "Coming
