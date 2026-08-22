@@ -298,67 +298,6 @@
   box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
 }
 
-/* ============================================
-   MOBILE RESPONSIVE (added — audit fix)
-   Below 900px the fixed 480px-tall, 42/58 side-by-side panel and the
-   fixed 500x320px orbital diagram no longer fit the viewport (the
-   diagram alone is wider than a phone screen and gets clipped by the
-   panel's overflow:hidden). This stacks the two columns vertically and
-   collapses the orbital diagram into a simple vertical card stack in
-   DOM order, which avoids the node-overlap that shrinking the fixed
-   190px-wide node cards in place would otherwise cause. Desktop
-   (>900px) rules above are completely unchanged. ============================================ */
-@media (max-width: 900px) {
-  .mh-trustarch-panel {
-    flex-direction: column;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
-  .mh-trustarch-panel-left {
-    flex: 1 1 auto;
-    max-width: 100%;
-    padding: 32px 24px;
-    border-right: none;
-    border-bottom: 1px solid var(--ta-border-subtle);
-  }
-  .mh-trustarch-panel-right {
-    flex: 1 1 auto;
-    max-width: 100%;
-    height: auto !important;
-    padding: 32px 20px;
-  }
-  .mh-trustarch-diagram {
-    position: static;
-    width: 100%;
-    max-width: 320px;
-    height: auto;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-  /* Connector lines are drawn between the old absolute orbital
-     positions — meaningless once the nodes reflow into a vertical
-     stack, so they're hidden rather than left pointing at the wrong
-     coordinates. */
-  .mh-trustarch-diagram-lines { display: none; }
-  .mh-trustarch-node-center {
-    position: static;
-    transform: none;
-  }
-  .mh-trustarch-node {
-    position: static;
-    width: 100%;
-    max-width: 320px;
-    height: auto;
-  }
-  .mh-trustarch-tabs { grid-template-columns: 1fr 1fr; }
-  .mh-trustarch-tab { height: 56px; font-size: 12px; padding: 0 8px; }
-}
-
 .mh-trustarch-node-tl { top: 8px; left: 0; }
 .mh-trustarch-node-tr { top: 8px; right: 0; }
 .mh-trustarch-node-bl { bottom: 8px; left: 0; }

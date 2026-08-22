@@ -306,17 +306,6 @@
   .pair-row, .pair-row--activity { grid-template-columns: 1fr; }
 }
 
-/* Small phones — at 2 columns, labels like "Interviews completed" no
-   longer have room to stay on one line and were clipping against the
-   card edge/icon. Single column plus allowing wrap fixes it without
-   touching the 2-column tablet layout above. (audit fix) */
-@media (max-width: 480px) {
-  .overview-strip { grid-template-columns: 1fr; }
-  .overview-stat { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.10); }
-  .overview-stat:last-child { border-bottom: none; }
-  .overview-stat .label { white-space: normal; }
-}
-
 /* ============================================================
    CAREER WORKSPACE — DARK PREMIUM REFINEMENT
    ------------------------------------------------------------
