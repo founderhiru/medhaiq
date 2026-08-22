@@ -201,6 +201,30 @@ async function getPurchaseRecords() {
   return result.rows;
 }
 
+// Breakdown of non-USD currencies actually INCLUDED in a USD revenue
+// total — i.e. only rows where amount_usd has resolved (Stripe settlement
+// captured), grouped by original_currency. Deliberately excludes
+// still-pending rows (amount_usd IS NULL): those aren't part of the USD
+// figure yet, so describing them as "included" would be false. This is a
+// pure read-only aggregate of data already fetched for revenue — it does
+// not change amount_usd, does not touch Stripe, reconciliation, or
+// schema, and does not affect any USD total anywhere.
+function nonUsdIncludedBreakdown(rows, start, end) {
+  const map = {};
+  for (const row of rows) {
+    if (row.amount_usd === null || row.amount_usd === undefined) continue;
+    if (!row.original_currency || row.original_currency === 'USD') continue;
+    const acquiredAt = new Date(row.acquired_at);
+    if (start && acquiredAt < start) continue;
+    if (end && acquiredAt >= end) continue;
+    const currency = row.original_currency;
+    if (!map[currency]) map[currency] = { amount: 0, count: 0 };
+    map[currency].amount += Number(row.original_amount) || 0;
+    map[currency].count += 1;
+  }
+  return map; // e.g. { INR: { amount: 699, count: 1 }, EUR: { amount: 25, count: 1 } }
+}
+
 function summarizeRevenue(purchaseRows) {
   const now = new Date();
   const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -230,7 +254,10 @@ function summarizeRevenue(purchaseRows) {
     }
 
     // Original-currency INR total — informational only, shown alongside
-    // (never summed into) the USD figures above.
+    // (never summed into) the USD figures above. Unchanged: still mixes
+    // resolved + pending, same as before — this feeds the existing
+    // "kept separate" revenue_note banner only, not the KPI cards, which
+    // now use the resolved-only breakdown below instead.
     if (row.original_currency === 'INR' && row.original_amount !== null) {
       const inrAmt = Number(row.original_amount);
       revenueTotalInr += inrAmt;
@@ -250,6 +277,11 @@ function summarizeRevenue(purchaseRows) {
     revenue_total_usd: revenueTotalUsd,
     revenue_total_inr: revenueTotalInr,
     unresolved_purchase_count: unresolvedCount,
+    // Resolved-only breakdowns — power the KPI cards' "Includes ₹X..."
+    // line. Never includes a still-pending purchase.
+    revenue_month_non_usd_breakdown: nonUsdIncludedBreakdown(purchaseRows, monthStart, null),
+    revenue_ytd_non_usd_breakdown: nonUsdIncludedBreakdown(purchaseRows, yearStart, null),
+    revenue_total_non_usd_breakdown: nonUsdIncludedBreakdown(purchaseRows, null, null),
   };
 }
 
@@ -272,7 +304,8 @@ function revenueForRange(purchaseRows, start, end) {
       inr += Number(row.original_amount);
     }
   }
-  return { usd, inr, unresolved_purchase_count: unresolvedCount };
+  const nonUsdBreakdown = nonUsdIncludedBreakdown(purchaseRows, start, end);
+  return { usd, inr, unresolved_purchase_count: unresolvedCount, nonUsdBreakdown };
 }
 
 // Month-scoped cost ledger — same shape as the existing today/all-time
@@ -350,6 +383,7 @@ async function computeMonthFinancials(monthValue, purchaseRows, paidUsersCount) 
     label,
     revenue_usd: revenue.usd,
     revenue_inr: revenue.inr,
+    revenue_non_usd_breakdown: revenue.nonUsdBreakdown,
     vapi_cost: vapiCaptured ? ledger.vapi_cost : null,
     claude_cost: ledger.claude_cost,
     elevenlabs_cost: elevenlabsCaptured ? ledger.elevenlabs_cost : null,
@@ -511,6 +545,7 @@ async function getFounderDashboardStats(selectedMonthValue) {
     monthly_revenue_inr: revenue.revenue_month_inr,
     revenue_ytd_usd: revenue.revenue_ytd_usd,
     revenue_ytd_inr: revenue.revenue_ytd_inr,
+    revenue_ytd_non_usd_breakdown: revenue.revenue_ytd_non_usd_breakdown,
     paying_users_count: userCounts.paid_users_count,
     trial_users_count: Math.max(0, userCounts.total_users - userCounts.paid_users_count),
     new_users_today: userCounts.new_users_today,
@@ -532,6 +567,7 @@ async function getFounderDashboardStats(selectedMonthValue) {
     // ── Total / lifetime ──
     total_revenue_usd: revenue.revenue_total_usd,
     total_revenue_inr: revenue.revenue_total_inr,
+    total_revenue_non_usd_breakdown: revenue.revenue_total_non_usd_breakdown,
     total_ai_cost: totalAiCost,
     total_fixed_cost_monthly: totalMonthlyFixedUsd,
     total_gross_profit: totalGrossProfit,
@@ -556,6 +592,7 @@ async function getFounderDashboardStats(selectedMonthValue) {
     selected_month: { value: selectedMonthFinancials.value, label: selectedMonthFinancials.label },
     month_revenue_usd: selectedMonthFinancials.revenue_usd,
     month_revenue_inr: selectedMonthFinancials.revenue_inr,
+    month_revenue_non_usd_breakdown: selectedMonthFinancials.revenue_non_usd_breakdown,
     month_vapi_cost: selectedMonthFinancials.vapi_cost,
     month_claude_cost: selectedMonthFinancials.claude_cost,
     month_elevenlabs_cost: selectedMonthFinancials.elevenlabs_cost,

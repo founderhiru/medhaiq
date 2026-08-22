@@ -207,6 +207,45 @@
   const num = (v, d = 0) => (Number(v) || 0).toFixed(d);
   const hasData = (v) => v !== null && v !== undefined && !Number.isNaN(Number(v));
 
+  // Small symbol map for the currencies actually used today (INR) plus
+  // common ones this might expand to later (per the requested EUR
+  // example) — falls back to the plain currency code if unmapped, never
+  // breaks on an unknown currency.
+  const CURRENCY_SYMBOLS = { INR: '\u20b9', USD: '$', EUR: '\u20ac', GBP: '\u00a3' };
+  const currencySymbol = (code) => CURRENCY_SYMBOLS[code] || (code ? code + ' ' : '');
+  const formatOriginalAmount = (v) => Math.round(Number(v) || 0).toLocaleString('en-US');
+
+  // Dynamic "Includes ..." line for the three Revenue KPI cards. `breakdown`
+  // is { CURRENCY: { amount, count } } — RESOLVED (already-in-the-USD-total)
+  // non-USD purchases only; see nonUsdIncludedBreakdown() server-side.
+  // Never claims a still-pending purchase is "included" — that stays
+  // covered by the separate revenue_note banner above the cards.
+  function formatNonUsdLine(breakdown) {
+    const currencies = Object.keys(breakdown || {});
+    if (currencies.length === 0) {
+      return 'All revenue settled in USD.';
+    }
+    const totalCount = currencies.reduce((sum, c) => sum + breakdown[c].count, 0);
+
+    if (currencies.length === 1) {
+      const [currency] = currencies;
+      const { amount, count } = breakdown[currency];
+      const symbol = currencySymbol(currency);
+      if (count === 1) {
+        return `Includes ${symbol}${formatOriginalAmount(amount)} ${currency} \u2014 converted to USD at Stripe settlement.`;
+      }
+      return `Includes ${count} ${currency} sale${count === 1 ? '' : 's'} \u2014 ${symbol}${formatOriginalAmount(amount)} original value, converted to USD.`;
+    }
+
+    if (currencies.length === 2) {
+      const parts = currencies.map((c) => `${c} ${currencySymbol(c)}${formatOriginalAmount(breakdown[c].amount)}`);
+      return `Includes ${parts.join(' + ')} \u2014 converted to USD.`;
+    }
+
+    // 3+ currencies — compact summary rather than an ever-growing line.
+    return `Includes ${totalCount} non-USD sale${totalCount === 1 ? '' : 's'} across ${currencies.length} currencies \u2014 converted to USD.`;
+  }
+
   function statCard({ label, value, sub, accentClass }) {
     return `
       <div class="card rounded-xl px-4 py-3">
@@ -267,17 +306,17 @@
       statCard({
         label: `Revenue · ${selected.label}`,
         value: money(d.month_revenue_usd),
-        sub: d.month_revenue_inr > 0 ? `+ ₹${num(d.month_revenue_inr, 2)} (kept separate)` : `Real purchases in ${selected.label}`,
+        sub: formatNonUsdLine(d.month_revenue_non_usd_breakdown),
       }),
       statCard({
         label: 'Revenue · YTD',
         value: money(d.revenue_ytd_usd),
-        sub: d.revenue_ytd_inr > 0 ? `Jan 1 \u2192 today · + ₹${num(d.revenue_ytd_inr, 2)} (kept separate)` : 'Jan 1 \u2192 today',
+        sub: formatNonUsdLine(d.revenue_ytd_non_usd_breakdown),
       }),
       statCard({
         label: 'Revenue · all time',
         value: money(d.total_revenue_usd),
-        sub: d.total_revenue_inr > 0 ? `+ ₹${num(d.total_revenue_inr, 2)} (kept separate)` : 'Since first purchase',
+        sub: formatNonUsdLine(d.total_revenue_non_usd_breakdown),
       }),
       statCard({
         label: `AI cost · ${selected.label}`,
