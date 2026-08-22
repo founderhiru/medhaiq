@@ -357,14 +357,7 @@ button { cursor: pointer; }
 }
 .mh-mobile-menu.mh-mobile-menu-open {
   display: block;
-  /* was a fixed 400px — too short once a logged-in user opens the
-     Platform accordion (6 extra sublinks + account rows push past
-     400px and were being hard-clipped with no way to reach them).
-     85vh + scroll keeps the same open/close animation feel while
-     making everything reachable on any phone height. (audit fix) */
-  max-height: 85vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  max-height: 400px;
   padding: 16px 0 24px;
 }
 .mh-mobile-nav {
@@ -3418,16 +3411,6 @@ button { cursor: pointer; }
   appearance: none;
 }
 .mh-modal-field input::placeholder { color: var(--text-faint); }
-
-/* Small phones — 40px padding on both modals left only ~200px of usable
-   width at 320px. Not broken, just cramped; this trims padding on the
-   smallest screens only. (audit fix) */
-@media (max-width: 480px) {
-  .mh-modal,
-  .mh-contact-modal {
-    padding: 28px 20px;
-  }
-}
 .mh-modal-field input:focus,
 .mh-modal-field select:focus {
   border-color: var(--blue-bright);
