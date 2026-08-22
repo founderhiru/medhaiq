@@ -988,6 +988,35 @@ async function runMigrations() {
           `);
         },
       },
+      {
+        name: '029_package_acquisitions_revenue_fields',
+        up: async (c) => {
+          // Founder Dashboard revenue architecture: revenue is derived
+          // from the ACTUAL Stripe transaction from here forward, never
+          // from users.market or config/pricing.js's configured list
+          // price. All nullable/additive — existing rows are left exactly
+          // as they are (no backfill attempted here; the existing ₹999
+          // transaction is handled separately, as an explicit, documented,
+          // one-time reconciliation — not a blind migration backfill).
+          await c.query(`
+            ALTER TABLE package_acquisitions
+              ADD COLUMN IF NOT EXISTS payment_intent_id VARCHAR(255),
+              ADD COLUMN IF NOT EXISTS charge_id VARCHAR(255),
+              ADD COLUMN IF NOT EXISTS balance_transaction_id VARCHAR(255),
+              ADD COLUMN IF NOT EXISTS original_amount NUMERIC(10,2),
+              ADD COLUMN IF NOT EXISTS original_currency VARCHAR(10),
+              ADD COLUMN IF NOT EXISTS amount_usd NUMERIC(10,2),
+              ADD COLUMN IF NOT EXISTS stripe_fee_usd NUMERIC(10,2)
+          `);
+          // Supports the reconciliation retry path's lookup: "purchases
+          // with a PaymentIntent on file but no settled USD amount yet."
+          await c.query(`
+            CREATE INDEX IF NOT EXISTS package_acquisitions_pending_revenue_idx
+            ON package_acquisitions (source, amount_usd)
+            WHERE source = 'purchase' AND amount_usd IS NULL
+          `);
+        },
+      },
     ];
 
     for (const m of migrations) {

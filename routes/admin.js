@@ -6,6 +6,7 @@ const { getFounderDashboardStats } = require('../db/cost-analytics');
 const { createInvitation } = require('../db/invitations');
 const { getCacheEfficiencyStats, getSessionCacheMetrics } = require('../db/prompt-cache-metrics');
 const { getProviderStatus } = require('../lib/provider-status');
+const { reconcilePendingRevenue } = require('../lib/stripe-revenue-reconciliation');
 function requireAdmin(req, res, next) {
   if (process.env.ADMIN_SECRET && req.headers['x-admin-secret'] !== process.env.ADMIN_SECRET) {
     return res.status(403).json({ error: 'Forbidden' });
@@ -80,6 +81,21 @@ router.get('/provider-status', requireAdmin, async (_req, res) => {
   } catch (err) {
     console.error('[admin] provider-status error:', err);
     return res.status(500).json({ error: 'Failed to load provider status' });
+  }
+});
+// POST /api/admin/reconcile-revenue — retries fetching the Stripe Balance
+// Transaction for any purchase whose amount_usd is still NULL (the
+// webhook's best-effort capture didn't have it available yet). Never
+// estimates, never touches entitlements — see
+// lib/stripe-revenue-reconciliation.js for the full safety contract. Safe
+// to call repeatedly; a no-op if nothing is pending.
+router.post('/reconcile-revenue', requireAdmin, async (_req, res) => {
+  try {
+    const summary = await reconcilePendingRevenue();
+    return res.json(summary);
+  } catch (err) {
+    console.error('[admin] reconcile-revenue error:', err);
+    return res.status(500).json({ error: 'Failed to reconcile revenue' });
   }
 });
 module.exports = router;

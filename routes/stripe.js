@@ -408,6 +408,58 @@ async function handleCheckoutCompleted(session) {
   const includedMinutes = packageDefinition.entitlements.includedMinutes;
   const expiresAt = resolveExpiryForPackage(packageId);
 
+  // ── Revenue architecture: capture the ACTUAL Stripe transaction, never
+  // derive revenue from users.market or config/pricing.js's configured
+  // list price. session.amount_total/session.currency are the real
+  // customer-facing charge (already in scope, no extra call needed) —
+  // that's original_amount/original_currency. The USD-normalized
+  // settlement amount only exists on the Balance Transaction, one level
+  // deeper than anything fetched so far, so one additional read-only
+  // Stripe call is made here.
+  //
+  // Non-fatal by design: if this fails, or the Balance Transaction isn't
+  // settled yet (Stripe can lag fractionally behind webhook delivery),
+  // amount_usd/stripe_fee_usd are left NULL — the entitlement is still
+  // granted normally (a candidate's access must never depend on revenue
+  // bookkeeping succeeding), and the row becomes visible to
+  // getAcquisitionsPendingRevenueReconciliation() for a later retry. Never
+  // estimated, never substituted with the package's list price.
+  const paymentIntentId = session.payment_intent || null;
+  const originalAmount = typeof session.amount_total === 'number' ? session.amount_total / 100 : null;
+  const originalCurrency = session.currency ? session.currency.toUpperCase() : null;
+  let chargeId = null;
+  let balanceTransactionId = null;
+  let amountUsd = null;
+  let stripeFeeUsd = null;
+
+  if (paymentIntentId) {
+    try {
+      const pi = await stripe.paymentIntents.retrieve(paymentIntentId, {
+        expand: ['latest_charge.balance_transaction'],
+      });
+      const charge = pi.latest_charge;
+      chargeId = charge ? charge.id : null;
+      const balanceTransaction = charge && charge.balance_transaction;
+      if (balanceTransaction && typeof balanceTransaction === 'object') {
+        balanceTransactionId = balanceTransaction.id;
+        // Only trust this as amount_usd if the settlement currency really
+        // is USD — if this Stripe account ever settles in something else,
+        // leave it NULL (pending reconciliation) rather than mislabel a
+        // non-USD figure as amount_usd.
+        if (balanceTransaction.currency === 'usd') {
+          amountUsd = balanceTransaction.amount / 100;
+          stripeFeeUsd = balanceTransaction.fee / 100;
+        } else {
+          console.warn(`[stripe][revenue] session ${session.id}: balance_transaction settled in ${balanceTransaction.currency}, not usd — leaving amount_usd NULL rather than mislabeling it`);
+        }
+      } else {
+        console.warn(`[stripe][revenue] session ${session.id}: balance_transaction not yet available at webhook time — amount_usd left NULL, pending reconciliation`);
+      }
+    } catch (err) {
+      console.error(`[stripe][revenue] session ${session.id}: could not retrieve PaymentIntent/BalanceTransaction (non-fatal — entitlement still granted, revenue pending reconciliation):`, err && err.message);
+    }
+  }
+
   try {
     // Idempotency is enforced at the database level (unique partial index
     // on package_acquisitions.purchase_reference) — this reuses the
@@ -424,6 +476,13 @@ async function handleCheckoutCompleted(session) {
       source: 'purchase',
       purchaseReference: session.id,
       initialMinutes: includedMinutes,
+      paymentIntentId,
+      chargeId,
+      balanceTransactionId,
+      originalAmount,
+      originalCurrency,
+      amountUsd,
+      stripeFeeUsd,
     });
     console.log(`[stripe] granted ${packageId} package to user ${userId} (session ${session.id})`);
 
