@@ -248,7 +248,7 @@ a.fdash-qa-link:hover { background: var(--fdash-card-hover); }
 /* Feedback & Alerts */
 .fdash-fb-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
   align-items: start;
 }
@@ -391,19 +391,27 @@ a.fdash-qa-link:hover { background: var(--fdash-card-hover); }
 .fdash-modal-checkbox-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 
 /* ============================================================
-   DELIBERATE TWO-TONE ACCENT — Quick Actions and User Management
-   stay dark navy (matching the sidebar), while the rest of this page
-   is warm-light. Explicit founder design decision, not an oversight.
-   Scoped by id (#fdash-quick-actions-section / #fdash-users-section,
-   both already present in the EJS) so nothing else on the page is
-   affected. Reuses the SAME shared dark tokens (--card/--white/
-   --muted/--dim/--navy) that were already globally available from
-   interview.css before this page went warm-light — no new colors
-   invented, no shared token redefined.
+   DELIBERATE TWO-TONE ACCENT — Quick Actions cards, and the User
+   Management table/search bar further below, stay dark navy (matching
+   the sidebar) while the rest of this page is warm-light. Explicit
+   founder design decision, not an oversight. Scoped by id
+   (#fdash-quick-actions-section / #fdash-users-section, both already
+   present in the EJS) so nothing else on the page is affected. Reuses
+   the SAME shared dark tokens (--card/--white/--muted/--dim/--navy)
+   that were already globally available from interview.css before this
+   page went warm-light — no new colors invented, no shared token
+   redefined.
+
+   NOTE (audit fix): #fdash-users-section's SECTION HEADING is
+   intentionally excluded from the white-title rule directly below —
+   unlike Quick Actions, the User Management section wrapper itself has
+   no dark background (only its inner table/search card does), so a
+   white heading there was rendering invisibly against the light page.
+   It now falls back to the standard .fdash-section-title dark
+   (--fdash-ink) color used by every other heading on this page.
    ============================================================ */
 
-#fdash-quick-actions-section .fdash-section-title,
-#fdash-users-section .fdash-section-title {
+#fdash-quick-actions-section .fdash-section-title {
   color: var(--white);
 }
 
