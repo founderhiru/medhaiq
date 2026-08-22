@@ -582,6 +582,10 @@ async function getFounderDashboardStats(selectedMonthValue) {
     // ── Breakdown & limitations ──
     provider_breakdown: providerBreakdown,
     fixed_cost_rows: fixedCostRows,
+    // The exact same number the revenue_note text below quotes — exposed
+    // here as its own field so the frontend's persistent reconciliation
+    // status can read the real value instead of guessing/duplicating it.
+    unresolved_purchase_count: revenue.unresolved_purchase_count,
     revenue_note: revenue.unresolved_purchase_count > 0 || revenue.revenue_total_inr > 0
       ? `Original-currency INR total (₹${revenue.revenue_total_inr.toFixed(2)}) is shown for reference only, never added into the USD figures above.` +
         (revenue.unresolved_purchase_count > 0 ? ` ${revenue.unresolved_purchase_count} purchase(s) are pending Stripe revenue reconciliation and excluded from every total until resolved.` : '')
