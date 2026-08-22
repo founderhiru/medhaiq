@@ -1,0 +1,9 @@
+Sam Torres
+sam.torres@email.com
+
+Experience
+Software Engineer I, TechCo, 2022 - Present
+Wrote unit tests and fixed bugs reported by QA.
+
+Education
+BS Computer Science, State University, 2018 - 2022

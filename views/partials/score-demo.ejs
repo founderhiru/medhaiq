@@ -349,7 +349,7 @@
               renderError((result.data && result.data.message) || 'Something went wrong. Please try again.');
               return;
             }
-            if (result.data.status === 'insufficient_signal') {
+            if (result.data.status === 'insufficient_signal' || result.data.status === 'not_a_resume') {
               resetButton(btn);
               renderError(result.data.message);
               return;
