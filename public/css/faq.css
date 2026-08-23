@@ -26,6 +26,16 @@
 }
 .mh-faq-surface-inner { max-width: 760px; margin: 0 auto; }
 
+/* ---- Hero — subtle top-spacing correction only. Scoped to this page
+   via .mh-faq-hero so Role Library / Company Library (which share
+   .mh-explore-hero-compact) are untouched. Adds ~24px above the
+   eyebrow so it clears the header boundary; bottom padding, H1 size,
+   subtitle size, and background are all unchanged. ---- */
+.mh-faq-hero { padding-top: 92px; }
+@media (max-width: 640px) {
+  .mh-faq-hero { padding-top: 88px; }
+}
+
 /* ---- Category nav — slim dot-separated anchor row, same warm
    background as the reading area directly below the navy hero. ---- */
 .mh-faq-catnav {
@@ -41,18 +51,23 @@
   justify-content: center;
   gap: 8px 18px;
 }
-.mh-faq-catnav a {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  letter-spacing: 0.03em;
-  color: #8C8570;
+.mh-faq-catnav-link {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--blue-bright);
   text-decoration: none;
   white-space: nowrap;
   scroll-margin-top: 88px;
 }
-.mh-faq-catnav a:hover,
-.mh-faq-catnav a:focus-visible {
-  color: var(--blue-bright);
+.mh-faq-catnav-link:hover,
+.mh-faq-catnav-link:focus-visible {
+  color: #2563EB;
+}
+.mh-faq-catnav-link.is-active {
+  color: #1D4ED8;
+  font-weight: 700;
 }
 
 /* Anchor targets inside cards need the same scroll offset as the nav links */
