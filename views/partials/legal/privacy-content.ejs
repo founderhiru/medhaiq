@@ -14,7 +14,7 @@
     <li><strong>Professional Profile Information:</strong> Resumes, CVs, employment history, education, skills, certifications, and career goals uploaded to our platform.</li>
     <li><strong>Evaluation &amp; Session Data:</strong> Behavioral responses, STAR structure telemetry, transcript logs, and AI-generated performance scores.</li>
     <li><strong>Voice Data (if enabled):</strong> Temporary audio streams or recordings captured during voice-enabled mock interview sessions.</li>
-    <li><strong>Technical &amp; Usage Information:</strong> IP address, browser type, device details, operating system, pages visited, and interaction metrics.</li>
+    <li><strong>Technical &amp; Security Information:</strong> We collect limited IP address and browser information for account security, fraud prevention, and specific operational purposes, and use an anonymous, cryptographically hashed device identifier to help prevent abuse of free-trial offers. We do not use third-party analytics, advertising, behavioral tracking, or collect device hardware, operating-system, or general engagement data.</li>
   </ul>
 </section>
 
@@ -27,6 +27,8 @@
     <li><strong>Platform Improvement:</strong> To refine prompt accuracy, improve evaluation scoring algorithms, and optimize speech-to-text accuracy using aggregated or anonymized datasets wherever practical.</li>
     <li><strong>Private by Default:</strong> Your interview sessions, resumes, reports, transcripts, and evaluation history are private to your account unless you choose to share them or disclosure is required by applicable law.</li>
     <li><strong>Communications:</strong> To send essential account notifications, billing receipts, security alerts, and platform updates.</li>
+    <li><strong>Trust &amp; Safety:</strong> To prevent fraud, abuse, and misuse of the platform (including free-trial abuse), and to maintain platform security and reliability.</li>
+    <li><strong>Support &amp; Compliance:</strong> To respond to support and privacy requests, and to comply with applicable legal obligations.</li>
   </ul>
 </section>
 
@@ -53,23 +55,54 @@
 
 <section class="mh-legal-section" id="voice-audio">
   <h2>6. Voice &amp; Audio Processing</h2>
-  <p>If you participate in voice-enabled interview sessions:</p>
-  <ul>
-    <li>Audio recordings may be retained temporarily to complete transcription, quality assurance, and session processing.</li>
-    <li>Where supported by our systems, audio recordings may be deleted after processing while text transcripts remain available in your workspace so you can review past performance.</li>
-  </ul>
+  <p>If you participate in a voice-enabled interview session, your microphone audio is transmitted in real time to our voice infrastructure provider, Vapi, and its speech-to-text provider to generate a live transcript of your spoken answers.</p>
+  <p>MedhaIQ's own servers and databases do not receive, process, or store raw audio recordings of your voice. The resulting text transcript is passed to our interview engine and retained as part of your session record.</p>
+  <p>Our voice infrastructure providers may independently process or retain audio and/or transcripts on their systems in accordance with their applicable retention and deletion policies.</p>
+  <p>MedhaIQ does not generate voiceprints, speaker embeddings, or other biometric representations of your voice, and voice data is not used to recognize or identify you across sessions or services.</p>
+  <p>Text-to-speech audio used for the AI interviewer's questions is generated from text by our voice synthesis provider and does not involve or receive your voice data.</p>
 </section>
 
 <section class="mh-legal-section" id="third-party">
-  <h2>7. Third-Party Service Providers</h2>
-  <p>We do not sell your personal data. We use trusted infrastructure providers for:</p>
-  <ul>
-    <li>Cloud hosting and database storage</li>
-    <li>Authentication and security infrastructure</li>
-    <li>AI-powered interview generation, evaluation, and speech processing</li>
-    <li>Payment processing and subscription handling</li>
-    <li>Email communications and transactional analytics</li>
-  </ul>
+  <h2>7. Third-Party Service Providers &amp; Sub-Processors</h2>
+  <p>MedhaIQ does not sell your personal information. To deliver our AI-powered career intelligence services, real-time voice evaluations, secure hosting, and global payment processing, we partner with trusted third-party service providers ("Sub-Processors").</p>
+  <div class="mh-legal-table-wrap">
+    <table class="mh-legal-table">
+      <thead>
+        <tr>
+          <th>Sub-Processor</th>
+          <th>Primary Role / Function</th>
+          <th>Data Shared / Processed</th>
+          <th>Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Sub-Processor">Neon</td>
+          <td data-label="Primary Role / Function">Primary Database Hosting</td>
+          <td data-label="Data Shared / Processed">User profiles, resumes, transcripts, scorecards</td>
+          <td data-label="Location">United States</td>
+        </tr>
+        <tr>
+          <td data-label="Sub-Processor">ElevenLabs</td>
+          <td data-label="Primary Role / Function">Text-to-Speech (TTS) Voice Synthesis</td>
+          <td data-label="Data Shared / Processed">Ephemeral AI interviewer voice output generation</td>
+          <td data-label="Location">United States</td>
+        </tr>
+        <tr>
+          <td data-label="Sub-Processor">Anthropic</td>
+          <td data-label="Primary Role / Function">LLM Interview Evaluation &amp; 5-Vector Scoring</td>
+          <td data-label="Data Shared / Processed">Prompt text, STAR structure data, transcripts</td>
+          <td data-label="Location">United States</td>
+        </tr>
+        <tr>
+          <td data-label="Sub-Processor">Stripe</td>
+          <td data-label="Primary Role / Function">Global USD Credit Pack Payment Processing</td>
+          <td data-label="Data Shared / Processed">Payment and billing information necessary to process purchases</td>
+          <td data-label="Location">United States</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
   <p>These providers process data only as necessary to deliver their services under applicable contractual, technical, and legal security obligations. We review our service providers periodically to help ensure they maintain appropriate security and privacy standards.</p>
 </section>
 
@@ -110,7 +143,7 @@
 
 <section class="mh-legal-section" id="international-transfers">
   <h2>11. International Data Transfers</h2>
-  <p>Your information may be processed or stored in countries other than your country of residence. When we transfer personal information internationally, we take appropriate measures designed to protect your data in accordance with applicable data protection laws.</p>
+  <p>Some of our service providers may process or store information outside India or your country of residence, including in the United States and other jurisdictions where our service providers operate. Where personal information is transferred internationally, MedhaIQ takes appropriate measures designed to protect that information in accordance with applicable data protection laws.</p>
 </section>
 
 <section class="mh-legal-section" id="your-rights">
@@ -142,12 +175,13 @@
 </section>
 
 <section class="mh-legal-section" id="contact-us">
-  <h2>16. Contact Us</h2>
+  <h2>16. Privacy &amp; Grievance Contact</h2>
+  <p>For privacy inquiries, data protection requests, or grievances, please contact MedhaIQ Systems at <a href="mailto:support@medhaiq.ai">support@medhaiq.ai</a>.</p>
   <div class="mh-legal-contact-card">
-    <p><strong>Privacy Team</strong></p>
-    <p>MedhaIQ</p>
-    <p>Support: <a href="mailto:support@medhaiq.ai">support@medhaiq.ai</a></p>
+    <p><strong>Entity:</strong> MedhaIQ Systems</p>
+    <p><strong>Location:</strong> Hyderabad, Telangana, India</p>
+    <p><strong>Contact:</strong> <a href="mailto:support@medhaiq.ai">support@medhaiq.ai</a></p>
+    <p><strong>Subject:</strong> "DPDP Grievance / Privacy Request"</p>
   </div>
-  <h3>Transparency First</h3>
-  <p>Transparency is an important part of building trust. If you have questions about this Privacy Policy or how your information is handled, our Privacy Team will be happy to assist you.</p>
+  <p>We will review and respond to requests within the period required by applicable law.</p>
 </section>

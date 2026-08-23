@@ -2,35 +2,19 @@
    LEGAL PAGES — shared reading-page presentation layer
    Used by /privacy, /terms, /responsible-ai via
    views/partials/legal-layout.ejs. Scoped under #mh-legal-page.
-
-   THEME: warm-light / dark-navy hybrid. This block intentionally
-   does NOT touch global tokens (--navy-deep, --white, --text-muted,
-   etc.) — those still govern the site-wide dark navy header/footer,
-   which live OUTSIDE #mh-legal-page in legal-layout.ejs and must stay
-   exactly as they are. Instead, a small set of legal-page-only custom
-   properties is declared here, scoped to #mh-legal-page, and every
-   rule below reads from those instead of the global dark tokens.
-   Structure, selectors, spacing, and breakpoints are otherwise
-   unchanged from the previous dark version — this is a token swap,
-   not a redesign.
-
-   The one shared global token still referenced directly is
-   --blue-bright (the site's existing accent/link color) — kept
-   as-is everywhere it already applied, per the brief's requirement
-   to preserve the existing accent color unchanged.
+   Reuses the platform's existing design tokens only — same card
+   recipe as .mh-int-card / .mh-audience-card (navy-card + navy-border
+   + radius-lg) for the contact block, same divider hairline as
+   .mh-footer-bottom (white-border), same prose rhythm as .mh-why-body
+   (font-body, 1.7 line-height, text-muted), same heading scale as
+   .mh-section-title (h2-size, h2-tracking). No new colors, no new
+   fonts, no Privacy-specific typography. No callout/card for the
+   intro paragraph — every legal page's summary is a plain paragraph
+   (.mh-legal-lead), identical to body copy.
    ============================================ */
 
 #mh-legal-page {
-  /* Warm-light theme tokens, scoped to this page only */
-  --legal-bg:        #F7F3EC; /* main page background — warm ivory */
-  --legal-surface:   #FFFDF9; /* reading/content surface — warm white (cards, table) */
-  --legal-heading:   #1E2433; /* deep navy/charcoal — headings, bold terms */
-  --legal-body:      #55503F; /* dark warm gray — body copy, list items */
-  --legal-faint:     #8C8570; /* warm taupe — meta text, faint labels, bullet dots */
-  --legal-border:    #E7DECD; /* subtle warm beige — dividers, card/table borders */
-  --legal-table-head: #F1EAD9; /* subtle warm neutral — table header row */
-
-  background: var(--legal-bg);
+  background: var(--navy-deep);
   padding: 104px var(--section-pad-x) 48px;
 }
 
@@ -48,15 +32,15 @@
 }
 
 /* Eyebrow: no local override — inherits the shared .mh-eyebrow token
-   (--blue-bright), unchanged. Reads cleanly on the new light background
-   with no adjustment needed. */
+   (same font-size/weight/tracking/margin as every other page) so it
+   can't drift again. */
 
 .mh-legal-title {
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 38px; /* was 46px — reduced ~17% so the hero doesn't dominate the body content below */
   line-height: 1.15;
-  color: var(--legal-heading);
+  color: var(--white);
   letter-spacing: var(--hero-h1-tracking);
   margin: 4px 0 10px;
 }
@@ -67,10 +51,10 @@
   justify-content: center;
   gap: 4px 10px;
   font-size: 13px;
-  color: var(--legal-faint);
+  color: var(--text-faint);
 }
 
-.mh-legal-meta-dot { color: var(--legal-faint); opacity: 0.7; }
+.mh-legal-meta-dot { color: var(--text-faint); opacity: 0.6; }
 
 /* Slim inline anchor row — no box, no background, no border.
    Wraps naturally; reads as secondary navigation, not a focal element. */
@@ -86,15 +70,15 @@
 
 .mh-legal-anchor-row a {
   font-size: 12px;
-  color: var(--legal-faint);
-  opacity: 0.95;
+  color: var(--text-faint);
+  opacity: 0.9;
   transition: color 0.15s ease, opacity 0.15s ease;
   white-space: nowrap;
 }
 
-.mh-legal-anchor-row a:hover { color: var(--legal-heading); opacity: 1; }
+.mh-legal-anchor-row a:hover { color: var(--white); opacity: 1; }
 .mh-legal-anchor-row a:focus-visible {
-  color: var(--legal-heading);
+  color: var(--white);
   opacity: 1;
   outline: 2px solid var(--blue-bright);
   outline-offset: 2px;
@@ -103,8 +87,8 @@
 
 .mh-legal-anchor-dot {
   font-size: 12px;
-  color: var(--legal-faint);
-  opacity: 0.55;
+  color: var(--text-faint);
+  opacity: 0.45;
   margin: 0 6px;
 }
 
@@ -115,7 +99,7 @@
 .mh-legal-lead {
   font-size: 15px;
   line-height: 1.7;
-  color: var(--legal-body);
+  color: var(--text-muted);
   margin-bottom: 0;
 }
 
@@ -128,7 +112,7 @@
 .mh-legal-section {
   padding-top: 32px;
   margin-top: 32px;
-  border-top: 1px solid var(--legal-border);
+  border-top: 1px solid var(--white-border);
   scroll-margin-top: 100px;
 }
 
@@ -144,7 +128,7 @@
   font-weight: 700;
   font-size: var(--h2-size);
   line-height: 1.15;
-  color: var(--legal-heading);
+  color: var(--white);
   letter-spacing: var(--h2-tracking);
   margin-bottom: 12px;
 }
@@ -152,14 +136,14 @@
 .mh-legal-section h3 {
   font-weight: 600;
   font-size: 15px;
-  color: var(--legal-heading);
+  color: var(--white);
   margin: 16px 0 6px;
 }
 
 .mh-legal-section p {
   font-size: 15px;
   line-height: 1.7;
-  color: var(--legal-body);
+  color: var(--text-muted);
   margin-bottom: 12px;
 }
 
@@ -176,7 +160,7 @@
   padding-left: 18px;
   font-size: 15px;
   line-height: 1.7;
-  color: var(--legal-body);
+  color: var(--text-muted);
   margin-bottom: 6px;
 }
 
@@ -188,104 +172,28 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--legal-faint);
+  background: var(--text-faint);
 }
 
 .mh-legal-section li:last-child { margin-bottom: 0; }
 
 /* Bold only the key term at the start of a bullet — never whole paragraphs */
-.mh-legal-section strong { color: var(--legal-heading); font-weight: 600; }
+.mh-legal-section strong { color: var(--white); font-weight: 600; }
 
 .mh-legal-section a {
   color: var(--blue-bright);
   transition: color 0.15s ease;
 }
-.mh-legal-section a:hover { color: var(--legal-heading); }
+.mh-legal-section a:hover { color: var(--white); }
 .mh-legal-section a:focus-visible {
   outline: 2px solid var(--blue-bright);
   outline-offset: 2px;
   border-radius: 2px;
 }
 
-/* ---------- Sub-processor table (Section 7) — same card recipe as
-   .mh-legal-contact-card (warm surface + warm border + radius-lg).
-   Collapses to a stacked label:value card layout on mobile instead of
-   a scrolling table, matching the page's existing "no horizontal
-   overflow" behavior. ---------- */
-
-.mh-legal-table-wrap {
-  margin: 6px 0 12px;
-}
-
-.mh-legal-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--legal-surface);
-  border: 1px solid var(--legal-border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.mh-legal-table th,
-.mh-legal-table td {
-  text-align: left;
-  padding: 12px 16px;
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--legal-body);
-  border-bottom: 1px solid var(--legal-border);
-  vertical-align: top;
-}
-
-.mh-legal-table th {
-  color: var(--legal-heading);
-  font-weight: 600;
-  font-size: 13px;
-  background: var(--legal-table-head);
-}
-
-.mh-legal-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-@media (max-width: 768px) {
-  .mh-legal-table thead { display: none; }
-
-  .mh-legal-table,
-  .mh-legal-table tbody,
-  .mh-legal-table tr,
-  .mh-legal-table td {
-    display: block;
-    width: 100%;
-  }
-
-  .mh-legal-table tr {
-    padding: 4px 0;
-    border-bottom: 1px solid var(--legal-border);
-  }
-
-  .mh-legal-table tbody tr:last-child { border-bottom: none; }
-
-  .mh-legal-table td {
-    border-bottom: none;
-    padding: 4px 16px;
-  }
-
-  .mh-legal-table td::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--legal-faint);
-    margin-bottom: 2px;
-  }
-}
-
 .mh-legal-contact-card {
-  background: var(--legal-surface);
-  border: 1px solid var(--legal-border);
+  background: var(--navy-card);
+  border: 1px solid var(--navy-border);
   border-radius: var(--radius-lg);
   padding: 20px 24px;
   margin-top: 6px;
