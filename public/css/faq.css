@@ -1,0 +1,168 @@
+/* ============================================
+   FAQ / PLATFORM GUIDE — public/css/faq.css
+
+   Palette: warm-light content area + dark-navy hero, matching the
+   pairing already used site-wide on the legal pages (/privacy,
+   /terms, /responsible-ai — see legal.css's own "warm-light /
+   dark-navy hybrid" theme note). This file reuses those exact warm
+   hex values, scoped locally under .mh-faq-surface rather than
+   depending on legal.css, so the FAQ page stays self-contained.
+   The hero above stays on the shared global dark-navy tokens
+   (--navy-deep, --blue-bright, etc. via .mh-why-hero in
+   medhaiq.css) — no new colors or fonts introduced anywhere.
+   ============================================ */
+
+.mh-faq-surface {
+  /* Same warm values as #mh-legal-page's tokens in legal.css */
+  --faq-bg:      #F7F3EC; /* warm ivory page background */
+  --faq-card:    #FFFDF9; /* warm white card surface */
+  --faq-heading: #1E2433; /* deep navy/charcoal for headings */
+  --faq-body:    #55503F; /* dark warm gray body copy */
+  --faq-faint:   #8C8570; /* warm taupe for meta/faint text */
+  --faq-border:  #E7DECD; /* warm beige border */
+
+  background: var(--faq-bg);
+  padding: 0 var(--section-pad-x) 64px;
+}
+.mh-faq-surface-inner { max-width: 760px; margin: 0 auto; }
+
+/* ---- Category nav — slim dot-separated anchor row, same warm
+   background as the reading area directly below the navy hero. ---- */
+.mh-faq-catnav {
+  background: #F7F3EC;
+  border-bottom: 1px solid #E7DECD;
+  padding: 16px var(--section-pad-x) 16px;
+}
+.mh-faq-catnav-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 18px;
+}
+.mh-faq-catnav a {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.03em;
+  color: #8C8570;
+  text-decoration: none;
+  white-space: nowrap;
+  scroll-margin-top: 88px;
+}
+.mh-faq-catnav a:hover,
+.mh-faq-catnav a:focus-visible {
+  color: var(--blue-bright);
+}
+
+/* Anchor targets inside cards need the same scroll offset as the nav links */
+.mh-faq-card[id] { scroll-margin-top: 88px; }
+
+/* ---- Section cards — warm white card on the ivory surface ---- */
+.mh-faq-card {
+  background: var(--faq-card);
+  border: 1px solid var(--faq-border);
+  border-radius: var(--radius, 12px);
+  padding: var(--card-pad, 24px);
+}
+.mh-faq-card + .mh-faq-card { margin-top: 22px; }
+.mh-faq-card .mh-eyebrow { margin-bottom: 14px; }
+
+/* ---- FAQ accordion — native <details>, no JS. Same shape as the
+   existing .mh-colib-accordion pattern, warm-toned. ---- */
+.mh-faq-accordion { display: flex; flex-direction: column; gap: 8px; }
+.mh-faq-item {
+  background: var(--faq-card);
+  border: 1px solid var(--faq-border);
+  border-radius: var(--radius, 12px);
+  overflow: hidden;
+}
+.mh-faq-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15.5px;
+  color: var(--faq-heading);
+  list-style: none;
+}
+.mh-faq-trigger::-webkit-details-marker { display: none; }
+.mh-faq-trigger:focus-visible { outline: 2px solid var(--blue-bright); outline-offset: -2px; }
+.mh-faq-q { flex: 1; line-height: 1.4; }
+.mh-faq-chevron { flex-shrink: 0; color: var(--faq-faint); transition: transform 0.2s ease; }
+.mh-faq-item[open] .mh-faq-chevron { transform: rotate(180deg); }
+.mh-faq-body {
+  padding: 0 18px 18px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--faq-body);
+}
+.mh-faq-body a { color: var(--blue-bright); }
+
+.mh-faq-legal-links { margin-top: 16px; color: var(--faq-faint); }
+.mh-faq-legal-links a { color: var(--blue-bright); }
+
+/* ---- Section 07 — Playbook. Deliberately the one slightly more
+   visual element on the page: numbered rows, no cards-within-cards,
+   no icons, no gradients. ---- */
+.mh-faq-playbook-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.mh-faq-playbook-list li {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.mh-faq-playbook-num {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--blue-glow);
+  color: var(--blue-bright);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mh-faq-playbook-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15.5px;
+  color: var(--faq-heading);
+  margin-bottom: 3px;
+}
+.mh-faq-playbook-desc {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--faq-body);
+  margin: 0;
+}
+
+/* ---- Support panel — understated, text only, no button/banner ---- */
+.mh-faq-support {
+  text-align: center;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--faq-faint);
+  margin: 24px 0 0;
+}
+.mh-faq-support a { color: var(--blue-bright); text-decoration: none; }
+.mh-faq-support a:hover { text-decoration: underline; }
+
+@media (max-width: 640px) {
+  .mh-faq-catnav { padding: 12px 20px; }
+  .mh-faq-trigger { font-size: 14.5px; padding: 14px 16px; }
+  .mh-faq-body { font-size: 14px; padding: 0 16px 16px; }
+}

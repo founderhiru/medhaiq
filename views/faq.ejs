@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ &amp; Platform Guide | MedhaIQ.ai</title>
+  <meta name="description" content="A practical guide to using MedhaIQ effectively — how AI interviews, personas, scoring, AI Minutes, and privacy work on the platform.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0A0F1E">
+  <link rel="canonical" href="https://www.medhaiq.ai/faq">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/medhaiq.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/hero-v2.css">
+  <link rel="stylesheet" href="/css/value-footer.css">
+  <link rel="stylesheet" href="/css/explore.css">
+  <link rel="stylesheet" href="/css/faq.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <!-- HERO — same compact dark hero used on Role Library / Company Library
+       (.mh-why-hero + .mh-explore-hero-compact). No illustration, no CTA. -->
+  <section class="mh-why-hero mh-explore-hero-compact reveal">
+    <div class="mh-why-hero-inner mh-section-center">
+      <div class="mh-eyebrow">Platform Guide &amp; FAQ</div>
+      <h1 class="mh-section-title mh-explore-hero-h1">Frequently Asked Questions</h1>
+      <p class="mh-section-sub">A practical guide to using MedhaIQ effectively.</p>
+    </div>
+  </section>
+
+  <!-- CATEGORY NAV — reuses the same slim dot-separated anchor-row pattern
+       as the legal pages' table of contents, restyled with existing
+       editorial tokens only (no new colors). -->
+  <nav class="mh-faq-catnav" aria-label="Jump to a FAQ section">
+    <div class="mh-faq-catnav-inner">
+      <a href="#getting-started">01 — Getting Started</a>
+      <a href="#ai-interviews">02 — Adaptive AI Interviews</a>
+      <a href="#personas">03 — AI Interview Personas</a>
+      <a href="#scoring">04 — Intelligence &amp; Scoring</a>
+      <a href="#minutes">05 — AI Minutes &amp; Credit Packs</a>
+      <a href="#privacy">06 — Privacy &amp; Responsible AI</a>
+      <a href="#playbook">07 — How to Get the Most Out of MedhaIQ</a>
+    </div>
+  </nav>
+
+  <!-- ============ WARM-LIGHT READING SURFACE (same palette as the
+       legal pages) ============ -->
+  <div class="mh-faq-surface">
+    <div class="mh-faq-surface-inner">
+
+      <!-- 01 — GETTING STARTED -->
+      <section id="getting-started" class="mh-faq-card">
+        <div class="mh-eyebrow">01 — Getting Started</div>
+        <div class="mh-faq-accordion">
+
+          <details class="mh-faq-item" name="faq-getting-started">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">What is MedhaIQ?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">MedhaIQ is a Continuous Career Intelligence platform that combines adaptive AI-powered interviews, Resume Intelligence, Job Description analysis and 5-Vector diagnostic feedback to help users build and assess career readiness.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-getting-started">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">Who is MedhaIQ designed for?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">Professionals preparing for high-stakes career moments — job interviews, promotions, or a role transition — who want structured, evidence-based practice rather than generic tips.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-getting-started">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">How do I get started?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">Create an account, set your target role and seniority, and start your first interview. Your first session includes a one-time welcome allowance of AI Interview Minutes at no cost.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-getting-started">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">Do I need to upload a resume or Job Description?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">No. You can start an interview with just a target role. Where supported, adding your resume and a Job Description gives the platform more context to work with.</div>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- 02 — ADAPTIVE AI INTERVIEWS -->
+      <section id="ai-interviews" class="mh-faq-card">
+        <div class="mh-eyebrow">02 — Adaptive AI Interviews</div>
+        <div class="mh-faq-accordion">
+
+          <details class="mh-faq-item" name="faq-interviews">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">How does a MedhaIQ interview work?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">You have a live, voice-based conversation with an AI interviewer. Questions are generated and adapted in real time based on your role, seniority, and your answers as the session progresses.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-interviews">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">Are interview questions pre-written?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">No. Questions are generated dynamically for your target role rather than pulled from a fixed script.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-interviews">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">What does MedhaIQ evaluate during an interview?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">Your responses are assessed for structure, depth of expertise, strategic reasoning, communication, and leadership and execution signal — the five dimensions behind your 5-Vector Intelligence report.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-interviews">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">How does STAR detection work?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">For behavioral questions, the platform looks for Situation, Task, Action, and Result structure in your answer, and reflects how clearly that structure came through in your feedback.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-interviews">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">Can I practice the same target role multiple times?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">Yes. You can run additional sessions against the same target role to track how your responses evolve.</div>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- 03 — AI INTERVIEW PERSONAS -->
+      <section id="personas" class="mh-faq-card">
+        <div class="mh-eyebrow">03 — AI Interview Personas</div>
+        <div class="mh-faq-accordion">
+
+          <details class="mh-faq-item" name="faq-personas">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">What is an AI Interview Persona?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">A persona is a distinct interviewer style and difficulty level you can select for your session.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-personas">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">Why should I practice with different personas?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">Different personas ask questions differently and push on different areas, which helps you prepare for a wider range of real interview styles rather than one fixed pattern.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-personas">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">How many personas are available with each plan?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">Explorer includes 1 persona. Growth includes 3 personas. Leadership includes all 6 available personas.</div>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- 04 — INTELLIGENCE & SCORING -->
+      <section id="scoring" class="mh-faq-card">
+        <div class="mh-eyebrow">04 — Intelligence &amp; Scoring</div>
+        <div class="mh-faq-accordion">
+
+          <details class="mh-faq-item" name="faq-scoring">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">What happens after I complete an interview session?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">You receive a scored report built from your session, covering your performance across all five vectors along with narrative feedback on your strongest and weakest responses.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-scoring">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">What is the difference between Resume Intelligence and live interview evaluation?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">Resume Intelligence reviews your resume as a document. Live interview evaluation scores your actual spoken responses during the session. They assess different things and aren't interchangeable.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-scoring">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">What does the 5-Vector framework measure?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">Five dimensions: Structure, Domain Expertise, Strategic Thinking, Communication, and Leadership &amp; Execution. Each is scored from your interview session and shown in your report.</div>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- 05 — AI MINUTES & CREDIT PACKS -->
+      <section id="minutes" class="mh-faq-card">
+        <div class="mh-eyebrow">05 — AI Minutes &amp; Credit Packs</div>
+        <div class="mh-faq-accordion">
+
+          <details class="mh-faq-item" name="faq-minutes">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">What are AI Interview Minutes?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">AI Interview Minutes are the time-based allowance that powers your live interview sessions.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-minutes">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">What consumes AI Minutes?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">Time spent in a live interview session — completed or ended early — draws from your available minutes.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-minutes">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">What does not consume AI Minutes?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">Setting up your profile, browsing the Role Library or Company Library, and reviewing past reports do not use any of your minutes.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-minutes">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">Is MedhaIQ a monthly subscription?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">No. There are no recurring subscriptions. Explorer, Growth, and Leadership are one-time packages, and additional minutes can be purchased as needed.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-minutes">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">How long are purchased credits valid?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">Paid credit packs are valid for 12 months from purchase. Explorer's welcome minutes are a one-time allowance granted when you join, separate from any purchased pack.</div>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- 06 — PRIVACY & RESPONSIBLE AI -->
+      <section id="privacy" class="mh-faq-card">
+        <div class="mh-eyebrow">06 — Privacy &amp; Responsible AI</div>
+        <div class="mh-faq-accordion">
+
+          <details class="mh-faq-item" name="faq-privacy">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">Is my uploaded data protected?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">We collect only what's needed to deliver your interview experience and insights, and apply encryption in transit along with appropriate access controls.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-privacy">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">How does MedhaIQ use personal data?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">Your data is used to run your interviews, generate your reports, and operate the platform securely — not for advertising or behavioral tracking.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-privacy">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">Does MedhaIQ sell personal data?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">No. We never sell your personal information to third-party advertisers.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-privacy">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">Does MedhaIQ use customer data to train public AI models?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">We do not intentionally submit your personal information for the purpose of training publicly available AI models.</div>
+          </details>
+
+          <details class="mh-faq-item" name="faq-privacy">
+            <summary class="mh-faq-trigger">
+              <span class="mh-faq-q">Does MedhaIQ make automated hiring decisions?</span>
+              <svg class="mh-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mh-faq-body">No. AI evaluations are designed to support learning, self-improvement, and interview preparation. They are not automated hiring decisions and shouldn't be read as guarantees of employment outcomes.</div>
+          </details>
+
+        </div>
+        <p class="mh-faq-legal-links">Full detail: see our <a href="/privacy">Privacy Policy</a> and <a href="/responsible-ai">Responsible AI</a> pages.</p>
+      </section>
+
+      <!-- 07 — HOW TO GET THE MOST OUT OF MEDHAIQ (Playbook) -->
+      <section id="playbook" class="mh-faq-card mh-faq-playbook">
+        <div class="mh-eyebrow">07 — How to Get the Most Out of MedhaIQ</div>
+        <ol class="mh-faq-playbook-list">
+          <li>
+            <span class="mh-faq-playbook-num">01</span>
+            <div>
+              <div class="mh-faq-playbook-title">Target real roles</div>
+              <p class="mh-faq-playbook-desc">Configure a specific role and seniority rather than practicing against a generic target.</p>
+            </div>
+          </li>
+          <li>
+            <span class="mh-faq-playbook-num">02</span>
+            <div>
+              <div class="mh-faq-playbook-title">Provide context</div>
+              <p class="mh-faq-playbook-desc">Where supported, add your resume and Job Description so the platform has relevant material to work with.</p>
+            </div>
+          </li>
+          <li>
+            <span class="mh-faq-playbook-num">03</span>
+            <div>
+              <div class="mh-faq-playbook-title">Vary your practice</div>
+              <p class="mh-faq-playbook-desc">Try different available personas to experience different interviewing styles.</p>
+            </div>
+          </li>
+          <li>
+            <span class="mh-faq-playbook-num">04</span>
+            <div>
+              <div class="mh-faq-playbook-title">Focus on evidence</div>
+              <p class="mh-faq-playbook-desc">For behavioral answers, lead with your direct contribution and measurable outcomes.</p>
+            </div>
+          </li>
+          <li>
+            <span class="mh-faq-playbook-num">05</span>
+            <div>
+              <div class="mh-faq-playbook-title">Review &amp; iterate</div>
+              <p class="mh-faq-playbook-desc">Use your report to find your weakest vector, then practice again against it.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <!-- SUPPORT — understated, no CTA treatment -->
+      <p class="mh-faq-support">Can't find what you're looking for?<br>Contact us at <a href="mailto:support@medhaiq.ai">support@medhaiq.ai</a></p>
+
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+
+  <script>
+  (function() {
+    var reveals = document.querySelectorAll('.reveal');
+    if (reveals.length) {
+      var observer = new IntersectionObserver(function(entries) { entries.forEach(function(entry) { if (entry.isIntersecting) entry.target.classList.add('visible'); }); }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+      reveals.forEach(function(el) { observer.observe(el); });
+    }
+  })();
+  </script>
+</body>
+</html>
