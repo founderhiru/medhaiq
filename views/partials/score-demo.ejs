@@ -20,6 +20,7 @@
           <span class="mh-cip-step-num">1</span>
           <span class="mh-cip-step-label">Upload Your Resume</span>
         </div>
+        <p class="mh-cip-step-desc">Your resume provides the evidence used to generate this preview.</p>
 
         <!-- CV upload drop zone — IDs/classes below are unchanged from the
              existing implementation; medhaiq.css's .extracting/.uploaded
@@ -43,49 +44,25 @@
 
         <div class="mh-cip-step">
           <span class="mh-cip-step-num">2</span>
-          <span class="mh-cip-step-label">Choose Target Role &amp; Level</span>
+          <span class="mh-cip-step-label">Preview Your Signals</span>
         </div>
-        <div class="mh-drop-zone" style="cursor:default">
-          <div class="mh-drop-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </div>
-          <div style="width:100%">
-            <select class="mh-drop-select" id="mh-role-select">
-              <option value="">Select a role...</option>
-              <option>Software Engineer</option>
-              <option>Product Manager</option>
-              <option>Management Consultant</option>
-              <option>Director</option>
-              <option>VP</option>
-              <option>C-Suite</option>
-              <option>Custom</option>
-            </select>
-            <input type="text" id="mh-custom-role" class="mh-drop-select" placeholder="Describe your target role…" style="display:none">
-          </div>
-        </div>
+        <p class="mh-cip-step-desc">See examples of how experience, leadership, communication and business impact can be surfaced.</p>
 
         <div class="mh-cip-step">
           <span class="mh-cip-step-num">3</span>
-          <span class="mh-cip-step-label">Target Organisation Scale</span>
+          <span class="mh-cip-step-label">Validate Through AI Interview</span>
         </div>
-        <div class="mh-drop-zone" style="cursor:default">
-          <div class="mh-drop-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-          </div>
-          <div style="width:100%">
-            <select class="mh-drop-select" id="mh-scale-select">
-              <option value="">Select org type...</option>
-              <option>Startup (1–50)</option>
-              <option>SME (51–500)</option>
-              <option>Enterprise (500–5,000)</option>
-              <option>Fortune 500 / Global MNC</option>
-            </select>
-          </div>
-        </div>
+        <p class="mh-cip-step-desc">The full MedhaIQ experience goes deeper through a Live AI Interview.</p>
 
         <div class="mh-score-cta-wrap">
-          <button id="mh-run-btn" type="button" class="mh-score-run-btn">Run Free Analysis</button>
+          <button id="mh-run-btn" type="button" class="mh-score-run-btn">Run Free Preview</button>
         </div>
+
+        <div class="mh-cip-disclaimer">
+          <div class="mh-cip-disclaimer-label">Preview &mdash; Not a Final Assessment</div>
+          <p class="mh-cip-disclaimer-text">This preview is based on your resume and is intended to demonstrate the type of career intelligence MedhaIQ can surface. Your capabilities are validated more deeply through a Live AI Interview.</p>
+        </div>
+
         <div class="mh-cip-trust">&#128274; Your resume is processed securely and is not stored after analysis.</div>
       </div>
 
@@ -289,7 +266,7 @@
 
   // Button success/reset presentation state — purely cosmetic, no change
   // to the underlying click/fetch behavior.
-  var BTN_DEFAULT_HTML = 'Run Free Analysis';
+  var BTN_DEFAULT_HTML = 'Run Free Preview';
   function setButtonComplete(btn) {
     btn.classList.add('is-complete');
     btn.innerHTML = '&#10003; Analysis Complete<span class="mh-cip-btn-sub">You can re-run the analysis</span>';
@@ -303,29 +280,19 @@
   var loading = document.getElementById('mh-score-loading');
   var card = document.getElementById('mh-score-card');
   var cvFileInput = document.getElementById('mh-cv-file');
-  var roleSelect = document.getElementById('mh-role-select');
-  var scaleSelect = document.getElementById('mh-scale-select');
 
   if (btn && loading && card) {
     btn.addEventListener('click', function (e) {
       e.preventDefault();
       clearError();
 
-      var targetRole = roleSelect ? roleSelect.value : '';
-      var orgScale = scaleSelect ? scaleSelect.value : '';
       if (!cvFileInput || !cvFileInput.files.length) {
         renderError('Upload your resume first.');
-        return;
-      }
-      if (!targetRole || !orgScale) {
-        renderError('Choose a target role and organisation scale first.');
         return;
       }
 
       var formData = new FormData();
       formData.append('resumeFile', cvFileInput.files[0]);
-      formData.append('targetRole', targetRole);
-      formData.append('orgScale', orgScale);
 
       // Soft fade-out of whatever is currently showing (sample or a
       // previous real result) before the loading state appears — keeps the
@@ -402,44 +369,6 @@
       var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
       if (file) showExtracting(file.name);
     });
-  }
-
-  if (roleSelect) {
-    var customRoleInput = document.getElementById('mh-custom-role');
-    if (customRoleInput) {
-      roleSelect.addEventListener('change', function () {
-        if (roleSelect.value === 'Custom') {
-          roleSelect.style.display = 'none';
-          customRoleInput.style.display = 'block';
-          customRoleInput.value = '';
-          customRoleInput.focus();
-        } else {
-          customRoleInput.style.display = 'none';
-        }
-      });
-      function commitCustomRole() {
-        var val = customRoleInput.value.trim();
-        customRoleInput.style.display = 'none';
-        roleSelect.style.display = '';
-        if (val) {
-          var opt = document.getElementById('mh-custom-role-opt');
-          if (!opt) {
-            opt = document.createElement('option');
-            opt.id = 'mh-custom-role-opt';
-            roleSelect.appendChild(opt);
-          }
-          opt.value = val;
-          opt.textContent = val;
-          roleSelect.value = val;
-        } else {
-          roleSelect.value = '';
-        }
-      }
-      customRoleInput.addEventListener('blur', commitCustomRole);
-      customRoleInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') { e.preventDefault(); commitCustomRole(); }
-      });
-    }
   }
 
   // Show the illustrative sample immediately so the right panel is never
