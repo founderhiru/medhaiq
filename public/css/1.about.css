@@ -23,11 +23,10 @@
 }
 .mh-about-masthead h1 {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(22px, 4.5vw, 29px);
-  line-height: 1.15;
+  font-weight: 800;
+  font-size: clamp(28px, 3.6vw, 38px);
   color: var(--white);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   margin: 10px 0 0;
 }
 .mh-about-masthead-sub {
@@ -55,9 +54,9 @@
 .mh-about-mission-copy .mh-eyebrow { color: var(--royal-blue); }
 .mh-about-mission-statement {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(22px, 4.5vw, 29px);
-  line-height: 1.15;
+  font-weight: 800;
+  font-size: clamp(26px, 3.2vw, 36px);
+  line-height: 1.18;
   letter-spacing: -0.03em;
   color: var(--navy-rich);
   margin: 10px 0 16px;
