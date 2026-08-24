@@ -62,30 +62,20 @@
   border-radius: var(--radius); padding: 7px 14px; margin-top: 4px;
 }
 
-/* Role/org-scale rows — row layout (icon left, select right) */
-.mh-cip-left .mh-drop-zone:not(.mh-upload-zone) {
-  flex-direction: row; align-items: center; text-align: left; background: transparent;
-  border-style: solid; padding: 9px 13px; gap: 11px;
-}
-.mh-cip-left .mh-drop-zone:not(.mh-upload-zone) .mh-drop-icon {
-  width: 30px; height: 30px; border-radius: 10px; background: var(--navy-deep);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+.mh-cip-step-desc {
+  font-size: 12px; color: var(--text-muted); line-height: 1.5;
+  margin: 4px 0 0; padding-left: 28px; /* aligns under the step label: 20px numbered circle + 8px gap */
 }
 
-.mh-cip-left .mh-drop-select {
-  background-color: var(--navy-deep);
-  border: 1px solid var(--navy-border);
-  color: var(--white);
-  height: 35px;
-  line-height: 1.2;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+.mh-cip-disclaimer {
+  margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--navy-border);
 }
-.mh-cip-left .mh-drop-select:hover { border-color: #2b3a56; }
-.mh-cip-left .mh-drop-select:focus {
-  outline: none; border-color: var(--blue-bright);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+.mh-cip-disclaimer-label {
+  font-family: var(--font-display); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase; color: var(--blue-bright);
+  margin-bottom: 6px;
 }
-.mh-cip-left .mh-drop-select option { background: var(--navy-deep); color: var(--white); }
+.mh-cip-disclaimer-text { font-size: 11px; color: var(--text-faint); line-height: 1.5; margin: 0; }
 
 .mh-cip-left .mh-score-cta-wrap { margin-top: auto; padding-top: 18px; }
 .mh-cip-left .mh-score-run-btn { border-radius: 999px; }
