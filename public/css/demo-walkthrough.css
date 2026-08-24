@@ -80,6 +80,43 @@
   display: block;
 }
 
+/* Positioning context for the Sound On overlay only — does not affect
+   video dimensions or surrounding layout. */
+#mh-demo-page .mh-demo-video-frame {
+  position: relative;
+}
+
+#mh-demo-page .mh-demo-sound-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(10, 15, 30, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: #F8FAFC;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background 0.15s ease;
+}
+
+#mh-demo-page .mh-demo-sound-btn:hover {
+  background: rgba(10, 15, 30, 0.88);
+}
+
+#mh-demo-page .mh-demo-sound-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
 #mh-demo-page .mh-demo-video-fallback {
   padding: 48px 24px;
   text-align: center;
