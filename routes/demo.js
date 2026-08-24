@@ -25,10 +25,26 @@ const {
   PERSONA_STYLE_LABEL,
   INTERVIEW_CAPABILITIES_SNAPSHOT,
   REPORT_FIXTURE,
+  DISCOVER_FIXTURE,
+  PREPARE_FIXTURE,
+  PROGRESS_FIXTURE,
+  CHAPTERS,
+  CLOSING,
 } = require('../data/demo/walkthrough-fixture');
 
 router.get('/how-it-works', (_req, res) => {
-  res.render('demo/how-it-works');
+  res.render('demo/how-it-works', {
+    chapters: CHAPTERS,
+    closing: CLOSING,
+    discover: DISCOVER_FIXTURE,
+    prepare: PREPARE_FIXTURE,
+    progress: PROGRESS_FIXTURE,
+    roleTitle: ROLE_TITLE,
+    personaName: PERSONA_NAME,
+    personaStyleLabel: PERSONA_STYLE_LABEL,
+    snapshot: INTERVIEW_CAPABILITIES_SNAPSHOT,
+    fixture: REPORT_FIXTURE,
+  });
 });
 
 router.get('/scene/interview', (_req, res) => {

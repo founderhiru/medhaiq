@@ -75,27 +75,118 @@ const REPORT_FIXTURE = {
   ],
 };
 
-// Career workspace trend used only as a visual reference inside the
-// end-frame recap strip. The live /preview/workspace route (existing,
-// unmodified) is the one actually recorded for the Career Intelligence
-// beat of the walkthrough — this is not a duplicate of that route.
+// Career workspace trend used in Chapter 05 (Progress) and as a visual
+// reference inside the end-frame recap strip.
 const CAREER_TREND = [58, 64, 69, 74, 81];
 
-// Voiceover script for the "explain the navigation" walkthrough
-// (2026-08-24 revision). Text only — no audio is generated here; per
-// the agreed scope, voiceover is recorded separately (e.g. ElevenLabs)
-// and added to the final MP4 in an editor afterward. Timing marks are
-// the cumulative seconds each line is read against, matching
-// scripts/record-demo.js's SEQUENCE dwell times exactly.
-const VOICEOVER_SCRIPT = [
-  { atS: 0, endS: 7, line: 'Welcome to MedhaIQ \u2014 your continuous career intelligence platform. From here you can explore the platform, understand how it works, or start your interview journey.' },
-  { atS: 7, endS: 14, line: 'The Platform menu is where everything lives \u2014 your adaptive interview, interview insights, career progress, and what to expect from your first session.' },
-  { atS: 14, endS: 22, line: 'Start by adding your resume and target role. MedhaIQ uses this context to personalize your interview.' },
-  { atS: 22, endS: 30, line: 'MedhaIQ conducts a live AI interview tailored to your resume and target role \u2014 adapting its questions, capturing STAR evidence, and evaluating your performance across five dimensions.' },
-  { atS: 30, endS: 42, line: 'After the interview, your report turns that conversation into actionable intelligence \u2014 with scores, evidence, strengths, development areas, and recommendations.' },
-  { atS: 42, endS: 51, line: 'Your interview history helps you track progress and build continuous career intelligence over time.' },
-  { atS: 51, endS: 60, line: 'That\u2019s MedhaIQ \u2014 Practice. Polish. Place.' },
+// Discover chapter (01) — what MedhaIQ already understands about the
+// candidate: where they are, where they want to go, what the role
+// demands. Deliberately informational, not decorative.
+const DISCOVER_FIXTURE = {
+  currentSnapshot: {
+    label: 'Where you are',
+    heading: CANDIDATE_NAME,
+    detail: '6 years in product management \u00b7 fintech & SaaS background',
+  },
+  destination: {
+    label: 'Where you want to go',
+    heading: ROLE_TITLE,
+    detail: `Targeting ${COMPANY_NAME}-caliber Senior PM roles`,
+  },
+  roleDemands: {
+    label: 'What the role demands',
+    heading: 'Ownership, structure, strategic thinking',
+    detail: 'Behavioral depth, measurable outcomes, cross-functional leadership',
+  },
+};
+
+// Prepare chapter (02) — the Resume + Target Role + Job Description ->
+// Alignment differentiator. Not a form-filling tutorial: three source
+// inputs visually converging into one alignment result.
+const PREPARE_FIXTURE = {
+  sources: [
+    { icon: '\ud83d\udcc4', label: 'Resume', detail: '6 years product management \u00b7 fintech & SaaS' },
+    { icon: '\ud83c\udfaf', label: 'Target Role', detail: ROLE_TITLE },
+    { icon: '\ud83d\udcbc', label: 'Job Description', detail: `${COMPANY_NAME} \u00b7 Ownership & Leadership Principles` },
+  ],
+  alignment: {
+    heading: 'Alignment',
+    detail: 'MedhaIQ connects your evidence to what this specific role requires \u2014 before the interview even starts.',
+    matchPoints: [
+      'Ownership examples map directly to Leadership Principles',
+      'Fintech background aligns with target domain expertise',
+      'Gaps flagged: quantified business impact metrics',
+    ],
+  },
+};
+
+// Progress chapter (05) — Session -> Insight -> Improvement -> Progress.
+const PROGRESS_FIXTURE = {
+  sessions: CAREER_TREND.map((score, i) => ({ session: i + 1, score })),
+  headline: 'Every session adds another signal',
+  detail: 'Track how your capabilities evolve, refine your story, and build stronger career readiness over time.',
+};
+
+// Chapter metadata for the 5-chapter interactive walkthrough
+// (2026-08-24 revision — replaces the old single linear MP4 script).
+// Each chapter is self-contained: its own voiceover line (for
+// captions/future TTS) and its own audio asset path. audioSrc files do
+// NOT exist yet by design (see public/js/demo-chapters.js) — the demo
+// must work perfectly as a silent visual walkthrough until real
+// voiceover files are dropped into public/audio/demo/ with these exact
+// names. fallbackDurationMs is the autoplay dwell time used whenever a
+// chapter's audio is missing or fails to load.
+const CHAPTERS = [
+  {
+    id: 'discover',
+    number: '01',
+    navLabel: 'Discover',
+    voiceoverLine: 'It starts by understanding where you are, where you want to go, and what your target role demands.',
+    audioSrc: '/audio/demo/01-discover.mp3',
+    fallbackDurationMs: 11000,
+  },
+  {
+    id: 'prepare',
+    number: '02',
+    navLabel: 'Prepare',
+    voiceoverLine: 'Bring together your experience, your target role, and the opportunity in front of you. MedhaIQ connects the evidence to what the role requires.',
+    audioSrc: '/audio/demo/02-prepare.mp3',
+    fallbackDurationMs: 11000,
+  },
+  {
+    id: 'interview',
+    number: '03',
+    navLabel: 'Interview',
+    voiceoverLine: 'Then, practice through an adaptive AI interview. Your answers shape what comes next \u2014 making every conversation more relevant, not just another scripted questionnaire.',
+    audioSrc: '/audio/demo/03-interview.mp3',
+    fallbackDurationMs: 13000,
+  },
+  {
+    id: 'intelligence',
+    number: '04',
+    navLabel: 'Intelligence',
+    voiceoverLine: 'Behind every answer, MedhaIQ identifies evidence, STAR signals, and capability patterns \u2014 turning conversation into measurable career intelligence. You don\u2019t just receive a score. You understand why.',
+    audioSrc: '/audio/demo/04-intelligence.mp3',
+    fallbackDurationMs: 13000,
+  },
+  {
+    id: 'progress',
+    number: '05',
+    navLabel: 'Progress',
+    voiceoverLine: 'And every session adds another signal. Track how your capabilities evolve, refine your story, and build stronger career readiness over time.',
+    audioSrc: '/audio/demo/05-progress.mp3',
+    fallbackDurationMs: 9000,
+  },
 ];
+
+// Closing beat — plays automatically after chapter 05, not part of the
+// clickable chapter nav (matches the brief: 5 numbered chapters, then a
+// separate closing/CTA beat).
+const CLOSING = {
+  voiceoverLine: 'Practice. Polish. Place. That\u2019s MedhaIQ.',
+  audioSrc: '/audio/demo/06-closing.mp3',
+  fallbackDurationMs: 9000,
+};
 
 module.exports = {
   CANDIDATE_NAME,
@@ -106,5 +197,9 @@ module.exports = {
   INTERVIEW_CAPABILITIES_SNAPSHOT,
   REPORT_FIXTURE,
   CAREER_TREND,
-  VOICEOVER_SCRIPT,
+  DISCOVER_FIXTURE,
+  PREPARE_FIXTURE,
+  PROGRESS_FIXTURE,
+  CHAPTERS,
+  CLOSING,
 };

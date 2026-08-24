@@ -67,59 +67,398 @@
   letter-spacing: 0.02em;
 }
 
-/* ── /demo/how-it-works landing page ─────────────────────────────── */
-#mh-demo-page .mh-demo-video-wrap {
-  max-width: 960px;
-  margin: 64px auto;
-  padding: 0 24px;
+/* ── /demo/how-it-works — 5-chapter interactive walkthrough ────────── */
+#mh-demo-page .mh-demo-shell {
+  max-width: 1400px;
+  margin: 0 auto;
+  /* mh-nav (the real header) is position:fixed at 68px tall — this
+     top padding clears it so chapter content/nav isn't hidden under it. */
+  padding: 104px 24px 64px;
 }
 
-#mh-demo-page .mh-demo-video-wrap video {
-  width: 100%;
-  border-radius: 16px;
-  display: block;
-}
-
-/* Positioning context for the Sound On overlay only — does not affect
-   video dimensions or surrounding layout. */
-#mh-demo-page .mh-demo-video-frame {
-  position: relative;
-}
-
-#mh-demo-page .mh-demo-sound-btn {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
-  display: inline-flex;
-  align-items: center;
+/* Persistent chapter navigation */
+#mh-demo-page .mh-chapter-nav {
+  display: flex;
   gap: 6px;
-  padding: 8px 14px;
-  background: rgba(10, 15, 30, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+#mh-demo-page .mh-chapter-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 999px;
-  color: #F8FAFC;
+  color: #94A3B8;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 13px;
   font-weight: 600;
-  line-height: 1;
   cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition: background 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
-#mh-demo-page .mh-demo-sound-btn:hover {
-  background: rgba(10, 15, 30, 0.88);
+#mh-demo-page .mh-chapter-nav-item:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+  color: #E2E8F0;
 }
 
-#mh-demo-page .mh-demo-sound-btn svg {
+#mh-demo-page .mh-chapter-nav-item.is-active {
+  background: rgba(59, 130, 246, 0.14);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #F8FAFC;
+}
+
+#mh-demo-page .mh-chapter-nav-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+/* Enable Voice — subtle, restrained, not a video-player control */
+#mh-demo-page .mh-enable-voice-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  background: rgba(15, 20, 38, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: #E2E8F0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+#mh-demo-page .mh-enable-voice-btn:hover {
+  background: rgba(15, 20, 38, 0.95);
+  border-color: rgba(255, 255, 255, 0.26);
+}
+
+#mh-demo-page .mh-enable-voice-btn svg {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
+  opacity: 0.85;
 }
 
-#mh-demo-page .mh-demo-video-fallback {
-  padding: 48px 24px;
-  text-align: center;
+/* Chapter stage */
+#mh-demo-page .mh-chapter-stage {
+  position: relative;
+  min-height: 640px;
+  background: #0D1424;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+#mh-demo-page .mh-chapter-panel {
+  display: none;
+  padding: 40px;
+  min-height: 640px;
+  box-sizing: border-box;
+}
+
+#mh-demo-page .mh-chapter-panel.is-active {
+  display: block;
+  animation: mh-chapter-fade-in 0.35s ease;
+}
+
+@keyframes mh-chapter-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#mh-demo-page .mh-chapter-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #60A5FA;
+  margin: 0 0 16px;
+}
+
+#mh-demo-page .mh-chapter-eyebrow-light {
+  color: #3B82F6;
+}
+
+#mh-demo-page .mh-chapter-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin: 0 0 32px;
+  max-width: 720px;
+  line-height: 1.35;
+}
+
+/* Chapter panels 03 (interview) and 04 (intelligence) embed real
+   product UI directly, which supplies its own topbar/heading — no
+   generic padding wrapper needed for those two panels. */
+#mh-demo-page .mh-chapter-panel:has(.mh-interview-chapter),
+#mh-demo-page .mh-chapter-panel:has(.mh-intelligence-chapter) {
+  padding: 0;
+}
+
+#mh-demo-page .mh-interview-chapter .mh-chapter-eyebrow,
+#mh-demo-page .mh-intelligence-chapter .mh-chapter-eyebrow {
+  margin: 24px 24px 0;
+}
+
+/* ── Chapter 01 — Discover ──────────────────────────────────────────── */
+#mh-demo-page .mh-discover-flow {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+#mh-demo-page .mh-discover-card {
+  flex: 1;
+  min-width: 220px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 22px;
+}
+
+#mh-demo-page .mh-discover-card-accent {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+#mh-demo-page .mh-discover-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748B;
+  margin: 0 0 10px;
+}
+
+#mh-demo-page .mh-discover-heading {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin: 0 0 8px;
+}
+
+#mh-demo-page .mh-discover-detail {
+  font-size: 13.5px;
   color: #94A3B8;
-  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+#mh-demo-page .mh-discover-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3B82F6;
+  font-size: 20px;
+  flex: 0 0 auto;
+}
+
+/* ── Chapter 02 — Prepare ───────────────────────────────────────────── */
+#mh-demo-page .mh-prepare-flow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+#mh-demo-page .mh-prepare-sources {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#mh-demo-page .mh-prepare-source-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+#mh-demo-page .mh-prepare-source-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+#mh-demo-page .mh-prepare-source-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748B;
+  margin: 0 0 4px;
+}
+
+#mh-demo-page .mh-prepare-source-detail {
+  font-size: 14px;
+  color: #E2E8F0;
+  margin: 0;
+}
+
+#mh-demo-page .mh-prepare-arrow {
+  color: #3B82F6;
+  font-size: 22px;
+  flex: 0 0 auto;
+}
+
+#mh-demo-page .mh-prepare-alignment {
+  flex: 1;
+  min-width: 280px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 14px;
+  padding: 24px;
+}
+
+#mh-demo-page .mh-prepare-alignment-heading {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin: 0 0 10px;
+}
+
+#mh-demo-page .mh-prepare-alignment-detail {
+  font-size: 13.5px;
+  color: #BFDBFE;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+#mh-demo-page .mh-prepare-alignment-points {
+  margin: 0;
+  padding-left: 18px;
+  color: #E2E8F0;
+  font-size: 13.5px;
+  line-height: 1.8;
+}
+
+/* ── Chapter 04 — Intelligence (hero chapter treatment) ─────────────── */
+#mh-demo-page .mh-intelligence-card {
+  background: #F7F8FA;
+  border-radius: 18px;
+  margin: 24px;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+/* ── Chapter 05 — Progress ──────────────────────────────────────────── */
+#mh-demo-page .mh-progress-detail {
+  font-size: 14px;
+  color: #94A3B8;
+  max-width: 600px;
+  line-height: 1.5;
+  margin: -16px 0 28px;
+}
+
+#mh-demo-page .mh-progress-flow-labels {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748B;
+  letter-spacing: 0.03em;
+  margin-bottom: 28px;
+}
+
+#mh-demo-page .mh-progress-flow-labels span:nth-child(even) {
+  color: #3B82F6;
+}
+
+#mh-demo-page .mh-progress-trend {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  height: 220px;
+  padding: 0 8px;
+}
+
+#mh-demo-page .mh-progress-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  height: 100%;
+}
+
+#mh-demo-page .mh-progress-bar {
+  width: 100%;
+  max-width: 56px;
+  background: linear-gradient(180deg, #60A5FA, #3B82F6);
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8px;
+  box-sizing: border-box;
+}
+
+#mh-demo-page .mh-progress-bar-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #F8FAFC;
+}
+
+#mh-demo-page .mh-progress-bar-label {
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: #64748B;
+}
+
+/* ── Closing beat ───────────────────────────────────────────────────── */
+#mh-demo-page .mh-closing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 640px;
+  text-align: center;
+}
+
+#mh-demo-page .mh-closing-logo {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+#mh-demo-page .mh-closing-tagline {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 38px;
+  font-weight: 800;
+  color: #F8FAFC;
+  line-height: 1.25;
+  margin-bottom: 22px;
+}
+
+#mh-demo-page .mh-closing-cta {
+  display: inline-block;
+  padding: 14px 34px;
+  border-radius: 999px;
+  background: #3B82F6;
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
 }

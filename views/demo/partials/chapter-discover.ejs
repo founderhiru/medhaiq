@@ -1,0 +1,24 @@
+<div class="mh-chapter-inner mh-discover">
+  <p class="mh-chapter-eyebrow">01 · DISCOVER</p>
+  <h2 class="mh-chapter-title">Where you are. Where you're going. What it takes to get there.</h2>
+
+  <div class="mh-discover-flow">
+    <div class="mh-discover-card">
+      <p class="mh-discover-label"><%= discover.currentSnapshot.label %></p>
+      <p class="mh-discover-heading"><%= discover.currentSnapshot.heading %></p>
+      <p class="mh-discover-detail"><%= discover.currentSnapshot.detail %></p>
+    </div>
+    <div class="mh-discover-arrow" aria-hidden="true">→</div>
+    <div class="mh-discover-card">
+      <p class="mh-discover-label"><%= discover.destination.label %></p>
+      <p class="mh-discover-heading"><%= discover.destination.heading %></p>
+      <p class="mh-discover-detail"><%= discover.destination.detail %></p>
+    </div>
+    <div class="mh-discover-arrow" aria-hidden="true">→</div>
+    <div class="mh-discover-card mh-discover-card-accent">
+      <p class="mh-discover-label"><%= discover.roleDemands.label %></p>
+      <p class="mh-discover-heading"><%= discover.roleDemands.heading %></p>
+      <p class="mh-discover-detail"><%= discover.roleDemands.detail %></p>
+    </div>
+  </div>
+</div>
