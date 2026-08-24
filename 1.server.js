@@ -93,9 +93,6 @@ app.use('/api/founder',    require('./routes/founder'));
 app.use('/api/settings',   require('./routes/account'));
 app.use('/api/public-preview', require('./routes/public-preview'));
 app.use('/preview',        require('./routes/preview'));
-// "See How It Works" 60-second walkthrough — isolated, public, stateless
-// demo/recording layer. See routes/demo.js for the full isolation notes.
-app.use('/demo',           require('./routes/demo'));
 app.use('/api',            require('./routes/vapi'));
 app.use('/api',            require('./routes/vapi-silent-model')); // tts_pipeline custom-llm stub (2026-07-25) — see file header for activation steps
 app.use('/api/voice',      require('./routes/voice-tts'));   // PR3: ElevenLabs proxy, requireAuth-gated
@@ -124,6 +121,7 @@ app.get('/', async (req, res) => {
 });
 app.get('/privacy', (_req, res) => res.render('privacy'));
 app.get('/terms',   (_req, res) => res.render('terms'));
+app.get('/faq',      (_req, res) => res.render('faq'));
 // TEMPORARY placeholder for the Legal footer column's Responsible AI link —
 // swap for a real page/content when built. Not fabricated content, just a
 // safe stub so /responsible-ai doesn't 404.
