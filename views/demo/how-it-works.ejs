@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>See How It Works — MedhaIQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/medhaiq.css">
+  <link rel="stylesheet" href="/css/demo-walkthrough.css">
+</head>
+<body id="mh-demo-page" style="background:#0A0F1E; min-height:100vh;">
+  <%- include('../partials/header') %>
+
+  <div class="mh-demo-video-wrap">
+    <h1 style="color:#F8FAFC; font-family:'Plus Jakarta Sans',sans-serif; font-size:28px; margin-bottom:20px;">See how MedhaIQ works</h1>
+    <video controls preload="metadata" poster="" id="mhDemoVideo">
+      <source src="/videos/how-it-works.mp4" type="video/mp4">
+    </video>
+    <div class="mh-demo-video-fallback" id="mhDemoFallback" style="display:none;">
+      The walkthrough video isn't available yet — check back shortly.
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('mhDemoVideo').addEventListener('error', function () {
+      document.getElementById('mhDemoVideo').style.display = 'none';
+      document.getElementById('mhDemoFallback').style.display = 'block';
+    }, true);
+  </script>
+</body>
+</html>

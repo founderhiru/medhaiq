@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Report — MedhaIQ (Walkthrough Demo)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Reuses the REAL production report stylesheet (/css/interview.css)
+       and its exact class names (report-hero, score-ring, scoreboard-*,
+       report-section, evidence-block, exec-summary, persona-verdict...)
+       so this is visually identical to the real report. This is a
+       separate, static file rather than views/interview-report.ejs
+       itself, because that template's ~20 required local variables are
+       computed server-side from a real career-intelligence build — not
+       something to fake-wire for a one-time recording. No DB, no
+       req.user, no live report logic. -->
+  <link rel="stylesheet" href="/css/interview.css">
+  <link rel="stylesheet" href="/css/demo-walkthrough.css">
+</head>
+<body class="report-page-body" id="mh-demo-page">
+
+<div class="report-page">
+  <div style="margin-bottom: 32px;">
+    <%- include('../partials/brand-logo', { size: 'md', eager: true }) %>
+    <span class="mh-demo-badge">Walkthrough Demo</span>
+  </div>
+
+  <div class="report-hero">
+    <div class="report-hero-identity">
+      <div class="report-date"><%= fixture.formattedDate %></div>
+      <div class="report-hero-name"><%= fixture.candidateName %> · <%= fixture.roleTitle %></div>
+      <div class="persona-info">Interviewed by <%= fixture.personaName %></div>
+    </div>
+    <div class="report-hero-row">
+      <div class="report-hero-score">
+        <div class="score-ring">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <circle class="bg" cx="70" cy="70" r="60" />
+            <circle class="fill" cx="70" cy="70" r="60"
+              stroke-dasharray="<%= fixture.circumference %>"
+              stroke-dashoffset="<%= fixture.circumferenceOffset %>" />
+          </svg>
+          <div class="score-num"><%= fixture.report.overall_score %><span class="score-num-sub">out of 100</span></div>
+        </div>
+        <div class="score-label">Overall Career Intelligence Score</div>
+      </div>
+      <div class="report-hero-vectors">
+        <h3 class="scoreboard-title">YOUR 5-VECTOR PROFILE</h3>
+        <div class="scoreboard-grid">
+          <% const scoreboardRows = [
+            { label: 'Structure', score: fixture.starAvg },
+            { label: 'Domain Expertise', score: fixture.technicalAvg },
+            { label: 'Strategic Thinking', score: fixture.executiveAvg },
+            { label: 'Communication', score: fixture.frictionAvg },
+            { label: 'Leadership & Execution', score: fixture.gccAvg },
+          ]; %>
+          <% scoreboardRows.forEach(function(row) {
+            const cls = row.score >= 80 ? 'high' : row.score >= 60 ? 'mid' : 'low';
+          %>
+          <div class="scoreboard-row">
+            <span class="scoreboard-label"><%= row.label %></span>
+            <div class="scoreboard-track">
+              <div class="scoreboard-fill <%= cls %>" style="width: <%= row.score %>%"></div>
+            </div>
+            <span class="scoreboard-val <%= cls %>"><%= row.score %>/100</span>
+          </div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="response-summary">
+    <span class="eyebrow">RESPONSE SUMMARY</span>
+    <div class="score-attribution" style="margin-top:4px;"><%= fixture.responsePattern.answered %> answered · <%= fixture.responsePattern.skipped %> skipped · <%= fixture.responsePattern.dontKnow %> don't know</div>
+  </div>
+
+  <div class="report-section">
+    <h3>Your Career Intelligence Overview</h3>
+    <p class="exec-summary"><%= fixture.report.executive_summary %></p>
+    <p class="persona-verdict" style="margin-top:14px;"><%= fixture.report.persona_verdict %></p>
+    <div class="score-attribution"><%= fixture.recommendationContext %></div>
+  </div>
+
+  <div class="report-grid">
+    <div class="report-section">
+      <h3>Your Strongest Signal</h3>
+      <div class="evidence-block evidence-strong">
+        <div class="evidence-label"><%= fixture.strengths[0] %></div>
+      </div>
+      <% if (fixture.strengths[1]) { %>
+      <div class="score-attribution">Also a strength this session: <%= fixture.strengths[1] %></div>
+      <% } %>
+    </div>
+
+    <div class="report-section">
+      <h3>Your Development Focus</h3>
+      <div class="evidence-block evidence-weak">
+        <div class="evidence-label"><%= fixture.developmentAreas[0] %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-section">
+    <h3>Recommendations</h3>
+    <ul class="improve-list">
+      <% fixture.recommendations.forEach(function(r) { %>
+      <li><%= r %></li>
+      <% }); %>
+    </ul>
+  </div>
+</div>
+
+<script>
+  window.__MH_DEMO_NEXT__ = '/preview/workspace';
+</script>
+</body>
+</html>
