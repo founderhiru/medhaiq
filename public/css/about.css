@@ -23,10 +23,11 @@
 }
 .mh-about-masthead h1 {
   font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(28px, 3.6vw, 38px);
+  font-weight: 700;
+  font-size: clamp(22px, 4.5vw, 29px);
+  line-height: 1.15;
   color: var(--white);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   margin: 10px 0 0;
 }
 .mh-about-masthead-sub {
@@ -54,9 +55,9 @@
 .mh-about-mission-copy .mh-eyebrow { color: var(--royal-blue); }
 .mh-about-mission-statement {
   font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(26px, 3.2vw, 36px);
-  line-height: 1.18;
+  font-weight: 700;
+  font-size: clamp(20px, 4vw, 26px); /* was identical to .mh-about-masthead h1's clamp(22,4.5vw,29px) — kept clearly under the masthead H1's ceiling so the page title remains the visually largest heading on the page */
+  line-height: 1.2;
   letter-spacing: -0.03em;
   color: var(--navy-rich);
   margin: 10px 0 16px;
@@ -173,8 +174,8 @@
 .mh-about-origin-narrative .mh-eyebrow { color: var(--blue-bright); }
 .mh-about-origin-headline {
   font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(24px, 2.8vw, 32px);
+  font-weight: 700;
+  font-size: clamp(20px, 4vw, 26px); /* was 800/clamp(24,2.8vw,32px) — heavier and larger than the page's own H1, same collapsed-hierarchy issue already fixed on the Mission heading */
   color: var(--white);
   letter-spacing: -0.03em;
   line-height: 1.2;
@@ -279,8 +280,8 @@
 .mh-about-vision-top .mh-eyebrow { color: var(--royal-blue); }
 .mh-about-vision-headline {
   font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 700;
+  font-size: clamp(20px, 4vw, 26px); /* was 800/clamp(24,3vw,32px) — same fix as Origin/Mission */
   color: var(--navy-rich);
   letter-spacing: -0.03em;
   line-height: 1.2;
@@ -329,8 +330,9 @@
 .mh-about-principles-head .mh-eyebrow { color: var(--royal-blue); }
 .mh-about-principles-title {
   font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(22px, 2.8vw, 30px);
+  font-weight: 700;
+  font-size: clamp(20px, 4vw, 26px); /* was 800/clamp(22,2.8vw,30px) — same fix as Origin/Vision/Mission */
+  line-height: 1.2;
   color: var(--navy-rich);
   letter-spacing: -0.03em;
   margin: 10px 0 0;

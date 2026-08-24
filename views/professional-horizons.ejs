@@ -23,7 +23,15 @@
        this banner) is affected. cta-banner.ejs itself is not modified. */
         .professional-horizons-page .mh-cta-banner { display: none; }
 
-        .professional-horizons-page .mh-audience { background: #F7F6F2; }
+        /* This page has no dark hero wrapper — its top section (.mh-audience)
+           sits directly under the fixed header using the standard in-page
+           section padding (76px), which reads as cramped compared to Why/
+           Architecture's dedicated hero padding (104px). Bumping only the
+           top padding here, scoped to this page, gives the eyebrow/H1 the
+           same breathing room as the hero pages without touching the
+           shared .mh-audience rule (which stays 76px everywhere else it
+           might be used) or this page's bottom/side spacing/background. */
+        .professional-horizons-page .mh-audience { padding-top: 104px; background: #F7F6F2; }
     .professional-horizons-page .mh-section-title { color: #0B1020; }
     .professional-horizons-page .mh-section-sub { color: #5F6B82; }
   </style>
