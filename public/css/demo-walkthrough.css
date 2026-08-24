@@ -67,99 +67,10 @@
   letter-spacing: 0.02em;
 }
 
-/* ── Guided tour chrome (2026-08-24) ─────────────────────────────────
-   Used on BOTH the real homepage (loaded dynamically only when the
-   tour starts, via public/js/guided-tour.js) and the tour shell page
-   (views/demo/tour.ejs). One canonical copy of these rules — neither
-   consumer duplicates this CSS inline. Deliberately minimal chrome:
-   a thin progress line + a small "Skip tour" link. No chapter labels,
-   no numbers, no video-player-style controls. */
-.mh-tour-chrome {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 22px;
-  background: rgba(5, 7, 14, 0.82);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.mh-tour-progress-track {
-  flex: 1;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.mh-tour-progress-fill {
-  height: 100%;
-  width: 0%;
-  background: #3B82F6;
-  transition: width 0.4s ease;
-}
-
-.mh-tour-skip {
-  flex: 0 0 auto;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #CBD5E1;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 7px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-}
-
-.mh-tour-skip:hover {
-  border-color: rgba(255, 255, 255, 0.32);
-  color: #F8FAFC;
-}
-
-/* Note: the highlight ring itself (public/js/guided-tour.js) is styled
-   entirely via inline styles, not a CSS class here — it can be
-   appended to a real production page's document (inside the tour
-   iframe) that never loads this stylesheet. */
-
-/* Enable Voice — subtle, restrained, not a video-player control.
-   Shared by both homepage mode and shell mode. */
-.mh-enable-voice-btn {
-  position: fixed;
-  bottom: 60px;
-  right: 24px;
-  z-index: 100000;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 16px;
-  background: rgba(15, 20, 38, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
-  color: #E2E8F0;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.mh-enable-voice-btn:hover {
-  background: rgba(15, 20, 38, 0.95);
-  border-color: rgba(255, 255, 255, 0.26);
-}
-
-.mh-enable-voice-btn svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  opacity: 0.85;
-}
+/* Note: the premium demo overlay (public/js/overlay-tour.js) and all
+   its cinematic effects (public/js/cinematic-fx.js) are styled
+   entirely via inline styles / dynamically-injected <style> tags, not
+   classes in this file — the overlay's close control and the
+   cinematic cursor/glow/spotlight effects must work correctly even
+   when appended to a real production page's own document (inside the
+   demo iframe), which never loads this stylesheet. */

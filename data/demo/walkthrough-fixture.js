@@ -112,7 +112,7 @@ const REPORT_FIXTURE = {
 const TOUR_STEPS = [
   {
     id: 'homepage',
-    mode: 'live-homepage',
+    src: '/',
     startS: 0,
     endS: 8,
     audioSrc: '/audio/tour/01-homepage.mp3',
@@ -120,7 +120,7 @@ const TOUR_STEPS = [
   },
   {
     id: 'platform-menu',
-    mode: 'live-homepage',
+    src: '/',
     startS: 8,
     endS: 17,
     audioSrc: '/audio/tour/02-platform-menu.mp3',
@@ -128,7 +128,6 @@ const TOUR_STEPS = [
   },
   {
     id: 'interview-setup',
-    mode: 'iframe-real',
     src: '/preview/interview',
     startS: 17,
     endS: 27,
@@ -137,7 +136,6 @@ const TOUR_STEPS = [
   },
   {
     id: 'persona',
-    mode: 'iframe-real',
     src: '/preview/interview',
     startS: 27,
     endS: 35,
@@ -146,7 +144,6 @@ const TOUR_STEPS = [
   },
   {
     id: 'interview-live',
-    mode: 'iframe-scene',
     src: '/demo/tour/scene/interview',
     startS: 35,
     endS: 49,
@@ -155,7 +152,6 @@ const TOUR_STEPS = [
   },
   {
     id: 'report',
-    mode: 'iframe-scene',
     src: '/demo/tour/scene/report',
     startS: 49,
     endS: 59,
@@ -164,7 +160,6 @@ const TOUR_STEPS = [
   },
   {
     id: 'career-workspace',
-    mode: 'iframe-real',
     src: '/preview/workspace',
     startS: 59,
     endS: 66,
@@ -173,7 +168,6 @@ const TOUR_STEPS = [
   },
   {
     id: 'closing',
-    mode: 'iframe-scene',
     src: '/demo/tour/scene/closing',
     startS: 66,
     endS: 74,
