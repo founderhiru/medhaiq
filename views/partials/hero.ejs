@@ -479,18 +479,18 @@
     <script>
       // Progressive enhancement only: the link above still works as a
       // normal href (redirects to "/") if JS is unavailable. When JS
-      // runs, the click instead loads the guided tour controller
+      // runs, the click instead opens the premium demo overlay
       // in-place on this same page — no navigation, no second Play
-      // screen. Nothing here loads unless this exact button is clicked.
-      // guided-tour.js fetches its own step data — no data embedded here.
+      // screen, and the real homepage underneath is never modified.
+      // overlay-tour.js fetches its own step data — no data embedded here.
       (function () {
         var cta = document.getElementById('mhSeeHowItWorksCta');
         if (!cta) return;
         cta.addEventListener('click', function (e) {
           e.preventDefault();
-          if (document.getElementById('mhTourChrome')) return; // already running
+          if (document.getElementById('mhDemoOverlay')) return; // already running
           var script = document.createElement('script');
-          script.src = '/js/guided-tour.js';
+          script.src = '/js/overlay-tour.js';
           document.head.appendChild(script);
         });
       })();
