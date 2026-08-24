@@ -19,19 +19,45 @@ const COMPANY_NAME = 'Amazon';
 const PERSONA_NAME = 'Marcus Webb';
 const PERSONA_STYLE_LABEL = 'Rigorous';
 
-// A short (~8s) STATIC snapshot of the interview + evaluation UI, used
-// for the "Interview capabilities" beat of the walkthrough. This is
-// deliberately NOT a played-out Q&A — the narration explains the
-// capability (adaptive voice interview, STAR capture, 5-vector scoring)
-// while the screen shows a single, already-populated, representative
-// moment. No timeline JS, no typing animation, no follow-up transition.
-const INTERVIEW_CAPABILITIES_SNAPSHOT = {
-  qEyebrow: 'QUESTION 2 OF 5 \u00b7 FOLLOW-UP',
-  questionText: 'What was the measurable outcome once you stepped in?',
-  transcriptLine: 'Drop-off recovered within two weeks and stayed down after launch.',
-  starProgress: ['situation', 'task', 'action', 'result'],
-  vectors: { structure: 82, domain: 74, strategy: 79, communication: 88, leadership: 81 },
-  overallScore: 81,
+// Animated interview scene fixture — the visual climax of the guided
+// tour (2026-08-24 revision, decision #3: animation explicitly
+// approved). A short scripted timeline: question -> response/transcript
+// -> STAR signals -> adaptive follow-up -> 5-Vector scoring. All values
+// are fixed literals driving public/js/guided-tour.js's timeline
+// renderer — no Vapi, no live scoring, no network calls.
+const INTERVIEW_TOUR_SCRIPT = {
+  totalDurationMs: 14000,
+  turns: [
+    {
+      atMs: 0,
+      qEyebrow: 'QUESTION 1 OF 5 \u00b7 BEHAVIORAL',
+      questionText: 'Tell me about a time you owned a problem that wasn\u2019t technically your responsibility.',
+    },
+    {
+      atMs: 2500,
+      transcriptLine: 'When our onboarding drop-off spiked, I pulled the funnel data myself and brought engineering in.',
+    },
+    {
+      atMs: 6000,
+      starProgress: ['situation', 'task', 'action'],
+    },
+    {
+      atMs: 8000,
+      qEyebrow: 'QUESTION 2 OF 5 \u00b7 FOLLOW-UP',
+      isFollowUp: true,
+      questionText: 'What was the measurable outcome once you stepped in?',
+      starProgress: ['situation', 'task', 'action', 'result'],
+    },
+    {
+      atMs: 10500,
+      transcriptLine: 'Drop-off recovered within two weeks and stayed down after launch.',
+    },
+    {
+      atMs: 12000,
+      vectors: { structure: 82, domain: 74, strategy: 79, communication: 88, leadership: 81 },
+      overallScore: 81,
+    },
+  ],
 };
 
 // Report scene fixture — shaped to match the exact local variables the
@@ -75,118 +101,86 @@ const REPORT_FIXTURE = {
   ],
 };
 
-// Career workspace trend used in Chapter 05 (Progress) and as a visual
-// reference inside the end-frame recap strip.
-const CAREER_TREND = [58, 64, 69, 74, 81];
-
-// Discover chapter (01) — what MedhaIQ already understands about the
-// candidate: where they are, where they want to go, what the role
-// demands. Deliberately informational, not decorative.
-const DISCOVER_FIXTURE = {
-  currentSnapshot: {
-    label: 'Where you are',
-    heading: CANDIDATE_NAME,
-    detail: '6 years in product management \u00b7 fintech & SaaS background',
-  },
-  destination: {
-    label: 'Where you want to go',
-    heading: ROLE_TITLE,
-    detail: `Targeting ${COMPANY_NAME}-caliber Senior PM roles`,
-  },
-  roleDemands: {
-    label: 'What the role demands',
-    heading: 'Ownership, structure, strategic thinking',
-    detail: 'Behavioral depth, measurable outcomes, cross-functional leadership',
-  },
-};
-
-// Prepare chapter (02) — the Resume + Target Role + Job Description ->
-// Alignment differentiator. Not a form-filling tutorial: three source
-// inputs visually converging into one alignment result.
-const PREPARE_FIXTURE = {
-  sources: [
-    { icon: '\ud83d\udcc4', label: 'Resume', detail: '6 years product management \u00b7 fintech & SaaS' },
-    { icon: '\ud83c\udfaf', label: 'Target Role', detail: ROLE_TITLE },
-    { icon: '\ud83d\udcbc', label: 'Job Description', detail: `${COMPANY_NAME} \u00b7 Ownership & Leadership Principles` },
-  ],
-  alignment: {
-    heading: 'Alignment',
-    detail: 'MedhaIQ connects your evidence to what this specific role requires \u2014 before the interview even starts.',
-    matchPoints: [
-      'Ownership examples map directly to Leadership Principles',
-      'Fintech background aligns with target domain expertise',
-      'Gaps flagged: quantified business impact metrics',
-    ],
-  },
-};
-
-// Progress chapter (05) — Session -> Insight -> Improvement -> Progress.
-const PROGRESS_FIXTURE = {
-  sessions: CAREER_TREND.map((score, i) => ({ session: i + 1, score })),
-  headline: 'Every session adds another signal',
-  detail: 'Track how your capabilities evolve, refine your story, and build stronger career readiness over time.',
-};
-
-// Chapter metadata for the 5-chapter interactive walkthrough
-// (2026-08-24 revision — replaces the old single linear MP4 script).
-// Each chapter is self-contained: its own voiceover line (for
-// captions/future TTS) and its own audio asset path. audioSrc files do
-// NOT exist yet by design (see public/js/demo-chapters.js) — the demo
-// must work perfectly as a silent visual walkthrough until real
-// voiceover files are dropped into public/audio/demo/ with these exact
-// names. fallbackDurationMs is the autoplay dwell time used whenever a
-// chapter's audio is missing or fails to load.
-const CHAPTERS = [
+// Guided-tour step sequence (2026-08-24 rewrite). This replaces the
+// earlier 5-chapter-with-visible-nav architecture entirely: there is no
+// chapter numbering or chapter nav bar anywhere in the UI. This array
+// is internal sequencing only, consumed by public/js/guided-tour.js to
+// know which real/fixture page each step lives on, how long to dwell,
+// and which continuous-narration voiceover line plays under it. Timing
+// matches the approved final storyboard exactly (0-8, 8-17, 17-27,
+// 27-35, 35-49, 49-59, 59-66, 66-70, 70+).
+const TOUR_STEPS = [
   {
-    id: 'discover',
-    number: '01',
-    navLabel: 'Discover',
+    id: 'homepage',
+    mode: 'live-homepage',
+    startS: 0,
+    endS: 8,
+    audioSrc: '/audio/tour/01-homepage.mp3',
+    voiceoverLine: 'Meet MedhaIQ \u2014 Continuous Career Intelligence for the way your career actually moves.',
+  },
+  {
+    id: 'platform-menu',
+    mode: 'live-homepage',
+    startS: 8,
+    endS: 17,
+    audioSrc: '/audio/tour/02-platform-menu.mp3',
     voiceoverLine: 'It starts by understanding where you are, where you want to go, and what your target role demands.',
-    audioSrc: '/audio/demo/01-discover.mp3',
-    fallbackDurationMs: 11000,
   },
   {
-    id: 'prepare',
-    number: '02',
-    navLabel: 'Prepare',
-    voiceoverLine: 'Bring together your experience, your target role, and the opportunity in front of you. MedhaIQ connects the evidence to what the role requires.',
-    audioSrc: '/audio/demo/02-prepare.mp3',
-    fallbackDurationMs: 11000,
+    id: 'interview-setup',
+    mode: 'iframe-real',
+    src: '/preview/interview',
+    startS: 17,
+    endS: 27,
+    audioSrc: '/audio/tour/03-interview-setup.mp3',
+    voiceoverLine: 'Bring together your experience, the role you\u2019re targeting, and the opportunity in front of you.',
   },
   {
-    id: 'interview',
-    number: '03',
-    navLabel: 'Interview',
-    voiceoverLine: 'Then, practice through an adaptive AI interview. Your answers shape what comes next \u2014 making every conversation more relevant, not just another scripted questionnaire.',
-    audioSrc: '/audio/demo/03-interview.mp3',
-    fallbackDurationMs: 13000,
+    id: 'persona',
+    mode: 'iframe-real',
+    src: '/preview/interview',
+    startS: 27,
+    endS: 35,
+    audioSrc: '/audio/tour/04-persona.mp3',
+    voiceoverLine: 'MedhaIQ connects your evidence to what the role requires.',
   },
   {
-    id: 'intelligence',
-    number: '04',
-    navLabel: 'Intelligence',
-    voiceoverLine: 'Behind every answer, MedhaIQ identifies evidence, STAR signals, and capability patterns \u2014 turning conversation into measurable career intelligence. You don\u2019t just receive a score. You understand why.',
-    audioSrc: '/audio/demo/04-intelligence.mp3',
-    fallbackDurationMs: 13000,
+    id: 'interview-live',
+    mode: 'iframe-scene',
+    src: '/demo/tour/scene/interview',
+    startS: 35,
+    endS: 49,
+    audioSrc: '/audio/tour/05-interview-live.mp3',
+    voiceoverLine: 'Then, practice through an adaptive AI interview. Your answers shape what comes next \u2014 making every conversation more relevant, more focused, and more like the interview you\u2019re preparing for.',
   },
   {
-    id: 'progress',
-    number: '05',
-    navLabel: 'Progress',
-    voiceoverLine: 'And every session adds another signal. Track how your capabilities evolve, refine your story, and build stronger career readiness over time.',
-    audioSrc: '/audio/demo/05-progress.mp3',
-    fallbackDurationMs: 9000,
+    id: 'report',
+    mode: 'iframe-scene',
+    src: '/demo/tour/scene/report',
+    startS: 49,
+    endS: 59,
+    audioSrc: '/audio/tour/06-report.mp3',
+    voiceoverLine: 'Behind every answer, MedhaIQ identifies evidence, STAR signals, and capability patterns \u2014 turning conversation into measurable career intelligence.',
+  },
+  {
+    id: 'career-workspace',
+    mode: 'iframe-real',
+    src: '/preview/workspace',
+    startS: 59,
+    endS: 66,
+    audioSrc: '/audio/tour/07-career-workspace.mp3',
+    voiceoverLine: 'And every session adds another signal. See how your capabilities evolve, refine your story, and build stronger career readiness over time.',
+  },
+  {
+    id: 'closing',
+    mode: 'iframe-scene',
+    src: '/demo/tour/scene/closing',
+    startS: 66,
+    endS: 74,
+    audioSrc: '/audio/tour/08-closing.mp3',
+    voiceoverLine: 'Practice. Polish. Place. That\u2019s MedhaIQ.',
   },
 ];
-
-// Closing beat — plays automatically after chapter 05, not part of the
-// clickable chapter nav (matches the brief: 5 numbered chapters, then a
-// separate closing/CTA beat).
-const CLOSING = {
-  voiceoverLine: 'Practice. Polish. Place. That\u2019s MedhaIQ.',
-  audioSrc: '/audio/demo/06-closing.mp3',
-  fallbackDurationMs: 9000,
-};
 
 module.exports = {
   CANDIDATE_NAME,
@@ -194,12 +188,7 @@ module.exports = {
   COMPANY_NAME,
   PERSONA_NAME,
   PERSONA_STYLE_LABEL,
-  INTERVIEW_CAPABILITIES_SNAPSHOT,
+  INTERVIEW_TOUR_SCRIPT,
   REPORT_FIXTURE,
-  CAREER_TREND,
-  DISCOVER_FIXTURE,
-  PREPARE_FIXTURE,
-  PROGRESS_FIXTURE,
-  CHAPTERS,
-  CLOSING,
+  TOUR_STEPS,
 };
