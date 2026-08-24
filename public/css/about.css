@@ -56,8 +56,8 @@
 .mh-about-mission-statement {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(22px, 4.5vw, 29px);
-  line-height: 1.15;
+  font-size: clamp(20px, 4vw, 26px); /* was identical to .mh-about-masthead h1's clamp(22,4.5vw,29px) — kept clearly under the masthead H1's ceiling so the page title remains the visually largest heading on the page */
+  line-height: 1.2;
   letter-spacing: -0.03em;
   color: var(--navy-rich);
   margin: 10px 0 16px;
