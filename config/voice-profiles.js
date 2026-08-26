@@ -68,7 +68,7 @@ const VOICE_PROFILES = {
   },
   marcus: {
     provider: 'elevenlabs',
-    providerVoice: 'xXFOA11TH5EKg661vj6I',
+    providerVoice: 'ZoiZ8fuDWInAcwPXaVeq',
     pace: 1.0,
     style: 'conversational product leadership',
   },
