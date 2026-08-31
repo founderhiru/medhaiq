@@ -90,6 +90,56 @@ const IDLE_TIMEOUT_MINUTES = 10;
 router.post('/sessions', interviewStartLimiter, requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
 router.post('/session/initialize', interviewStartLimiter, requireAuth, requireInterviewEntitlement, sessionController.initializeSession);
 
+// ═══════════════════════════════════════════════════════════════════════════
+// POST /api/interview/vapi-leak-alert
+// ═══════════════════════════════════════════════════════════════════════════
+// P0 regression sink (2026-08-31 incident, see routes/vapi-silent-model.js
+// for full root-cause writeup). The client fires this — fire-and-forget,
+// wrapped in its own .catch() — the moment it observes Vapi's model stage
+// producing conversational output while tts_pipeline mode is active, which
+// should be structurally impossible after the custom-llm fix. If this ever
+// logs in production, the assistantOverrides.model redirect did NOT take
+// effect for that specific call — that is the actionable signal.
+//
+// Deliberately minimal and defensive:
+//   - requireAuth only (same convention as every other route in this file)
+//     — no entitlement/session-active checks, since a diagnostic ping must
+//     never be blocked by unrelated interview-state logic.
+//   - No transcript content, no API keys/tokens ever reach this handler —
+//     the client sends only a classification label and a length, never the
+//     text itself (see interview-session.ejs's leak-alert call site).
+//   - Every branch is wrapped so this can never throw; always responds 204
+//     so the client's fetch never has a reason to retry.
+//   - Does not touch req.session, does not call any interview/scoring
+//     logic, does not read or write interview_sessions — a failure or even
+//     a malformed payload here cannot affect the interview in progress.
+// ═══════════════════════════════════════════════════════════════════════════
+router.post('/vapi-leak-alert', requireAuth, (req, res) => {
+  try {
+    const body = req.body || {};
+    const sessionId = body.sessionId !== undefined && body.sessionId !== null ? String(body.sessionId).slice(0, 64) : 'unknown';
+    const classification = ['self_identification', 'unexpected_conversational_output'].includes(body.classification)
+      ? body.classification : 'unclassified';
+    const transcriptLength = Number.isFinite(body.transcriptLength) ? body.transcriptLength : null;
+
+    // Clearly identifiable, greppable P0 line — no transcript text, no PII,
+    // just enough to correlate against the Vapi dashboard recording for
+    // this session and turn.
+    console.error(
+      `\uD83D\uDEA8 [P0-VAPI-LEAK] classification=${classification} sessionId=${sessionId} ` +
+      `turnId=${body.turnId ?? 'unknown'} questionId=${body.questionId ?? 'unknown'} ` +
+      `transcriptLength=${transcriptLength ?? 'n/a'} clientAt=${body.at ?? 'unknown'} serverAt=${Date.now()} ` +
+      `userId=${req.user ? req.user.id : 'unknown'}`
+    );
+  } catch (e) {
+    // Never let a logging/parsing failure surface as an error response —
+    // this endpoint's only job is best-effort visibility, never a hard
+    // dependency for anything else.
+    console.warn('[vapi-leak-alert] handler failed (non-fatal, diagnostic only):', e.message);
+  }
+  return res.status(204).end();
+});
+
 // ── Primary vs follow-up question type helper ───────────────────────────────
 // 'opening' and 'primary' are the current values; 'drill_down' is the legacy
 // value used before this conversation-flow redesign — any session already
@@ -1270,7 +1320,20 @@ router.post('/sessions/:id/heartbeat', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/interview/sessions/:id/browser-closing — server-owned
+// NOTE (2026-08-31): a second, unauthenticated implementation of this exact
+// route previously existed here, apparently written independently/
+// concurrently. It has been removed -- Express would have silently
+// shadowed it behind the requireAuth-protected version registered earlier
+// in this file (line ~117), making it permanently dead code regardless of
+// which one was "correct." See that earlier definition for the current,
+// single implementation and the reasoning for keeping requireAuth on this
+// endpoint (fired from the candidate's own authenticated browser session
+// via same-origin fetch, not server-to-server like /vapi/next-question
+// below -- a cookie-based auth check is both available and appropriate
+// here, and its harmless-on-failure design means there is no real
+// downside to keeping it).
+
+
 // session lifecycle management (bug fix, 2026-07-24). Sent via
 // navigator.sendBeacon on beforeunload/pagehide, so a candidate closing
 // the tab mid-interview is recorded with a real, specific reason

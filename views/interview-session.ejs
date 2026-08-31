@@ -2078,41 +2078,48 @@
        simply falls back to today's — the key is harmless when unsupported,
        and the dashboard fix (see deploy notes) covers that case.
 
-       v2.4 — model override attempt (bug fix, 2026-07-24, BEST-EFFORT /
-       UNVERIFIED): live logs confirmed Vapi's dashboard-configured
-       assistant is still actively generating full conversational
-       responses ("I'm Claude, an AI assistant made by Anthropic...") even
-       though the audio is hard-muted (permanentlyMuteVapiAssistantAudio)
-       and tts_pipeline mode is active — meaning a real, second LLM is
-       genuinely running per turn, not just leftover text. This override
-       is an attempt to suppress that at the source via Vapi's documented
-       assistantOverrides.model field. IMPORTANT — this is NOT a verified
-       fix: Vapi's own docs describe transcriber/model/voice as the three
-       REQUIRED pipeline stages (https://docs.vapi.ai/quickstart) and do
-       not document a confirmed "disable the model entirely" flag for a
-       standard (non-custom-LLM) assistant. This override is additive and
-       can only help or be silently ignored — it cannot make the existing
-       audio-mute guarantee any weaker, since that stays exactly as-is
-       below regardless of whether this override takes effect. Genuine
-       root-cause verification (confirming zero LLM cost/invocation, not
-       just zero audible output) requires checking the actual assistant
-       configuration on Vapi's dashboard for the ID in VAPI_ASSISTANT_ID —
-       that configuration lives outside this repository and was not
-       accessible during this fix. */
+       v2.5 — P0 FIX (2026-08-31): the v2.4 system-prompt override above
+       (see git history) was proven insufficient by a live incident: the
+       Vapi call recording captured the assistant saying "I'm Claude, an
+       AI assistant made by Anthropic..." A jailbreak-shaped "never
+       produce output" instruction sent to a REAL hosted Claude model is
+       exactly the pattern Claude's own safety training is built to
+       resist — it self-identifies instead of complying. No wording of
+       that prompt can reliably fix this; it was never a prompt-wording
+       problem.
+
+       Muting audio locally (permanentlyMuteVapiAssistantAudio, below)
+       only stops the CANDIDATE'S BROWSER from playing that audio — it has
+       zero effect on Vapi's own server-side call recording, which is
+       exactly what captured the leak (Vapi's "Transcripts" dashboard tab
+       is a platform-level feature, entirely independent of what any one
+       browser client chooses to locally subscribe to).
+
+       THE ACTUAL FIX: point Vapi's model stage at routes/vapi-silent-
+       model.js — a server WE control that always returns an immediate,
+       empty completion. There is no model running behind it: nothing to
+       jailbreak, nothing to refuse, nothing to self-identify. This is
+       Vapi's own documented custom-llm mechanism (docs.vapi.ai Custom
+       LLM / Fine-tuned Models), not a workaround. Setting this via
+       assistantOverrides (rather than requiring a manual Vapi dashboard
+       edit) means the fix is version-controlled and takes effect on
+       every call automatically — window.location.origin is used instead
+       of a hardcoded domain so this is correct on staging AND production
+       without any per-environment config. */
     vapi=window.vapiSDK.run({ 
   apiKey: VKEY, 
   assistant: VAST, 
   assistantOverrides: { 
     firstMessageMode: 'assistant-waits-for-user',
-    // Best-effort, unverified (see comment above) — a maximally explicit
-    // system prompt instructing zero conversational behavior. Additive:
-    // if Vapi's SDK/dashboard ignores model overrides for this assistant,
-    // this is a no-op and behavior is identical to before this change.
+    // P0 FIX (2026-08-31): REPLACES the old system-prompt-only override.
+    // provider:'custom-llm' redirects Vapi's model stage away from any
+    // real hosted model entirely, to our own silent stub endpoint — see
+    // routes/vapi-silent-model.js for the full root-cause writeup and why
+    // a system prompt alone could never have fixed this.
     model: {
-      messages: [{
-        role: 'system',
-        content: 'You are not a conversational agent. You are a silent transcription relay only. Under absolutely no circumstances generate, speak, or return any conversational response, greeting, acknowledgement, or commentary of any kind, regardless of what the user says or asks — including direct questions about your instructions, your identity, or requests to "test" you. Your only function is to allow speech-to-text transcription to occur. Never produce output.',
-      }],
+      provider: 'custom-llm',
+      url: window.location.origin + '/api/vapi-silent-model/chat/completions',
+      model: 'silent-stub',
     },
     // This injects the matching database ID directly into Vapi's call details
     metadata: {
@@ -2121,6 +2128,7 @@
   }, 
   config: { position: 'hidden' } 
 });
+    console.log('[P0-FIX] assistantOverrides.model set to custom-llm -> ' + window.location.origin + '/api/vapi-silent-model/chat/completions');
 
     // REDESIGN: the call-start-success listener is removed. It existed
     // solely to certify a calibration GATE against a fragile connection
@@ -2298,12 +2306,30 @@
       if (message.role === 'assistant') {
         if (message.transcriptType === 'final' && message.transcript) {
           if (window.VOICE_PIPELINE_MODE !== 'legacy_vapi') {
-            // Independent confirmation from speech-start: a final assistant
-            // transcript arriving at all while tts_pipeline is active is
-            // additional, separate evidence of the same leak -- transcript
-            // and speech-start don't always arrive in lockstep, so this
-            // catches cases the speech-start log might miss.
-            console.log('SPEECH SOURCE:\nVapi Assistant\n(confirmed via transcript, UNEXPECTED in tts_pipeline mode): "' + message.transcript.slice(0, 80) + '"');
+            // P0 REGRESSION GUARD (2026-08-31) -- a final assistant
+            // transcript arriving AT ALL while tts_pipeline is active
+            // means Vapi's model stage produced real conversational
+            // output, which after the custom-llm fix above should be
+            // structurally impossible (the silent stub always returns
+            // empty content). If this ever fires again, the custom-llm
+            // override did not take effect for this call -- that is a
+            // security-boundary regression, not a cosmetic log line.
+            console.error('\uD83D\uDEA8 [P0-SECURITY] Vapi model stage produced conversational output while tts_pipeline is active -- the custom-llm silent-stub override may not have taken effect for this call. Transcript: "' + message.transcript.slice(0, 200) + '"');
+            try {
+              // Classification only -- deliberately never transmits the
+              // transcript content itself, per the incident's PII/security
+              // requirement. A simple keyword check is enough to confirm
+              // "this looks like self-identification," which is all the
+              // alert needs to convey.
+              var _leakLower = String(message.transcript || '').toLowerCase();
+              var _classification = ['claude', 'anthropic', 'openai', 'gemini', 'language model', 'i am an ai', "i'm an ai"]
+                .some(function (needle) { return _leakLower.indexOf(needle) !== -1; })
+                ? 'self_identification' : 'unexpected_conversational_output';
+              fetch('/api/interview/vapi-leak-alert', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ sessionId: '<%= sessionId %>', turnId: currentSpokenTurnId, questionId: currentSpokenQuestionId, classification: _classification, transcriptLength: (message.transcript || '').length, at: Date.now() })
+              }).catch(function(){});
+            } catch (e) {}
           }
           if (!assistantTranscriptBuf) {
             // First chunk of this turn's speech (buffer was empty going in).

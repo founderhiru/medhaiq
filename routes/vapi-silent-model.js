@@ -87,10 +87,22 @@ router.post('/vapi-silent-model/chat/completions', (req, res) => {
     return res.end();
   }
 
-  // Non-streaming fallback — same empty-completion contract.
+  // Non-streaming fallback — same empty-completion contract. Includes BOTH
+  // `message` (standard OpenAI non-streaming shape) AND `delta` (confirmed,
+  // via a live Vapi support thread, to be the shape Vapi's client actually
+  // reads in at least some cases even outside a strict streaming request) —
+  // this is intentionally defensive: extra fields are harmless and ignored
+  // by any OpenAI-compatible client that expects only one of them, but
+  // omitting the one Vapi actually reads would silently break this endpoint.
   return res.status(200).json({
     id, object: 'chat.completion', created, model,
-    choices: [{ index: 0, message: { role: 'assistant', content: '' }, finish_reason: 'stop' }],
+    choices: [{
+      index: 0,
+      message: { role: 'assistant', content: '' },
+      delta: { role: 'assistant', content: '' },
+      logprobs: null,
+      finish_reason: 'stop',
+    }],
     usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
   });
 });
