@@ -60,46 +60,39 @@ const _isHomeAuthed = !!(_homeCaps && _homeCaps.isAuthenticated);
             <nav aria-label="Platform capabilities">
               <ul class="mh-megamenu-list" role="menu">
 
-                <!-- Simplified 3-step IA (Prepare -> Interview -> Intelligence),
-                     replacing the previous 4-item feature list. Prepare and
-                     Interview intentionally resolve to the same destination:
-                     interview-setup.ejs already collects resume/role/JD AND
-                     handles interviewer/context selection on one screen, so
-                     per the "keep multiple capabilities on the same existing
-                     screen" rule, both steps point there rather than
-                     manufacturing a second page. Intelligence points to the
-                     existing Career Workspace (dashboard/history), which is
-                     also where report/insight access already lives for an
-                     authenticated user. -->
-                <li role="none"><a href="<%= _menuHref('interview', '/interview') %>" class="mh-megamenu-item dropdown-item" role="menuitem">
-                  <span class="mh-megamenu-icon">📋</span>
-                  <span class="mh-megamenu-text">
-                    <span class="mh-megamenu-eyebrow">Prepare</span>
-                    <span class="mh-megamenu-title">Resume + Role + JD</span>
-                    <span class="mh-megamenu-desc">Bring your experience and target opportunity together.</span>
-                  </span>
-                </a></li>
                 <li role="none"><a href="<%= _menuHref('interview', '/interview') %>" class="mh-megamenu-item dropdown-item" role="menuitem">
                   <span class="mh-megamenu-icon">🎤</span>
                   <span class="mh-megamenu-text">
-                    <span class="mh-megamenu-eyebrow">Interview</span>
-                    <span class="mh-megamenu-title">Interview Setup</span>
-                    <span class="mh-megamenu-desc">Choose your role, context and interviewer — then practice.</span>
+                    <span class="mh-megamenu-title">Adaptive Interview</span>
+                    <span class="mh-megamenu-desc">Personalize with Resume, Target Role & JD</span>
+                  </span>
+                </a></li>
+                <li role="none"><a href="<%= _menuHref('insights', '/dashboard/history?focus=insights') %>" class="mh-megamenu-item dropdown-item" role="menuitem">
+                  <span class="mh-megamenu-icon">⭐</span>
+                  <span class="mh-megamenu-text">
+                    <span class="mh-megamenu-title">Interview Insights</span>
+                    <span class="mh-megamenu-desc">Understand how you think, communicate and perform</span>
                   </span>
                 </a></li>
                 <li role="none"><a href="<%= _menuHref('progress', '/dashboard/history') %>" class="mh-megamenu-item dropdown-item" role="menuitem">
                   <span class="mh-megamenu-icon">📈</span>
                   <span class="mh-megamenu-text">
-                    <span class="mh-megamenu-eyebrow">Intelligence</span>
-                    <span class="mh-megamenu-title">Reports + Career Workspace</span>
-                    <span class="mh-megamenu-desc">Understand your performance and track your progress.</span>
+                    <span class="mh-megamenu-title">Career Progress</span>
+                    <span class="mh-megamenu-desc">Track your capability growth over time</span>
+                  </span>
+                </a></li>
+                <li role="none"><a href="/experience" class="mh-megamenu-item dropdown-item" role="menuitem">
+                  <span class="mh-megamenu-icon">⚡</span>
+                  <span class="mh-megamenu-text">
+                    <span class="mh-megamenu-title">The Experience</span>
+                    <span class="mh-megamenu-desc">See MedhaIQ in action</span>
                   </span>
                 </a></li>
 
                 <li class="mh-megamenu-divider-row" role="none"><hr class="mh-megamenu-divider"></li>
 
-                <li role="none"><a href="/explore" class="mh-megamenu-item dropdown-item mh-megamenu-item-link" role="menuitem">
-                  Explore MedhaIQ
+                <li role="none"><a href="/professional-horizons" class="mh-megamenu-item dropdown-item mh-megamenu-item-link" role="menuitem">
+                  Who it's for
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a></li>
 
@@ -172,11 +165,12 @@ const _isHomeAuthed = !!(_homeCaps && _homeCaps.isAuthenticated);
           <svg class="mh-mobile-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="mh-mobile-accordion-panel" id="mh-mobile-platform-panel">
-          <a href="<%= _menuHref('interview', '/interview') %>" class="mh-mobile-sublink">📋 Prepare — Resume + Role + JD</a>
-          <a href="<%= _menuHref('interview', '/interview') %>" class="mh-mobile-sublink">🎤 Interview — Interview Setup</a>
-          <a href="<%= _menuHref('progress', '/dashboard/history') %>" class="mh-mobile-sublink">📈 Intelligence — Reports + Career Workspace</a>
+          <a href="<%= _menuHref('interview', '/interview') %>" class="mh-mobile-sublink">🎤 Adaptive Interview</a>
+          <a href="<%= _menuHref('insights', '/dashboard/history?focus=insights') %>" class="mh-mobile-sublink">⭐ Interview Insights</a>
+          <a href="<%= _menuHref('progress', '/dashboard/history') %>" class="mh-mobile-sublink">📈 Career Progress</a>
+          <a href="/experience" class="mh-mobile-sublink">⚡ The Experience</a>
           <hr class="mh-mobile-sublink-divider">
-          <a href="/explore" class="mh-mobile-sublink">Explore MedhaIQ →</a>
+          <a href="/professional-horizons" class="mh-mobile-sublink">Who it's for →</a>
         </div>
       </div>
 

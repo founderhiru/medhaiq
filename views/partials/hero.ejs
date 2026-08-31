@@ -424,8 +424,7 @@
 
       <h1 class="mh-hero-h1">Practice.<br>Polish.<br><span class="mh-hero-h1-accent">Place.</span></h1>
 
-      <p class="mh-hero-h2">An AI-powered interview practice platform tailored to your resume, target role, and job description.</p>
-      
+      <p class="mh-hero-h2">An AI-powered interview practice platform tailored to your resume, target role, and job description. MedhaIQ turns every session into continuous career intelligence—helping you understand, improve, and advance with confidence.</p>
       <!-- 2x2 Feature Pills Arrangement -->
       <div class="mh-hero-chips">
         <!-- Row 1 -->
@@ -468,7 +467,7 @@
       </div>
 
       <div class="mh-hero-tertiary-row">
-        <a href="/demo/how-it-works" class="mh-hero-tertiary" id="mhSeeHowItWorksCta">
+        <a href="#how-it-works" class="mh-hero-tertiary">
           <span class="mh-hero-tertiary-icon">
             <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4.2v11.6a1 1 0 0 0 1.53.85l9.2-5.8a1 1 0 0 0 0-1.7l-9.2-5.8A1 1 0 0 0 6 4.2Z" stroke-linejoin="round"/></svg>
           </span>
@@ -476,25 +475,6 @@
         </a>
       </div>
     </div>
-    <script>
-      // Progressive enhancement only: the link above still works as a
-      // normal href (redirects to "/") if JS is unavailable. When JS
-      // runs, the click instead opens the premium demo overlay
-      // in-place on this same page — no navigation, no second Play
-      // screen, and the real homepage underneath is never modified.
-      // overlay-tour.js fetches its own step data — no data embedded here.
-      (function () {
-        var cta = document.getElementById('mhSeeHowItWorksCta');
-        if (!cta) return;
-        cta.addEventListener('click', function (e) {
-          e.preventDefault();
-          if (document.getElementById('mhDemoOverlay')) return; // already running
-          var script = document.createElement('script');
-          script.src = '/js/overlay-tour.js';
-          document.head.appendChild(script);
-        });
-      })();
-    </script>
 
     <!-- Right Column: Embedded 3D Stage Stack -->
     <div class="mh-hero-product-stack">
