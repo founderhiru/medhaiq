@@ -482,21 +482,21 @@ button { cursor: pointer; }
 
 .mh-hero-h2 {
   font-family: var(--font-body);
-  font-weight: 700;
+  font-weight: 500; /* spec asked for 450 or 500 — using 500 since Inter is loaded at
+                       fixed weights (400/500/600/700/800), not as a variable font;
+                       450 would silently fall back to 400 and render no different */
   font-size: 20px;
   color: var(--hero-sub-color);
-  margin-bottom: 14px;
+  margin-bottom: 24px;
   line-height: 1.5;
-  max-width: 720px;
 }
 .mh-hero-sub {
   font-family: var(--font-body);
   font-size: 15px;
-  color: var(--hero-sub-color);
+  color: var(--text-faint);
   line-height: 1.6;
-  font-style: italic;
-  margin: 0 0 30px;
-  max-width: 680px;
+  margin-bottom: 36px;
+  max-width: 480px;
 }
 
 .mh-hero-actions {
@@ -3905,10 +3905,20 @@ button { cursor: pointer; }
   border-radius: 10px;
   transition: background 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
+.mh-megamenu-item .mh-megamenu-icon,
+.mh-megamenu-item .mh-megamenu-text {
+  display: inline-block;
+  vertical-align: top;
+}
+.mh-megamenu-item .mh-megamenu-icon { margin-right: 10px; }
 .mh-megamenu-item:hover,
 .mh-megamenu-item:focus-visible {
   background: rgba(255, 255, 255, 0.04);
   transform: translateX(4px);
+}
+.mh-megamenu-icon {
+  font-size: 18px;
+  line-height: 1;
 }
 .mh-megamenu-text { display: flex; flex-direction: column; gap: 3px; }
 .mh-megamenu-title {
@@ -3916,15 +3926,6 @@ button { cursor: pointer; }
   font-weight: 700;
   font-size: 0.95rem;
   color: var(--white);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.72rem;
-}
-.mh-megamenu-subtitle {
-  font-family: var(--font-body);
-  font-size: 0.84rem;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.86);
 }
 .mh-megamenu-desc {
   font-family: var(--font-body);
@@ -4056,9 +4057,6 @@ button { cursor: pointer; }
 }
 
 .mh-mobile-sublink {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
   font-family: var(--font-body);
   font-size: 14.5px;
   color: var(--text-muted);
@@ -4066,14 +4064,6 @@ button { cursor: pointer; }
   border-radius: 8px;
   transition: color 0.15s ease, background 0.15s ease;
 }
-.mh-mobile-sublink strong {
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--white);
-}
-.mh-mobile-sublink span { font-style: italic; }
 .mh-mobile-sublink:hover { color: var(--white); background: var(--white-soft); }
 
 /* Below 1024px (same breakpoint your hamburger already uses), the desktop
