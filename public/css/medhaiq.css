@@ -3921,6 +3921,14 @@ button { cursor: pointer; }
   line-height: 1;
 }
 .mh-megamenu-text { display: flex; flex-direction: column; gap: 3px; }
+.mh-megamenu-eyebrow {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--blue-bright);
+}
 .mh-megamenu-title {
   font-family: var(--font-display);
   font-weight: 700;
