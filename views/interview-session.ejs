@@ -1128,7 +1128,7 @@
   // Same rotating-phrase mechanism, same one-line-in-the-list rule,
   // exactly the phrases requested: short, never repeated consecutively,
   // no verbal evaluation of the answer.
-  var ANSWER_ACK_PHRASES = ['Got it.', 'Thanks.', 'Understood.', 'Makes sense.', 'Thank you.'];
+  var ANSWER_ACK_PHRASES = ['Got it.', 'Thanks.', 'Understood.', 'Thank you.'];
   var _lastAnswerAckIndex = -1;
   function pickAnswerAcknowledgement() {
     if (ANSWER_ACK_PHRASES.length <= 1) return ANSWER_ACK_PHRASES[0];
@@ -1151,87 +1151,42 @@
 
     if (isSubmitting) return;
     isSubmitting = true;
+    // NO_RESPONSE GUARD (fix, 2026-08-31): moved this check to run BEFORE
+    // any acknowledgement is spoken. Previously the ack-speaking block
+    // below ran first, unconditionally -- meaning a candidate who
+    // submitted a genuinely empty answer still heard "Thanks."/"Got it."
+    // as if something had been received, before this same check silently
+    // aborted the submission a few lines later. An empty, non-skip
+    // submission is NO_RESPONSE: it must produce no acknowledgement at
+    // all, since nothing was actually said.
+    var ans = skip ? '' : answerInput.value.trim();
+    if (!skip && !ans) { isSubmitting = false; return; }
     // Immediately silence any in-progress assistant speech — applies to
     // both Skip and a normal answer submission, since either action means
     // we're moving on and any speech still playing for the OLD question
     // should stop now, not finish on its own. Fail-safe: no-ops if the
     // bridge function isn't available for any reason.
+    // TTS STATE-AWARE FIX (2026-08-31): acknowledgement speech moved to
+    // AFTER the backend responds -- see the response-handling code below,
+    // once `data` (with data.responseClassification) is available. Only
+    // the immediate SILENCING of any in-progress OLD speech stays here --
+    // that is correct to do right away regardless of what this new
+    // submission turns out to be classified as, since it is about
+    // stopping the PREVIOUS turn's audio, not acknowledging this one.
+    // Accepting the small latency cost of waiting for classification
+    // before speaking anything is a deliberate choice: a generic
+    // "Thanks."/"Got it." spoken before the backend has any idea whether
+    // the answer was relevant is exactly the sequence that made an
+    // off-topic response like "I'm tired, I need to sleep" sound like it
+    // had been accepted as a real answer.
     if (window.VOICE_PIPELINE_MODE === 'tts_pipeline' && window.questionSpeechService) {
       try {
         window.questionSpeechService.stop();
-        // THE FIX: QuestionSpeechService.stop() only manages its own token +
-        // tells BrowserAudioPlayer to stop -- it has no way to reach into
-        // InterviewVoiceController. BrowserAudioPlayer.stop() deliberately
-        // never fires 'ended' (that's what makes stop() a real, synchronous
-        // guarantee), so onFinished never fires either. Without this call,
-        // speechState stays stuck at SPEAKING after any skip/submit that
-        // happens mid-utterance, and every subsequent notify() silently
-        // queues instead of speaking. Mirrors exactly what the legacy
-        // path's silenceCurrentSpeech() already does.
         window.InterviewVoiceController.onIntentionalCancel();
-
-        // Item 1 fix: speak the skip acknowledgement immediately, as its
-        // own standalone utterance, instead of waiting for it to arrive
-        // as a text prefix on the NEXT question (the old behavior) --
-        // which could only be heard once the entire next question had
-        // been generated AND synthesized, sometimes several seconds
-        // later. Calling speak() directly here (not through notify())
-        // is intentional and safe: QuestionSpeechService's own token
-        // guard already ensures whichever request is newest wins, so
-        // this acknowledgement is cleanly superseded/cut off the moment
-        // the real next question is ready to speak -- no extra
-        // plumbing needed for that to work correctly.
-        if (skip) {
-          try {
-            // Item 3: the final question deserves a real wrap-up, not a
-            // "let's move on" that implies another question is coming.
-            // CURRENT_QUESTION_IS_FINAL is a direct read of what the
-            // backend already declared when THIS question was delivered
-            // (routes/interview.js's pickAndPersistNextQuestion) — not a
-            // client-side guess. It's known before this submission even
-            // starts because it was set when the question was received,
-            // not derived from QN/MAXQ/budgets. Removes the class of bug
-            // where the client's own prediction could disagree with the
-            // backend's actual completion decision (e.g. during a
-            // Leadership Executive Extension).
-            var isFinalQuestion = CURRENT_QUESTION_IS_FINAL;
-            // 2026-08-10: final-question SKIP now gets its own wording --
-            // previously identical to the final-question ANSWER case
-            // below ("That's the final question..."), which meant a
-            // skipped/passed final question still sounded like a normal
-            // completion. Matches the same canonical skip-closing string
-            // used server-side (routes/interview.js's finalizeSessionAndRespond).
-            var ackText = isFinalQuestion
-              ? "No problem. That completes the interview. I'll now prepare your report."
-              : pickSkipAcknowledgement();
-            // TEMPORARY DEBUG FIELD (ElevenLabs usage investigation):
-            // 'reason' is pure diagnostic metadata for the console logs
-            // below -- never read or branched on anywhere else, so this
-            // does not change any business logic.
-            window.questionSpeechService.speak({ text: ackText, questionId: 'skip-ack', turnId: null, reason: isFinalQuestion ? 'closing' : 'skip' });
-          } catch (e) { console.warn('[VoicePipeline] skip acknowledgement failed (non-fatal):', e); }
-        } else {
-          // ROOT CAUSE FIX (Bug 1): a genuine answer also gets a short
-          // acknowledgement before the next question -- previously this
-          // branch did nothing at all, confirmed via log trace. Same
-          // "final question" override as skip, since a genuine last
-          // answer also deserves the wrap-up rather than "Got it."
-          try {
-            var _isFinalAnswer = CURRENT_QUESTION_IS_FINAL; // see isFinalQuestion above — same direct read, same reasoning
-            // 2026-08-10: matches the canonical answer-closing string
-            // used server-side (routes/interview.js's finalizeSessionAndRespond).
-            var _answerAckText = _isFinalAnswer
-              ? "Thank you. That completes your interview. I'll now prepare your report."
-              : pickAnswerAcknowledgement();
-            window.questionSpeechService.speak({ text: _answerAckText, questionId: 'answer-ack', turnId: null, reason: _isFinalAnswer ? 'closing' : 'acknowledgement' });
-          } catch (e) { console.warn('[VoicePipeline] answer acknowledgement failed (non-fatal):', e); }
-        }
       } catch (e) { console.warn('[VoicePipeline] stop() on submit failed (non-fatal):', e); }
     } else if (typeof window.MedhaIQ_silenceCurrentSpeech === 'function') {
       try { window.MedhaIQ_silenceCurrentSpeech(); } catch (e) { console.warn('[Vapi] silence-on-submit failed (non-fatal):', e); }
     }
-    var ans = skip ? '' : answerInput.value.trim();
-    if (!skip && !ans) { isSubmitting = false; return; }
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('skipBtn').disabled = true;
     setAIState('ANALYZING');
@@ -1368,9 +1323,59 @@
         slog('[turn-trace] TURN_ID='+data.turnId+' UI rendering REPROMPT (no advance): QuestionId='+QID, 'info');
         var repromptQ = { text: data.text, type: 'reprompt', id: QID, order: (data.question ? data.question.order : undefined) };
         pendingAudioUrl = data.audio_url || null;
+        // No separate acknowledgement here, by design: the reprompt/
+        // redirect text IS the response to this turn -- it is spoken via
+        // hold() below, exactly like a real question would be. Speaking a
+        // "Thanks."/"Got it." first would be the exact golden-rule
+        // violation this fix exists to prevent: "I'm tired, I need to
+        // sleep" must never be followed by an acknowledgement that
+        // implies it was received as a normal answer.
         MedhaIQSync.hold(repromptQ, 'reprompt', data.competency_tag, skip, data.turnId);
         slog('Q'+QN+' — please expand (not a new question)','info');
         return;
+      }
+
+      // TTS STATE-AWARE ACKNOWLEDGEMENT (2026-08-31) -- fires exactly
+      // once per turn, only after the backend's classification is known.
+      // Anything reaching this point is NOT a first-occurrence reprompt
+      // (that already returned above): it is either an explicit skip, a
+      // genuine RELEVANT/PARTIALLY_RELEVANT answer, or a forced advance
+      // after repeated OFF_TOPIC/NON_RESPONSIVE responses on the same
+      // question (routes/interview.js's bounded-retry path). Each gets
+      // acknowledgement wording appropriate to what actually happened --
+      // never a generic positive phrase for content that was never
+      // evaluated as a real answer.
+      if (window.VOICE_PIPELINE_MODE === 'tts_pipeline' && window.questionSpeechService) {
+        try {
+          var _isFinalTurn = CURRENT_QUESTION_IS_FINAL; // direct read, set from the PREVIOUS question's response -- see below where it's updated for the NEW question
+          var _isForcedAdvanceNonAssessable = !skip && (data.responseClassification === 'OFF_TOPIC' || data.responseClassification === 'NON_RESPONSIVE');
+          if (skip) {
+            var _skipAckText = _isFinalTurn
+              ? "No problem. That completes the interview. I'll now prepare your report."
+              : pickSkipAcknowledgement();
+            window.questionSpeechService.speak({ text: _skipAckText, questionId: 'skip-ack', turnId: null, reason: _isFinalTurn ? 'closing' : 'skip' });
+          } else if (_isForcedAdvanceNonAssessable) {
+            // Bounded-retry forced advance: this was never scored and
+            // never treated as real evidence server-side -- the spoken
+            // acknowledgement must not sound like a normal answer was
+            // accepted either. Reuses the skip phrase bank deliberately:
+            // semantically this IS "moving on without evaluating what was
+            // just said", the same situation as a skip, just reached via
+            // a different path.
+            var _forcedAdvanceAckText = _isFinalTurn
+              ? "No problem. That completes the interview. I'll now prepare your report."
+              : pickSkipAcknowledgement();
+            window.questionSpeechService.speak({ text: _forcedAdvanceAckText, questionId: 'nonassessable-advance-ack', turnId: null, reason: _isFinalTurn ? 'closing' : 'forced-advance' });
+          } else {
+            // Genuine RELEVANT/PARTIALLY_RELEVANT answer (or a defensive
+            // fallback if responseClassification is ever absent) -- the
+            // only case that gets the normal, neutral answer-ack bank.
+            var _answerAckText = _isFinalTurn
+              ? "Thank you. That completes your interview. I'll now prepare your report."
+              : pickAnswerAcknowledgement();
+            window.questionSpeechService.speak({ text: _answerAckText, questionId: 'answer-ack', turnId: null, reason: _isFinalTurn ? 'closing' : 'acknowledgement' });
+          }
+        } catch (e) { console.warn('[VoicePipeline] state-aware acknowledgement failed (non-fatal):', e); }
       }
 
       // FIX 2 — follow-up questions do not count toward the 5-question
@@ -2418,19 +2423,28 @@
           var chunk = String(message.transcript).trim();
           window.timelineLog('final_transcript_received', currentSpokenQuestionId, true, 'text="' + chunk.slice(0, 60) + '..."');
 
-          // DIAGNOSTIC ONLY (no behavior change): if this "user" transcript
-          // closely matches the assistant's own recently-buffered speech,
-          // this is very likely an acoustic echo of Vapi's own voice being
-          // re-transcribed as if the candidate said it -- not a patch, a
-          // way to CONFIRM the hypothesis directly from real logs instead
-          // of continuing to reason about it in the abstract.
+          // HARD GUARD (mandatory fix, 2026-08-31): if this "user"
+          // transcript closely matches the assistant's own recently-
+          // buffered speech, this is very likely an acoustic echo of
+          // Vapi's own voice being re-transcribed as if the candidate
+          // said it (traced from the "That's Yes." incident -- a short
+          // fragment matching recent assistant speech, arriving right
+          // alongside a [P0-VAPI-LEAK] alert for the same window).
+          // Previously this only logged [ECHO-SUSPECTED] and let the
+          // fragment through; it now discards it entirely, before
+          // anything else can see it -- before the answer box, before the
+          // intent classifier, before scoring. This can never falsely
+          // reject a genuine short candidate answer: it only fires when
+          // the CONTENT substantially overlaps the assistant's own recent
+          // speech, which real candidate answers essentially never do.
           if (assistantTranscriptBuf) {
             var chunkLower = chunk.toLowerCase();
             var assistantLower = assistantTranscriptBuf.toLowerCase();
             var overlapsSubstantially = assistantLower.indexOf(chunkLower) !== -1
               || chunkLower.indexOf(assistantLower.slice(0, 40)) !== -1;
             if (chunk.length > 8 && overlapsSubstantially) {
-              console.log('[ECHO-SUSPECTED]\nuser transcript closely matches recent assistant speech\nuserTranscript="' + chunk + '"\nrecentAssistantSpeech="' + assistantTranscriptBuf.slice(0, 120) + '"');
+              console.warn('[ECHO-DISCARDED] user transcript closely matched recent assistant speech -- discarded, never reached the answer box\nuserTranscript="' + chunk + '"\nrecentAssistantSpeech="' + assistantTranscriptBuf.slice(0, 120) + '"');
+              return;
             }
           }
 

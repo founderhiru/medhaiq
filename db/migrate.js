@@ -1017,6 +1017,41 @@ async function runMigrations() {
           `);
         },
       },
+      {
+        name: '030_turn_intent_taxonomy',
+        up: async (c) => {
+          // Extends 025's response_intent CHECK constraint with the finer-
+          // grained states scoreAnswer() can now return (RELEVANT /
+          // PARTIALLY_RELEVANT / OFF_TOPIC / NON_RESPONSIVE), in addition
+          // to the existing coarse classifier's ANSWER / SKIP / DONT_KNOW /
+          // SPARSE. Purely additive to the allowed value set -- no
+          // existing row's value changes, no default, no data migration.
+          await c.query(`
+            ALTER TABLE interview_answers
+              DROP CONSTRAINT IF EXISTS interview_answers_response_intent_check
+          `);
+          await c.query(`
+            ALTER TABLE interview_answers
+              ADD CONSTRAINT interview_answers_response_intent_check
+              CHECK (response_intent IS NULL OR response_intent IN (
+                'ANSWER', 'SKIP', 'DONT_KNOW', 'SPARSE',
+                'RELEVANT', 'PARTIALLY_RELEVANT', 'OFF_TOPIC', 'NON_RESPONSIVE'
+              ))
+          `);
+          // Per-question bounded-retry counter. Lives on interview_questions
+          // (one row per question, persists across repeated reprompt
+          // attempts at the same question) rather than interview_answers
+          // (which today only gets a row once a question is finally
+          // answered/skipped -- a reprompted SPARSE/OFF_TOPIC/NON_RESPONSIVE
+          // turn never reaches that table at all). Defaults to 0 so every
+          // existing row behaves as "never reprompted yet", identical to
+          // today's actual behavior for historical data.
+          await c.query(`
+            ALTER TABLE interview_questions
+              ADD COLUMN IF NOT EXISTS reprompt_count SMALLINT NOT NULL DEFAULT 0
+          `);
+        },
+      },
     ];
 
     for (const m of migrations) {

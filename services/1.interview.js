@@ -534,27 +534,9 @@ function buildInterviewSnapshot({ roleTitle, qaPairs, questionCount }) {
   // function actually used for detection (detectBehavioralCategories,
   // called inside buildBehavioralEvidenceSnapshot below, completely
   // unchanged); no vocabulary, threshold, or tier logic is touched here.
-  // EVIDENCE INVARIANT (mandatory fix, 2026-08-31): no candidate answer
-  // text, or an answer that was never actually scored (SKIP/DONT_KNOW/
-  // SPARSE/OFF_TOPIC/NON_RESPONSIVE), must never contribute a behavioral
-  // vocabulary match or an Evidence Graph entry -- "the question was
-  // attempted" and "the candidate provided usable evidence" are different
-  // facts, and only the latter may ever populate evidence. qa.score is
-  // already null for exactly these cases (set by routes/interview.js,
-  // which only calls addScore() for RELEVANT/PARTIALLY_RELEVANT turns) --
-  // reusing that existing, already-correct signal rather than introducing
-  // a second way to ask the same question. Deliberately scoped to ONLY
-  // the two evidence-related calls below -- runCoverageAndMemoryEngine
-  // above still sees the full, unfiltered qaPairs, since knowing a
-  // competency was attempted (even off-topic) is legitimately useful for
-  // not re-asking it immediately; that is a question-selection concern,
-  // not an evidence one, and is out of scope for this fix.
-  const assessedQaPairs = Array.isArray(qaPairs)
-    ? qaPairs.filter((qa) => qa && qa.score !== null && qa.score !== undefined)
-    : qaPairs;
-  const { behavioralHypothesisMap, behavioralInstanceCounts } = buildBehavioralEvidenceSnapshot(assessedQaPairs);
+  const { behavioralHypothesisMap, behavioralInstanceCounts } = buildBehavioralEvidenceSnapshot(qaPairs);
 
-  const latestQa = Array.isArray(assessedQaPairs) && assessedQaPairs.length ? assessedQaPairs[assessedQaPairs.length - 1] : null;
+  const latestQa = Array.isArray(qaPairs) && qaPairs.length ? qaPairs[qaPairs.length - 1] : null;
   const latestAnswerText = (latestQa && latestQa.answer) ? String(latestQa.answer) : '';
   const latestWordCount = latestAnswerText.trim() ? latestAnswerText.trim().split(/\s+/).length : 0;
 
@@ -602,7 +584,7 @@ function buildInterviewSnapshot({ roleTitle, qaPairs, questionCount }) {
   // evidenceNodes directly — this log is now itself a real consumer of
   // getExperienceCoverage()/getCoverageSummary(), proving the query
   // surface is usable, not just tested in isolation.
-  const evidenceGraph = buildEvidenceGraph(assessedQaPairs, hypothesisMap, behavioralHypothesisMap);
+  const evidenceGraph = buildEvidenceGraph(qaPairs, hypothesisMap, behavioralHypothesisMap);
 
   function humanizeKey(key) {
     return String(key).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -2139,35 +2121,7 @@ function sanitizeQuestionOutput(rawText, competency, roleKey, levelKey) {
 
 
 // ── Score an answer (v0.5) ───────────────────────────────────────────────────
-const SCORING_SYSTEM = `You are a professional interview evaluator scoring a candidate's response. Return valid JSON only.
-
-FIRST, before scoring anything, classify the response itself. This is the
-single most important judgment you make -- everything else depends on it:
-
-"RELEVANT" -- the candidate substantively attempts to answer the actual
-  question asked, addressing the competency being tested.
-"PARTIALLY_RELEVANT" -- the candidate makes a genuine attempt connected to
-  the question, but it is thin, tangential, or only partially addresses it.
-"OFF_TOPIC" -- the response is coherent and may even be a complete sentence,
-  but it does not address the question or competency at all (e.g. "I'm
-  tired", "I need to sleep", "What's for lunch?", a personal statement
-  unrelated to the interview).
-"NON_RESPONSIVE" -- the candidate is communicating but is explicitly not
-  attempting to answer (e.g. "I don't want to answer", "I'm not in the
-  mood", "can we talk about something else"), or the response is
-  rambling/incoherent and does not constitute a real attempt at all.
-
-If classification is "OFF_TOPIC" or "NON_RESPONSIVE": do NOT score any
-vector. Return every vector as JSON null -- not 0, not a number in any
-range. A null vector means "no evidence to assess", which is fundamentally
-different from a 0, which means "the candidate attempted this competency
-and demonstrated essentially no capability." Do not blend these two
-meanings. There is no ambiguous partial-credit range for a non-answer --
-never output a number "just in case" for a response you have classified as
-OFF_TOPIC or NON_RESPONSIVE.
-
-If classification is "RELEVANT" or "PARTIALLY_RELEVANT", score across the
-5 vectors below normally:
+const SCORING_SYSTEM = `You are a professional interview evaluator scoring a candidate's response. Score across 5 vectors and return valid JSON only.
 
 VECTOR 1 — STAR Methodology Structure Score (0–100):
 Evaluate clear actions, ownership boundaries, and quantifiable, data-backed business results.
@@ -2204,42 +2158,38 @@ Conciseness, absence of filler language, directness, logical flow.
 - 61–80: Low friction — mostly direct, clear structure
 - 81–100: Near-frictionless delivery — concise, confident, structured
 
-Overall Score (RELEVANT/PARTIALLY_RELEVANT only): (STAR × 0.25) + (Technical × 0.25) + (Executive × 0.20) + (GCC × 0.15) + (Friction × 0.15)
+Overall Score: (STAR × 0.25) + (Technical × 0.25) + (Executive × 0.20) + (GCC × 0.15) + (Friction × 0.15)
 
-In addition to the 5 vector scores (RELEVANT/PARTIALLY_RELEVANT only — leave
-star_components null for OFF_TOPIC/NON_RESPONSIVE, same rule as the vectors
-above), judge each STAR component INDIVIDUALLY and strictly:
+MANDATORY FLOOR RULE — apply before anything else: if the answer is a greeting,
+filler, refusal, "I don't know", off-topic, or otherwise does not substantively
+attempt the question (including anything under ~15 words with no real
+content), every one of the 5 vectors MUST be scored 0–10. Do not award
+generous or "benefit of the doubt" scores for non-answers.
+
+In addition to the 5 vector scores, judge each STAR component INDIVIDUALLY and strictly:
 - "situation": true ONLY if the answer establishes concrete context (where, when, what was going on).
 - "task": true ONLY if the answer states a specific goal, responsibility, or problem the candidate had to address.
 - "action": true ONLY if the answer describes specific steps the candidate (or their team, with the candidate's role clear) actually took.
 - "result": true ONLY if the answer states a concrete outcome — ideally quantified (%, $, time, headcount).
 Do NOT mark a component true just because the answer is long or generally coherent. If it is genuinely absent, return false — a false here is used to tell the candidate that component was skipped, so accuracy matters more than generosity.
 
-Return JSON: { "responseClassification": "RELEVANT"|"PARTIALLY_RELEVANT"|"OFF_TOPIC"|"NON_RESPONSIVE", "star": 0–100|null, "technical": 0–100|null, "executive": 0–100|null, "gcc": 0–100|null, "friction": 0–100|null, "star_components": { "situation": true|false, "task": true|false, "action": true|false, "result": true|false }|null }`;
+Return JSON: { "star": 0–100, "technical": 0–100, "executive": 0–100, "gcc": 0–100, "friction": 0–100, "star_components": { "situation": true|false, "task": true|false, "action": true|false, "result": true|false } }`;
 
 async function scoreAnswer(answer, personaId, sessionContext) {
   const trimmed = (answer || '').trim();
   const wordCount = trimmed.split(/\s+/).filter(Boolean).length;
 
-  // Deterministic pre-AI guardrail -- CHEAP, FIRST-PASS ONLY (per the
-  // approved design: word count must never be the primary relevance
-  // decision on its own). This exists purely to avoid spending an AI call
-  // on content with clearly nothing to evaluate. It is NOT the relevance
-  // judgment itself -- that happens inside the real scoring call above for
-  // anything that clears this floor. Returns null vectors + an explicit
-  // classification, never a fabricated 0: a 0 means "attempted and failed",
-  // which this content was never given the chance to demonstrate either way.
+  // Deterministic floor for trivial/non-answers — this must NOT depend on
+  // the model noticing on its own. A greeting like "Hi" or a couple of
+  // filler words should never reach the grader and risk coming back with a
+  // generous score; it's zeroed out in code, every time, before any AI call.
   const TRIVIAL_RE = /^(hi|hello|hey|yo|test|testing|idk|i\s*don'?t\s*know|n\/a|none|na|ok|okay|sure|yes|no)[\s.!?]*$/i;
-  const NO_COMPONENTS = null;
+  const NO_COMPONENTS = { situation: false, task: false, action: false, result: false };
   if (wordCount < 8 || TRIVIAL_RE.test(trimmed)) {
-    return {
-      responseClassification: 'NON_RESPONSIVE',
-      star: null, technical: null, executive: null, gcc: null, friction: null,
-      weighted: null, star_components: NO_COMPONENTS,
-    };
+    return { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0, star_components: NO_COMPONENTS };
   }
 
- const prompt = `Interview question being answered:\n"${sessionContext.questionText || '(question text unavailable)'}"\nCompetency being assessed: ${sessionContext.competency || 'unspecified'}\n\nAnswer being evaluated:\n"${answer}"\n\nPersona archetype: ${personaId}\nRole: ${sessionContext.roleTitle || 'General'}\nExperience Level: ${sessionContext.experienceLevel || 'mid'}\nOrganisation: ${sessionContext.orgPreset || 'Generic Global Enterprise'}`;
+ const prompt = `Answer being evaluated:\n"${answer}"\n\nPersona archetype: ${personaId}\nRole: ${sessionContext.roleTitle || 'General'}\nExperience Level: ${sessionContext.experienceLevel || 'mid'}\nOrganisation: ${sessionContext.orgPreset || 'Generic Global Enterprise'}`;
 
   const onUsage = sessionContext.sessionId
     ? (usage, latencyMs) => {
@@ -2263,31 +2213,11 @@ async function scoreAnswer(answer, personaId, sessionContext) {
     });
   } catch (e) {
     console.error('[interview] score parse error:', e.message);
-    // A failed/ungradeable AI call must never silently hand out a flat 60,
-    // AND must never silently hand out a fabricated 0 either -- both
-    // misrepresent an infrastructure failure as a real assessment outcome.
-    // Treat exactly like "no evidence": null vectors, non-assessable, so
-    // the candidate is asked again rather than scored on a technical
-    // hiccup in either direction.
-    result = { responseClassification: 'NON_RESPONSIVE', star: null, technical: null, executive: null, gcc: null, friction: null };
-  }
-
-  const classification = ['RELEVANT', 'PARTIALLY_RELEVANT', 'OFF_TOPIC', 'NON_RESPONSIVE'].includes(result.responseClassification)
-    ? result.responseClassification
-    // Defensive fallback if the model ever omits this field: infer from
-    // whether it also omitted every vector (matches the null-vector
-    // contract) rather than silently defaulting to RELEVANT, which would
-    // re-open exactly the bug this whole fix exists to close.
-    : (result.star === null || result.star === undefined) ? 'NON_RESPONSIVE' : 'RELEVANT';
-
-  const isAssessable = classification === 'RELEVANT' || classification === 'PARTIALLY_RELEVANT';
-
-  if (!isAssessable) {
-    return {
-      responseClassification: classification,
-      star: null, technical: null, executive: null, gcc: null, friction: null,
-      weighted: null, star_components: null,
-    };
+    // A failed/ungradeable AI call must never silently hand out a flat 60 —
+    // that overstates a response we genuinely couldn't evaluate. Default to
+    // the floor and let the candidate answer again rather than reward them
+    // for an infrastructure hiccup.
+    result = { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0 };
   }
 
   const weighted = (
@@ -2299,7 +2229,6 @@ async function scoreAnswer(answer, personaId, sessionContext) {
   );
 
   return {
-    responseClassification: classification,
     star: result.star || 0,
     technical: result.technical || 0,
     executive: result.executive || 0,
@@ -2311,6 +2240,7 @@ async function scoreAnswer(answer, personaId, sessionContext) {
     star_components: (result.star_components && typeof result.star_components === 'object') ? result.star_components : null,
   };
 }
+
 // ── Generate exit report (v0.5 scoreboard format) ───────────────────────────
 const REPORT_SYSTEM = `You are a senior interview debrief analyst. Given the full Q&A transcript and aggregate scores, produce a structured debrief in JSON format.
 
@@ -2361,13 +2291,7 @@ LOW-EVIDENCE RULE (applies to 11-13 too): if half or more of the answers are non
 async function generateReport({ sessionId, personaId, roleTitle, experienceLevel, orgPreset, qaPairs, scores, candidateName }) {
   const persona = PERSONAS[personaId];
 
-  // FIX (mandatory, 2026-08-31): previously returned 0 for an empty
-  // scores array -- indistinguishable from "the candidate scored zero on
-  // everything they attempted". null means "nothing was ever scored",
-  // which after the scoreAnswer()/routes/interview.js fix is exactly what
-  // happens when every turn was SKIP/DONT_KNOW/SPARSE/OFF_TOPIC/
-  // NON_RESPONSIVE -- zero relevant evidence, not zero performance.
-  const avg = (arr, key) => scores.length ? arr.reduce((s, x) => s + (parseFloat(x[key]) || 0), 0) / scores.length : null;
+  const avg = (arr, key) => scores.length ? arr.reduce((s, x) => s + (parseFloat(x[key]) || 0), 0) / scores.length : 0;
   const starAvg = avg(scores, 'star');
   const techAvg = avg(scores, 'technical');
   const execAvg = avg(scores, 'executive');
@@ -2384,29 +2308,7 @@ async function generateReport({ sessionId, personaId, roleTitle, experienceLevel
     return a.split(/\s+/).filter(Boolean).length >= 10 && !STAR_TRIVIAL_RE.test(a);
   }).length;
   const totalAnswers = (qaPairs || []).length;
-  // Explicit null-check (2026-08-31) -- previously relied on `null < 25`
-  // coercing to `0 < 25` (true) by JS accident, which happened to produce
-  // the right lowEvidence value but for the wrong reason and would break
-  // silently if this comparison were ever refactored.
-  const lowEvidence = totalAnswers > 0 && (substantiveCount * 2 <= totalAnswers || weightedAvg === null || weightedAvg < 25);
-
-  // ── Evidence coverage / assessment status (approved design, 2026-08-31)
-  // -- scores.length is the count of turns that were ACTUALLY scored
-  // (RELEVANT/PARTIALLY_RELEVANT only, per scoreAnswer()'s new contract);
-  // totalAnswers is every question attempted, scored or not. This is the
-  // authoritative field the report/UI must consume -- never recalculated
-  // downstream, never reinterpreted as a performance signal itself.
-  const evidenceCoveragePct = totalAnswers > 0 ? (scores.length / totalAnswers) * 100 : 0;
-  const assessmentStatus =
-    evidenceCoveragePct === 0 ? 'INSUFFICIENT_EVIDENCE' :
-    evidenceCoveragePct < 40 ? 'INSUFFICIENT_EVIDENCE' :
-    evidenceCoveragePct < 70 ? 'LIMITED_EVIDENCE' :
-    'SUFFICIENT_EVIDENCE';
-  const assessmentConfidence =
-    evidenceCoveragePct === 0 ? 'None' :
-    evidenceCoveragePct < 40 ? 'Low' :
-    evidenceCoveragePct < 70 ? 'Medium' :
-    'High';
+  const lowEvidence = totalAnswers > 0 && (substantiveCount * 2 <= totalAnswers || weightedAvg < 25);
 
   const prompt = `Interview Session Details:
 - Candidate (the person being evaluated — attribute ALL performance to them): ${candidateName || 'Registered platform user (name withheld)'}
@@ -2518,7 +2420,7 @@ Produce the structured debrief in valid JSON format.`;
     // every category (the AI's raw scores, rarely a literal 0, all got
     // clamped down to exactly this floor). The 10-point floor is now only
     // applied when there is at least SOME real evidence to be lenient about.
-    const cap = (substantiveCount === 0 || weightedAvg === null) ? 0 : Math.max(10, Math.round(weightedAvg) + 10);
+    const cap = substantiveCount === 0 ? 0 : Math.max(10, Math.round(weightedAvg) + 10);
     Object.keys(result.scoreboard).forEach(function (k) {
       const v = parseInt(result.scoreboard[k], 10) || 0;
       result.scoreboard[k] = Math.min(v, cap, 25);
@@ -2589,18 +2491,7 @@ ${(result.priorities || []).slice(0, 3).map((p, i) => `${i + 1}. **${p.theme}:**
     substantive_answers: substantiveCount,
     total_answers: totalAnswers,
     low_evidence: lowEvidence,
-    // FIX (mandatory, 2026-08-31): explicitly null when weightedAvg is
-    // null (zero assessable turns) -- previously `Math.round(null * 100)
-    // / 100` silently evaluated to 0 via JS's null-to-0 coercion, which is
-    // exactly the "3/100 for a candidate who said nothing usable" bug.
-    // null here means "not assessed", never "assessed and scored zero".
-    overall_score: weightedAvg === null ? null : Math.round(weightedAvg * 100) / 100,
-    // Authoritative fields (approved design, 2026-08-31) -- the report
-    // LLM below explains these, it does not recalculate or reinterpret
-    // them, and neither does anything downstream of this function.
-    evidence_coverage_pct: Math.round(evidenceCoveragePct * 100) / 100,
-    assessment_confidence: assessmentConfidence,
-    assessment_status: assessmentStatus,
+    overall_score: Math.round(weightedAvg * 100) / 100,
     strengths_json: (result.priorities || []).slice(0, 3).map(p => ({ label: p.theme, observation: p.action })),
     improvements_json: (result.priorities || []).map(p => ({ issue: p.theme, fix: p.action })),
     recommendation: rec,

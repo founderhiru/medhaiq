@@ -27,7 +27,6 @@ const {
   addQuestion,
   addAnswer,
   addScore,
-  incrementRepromptCount,
   saveReport,
   completeSession,
   abandonSession,
@@ -784,111 +783,15 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     };
   }
 
-  // answeredQuestionRow/isDiscoveryQuestion computed BEFORE the DB write
-  // below (moved up from where it used to sit, 2026-08-31) -- neither
-  // depends on addAnswer() having run, and the new OFF_TOPIC/NON_RESPONSIVE
-  // classification (below) needs to be known BEFORE deciding whether to
-  // persist an answer row at all, exactly mirroring how SPARSE already
-  // works: a question that's going to be reprompted must never get an
-  // interview_answers row, or the same question could never be asked
-  // again (addAnswer()'s uniqueness constraint is one row per question).
-  const answeredQuestionRow = allQuestions.find(q => String(q.id) === String(questionId));
-  const isDiscoveryQuestion = isDiscoveryQuestionType(answeredQuestionRow && answeredQuestionRow.question_type);
-  const shouldScoreThisTurn = !isDiscoveryQuestion && !effectiveSkip;
-
-  // Relevance/evidence classification happens BEFORE the DB write (moved
-  // up, 2026-08-31) -- see comment above. scoreAnswer() now performs this
-  // classification as part of its normal single AI call (no added latency
-  // or cost per the approved design): RELEVANT/PARTIALLY_RELEVANT get
-  // scored normally; OFF_TOPIC/NON_RESPONSIVE never reach addScore() and
-  // never get treated as a competency-performance signal.
-  let scores = null;
-  let starProgress = null;
-  let intelligenceScores = null;
-  _timing.beforeScoring = process.hrtime.bigint();
-  if (shouldScoreThisTurn) {
-    if (answerText && answerText.trim()) {
-      scores = await scoreAnswer(answerText, session.persona_id, {
-        sessionId,
-        roleTitle: session.role_title,
-        experienceLevel: session.experience_level,
-        orgPreset: session.org_preset,
-        questionText: answeredQuestionRow ? answeredQuestionRow.question_text : null,
-        competency: answeredQuestionRow ? answeredQuestionRow.competency : null,
-      });
-    } else {
-      // Defensive fallback only — responseIntent 'ANSWER' should never
-      // reach here with empty text (SPARSE/SKIP/DONT_KNOW would have
-      // classified it first). Matches the "no evidence" contract, not a
-      // fabricated zero -- an infrastructure edge case is not the same
-      // thing as a candidate who attempted and failed.
-      scores = { responseClassification: 'NON_RESPONSIVE', star: null, technical: null, executive: null, gcc: null, friction: null, weighted: null };
-    }
-  }
-  _timing.afterScoring = process.hrtime.bigint();
-  _timing.scoringWasSkipped = !shouldScoreThisTurn; // for the diagnostic log below — a skip/dont-know/Discovery turn legitimately has ~0ms here, not a fast scoreAnswer() call
-
-  // ── Bounded reprompt for OFF_TOPIC / NON_RESPONSIVE (mandatory fix,
-  // 2026-08-31) ────────────────────────────────────────────────────────
-  // Mirrors the existing SPARSE reprompt mechanism above (same "classify
-  // before persisting, reprompt without advancing" shape), extended with
-  // a real, persistent per-question counter so it can never loop forever.
-  // First occurrence: reprompt with a brief redirect, question stays open,
-  // NO answer row written yet. Second (or later) consecutive occurrence
-  // on the SAME question: give the candidate an easy exit and advance --
-  // still no score, still no evidence, but the interview moves on.
-  const isNonAssessable = shouldScoreThisTurn && scores && (scores.responseClassification === 'OFF_TOPIC' || scores.responseClassification === 'NON_RESPONSIVE');
-  let forcedAdvanceAfterRetries = false;
-  if (isNonAssessable) {
-    const newRepromptCount = await incrementRepromptCount(questionId);
-    console.log(`[TURN-INTENT] questionId=${questionId} intent=${scores.responseClassification} assessed=false score=false evidence=false repromptCount=${newRepromptCount}`);
-    if (newRepromptCount === 1) {
-      const redirectText = "Let's stay with the question for a moment. Can you walk me through how you'd approach it specifically?";
-      console.log(`[turn-trace] TURN_ID=${turnId} Backend generated (REPROMPT, OFF_TOPIC/NON_RESPONSIVE, same question — must NOT advance): QuestionId=${questionId}`);
-      return {
-        httpStatus: 200,
-        body: {
-          sessionEnded: false,
-          validationFailed: true,
-          turnId,
-          wasSkipped: false,
-          responseClassification: scores.responseClassification,
-          scores: null,
-          star_progress: { situation: false, task: false, action: false, result: false, stepsComplete: 0, totalSteps: 4 },
-          intelligence_scores: null,
-          text: redirectText,
-          question: {
-            id: questionId,
-            text: redirectText,
-            type: 'reprompt',
-            order: allQuestions.filter(q => q.answer_text !== null).length
-          },
-          uiText: redirectText,
-          audioPrompt: redirectText,
-          competency_tag: null
-        },
-      };
-    }
-    // Second+ occurrence: stop reprompting, force advance. Falls through
-    // to the normal save/advance path below with scoring already
-    // suppressed (isNonAssessable stays true, shouldScoreThisTurn's
-    // effect is overridden just below) -- never scored, never evidence,
-    // but the candidate is not stuck here indefinitely.
-    forcedAdvanceAfterRetries = true;
-    console.log(`[turn-trace] TURN_ID=${turnId} OFF_TOPIC/NON_RESPONSIVE repeated (count=${newRepromptCount}) — forcing advance without scoring: QuestionId=${questionId}`);
-  }
-
   // 1. Save valid answer to database — response_intent persisted
-  // explicitly for every new row (migration 025/030). SKIP/DONT_KNOW save
-  // empty answer_text, same as before. A forced-advance OFF_TOPIC/
-  // NON_RESPONSIVE turn saves the real text (for the transcript/record)
-  // but with its precise classification, never plain 'ANSWER'.
+  // explicitly for every new row (migration 025). SKIP/DONT_KNOW save
+  // empty answer_text, same as before; ANSWER saves the real text.
   _timing.beforeAnswerSave = process.hrtime.bigint();
   const savedAnswer = await addAnswer({
     sessionId,
     questionId,
     answerText: effectiveSkip ? '' : (answerText || ''),
-    responseIntent: isNonAssessable ? scores.responseClassification : responseIntent,
+    responseIntent,
   });
   _timing.afterAnswerSave = process.hrtime.bigint();
   if (!savedAnswer) {
@@ -898,8 +801,56 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     };
   }
 
+  // ── Discovery Scoring Gate (additive, orchestration-level only) ─────────
+  // Discovery-authored questions (services/discovery/*) are contextual
+  // onboarding, not an evaluated interview turn. This decides ONLY whether
+  // scoreAnswer()/addScore() are invoked for THIS answer — it does not
+  // modify either function, and every non-Discovery question type below
+  // reaches them exactly as before this gate existed.
+  const answeredQuestionRow = allQuestions.find(q => String(q.id) === String(questionId));
+  const isDiscoveryQuestion = isDiscoveryQuestionType(answeredQuestionRow && answeredQuestionRow.question_type);
+
+  // 2. Score the validated answer — skipped entirely for Discovery turns
+  // AND now (2026-08-13) for SKIP/DONT_KNOW turns too. Previously this
+  // gate only checked isDiscoveryQuestion; a SKIP/DONT_KNOW turn still
+  // got scored with a hardcoded {star:0,...} object and a real
+  // interview_scores row written for it — exactly the "0/100 as
+  // demonstrated incapability" problem the approved plan set out to fix.
+  // No new averaging logic is introduced anywhere: lib/career-intelligence-
+  // report.js's avgOf() already naturally excludes a question from the
+  // average when there is simply no interview_scores row for it, which is
+  // now the case for every SKIP/DONT_KNOW turn — same as it already was
+  // for Discovery turns. `scores`/`starProgress`/`intelligenceScores` stay
+  // null (not a fabricated zero object) for both cases; the frontend
+  // already treats all three as optional, so this degrades exactly the
+  // same way a Discovery turn already does.
+  let scores = null;
+  let starProgress = null;
+  let intelligenceScores = null;
+  _timing.beforeScoring = process.hrtime.bigint();
+  const shouldScoreThisTurn = !isDiscoveryQuestion && !effectiveSkip;
+  if (shouldScoreThisTurn) {
+    if (answerText && answerText.trim()) {
+     scores = await scoreAnswer(answerText, session.persona_id, {
+        sessionId,
+        roleTitle: session.role_title,
+        experienceLevel: session.experience_level,
+        orgPreset: session.org_preset,
+      });
+    } else {
+      // Defensive fallback only — responseIntent 'ANSWER' should never
+      // reach here with empty text (SPARSE/SKIP/DONT_KNOW would have
+      // classified it first), kept so an unexpected empty-but-ANSWER case
+      // still degrades to a real zero score row rather than a null-object
+      // crash a few lines below.
+      scores = { star: 0, technical: 0, executive: 0, gcc: 0, friction: 0, weighted: 0 };
+    }
+  }
+  _timing.afterScoring = process.hrtime.bigint();
+  _timing.scoringWasSkipped = !shouldScoreThisTurn; // for the diagnostic log below — a skip/dont-know/Discovery turn legitimately has ~0ms here, not a fast scoreAnswer() call
+
   _timing.beforeDbScore = process.hrtime.bigint();
-  if (shouldScoreThisTurn && !isNonAssessable) {
+  if (shouldScoreThisTurn) {
     await addScore({
       sessionId,
       questionId,
@@ -923,25 +874,8 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
         communicationClarity: scores.friction,
       },
     };
-    console.log(`[TURN-INTENT] questionId=${questionId} intent=${scores.responseClassification} assessed=true score=true evidence=true`);
-  } else if (!isNonAssessable) {
-    console.log(`[TURN-INTENT] questionId=${questionId} intent=${responseIntent} assessed=false score=false evidence=false`);
-  }
-  if (isNonAssessable) {
-    // scores/starProgress/intelligenceScores stay null here -- a forced
-    // advance after repeated OFF_TOPIC/NON_RESPONSIVE is still "no
-    // evidence", exactly like SKIP/DONT_KNOW, never a fabricated score.
-    scores = null;
   }
   _timing.afterDbScore = process.hrtime.bigint();
-
-  // Single, authoritative classification for THIS turn, for the client to
-  // use when deciding what (if anything) to acknowledge (fix for item 11:
-  // a generic "Alright, let's continue." must not be spoken for OFF_TOPIC/
-  // NON_RESPONSIVE/NO_RESPONSE as though a normal answer was given).
-  const finalResponseClassification = isNonAssessable
-    ? scores === null ? (forcedAdvanceAfterRetries ? 'OFF_TOPIC' : null) : scores.responseClassification
-    : (effectiveSkip ? responseIntent : (scores ? scores.responseClassification : responseIntent));
 
   // 3. Recalculate answered counts safely — PRIMARY questions only.
   // Follow-ups are real Q&A exchanges (still scored, still in the report
@@ -982,7 +916,6 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
           reportId: sessionId,
           turnId,
           wasSkipped: effectiveSkip,
-          responseClassification: finalResponseClassification,
           scores,
           star_progress: starProgress,
           intelligence_scores: intelligenceScores,
@@ -1192,13 +1125,7 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
     // Two canonical strings, shared by Explorer/Growth/Leadership alike
     // since finalizeSessionAndRespond() is already their one shared
     // completion path.
-    //
-    // Extended (2026-08-31): a final question resolved via the bounded-
-    // retry forced-advance path (repeated OFF_TOPIC/NON_RESPONSIVE) is
-    // the same "moving on without evaluating this" situation as an
-    // explicit skip -- "Thank you, that completes your interview" wrongly
-    // implies a real answer was given and evaluated.
-    const closingText = (effectiveSkip || forcedAdvanceAfterRetries)
+    const closingText = effectiveSkip
       ? "No problem. That completes the interview. I'll now prepare your report."
       : "Thank you. That completes your interview. I'll now prepare your report.";
 
@@ -1210,7 +1137,6 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
         reportId: sessionId,
         turnId,
         wasSkipped: effectiveSkip,
-        responseClassification: finalResponseClassification,
         scores,
         star_progress: starProgress,
         intelligence_scores: intelligenceScores,
@@ -1290,7 +1216,6 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
       sessionEnded: false,
       turnId,
       wasSkipped: effectiveSkip,
-      responseClassification: finalResponseClassification,
       scores,
       star_progress: starProgress,
       intelligence_scores: intelligenceScores,
