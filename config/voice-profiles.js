@@ -56,13 +56,13 @@ const VOICE_PROFILES = {
   // intentionally still falls back to CURRENT_DEFAULT_VOICE_ID.
   alex: {
     provider: 'elevenlabs',
-    providerVoice:'xXFOA11TH5EKg661vj6I',
+    providerVoice:'S9GPGBaMND8XWwwzxQXp',
     pace: 0.95,
     style: 'analytical',
   },
   priya: {
     provider: 'elevenlabs',
-    providerVoice: '299hhEjoz44O862N5H4G',
+    providerVoice: '299hhEjoz44O862N5H4G', 
     pace: 1.05,
     style: 'structured executive',
   },
@@ -80,7 +80,7 @@ const VOICE_PROFILES = {
   },
   sarah: {
     provider: 'elevenlabs',
-    providerVoice: 'qSeXEcewz7tA0Q0qk9fH',
+    providerVoice: 'TbMNBJ27fH2U0VgpSNko', 
     pace: 1.1,
     style: 'energetic founder',
   },
