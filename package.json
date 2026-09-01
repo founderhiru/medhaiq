@@ -6,10 +6,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "build": "npm run migrate",
-    "migrate": "node migrate.js",
-    "demo:record": "node scripts/record-demo.js all",
-    "demo:record:webm": "node scripts/record-demo.js record",
-    "demo:convert": "node scripts/record-demo.js convert"
+    "migrate": "node migrate.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.65.0",

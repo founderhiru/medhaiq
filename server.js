@@ -93,9 +93,6 @@ app.use('/api/founder',    require('./routes/founder'));
 app.use('/api/settings',   require('./routes/account'));
 app.use('/api/public-preview', require('./routes/public-preview'));
 app.use('/preview',        require('./routes/preview'));
-// "See How It Works" premium demo overlay — isolated, public, stateless
-// demo layer. See routes/demo.js for the full isolation notes.
-app.use('/demo',           require('./routes/demo'));
 app.use('/api',            require('./routes/vapi'));
 app.use('/api',            require('./routes/vapi-silent-model')); // tts_pipeline custom-llm stub (2026-07-25) — see file header for activation steps
 console.log('[BOOT-DIAGNOSTIC] /api/vapi-silent-model/chat/completions is mounted. P0 (2026-08-31): the Vapi assistant\'s model stage MUST be provider:custom-llm pointed at this path, activated automatically per-call via assistantOverrides in views/interview-session.ejs (window.location.origin + \'/api/vapi-silent-model/chat/completions\'). If [SILENT-MODEL] never appears in these logs during a live interview, or [P0-SECURITY] does appear, the override is not taking effect for that call -- see routes/vapi-silent-model.js header for full context.');
