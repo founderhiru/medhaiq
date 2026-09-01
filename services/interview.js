@@ -2418,6 +2418,28 @@ async function generateReport({ sessionId, personaId, roleTitle, experienceLevel
     internalAssessmentState === 'INSUFFICIENT_EVIDENCE' ? 'Low' :
     'High';
 
+  // NULL-SAFETY FIX (P0, 2026-09-01): starAvg/techAvg/execAvg/gccAvg/
+  // frictionAvg/weightedAvg are all null together whenever scores.length
+  // === 0 (the NOT_ASSESSED case -- e.g. every question SKIP/DONT_KNOW/
+  // OFF_TOPIC/NON_RESPONSIVE, confirmed by session 282's crash: a final-
+  // question SKIP with zero assessed turns for the whole session).
+  // Calling .toFixed() directly on any of them crashed generateReport()
+  // entirely, which meant finalizeSessionAndRespond() never completed,
+  // which meant the client never received a terminal response and kept
+  // resubmitting the same final SKIP indefinitely. This does NOT
+  // fabricate 0 to avoid the crash -- when there is nothing to average,
+  // the prompt says so explicitly instead of attempting to format
+  // anything numeric.
+  const aggregateScoresBlock = (scores.length === 0)
+    ? `Aggregate Scores: none -- zero of the ${totalAnswers} questions received an assessable, scoreable response (every response was a skip, "don't know", off-topic, or non-responsive answer). Do not report a numeric aggregate; there is nothing to average.`
+    : `Aggregate Scores (average across all ${scores.length} answers):
+STAR Method: ${starAvg.toFixed(1)}/100
+Technical Depth & Correctness: ${techAvg.toFixed(1)}/100
+Executive Presence: ${execAvg.toFixed(1)}/100
+GCC / Global Readiness: ${gccAvg.toFixed(1)}/100
+Communication Clarity: ${frictionAvg.toFixed(1)}/100
+Overall Weighted Score: ${weightedAvg.toFixed(1)}/100`;
+
   const prompt = `Interview Session Details:
 - Candidate (the person being evaluated — attribute ALL performance to them): ${candidateName || 'Registered platform user (name withheld)'}
 - Interviewer (AI persona — the EVALUATOR, never the candidate): ${persona?.name} (${persona?.title} @ ${persona?.org})
@@ -2432,13 +2454,7 @@ ${lowEvidence ? '- LOW-EVIDENCE SESSION: apply the mandatory low-evidence rules 
 Q&A Transcript:
 ${buildSessionHistory(qaPairs)}
 
-Aggregate Scores (average across all ${scores.length} answers):
-STAR Method: ${starAvg.toFixed(1)}/100
-Technical Depth & Correctness: ${techAvg.toFixed(1)}/100
-Executive Presence: ${execAvg.toFixed(1)}/100
-GCC / Global Readiness: ${gccAvg.toFixed(1)}/100
-Communication Clarity: ${frictionAvg.toFixed(1)}/100
-Overall Weighted Score: ${weightedAvg.toFixed(1)}/100
+${aggregateScoresBlock}
 
 Produce the structured debrief in valid JSON format.`;
 
