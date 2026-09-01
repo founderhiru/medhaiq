@@ -2390,22 +2390,32 @@ async function generateReport({ sessionId, personaId, roleTitle, experienceLevel
   // silently if this comparison were ever refactored.
   const lowEvidence = totalAnswers > 0 && (substantiveCount * 2 <= totalAnswers || weightedAvg === null || weightedAvg < 25);
 
-  // ── Evidence coverage / assessment status (approved design, 2026-08-31)
-  // -- scores.length is the count of turns that were ACTUALLY scored
-  // (RELEVANT/PARTIALLY_RELEVANT only, per scoreAnswer()'s new contract);
-  // totalAnswers is every question attempted, scored or not. This is the
-  // authoritative field the report/UI must consume -- never recalculated
-  // downstream, never reinterpreted as a performance signal itself.
+  // ── Evidence coverage / internal assessment state (revised, 2026-08-31,
+  // per explicit product direction) -- scores.length is the count of
+  // turns that were ACTUALLY scored (RELEVANT/PARTIALLY_RELEVANT only,
+  // per scoreAnswer()'s contract); totalAnswers is every question
+  // attempted, scored or not. This is authoritative internal state for
+  // the report-generation prompt below and for deciding what narrative
+  // explanation to surface -- it is NEVER shown to the candidate as a
+  // label (no "NOT_ASSESSED"/"INSUFFICIENT_EVIDENCE" text anywhere in the
+  // rendered report; see the REPORT_SYSTEM prompt changes below for the
+  // plain-language requirement).
+  //
+  // Four states, matching the product's exact semantics:
+  //   NOT_ASSESSED        -- zero valid assessable responses at all.
+  //   INSUFFICIENT_EVIDENCE -- some valid evidence exists, but not enough
+  //     coverage for a reliable overall assessment.
+  //   LOW_PERFORMANCE     -- sufficient coverage, genuinely weak result.
+  //   ASSESSED            -- sufficient coverage, normal calculation.
   const evidenceCoveragePct = totalAnswers > 0 ? (scores.length / totalAnswers) * 100 : 0;
-  const assessmentStatus =
-    evidenceCoveragePct === 0 ? 'INSUFFICIENT_EVIDENCE' :
-    evidenceCoveragePct < 40 ? 'INSUFFICIENT_EVIDENCE' :
-    evidenceCoveragePct < 70 ? 'LIMITED_EVIDENCE' :
-    'SUFFICIENT_EVIDENCE';
+  const internalAssessmentState =
+    scores.length === 0 ? 'NOT_ASSESSED' :
+    evidenceCoveragePct < 70 ? 'INSUFFICIENT_EVIDENCE' :
+    (weightedAvg !== null && weightedAvg < 40) ? 'LOW_PERFORMANCE' :
+    'ASSESSED';
   const assessmentConfidence =
-    evidenceCoveragePct === 0 ? 'None' :
-    evidenceCoveragePct < 40 ? 'Low' :
-    evidenceCoveragePct < 70 ? 'Medium' :
+    internalAssessmentState === 'NOT_ASSESSED' ? 'None' :
+    internalAssessmentState === 'INSUFFICIENT_EVIDENCE' ? 'Low' :
     'High';
 
   const prompt = `Interview Session Details:
@@ -2579,6 +2589,23 @@ ${(result.weakest_response) ? `* **Weakest Response / Friction Point Capture:**
 ### 5. TOP 3 DEVELOPMENT PRIORITIES
 ${(result.priorities || []).slice(0, 3).map((p, i) => `${i + 1}. **${p.theme}:** ${p.action}`).join('\n')}`;
 
+  // ── Deterministic explanation override (2026-08-31, explicit product
+  // direction) -- for NOT_ASSESSED/INSUFFICIENT_EVIDENCE, the executive
+  // summary is set directly in code, not left to the AI call's own
+  // phrasing. This is intentional: the requirement includes explicit
+  // "must never say X" constraints ("You scored zero", anything implying
+  // zero capability, any internal terminology like NOT_ASSESSED or
+  // Weak Evidence) that are far more reliable to guarantee verbatim in
+  // code than to trust an LLM to consistently avoid across every
+  // session. ASSESSED/LOW_PERFORMANCE sessions are completely unaffected
+  // -- result.executive_summary from the AI call is used exactly as
+  // before for those.
+  if (internalAssessmentState === 'NOT_ASSESSED') {
+    result.executive_summary = "Your overall score is 0/100 because the interview did not include enough valid, job-relevant responses to produce an overall assessment. Your individual competency scores are still shown where your responses could be assessed. To generate a meaningful overall Career Intelligence Score, provide clear, relevant answers to the interview questions, ideally with specific examples from your experience.";
+  } else if (internalAssessmentState === 'INSUFFICIENT_EVIDENCE') {
+    result.executive_summary = "Your overall score is based on a limited set of relevant responses, so it should be interpreted cautiously. More complete, job-relevant answers across the interview would provide a more representative assessment.";
+  }
+
   return {
     // ── Entity attribution (Bug 1) — the report page should render these
     // fields, never PNAME/persona fields, as the person who took the session.
@@ -2589,18 +2616,21 @@ ${(result.priorities || []).slice(0, 3).map((p, i) => `${i + 1}. **${p.theme}:**
     substantive_answers: substantiveCount,
     total_answers: totalAnswers,
     low_evidence: lowEvidence,
-    // FIX (mandatory, 2026-08-31): explicitly null when weightedAvg is
-    // null (zero assessable turns) -- previously `Math.round(null * 100)
-    // / 100` silently evaluated to 0 via JS's null-to-0 coercion, which is
-    // exactly the "3/100 for a candidate who said nothing usable" bug.
-    // null here means "not assessed", never "assessed and scored zero".
-    overall_score: weightedAvg === null ? null : Math.round(weightedAvg * 100) / 100,
-    // Authoritative fields (approved design, 2026-08-31) -- the report
-    // LLM below explains these, it does not recalculate or reinterpret
-    // them, and neither does anything downstream of this function.
+    // REVISED (2026-08-31, explicit product direction): the DISPLAYED
+    // overall_score is 0 when there is no assessable evidence at all --
+    // this is intentional now, not the earlier bug. The problem was never
+    // "shows 0"; it was "shows 0 with nothing explaining what that means,
+    // and no way to tell it apart from a real low score." That distinction
+    // now lives entirely in internal_assessment_state (below), which the
+    // report-generation prompt uses to write the correct plain-language
+    // explanation -- never surfaced as a raw label to the candidate.
+    overall_score: weightedAvg === null ? 0 : Math.round(weightedAvg * 100) / 100,
+    // Authoritative internal state -- the report LLM below explains this
+    // in plain language, it does not recalculate or reinterpret it, and
+    // this exact internal label is never rendered to the candidate.
+    internal_assessment_state: internalAssessmentState,
     evidence_coverage_pct: Math.round(evidenceCoveragePct * 100) / 100,
     assessment_confidence: assessmentConfidence,
-    assessment_status: assessmentStatus,
     strengths_json: (result.priorities || []).slice(0, 3).map(p => ({ label: p.theme, observation: p.action })),
     improvements_json: (result.priorities || []).map(p => ({ issue: p.theme, fix: p.action })),
     recommendation: rec,

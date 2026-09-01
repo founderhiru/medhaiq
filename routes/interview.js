@@ -1157,6 +1157,25 @@ async function processInterviewAnswer({ sessionId, questionId, answerText, skip,
                 // already computed above for this same PDF.
                 hasReliableSignal: cir.strengths[0] && cir.strengths[0].score >= 25,
                 canonicalDevelopmentAreas: cir.developmentPriorities,
+                // FIX (2026-08-31): "sessionContext is not defined" -- this
+                // call site is a separate, parallel render path from
+                // server.js's PDF route (this one is used for the email
+                // attachment specifically) and was never updated when that
+                // route added these six fields (see server.js's "Leadership
+                // PDF redesign checkpoint" comment). The template
+                // (interview-report-pdf.ejs) references sessionContext as a
+                // bare variable -- if the key is absent from the locals
+                // object entirely (not just undefined), EJS throws a real
+                // ReferenceError. Mirrors server.js's call exactly; cir is
+                // the same already-computed object in both places, so this
+                // is not a new calculation.
+                sessionContext: cir.sessionContext,
+                strengths: cir.strengths,
+                developmentPriorities: cir.developmentPriorities,
+                starIntelligence: cir.starIntelligence,
+                coachingInsights: cir.coachingInsights,
+                nextPracticeFocus: cir.nextPracticeFocus,
+                leadershipInsights: cir.leadershipInsights,
               }, (err, html) => (err ? reject(err) : resolve(html)));
             });
             pdfBuffer = await renderReportPdf(pdfHtml);
