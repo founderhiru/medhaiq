@@ -2111,29 +2111,6 @@
   assistant: VAST, 
   assistantOverrides: { 
     firstMessageMode: 'assistant-waits-for-user',
-    // SILENCE-TIMEOUT FIX (2026-08-31, follow-up to the P0 fix above):
-    // confirmed root cause — in tts_pipeline mode, EVERY real interview
-    // question is delivered via QuestionSpeechService -> ElevenLabs ->
-    // BrowserAudioPlayer, a plain local <audio> element with ZERO
-    // connection to Vapi's own WebRTC call track (see
-    // public/js/voice/player/browser-audio-player.js). Vapi's call
-    // transport only ever sees the candidate's mic audio; the assistant
-    // side of ITS OWN track goes silent after the opening greeting for
-    // the rest of the interview. Vapi's documented, real
-    // silenceTimeoutSeconds field (confirmed via docs.vapi.ai and Vapi's
-    // own community forum, where this exact "assistant goes silent mid-
-    // call, ends prematurely" symptom is resolved the same way) is a
-    // pure call-transport setting -- it has nothing to do with the model
-    // stage, so raising it cannot reopen the P0 leak in any way: the
-    // custom-llm/silent-stub model config directly above is completely
-    // untouched, and no conversational content is routed through Vapi to
-    // "feed" this timer. 1800s (30 minutes) comfortably covers any
-    // realistic interview length while still eventually closing a call
-    // that's genuinely abandoned (browser crash, candidate walks away)
-    // rather than leaving it open indefinitely -- deliberately not set
-    // to Vapi's documented 3600s ceiling, since there's no benefit to
-    // maximizing this beyond what a real interview could ever need.
-    silenceTimeoutSeconds: 1800,
     // P0 FIX (2026-08-31): REPLACES the old system-prompt-only override.
     // provider:'custom-llm' redirects Vapi's model stage away from any
     // real hosted model entirely, to our own silent stub endpoint — see
