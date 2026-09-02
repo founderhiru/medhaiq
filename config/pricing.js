@@ -45,7 +45,7 @@ const plans = [
     tagline: 'Discover before you practice.',
     description: null,
     price: { INR: 0, USD: 0 },
-    priceSubtext: '30 AI Minutes Included',
+    priceSubtext: '30 Welcome AI Minutes',
     minutes: 30,
     approxInterviews: 1,
     validityMonths: null,
@@ -58,7 +58,7 @@ const plans = [
         items: [
           { text: '1 Interviewer Persona', bold: false },
           { text: 'Adaptive Interview Questions', bold: false },
-          { text: 'Resume + JD Upload', bold: false }
+          { text: 'Resume + JD Upload', bold: false },
           { text: 'Company Interview Library', bold: false },
           { text: 'Role Library', bold: false },
           { text: 'Sample Interview Reports', bold: false },
