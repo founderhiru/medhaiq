@@ -159,6 +159,12 @@ async function synthesizeViaElevenLabs(params) {
         // ElevenLabs silently applied its own account default. See the
         // ElevenLabs Model Usage Audit for the full finding.
         model_id: VOICE_SERVER_CONFIG.ttsModelId,
+        // Global interviewer pacing (2026-09-01) -- same value for every
+        // persona/voice, sourced from the one shared config constant.
+        // voice_settings.speed is ElevenLabs' own documented API field
+        // (range 0.7-1.2); this was never sent before, meaning ElevenLabs'
+        // own account default (1.0) was silently in effect the whole time.
+        voice_settings: { speed: VOICE_SERVER_CONFIG.ttsSpeed },
         // language/streaming forwarded as-is; ElevenLabs-specific request
         // shape lives ENTIRELY inside this function -- nothing above this
         // line (routes/voice-tts.js, and everything client-side) knows
@@ -342,6 +348,10 @@ async function streamViaElevenLabsToken(params) {
       body: JSON.stringify({
         text: spokenText,
         model_id: VOICE_SERVER_CONFIG.ttsModelId,
+        // Global interviewer pacing (2026-09-01) -- same value, same
+        // config source as the non-streaming call above. This is the
+        // endpoint actual live interviews use.
+        voice_settings: { speed: VOICE_SERVER_CONFIG.ttsSpeed },
         language: entry.language,
       }),
     });
