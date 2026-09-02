@@ -49,22 +49,18 @@
     /* ── Nav ─────────────────────────────────────────── */
     .nav {
       position: sticky; top: 0; z-index: 20;
-      background: rgba(247,246,242,0.92); /* was rgba(7,11,20,0.95) — header is now part of the warm-light canvas, not a separate dark bar */
+      background: rgba(7,11,20,0.95); /* reverted to dark navy — header stays application chrome, same principle as Career Workspace's dark header/sidebar */
       backdrop-filter: blur(12px);
-      border-bottom: 1px solid #E5E7EB; /* was var(--border) (a translucent-white line, invisible on a light header) */
+      border-bottom: 1px solid var(--border);
       height: 52px;
       overflow: hidden;
       display: flex; align-items: center;
       padding: 0 24px;
       justify-content: space-between;
     }
-    /* brand-logo.css hardcodes white logo text (correct on every other
-       page, which keeps a dark header) — scoped fix for this page only,
-       doesn't touch the shared stylesheet or any other page's header. */
-    .nav .brand-logo__text { color: #0B1020; }
     .nav-actions { display: flex; align-items: center; gap: 10px; }
-    .nav-link { color: #5F6B82; text-decoration: none; font-size: 13px; font-weight: 500; padding: 5px 10px; border-radius: 6px; transition: color 0.15s; } /* was var(--muted) — too light against the new warm header */
-    .nav-link:hover { color: #0B1020; } /* was var(--white) */
+    .nav-link { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; padding: 5px 10px; border-radius: 6px; transition: color 0.15s; }
+    .nav-link:hover { color: var(--white); }
 
     /* ── Master 3-column grid — zoom-stable clamped rails (v2.0).
        clamp() pins the side rails between hard floors and ceilings so

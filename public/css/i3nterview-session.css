@@ -55,14 +55,16 @@ button{font-family:inherit}
 /* ═══ TOPBAR ═══ */
 .topbar{
   flex-shrink:0; display:flex; align-items:center; gap:14px;
-  padding:10px 20px; border-bottom:1px solid #111B30; /* reverted to dark navy — header stays application chrome */
+  padding:10px 20px; border-bottom:1px solid #E5E7EB; /* was #111B30 — header is now warm-light, not a separate dark bar */
+  background:#F7F6F2;
   overflow:hidden;
+  --text:#0B1020; --text2:#334155; /* scoped restore — body's --text/--text2 are about to flip light-for-dark-bg further down; the topbar needs its own dark-on-light values independent of that */
 }
 .tb-end{
-  border:1px solid rgba(248,113,113,.5);background:transparent;color:#F87171;
+  border:1px solid rgba(220,38,38,.4);background:transparent;color:#DC2626; /* was color:#F87171 (a lighter red tuned for dark backgrounds, low-contrast on the new warm header) */
   font-size:13px;font-weight:600;padding:7px 14px;border-radius:10px;cursor:pointer;transition:background .15s;
 }
-.tb-end:hover{background:rgba(248,113,113,.1)}
+.tb-end:hover{background:rgba(220,38,38,.08)}
 .tb-brand-lockup{display:flex;align-items:center;gap:10px;text-decoration:none}
 .tb-logo-mark{
   width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;
