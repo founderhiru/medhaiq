@@ -88,7 +88,7 @@
       Your uploaded resume and extracted career intelligence will be removed.
     </p>
     <p style="font-size:13.5px; color:var(--muted); line-height:1.55; margin-bottom:10px;">
-      Your completed interview reports will <strong style="color:var(--white);">NOT</strong> be affected.
+      Your completed interview reports will <strong style="color:#0B1020;">NOT</strong> be affected.
     </p>
     <p style="font-size:13.5px; color:var(--muted); line-height:1.55; margin-bottom:20px;">
       Future interviews will continue using JD Intelligence and your live responses until you upload another resume.
@@ -135,10 +135,21 @@
   body.resume-intelligence .workspace-content {
     --muted: #5F6B82;
     --dim:   #5F6B82;
-    --white: #0B1020; /* every var(--white) use on this page is text color (resume-stat-value, button labels), never a background — confirmed by inspection */
     --card:  #FFFFFF;
     --gold:  #92400E; /* was a pastel amber tuned for dark backgrounds; darkened for legibility here, same treatment as Career Workspace's minutes-cta */
   }
+  /* --white is deliberately NOT redefined here (bug fix, 2026-09-02):
+     it was safe when this block only had to cover resume-stat-value
+     and the modal's "NOT" text, but "Parse & Save Resume" was switched
+     to class="cta-btn primary" in this same round of work — that class
+     also reads var(--white) for its own button text (white-on-solid-
+     blue), and redefining --white here silently turned it dark navy
+     on a blue background. Fixed properly: give the two elements that
+     actually need dark text their own explicit color below, instead
+     of touching the shared token that a differently-themed button
+     also depends on. */
+  body.resume-intelligence .resume-stat-value { color: #0B1020; }
+  body.resume-intelligence .resume-btn-secondary { color: #0B1020; }
   body.resume-intelligence h1 { color: #0B1020; }
   body.resume-intelligence .subtitle { color: var(--muted); }
   body.resume-intelligence .panel {
@@ -150,7 +161,11 @@
   body.resume-intelligence .resume-btn-secondary:hover { border-color: var(--bright); }
   /* .resume-btn-danger and #resumeStatValue's inline emerald/danger
      colors are untouched — solid semantic red/green already has
-     sufficient contrast on white without adjustment. */
+     sufficient contrast on white without adjustment. .cta-btn.primary
+     ("Parse & Save Resume") is also untouched by this file — it's
+     styled entirely by the shared interview.css .cta-btn/.cta-btn.primary
+     rules, unchanged, so it stays bright white text on solid blue with
+     its existing hover state (background lightens to var(--bright)). */
 
   .resume-status-grid {
     display: grid;

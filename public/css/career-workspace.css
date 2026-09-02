@@ -599,6 +599,7 @@ body.career-workspace .view-all-link:hover { color: #5B21B6; } /* was var(--whit
    during this audit was already covered by an existing per-selector
    fix in the blocks above.
    ============================================================ */
+body.account-settings { background: #F7F6F2; } /* MISSING PIECE — the actual bug. Splitting Settings into its own body class (to fix the .panel min-height collision) never included giving that page a background at all; it stayed dark navy while every text color had already been changed to dark-for-light-background, making the title, active tab, and everything else invisible. */
 body.career-workspace .workspace-content,
 body.account-settings .workspace-content {
   --muted: #5F6B82;      /* was #9DA8BA at :root */
