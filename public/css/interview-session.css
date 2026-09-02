@@ -55,7 +55,8 @@ button{font-family:inherit}
 /* ═══ TOPBAR ═══ */
 .topbar{
   flex-shrink:0; display:flex; align-items:center; gap:14px;
-  padding:10px 20px; border-bottom:1px solid #111B30; /* reverted to dark navy — header stays application chrome */
+  padding:10px 20px; border-bottom:1px solid #111B30;
+  background:var(--bg); /* explicit dark background restored — body's background is now permanently warm-light (for the canvas), so the topbar needs its own dark fill rather than inheriting; this is what was actually missing from the previous revert. --text/--text2 inside the topbar were never changed at the root, so they correctly resolve back to their original light values now that this background is dark again. */
   overflow:hidden;
 }
 .tb-end{

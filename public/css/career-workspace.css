@@ -546,3 +546,19 @@ body.career-workspace .minutes-cta { color: #92400E; background: rgba(146,64,14,
 body.career-workspace .minutes-cta:hover { background: rgba(146,64,14,0.14); }
 body.career-workspace .db-bell-btn { background: rgba(11,16,32,0.04); color: #5F6B82; } /* was rgba(255,255,255,0.06) / var(--muted) — the existing purple-tint :hover rule (interaction-color block above) is untouched and still applies on hover */
 body.career-workspace .qa-card .qa-desc { color: #5F6B82; } /* was var(--muted) */
+
+/* ============================================================
+   CAREER WORKSPACE — MISSED-ELEMENT FOLLOW-UP (2026-08-27)
+   ------------------------------------------------------------
+   Two elements were missed in the pass above because neither has
+   ANY color property in the base rules — they silently inherit
+   body's white text (set in interview.css, shared by every other
+   page using this file, so that rule itself is correctly untouched).
+   A selector search for explicit color/var(--white)/var(--muted)/
+   var(--dim) usages misses elements with no color property at all;
+   this follow-up was found by instead listing every base-rule
+   selector that DOESN'T set color, then checking which of those
+   render real visible text on this page.
+   ============================================================ */
+body.career-workspace .workspace-content h1 { color: #0B1020; } /* the "Good afternoon, ..." greeting — reported bug */
+body.career-workspace .activity-status-text { color: #0B1020; } /* base fallback for any status value without its own color rule (e.g. "completed" — only .in_progress and .abandoned had explicit colors; the more specific rules below still correctly override this for those two) */
