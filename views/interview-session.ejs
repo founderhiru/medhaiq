@@ -1257,6 +1257,22 @@
       } catch (e) { console.warn('[HASH-TRACE] stage 2 flags failed (non-fatal, instrumentation only):', e); }
 
       if (data.sessionEnded) {
+      // DUPLICATE-CLOSING GUARD (2026-09-01): the server's own idempotency
+      // guard (routes/interview.js's finalizeSessionAndRespond) can
+      // legitimately return sessionEnded=true a SECOND time for a
+      // duplicate/retried final submission -- that response is correct
+      // and necessary server-side, but this client block must not act on
+      // it twice. Without this, a duplicate sessionEnded response would
+      // speak the terminal closing message again and re-run the redirect
+      // logic, which is exactly the "closing message loops on duplicate
+      // final submissions" failure mode this guard exists to prevent.
+      // Scoped once per page load (not per request) since nothing else on
+      // this page can legitimately reach a second real completion.
+      if (window._sessionEndedHandled) {
+        console.log('[CLOSING-GUARD] duplicate sessionEnded response ignored -- already handled once this page load');
+        return;
+      }
+      window._sessionEndedHandled = true;
       clearInterval(timerInt);
       setAIState('GENERATING_REPORT');
       slog('Session complete — generating report...','ok');
@@ -1279,14 +1295,37 @@
           _redirected = true;
           window.location.href = '/interview/report/' + data.reportId;
         };
-        if (!window.aiIsSpeaking) {
-          // Nothing is actually playing right now -- no reason to wait at all.
-          _redirectNow();
-        } else {
-          window.questionSpeechService.onFinished(_redirectNow);
-          window.questionSpeechService.onPlaybackError(_redirectNow); // don't strand the candidate on a black screen if TTS fails right at the end
-          setTimeout(_redirectNow, 15000); // safety backstop -- should not normally fire
-        }
+        // TERMINAL CLOSING MESSAGE (restored, 2026-09-01): this branch
+        // previously only waited for whatever audio happened to already
+        // be playing, then redirected -- it never actually spoke a
+        // closing message of its own. Fixed by explicitly speaking one
+        // fixed, terminal-only sentence via the SAME controlled
+        // QuestionSpeechService/ElevenLabs mechanism every question
+        // already uses -- never the normal answer/skip acknowledgement
+        // phrase banks (this is a distinct, one-time message, not a
+        // rotating ack), and never Vapi's conversational model (which
+        // remains structurally silent throughout, per the P0 fix).
+        // Scoped to terminal-only BY CONSTRUCTION: this entire code path
+        // only runs inside `if (data.sessionEnded)`, and the server only
+        // ever sets sessionEnded=true from finalizeSessionAndRespond() --
+        // never from an intermediate reprompt or next-question response
+        // (confirmed directly in routes/interview.js). An intermediate
+        // skip/off-topic turn cannot reach this code at all.
+        var _closingText = "Thank you. That completes your interview. I'll prepare your report now.";
+        try {
+          window.questionSpeechService.speak({ text: _closingText, questionId: 'session-closing', turnId: null, reason: 'closing' });
+        } catch (e) { console.warn('[VoicePipeline] closing message failed (non-fatal):', e); }
+        // Registered unconditionally, right after the speak() call above
+        // -- onFinished/onPlaybackError are plain persistent listeners
+        // (not scoped to a specific call via a token), so since nothing
+        // else ever speaks after this point in the session, the next
+        // "finished"/"error" event to fire is guaranteed to correspond to
+        // THIS closing message, regardless of exactly when its network
+        // round-trip completes. This deliberately avoids guessing a fixed
+        // delay before deciding whether the message actually started.
+        window.questionSpeechService.onFinished(_redirectNow);
+        window.questionSpeechService.onPlaybackError(_redirectNow); // don't strand the candidate on a black screen if TTS fails right at the end
+        setTimeout(_redirectNow, 15000); // safety backstop -- should not normally fire
       } else {
         // 2026-08-10: the closing text (data.text, now populated by
         // routes/interview.js's finalizeSessionAndRespond -- previously
