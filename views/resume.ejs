@@ -120,15 +120,19 @@
      page using this shell) — hence the scoped overrides below rather
      than editing those shared rules directly.
      ============================================================ */
-  body.resume-intelligence {
-    background: #F7F6F2;
-    /* Scoped redefinition, not a global change — interview.css's root
-       values (used by every other page) are untouched. This single
-       block fixes every var(--muted)/var(--dim)/var(--white)/var(--card)/
-       var(--gold) reference on this page, including the ones set via
-       inline style="..." attributes (e.g. #resumeWeakNote, the upload
-       panel's description text) — inline var() references still
-       resolve through the normal cascade, so they pick this up too. */
+  body.resume-intelligence { background: #F7F6F2; }
+  /* Bug fix (2026-08-27): the previous version of this block redefined
+     --white/--muted/--dim/--card scoped to body.resume-intelligence
+     directly. Body's CSS variables cascade to ALL descendants,
+     including .shell-nav (the sidebar) — which is a CHILD of body, not
+     a sibling — so this silently broke .shell-profile-name,
+     .shell-link, .shell-logout, and .pill-explorer, all of which also
+     read var(--white)/var(--muted)/var(--dim), turning the sidebar's
+     own text dark-on-dark. Rescoped to .workspace-content below, which
+     is a SIBLING of .shell-nav — this cannot reach the sidebar no
+     matter what gets redefined inside it, by construction, not by
+     careful selector-picking. */
+  body.resume-intelligence .workspace-content {
     --muted: #5F6B82;
     --dim:   #5F6B82;
     --white: #0B1020; /* every var(--white) use on this page is text color (resume-stat-value, button labels), never a background — confirmed by inspection */

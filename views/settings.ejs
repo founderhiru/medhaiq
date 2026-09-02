@@ -26,7 +26,7 @@ const _planLabel = _packageId.charAt(0).toUpperCase() + _packageId.slice(1);
 // it — Founder is not a commercial package.
 const _isFounderAccount = typeof capabilities !== 'undefined' && capabilities && capabilities.isFounderAccount;
 %>
-<%- include('partials/workspace-shell-top', { pageTitle: 'Account Settings — MedhaIQ', activeNav: 'settings', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'] }) %>
+<%- include('partials/workspace-shell-top', { pageTitle: 'Account Settings — MedhaIQ', activeNav: 'settings', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'], bodyClass: 'career-workspace' }) %>
 
 <h1>Account Settings</h1>
 <p class="subtitle">Manage your profile, subscription, and preferences.</p>
@@ -45,7 +45,7 @@ const _isFounderAccount = typeof capabilities !== 'undefined' && capabilities &&
     </div>
     <div style="margin-bottom:14px;">
       <label style="display:block;font-size:12.5px;color:var(--dim);margin-bottom:5px;">Full Name</label>
-      <input type="text" id="acct-name-input" value="<%= shellUser.name || '' %>" style="width:100%;max-width:360px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card-hover,#1E2A45);color:var(--white,#fff);font-size:14px;">
+      <input type="text" id="acct-name-input" value="<%= shellUser.name || '' %>" style="width:100%;max-width:360px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card-hover,#1E2A45);color:#0B1020;font-size:14px;">
     </div>
     <div style="margin-bottom:14px;">
       <label style="display:block;font-size:12.5px;color:var(--dim);margin-bottom:5px;">Email Address</label>
@@ -129,7 +129,7 @@ const _isFounderAccount = typeof capabilities !== 'undefined' && capabilities &&
   function activateTab(tab) {
     tabButtons.forEach(function(btn) {
       var isActive = btn.getAttribute('data-tab') === tab;
-      btn.style.color = isActive ? 'var(--white, #fff)' : 'var(--muted)';
+      btn.style.color = isActive ? '#0B1020' : 'var(--muted)'; /* was 'var(--white, #fff)' — --white is genuinely white at :root (unchanged), which is invisible against the new warm-light page; this only changes the highlight color, not the tab-switching logic itself */
       btn.style.borderBottomColor = isActive ? 'var(--bright, #3B82F6)' : 'transparent';
     });
     panels.forEach(function(panel) {

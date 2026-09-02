@@ -558,6 +558,60 @@ body.career-workspace .minutes-cta { color: #92400E; background: rgba(146,64,14,
 body.career-workspace .minutes-cta:hover { background: rgba(146,64,14,0.14); }
 body.career-workspace .db-bell-btn { background: rgba(11,16,32,0.04); color: #5F6B82; } /* was rgba(255,255,255,0.06) / var(--muted) — the existing purple-tint :hover rule (interaction-color block above) is untouched and still applies on hover */
 body.career-workspace .qa-card .qa-desc { color: #5F6B82; } /* was var(--muted) */
+body.career-workspace .view-all-link:hover { color: #5B21B6; } /* was var(--white) — invisible on this light card; same bug pattern already fixed on resume-intel-cta */
+
+/* ============================================================
+   CAREER WORKSPACE — GENERAL SAFETY NET (2026-08-27)
+   ------------------------------------------------------------
+   Root-cause fix, not another one-off patch. Auditing
+   dashboard-reports.ejs and settings.ejs (both of which load this
+   file, and settings.ejs is being switched onto body.career-workspace
+   in this same change) found the SAME class of bug repeatedly:
+   inline style="color:var(--muted)" / "color:var(--dim)" text, and
+   bare <h1>/<h2>/<h3> headings with no color at all — neither is
+   reachable by a class-based selector, so the per-selector overrides
+   above this block only ever fixed the specific elements already
+   known about on dashboard-history.ejs, not every page sharing this
+   file.
+
+   FIX: redefine --muted/--dim/--card-hover/--border scoped to
+   .workspace-content specifically — NOT body.career-workspace
+   directly. This is a deliberate, important distinction: an earlier
+   version of this same idea was tried scoped to body on the Resume
+   Intelligence page and broke the sidebar, because body's CSS
+   variables cascade to ALL descendants, including .shell-nav (the
+   sidebar is a CHILD of body). .workspace-content and .shell-nav are
+   SIBLINGS, not ancestor/descendant, so scoping here structurally
+   cannot reach the sidebar no matter what — .shell-profile-name,
+   .shell-link, .shell-logout etc. (all of which also read
+   var(--white)/var(--muted)/var(--dim)) are completely unaffected by
+   design, not by careful selector-picking.
+
+   var() references inside inline style="..." attributes still
+   resolve through the normal cascade, so this one block retroactively
+   fixes every current inline-styled text on dashboard-reports.ejs and
+   settings.ejs, plus anything similar added to any future page that
+   reuses this same shell + body class.
+
+   --white is deliberately NOT redefined here (same reasoning as
+   above, extra caution) — heading colors are instead handled by an
+   explicit selector below, and every other var(--white) usage found
+   during this audit was already covered by an existing per-selector
+   fix in the blocks above.
+   ============================================================ */
+body.career-workspace .workspace-content {
+  --muted: #5F6B82;      /* was #9DA8BA at :root */
+  --dim: #5F6B82;         /* was #657188 at :root */
+  --card-hover: #F2F3F1; /* was #1E2A45 at :root — used as a form-input background on Settings */
+  --border: #E5E7EB;      /* was undefined at :root on this page's stylesheets (interview.css/career-workspace.css never define it) — pre-existing bug, harmless on dark, worth fixing while scoping this element anyway */
+}
+body.career-workspace .workspace-content h1,
+body.career-workspace .workspace-content h2,
+body.career-workspace .workspace-content h3,
+body.career-workspace .workspace-content h4 {
+  color: #0B1020; /* catches any heading with no explicit color — the actual "Good afternoon" bug was .workspace-content h1 specifically; dashboard-reports.ejs's "Interview Reports" title turned out to be an <h2>, a different level entirely, which is why this is now generic across heading levels rather than another single-selector patch */
+}
+body.career-workspace .activity-score .of100 { color: #5F6B82; } /* was var(--dim) — this specific .of100 variant (used on both Recent Activity and the Reports page's report list) was missed in the earlier of100 pass, which only covered .readiness-score and .minutes-ring-center */
 
 /* ============================================================
    CAREER WORKSPACE — MISSED-ELEMENT FOLLOW-UP (2026-08-27)
