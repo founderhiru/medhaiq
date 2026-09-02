@@ -193,7 +193,7 @@ button{font-family:inherit}
    ═══════════════════════════════════════════════════════════════ */
 .col-center{
   overflow:hidden;gap:12px;
-  background:#F7F6F2;border-radius:20px;padding:16px;color:#0B1020;
+  background:#F7F6F2;border-radius:10px;padding:16px;color:#0B1020; /* border-radius was 20px — "warm workspace, not warm card" refinement, matches the same change on interview-setup.ejs's main.panel */
   --card:#FFFFFF; --card2:#FFFFFF; --border:#E5E7EB; --border-soft:#E5E7EB;
   --text:#0B1020; --text2:#334155; --muted:#5F6B82; --muted2:#8A94A8;
   --blue-soft:#1E40AF;

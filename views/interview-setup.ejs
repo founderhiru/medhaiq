@@ -133,7 +133,7 @@
       --white:    #0B1020; /* every var(--white) reference inside this subtree is text color, never a background fill -- confirmed by inspection -- so this correctly becomes "primary text on light" here */
       background: #F7F6F2;
       color: #0B1020;
-      border-radius: 20px;
+      border-radius: 10px; /* was 20px — "warm workspace, not warm card" refinement: a large radius on the whole container made it read as one big floating card between the dark rails, rather than an anchored workspace panel. Individual cards (.sel-card, .role-tab, etc.) keep their own radius, untouched. */
     }
     /* Card-on-canvas treatment matching Why/Architecture exactly: white
        bordered cards with a soft shadow sitting on the #F7F6F2 canvas,
