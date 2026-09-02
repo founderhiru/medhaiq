@@ -36,7 +36,7 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #F7F6F2; /* was var(--bg) (dark navy) — warm-light now spans the whole application canvas, not just the center column. Text color intentionally stays var(--white): the dark left/right .panel cards below supply their own dark background, so inherited white text remains correct inside them; main.panel (center) sets its own explicit dark text color for its own subtree. */
+      background: var(--bg);
       color: var(--white);
       font-family: 'Inter', system-ui, sans-serif;
       font-size: 14px;
@@ -49,22 +49,18 @@
     /* ── Nav ─────────────────────────────────────────── */
     .nav {
       position: sticky; top: 0; z-index: 20;
-      background: rgba(247,246,242,0.92); /* was rgba(7,11,20,0.95) — header is now part of the warm-light canvas, not a separate dark bar */
+      background: rgba(7,11,20,0.95);
       backdrop-filter: blur(12px);
-      border-bottom: 1px solid #E5E7EB; /* was var(--border) (a translucent-white line, invisible on a light header) */
+      border-bottom: 1px solid var(--border);
       height: 52px;
       overflow: hidden;
       display: flex; align-items: center;
       padding: 0 24px;
       justify-content: space-between;
     }
-    /* brand-logo.css hardcodes white logo text (correct on every other
-       page, which keeps a dark header) — scoped fix for this page only,
-       doesn't touch the shared stylesheet or any other page's header. */
-    .nav .brand-logo__text { color: #0B1020; }
     .nav-actions { display: flex; align-items: center; gap: 10px; }
-    .nav-link { color: #5F6B82; text-decoration: none; font-size: 13px; font-weight: 500; padding: 5px 10px; border-radius: 6px; transition: color 0.15s; } /* was var(--muted) — too light against the new warm header */
-    .nav-link:hover { color: #0B1020; } /* was var(--white) */
+    .nav-link { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; padding: 5px 10px; border-radius: 6px; transition: color 0.15s; }
+    .nav-link:hover { color: var(--white); }
 
     /* ── Master 3-column grid — zoom-stable clamped rails (v2.0).
        clamp() pins the side rails between hard floors and ceilings so
@@ -88,7 +84,6 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06); /* new — dark cards now sit on a light canvas rather than a dark page, this gives them a proper elevated feel instead of looking flat */
     }
     .panel + .panel { margin-top: 14px; }
 
@@ -136,11 +131,9 @@
       --muted:    #5F6B82;
       --dim:      #8A94A8;
       --white:    #0B1020; /* every var(--white) reference inside this subtree is text color, never a background fill -- confirmed by inspection -- so this correctly becomes "primary text on light" here */
-      background: transparent; /* was #F7F6F2 — the page itself is now that same color, so the center no longer needs its own fill; this is what actually removes the "floating card" look */
-      border: none; /* was inheriting 1px solid var(--border) from the generic .panel rule above — that visible boundary line was a big part of the "card" read */
-      box-shadow: none; /* cancels the shadow the generic .panel rule above now adds for the dark side cards — the center is a canvas, not an elevated card */
+      background: #F7F6F2;
       color: #0B1020;
-      border-radius: 0; /* was 10px, then 20px before that — now genuinely none: "warm workspace, not warm card" taken to its conclusion */
+      border-radius: 10px; /* was 20px — "warm workspace, not warm card" refinement: a large radius on the whole container made it read as one big floating card between the dark rails, rather than an anchored workspace panel. Individual cards (.sel-card, .role-tab, etc.) keep their own radius, untouched. */
     }
     /* Card-on-canvas treatment matching Why/Architecture exactly: white
        bordered cards with a soft shadow sitting on the #F7F6F2 canvas,
@@ -395,10 +388,10 @@
     .tailor-card .tc-desc{ font-size:11px;color:var(--muted);line-height:1.5; }
     .tc-add-btn{
       margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:6px;
-      background:rgba(109,40,217,.06); border:1px solid rgba(109,40,217,.45); color:#6D28D9; /* was transparent/rgba(139,92,246,.5)/#c4b5fd — that pastel violet had poor contrast on a light background; darkened to a solid, readable violet while staying visually secondary (not the blue primary-action color) */
+      background:transparent; border:1px solid rgba(139,92,246,.5); color:#c4b5fd;
       font:inherit; font-size:12px; font-weight:600; padding:6px 12px; border-radius:9px; cursor:pointer; transition:.15s;
     }
-    .tc-add-btn:hover{ background:rgba(109,40,217,.14); }
+    .tc-add-btn:hover{ background:rgba(139,92,246,.12); }
 
     /* ── Success state ── */
     .tailor-card.tc-success{
@@ -416,16 +409,16 @@
     .tc-badges{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
     .tc-badge{
       font-size:10px; font-weight:600; padding:3px 8px; border-radius:6px;
-      border:1px solid rgba(30,64,175,.35); color:#1E40AF; background:rgba(30,64,175,.06); /* was color:#93c5fd (pastel, low-contrast on white) */
+      border:1px solid rgba(59,130,246,.45); color:#93c5fd; background:rgba(59,130,246,.08);
     }
-    .tc-badge.ok{ border-color:rgba(4,120,87,.35); color:#047857; background:rgba(4,120,87,.06); } /* was color:#86efac */
+    .tc-badge.ok{ border-color:rgba(34,197,94,.45); color:#86efac; background:rgba(34,197,94,.08); }
     .tc-metrics{ font-size:11px; color:var(--green); font-weight:600; }
     .tc-edit-link{
       margin-top:auto; align-self:flex-start;
       background:none; border:none; padding:0; cursor:pointer;
       font:inherit; font-size:11.5px; font-weight:600; color:var(--muted); text-decoration:underline; text-underline-offset:3px;
     }
-    .tc-edit-link:hover{ color:#0B1020; } /* was #e2e8f0 (near-white — invisible on the light canvas) */
+    .tc-edit-link:hover{ color:#e2e8f0; }
 
     /* ── Modal ── */
     .tc-overlay{
