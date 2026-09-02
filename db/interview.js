@@ -322,6 +322,23 @@ async function addAnswer({ sessionId, questionId, answerText, responseIntent }) 
   return result.rows[0] || null;
 }
 
+// Bounded reprompt loop (migration 030, 2026-08-31): a question that gets
+// reprompted (SPARSE/OFF_TOPIC/NON_RESPONSIVE) never reaches addAnswer()
+// above -- the question isn't "finally answered" yet, so its retry count
+// has to live on interview_questions itself, the one row that persists
+// across however many times the SAME question gets reprompted. Atomic
+// increment-and-return (not a separate read then write) so two
+// near-simultaneous requests for the same question can never both read a
+// stale count and both decide "this is still attempt #1".
+async function incrementRepromptCount(questionId) {
+  const result = await pool.query(
+    `UPDATE interview_questions SET reprompt_count = reprompt_count + 1
+     WHERE id = $1 RETURNING reprompt_count`,
+    [questionId]
+  );
+  return result.rows[0] ? result.rows[0].reprompt_count : null;
+}
+
 async function addScore({ sessionId, questionId, star, technical, executive, gcc, friction, weighted }) {
   const result = await pool.query(
     `INSERT INTO interview_scores (session_id, question_id, star_score, technical_depth, executive_presence, gcc_readiness, core_friction, weighted_overall)
@@ -396,6 +413,6 @@ module.exports = {
   touchSessionActivity, touchUserActivity, expireSessionForInactivity,
   abandonStaleActiveSession, findRecoverableSession,
   getSessionQuestions, getSessionScores, getUserAggregateScores,
-  addQuestion, addAnswer, addScore,
+  addQuestion, addAnswer, addScore, incrementRepromptCount,
   saveReport, getReport, getUserCompletedReportCount,
 };

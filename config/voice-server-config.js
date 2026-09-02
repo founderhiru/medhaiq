@@ -28,6 +28,15 @@ const VOICE_SERVER_CONFIG = {
   // anything -- see the ElevenLabs Model Usage Audit). eleven_flash_v2_5 is
   // ElevenLabs' own recommended model for real-time/conversational use.
   ttsModelId: process.env.ELEVENLABS_TTS_MODEL || 'eleven_flash_v2_5',
+  // Global interviewer speaking pace (2026-09-01) -- applies identically
+  // to every persona/voice ID, by design (no per-persona override at this
+  // stage). ElevenLabs' documented valid range is 0.7-1.2; 1.0 is their
+  // own default, which is what this integration silently used before
+  // this change (voice_settings was never sent at all). 0.90 slows
+  // delivery slightly for a calmer, more measured pace without
+  // approaching the quality degradation ElevenLabs' own docs warn about
+  // near the extremes of the range.
+  ttsSpeed: process.env.ELEVENLABS_TTS_SPEED ? parseFloat(process.env.ELEVENLABS_TTS_SPEED) : 0.90,
 };
 
 module.exports = { VOICE_SERVER_CONFIG };

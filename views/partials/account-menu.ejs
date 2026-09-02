@@ -20,9 +20,24 @@
                        already has its own visual divider above this
                        (e.g. a header block with a border-bottom), to
                        avoid a redundant second line.
+   - linkColor:       string, default '#e2e8f0' (light text, correct for
+                       a dark dropdown) — added 2026-08-27 so a caller
+                       whose dropdown sits on a LIGHT background (e.g.
+                       dashboard-history.ejs's warm-light profile menu)
+                       can pass a dark value instead. This was a real
+                       bug, not a style preference: the color lives in
+                       an inline style attribute, generated here as a
+                       plain string — no external CSS selector, however
+                       specific, can override an inline style, so
+                       "My Profile" / "Sign Out" were reading as
+                       near-invisible light-gray-on-white with no way to
+                       fix it from outside this file. header.ejs's
+                       existing call passes no linkColor, so it keeps
+                       the exact original value and renders unchanged.
 */
 const _menuItems = typeof menuItems !== 'undefined' && Array.isArray(menuItems) ? menuItems : [];
-const _rowStyle = 'display:block;padding:11px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:500;';
+const _linkColor = typeof linkColor !== 'undefined' ? linkColor : '#e2e8f0';
+const _rowStyle = 'display:block;padding:11px 14px;color:' + _linkColor + ';text-decoration:none;font-size:13px;font-weight:500;';
 const _logoutLabel = typeof logoutLabel !== 'undefined' ? logoutLabel : 'Logout';
 const _showLogoutIcon = typeof showLogoutIcon !== 'undefined' ? showLogoutIcon : false;
 const _showDivider = typeof showDivider !== 'undefined' ? showDivider : true;

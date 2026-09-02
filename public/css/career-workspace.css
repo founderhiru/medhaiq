@@ -392,8 +392,8 @@ body.career-workspace .activity-row { border-top: 1px solid var(--cw-border); }
 /* Interaction color — old blue to purple, flagged item 5 above */
 body.career-workspace .new-interview-btn { background: var(--cw-purple); }
 body.career-workspace .new-interview-btn:hover { filter: brightness(1.12); }
-body.career-workspace .resume-intel-cta { color: var(--cw-purple-text); }
-body.career-workspace .resume-intel-cta:hover { color: var(--white); }
+body.career-workspace .overview-stat .sublabel.resume-intel-cta { color: var(--cw-purple-text); } /* higher specificity than .overview-stat .sublabel above (which was silently winning and rendering this as muted gray, not purple, regardless of source order) */
+body.career-workspace .overview-stat .sublabel.resume-intel-cta:hover { color: #5B21B6; } /* was var(--white) — invisible on this light card */
 body.career-workspace .db-bell-btn:hover { background: var(--cw-purple-tint); color: var(--cw-purple-text); }
 body.career-workspace .db-profile-avatar { background: var(--cw-purple-tint); color: var(--cw-purple-text); }
 body.career-workspace .view-all-link { color: var(--cw-purple-text); }
@@ -441,3 +441,232 @@ body.career-workspace .competency-stat-label { color: var(--cw-metadata); }
 body.career-workspace .minutes-progress-labels { color: var(--cw-metadata); }
 body.career-workspace .minutes-renew-label { color: var(--cw-metadata); }
 body.career-workspace .activity-main .meta { color: var(--cw-metadata); }
+
+/* ============================================================
+   CAREER WORKSPACE — WARM-LIGHT CANVAS CONVERSION (2026-08-27)
+   ------------------------------------------------------------
+   Scoped under body.career-workspace only, same as the two blocks
+   above — Founder Dashboard, Resume, Settings, and purchase-success
+   (all of which also load this file) are untouched, since none of
+   them set that body class. Base rules above this point, and the
+   .shell-nav sidebar (styled separately in workspace-shell.css,
+   not touched at all), remain exactly as they are.
+
+   Reuses the same palette already established on Why/Architecture/
+   About and the refined Interview Setup/Active Interview screens:
+     canvas #F7F6F2 | card #FFFFFF | border #E5E7EB
+     primary text #0B1020 | secondary text #5F6B82
+
+   MECHANISM: background goes on body.career-workspace itself, not
+   .workspace-content (which has max-width:1320px + margin:0 auto —
+   putting the fill there would leave dark margins visible on wide
+   viewports). .workspace-content has no background of its own, so
+   body's color shows through it edge-to-edge automatically. The
+   sidebar (.shell-nav) has its own opaque dark background set in
+   workspace-shell.css and is completely unaffected by this.
+
+   DRY win: --cw-border (defined in the block above) is redefined
+   here to a light value — every selector already routing through
+   var(--cw-border) from the earlier consolidation pass (overview
+   strip, panel, profile menu, bell button, activity row divider,
+   etc.) picks up the light border automatically, no need to touch
+   those selectors again individually.
+
+   Everything else below is an explicit, individual override,
+   because the base rules use hardcoded #ffffff/var(--white) or the
+   shared dark-tuned var(--muted)/var(--dim)/var(--slate) tokens —
+   which must stay dark at the root for every other page sharing
+   this file, so they can't be redefined globally and instead need
+   a scoped override per selector, same technique as the metadata
+   pass above.
+
+   Two categories of hardcoded pastel/light colors needed explicit
+   darkening for legibility, not just a variable swap — same pattern
+   already seen fixing Interview Setup's difficulty badges:
+   - Semantic status colors (readiness good/mid/low, score-bar/
+     activity-score high/mid/low, minutes-cta amber) were bright/pale
+     tones tuned for a dark card background.
+   - "Invisible line" bugs: chart grid/axis lines and progress tracks
+     (.trend-grid-line, .trend-axis-line, .minutes-ring-track,
+     .minutes-progress-track, .score-bar-track) were white-tinted
+     lines meant to be faintly visible against dark — on white they'd
+     disappear entirely. Flipped to dark-tinted equivalents.
+   ============================================================ */
+
+body.career-workspace {
+  background: #F7F6F2;
+  --cw-border: #E5E7EB; /* was rgba(255,255,255,0.08) */
+  --cw-purple-text: #6D28D9; /* was #C4B5FD — pastel violet, illegible as text on white; --cw-purple itself (#7C3AED, used only as solid button backgrounds) is untouched since white-on-solid-purple works regardless of theme */
+}
+body.career-workspace .subtitle { color: #5F6B82; } /* was var(--muted) */
+
+/* Card backgrounds */
+body.career-workspace .overview-strip { background: #FFFFFF; }
+body.career-workspace .panel { background: #FFFFFF; box-shadow: 0 2px 10px rgba(0,0,0,0.06); } /* was 0 1px 3px rgba(0,0,0,0.3) — that shadow assumed a dark card on a dark page; this is the equivalent "elevated card on light canvas" treatment used on Setup/Active Interview */
+body.career-workspace .db-profile-menu { background: #FFFFFF; box-shadow: 0 10px 30px rgba(0,0,0,0.12); } /* was #12172a / 0 10px 30px rgba(0,0,0,0.45) */
+body.career-workspace .db-profile-menu a:hover { background: rgba(11,16,32,0.04); }
+
+/* Quick Actions — arrow/icon contrast (previously flagged "not decided"
+   in the block above, now explicitly requested). Card background tints
+   are untouched — still subtle; only the icon/arrow foreground colors
+   and the arrow's circular border are strengthened for affordance. */
+body.career-workspace .qa-card.violet .qa-icon  { color: #6D28D9; } /* was #A78BFA */
+body.career-workspace .qa-card.violet .qa-arrow { color: #6D28D9; border-color: rgba(109,40,217,.65); } /* was #A78BFA / rgba(139,124,246,0.4) */
+body.career-workspace .qa-card.green .qa-icon   { color: #059669; } /* was #34D399 */
+body.career-workspace .qa-card.green .qa-arrow  { color: #059669; border-color: rgba(5,150,105,.6); } /* was #34D399 / rgba(16,185,129,0.35) */
+body.career-workspace .qa-card.blue .qa-icon    { color: #1D4ED8; } /* was #60A5FA */
+body.career-workspace .qa-card.blue .qa-arrow   { color: #1D4ED8; border-color: rgba(29,78,216,.6); } /* was #60A5FA / rgba(59,130,246,0.35) */
+
+/* Primary text — numbers, headings, values (was #ffffff / var(--white)) */
+body.career-workspace .overview-stat .num { color: #0B1020; }
+body.career-workspace .overview-stat .label { color: #5F6B82; } /* was var(--muted) */
+body.career-workspace .db-profile-menu-name { color: #0B1020; }
+body.career-workspace .competency-stat-value { color: #0B1020; }
+body.career-workspace .minutes-ring-center .num,
+body.career-workspace .minutes-ring-center .of100 { color: #0B1020; }
+body.career-workspace .minutes-remaining-label { color: #0B1020; }
+body.career-workspace .minutes-renew-date { color: #0B1020; }
+body.career-workspace .panel h3 { color: #0B1020; }
+body.career-workspace .score-bar-label { color: #0B1020; }
+body.career-workspace .activity-main .title { color: #0B1020; }
+body.career-workspace .qa-card .qa-title { color: #0B1020; }
+body.career-workspace .readiness-score .of100 { color: #5F6B82; } /* was var(--dim) — not part of the earlier metadata pass (deliberately, per that block's own comment) but still needs a light-bg-legible value for this theme flip */
+
+/* "Invisible line" fixes — white-tinted lines/tracks meant to be subtle
+   against dark, would vanish entirely on the new white canvas */
+body.career-workspace .trend-grid-line { stroke: rgba(11,16,32,0.08); } /* was rgba(255,255,255,0.07) */
+body.career-workspace .trend-axis-line { stroke: rgba(11,16,32,0.16); } /* was rgba(255,255,255,0.14) */
+body.career-workspace .minutes-ring-track { stroke: rgba(11,16,32,0.08); } /* was rgba(255,255,255,0.07) */
+body.career-workspace .minutes-progress-track { background: rgba(11,16,32,0.08); } /* was rgba(255,255,255,0.09) */
+body.career-workspace .score-bar-track { background: #E5E7EB; } /* was var(--slate), a dark navy token */
+
+/* Semantic status colors — darkened for legibility on white; hierarchy
+   (good=green/mid=amber/low=red family) unchanged, just less pastel */
+body.career-workspace .readiness-progress-label.good { color: #059669; } /* was #34D399 */
+body.career-workspace .readiness-progress-label.mid  { color: #B45309; } /* was #FCD34D */
+body.career-workspace .readiness-progress-label.low  { color: #DC2626; } /* was #FCA5A5 */
+body.career-workspace .competency-stat-value.good  { color: #059669; } /* was #6EE7B7 */
+body.career-workspace .competency-stat-value.focus { color: #B45309; } /* was #FCD34D */
+body.career-workspace .score-bar-val.high { color: #059669; } /* was #6EE7B7 */
+body.career-workspace .score-bar-val.mid  { color: #B45309; } /* was #FCD34D */
+body.career-workspace .score-bar-val.low  { color: #DC2626; } /* was #FCA5A5 */
+body.career-workspace .activity-score.high { color: #059669; } /* was #6EE7B7 */
+body.career-workspace .activity-score.mid  { color: #B45309; } /* was #FCD34D */
+body.career-workspace .activity-score.low  { color: #DC2626; } /* was #FCA5A5 */
+body.career-workspace .activity-status-text.in_progress { color: #B45309; } /* was #FDBA74 */
+body.career-workspace .minutes-cta { color: #92400E; background: rgba(146,64,14,0.08); border-color: rgba(146,64,14,0.35); } /* was color:#FBBF24, pastel amber on an already-light tint */
+body.career-workspace .minutes-cta:hover { background: rgba(146,64,14,0.14); }
+body.career-workspace .db-bell-btn { background: rgba(11,16,32,0.04); color: #5F6B82; } /* was rgba(255,255,255,0.06) / var(--muted) — the existing purple-tint :hover rule (interaction-color block above) is untouched and still applies on hover */
+body.career-workspace .qa-card .qa-desc { color: #5F6B82; } /* was var(--muted) */
+body.career-workspace .view-all-link:hover { color: #5B21B6; } /* was var(--white) — invisible on this light card; same bug pattern already fixed on resume-intel-cta */
+
+/* ============================================================
+   CAREER WORKSPACE — GENERAL SAFETY NET (2026-08-27)
+   ------------------------------------------------------------
+   Root-cause fix, not another one-off patch. Auditing
+   dashboard-reports.ejs and settings.ejs (both of which load this
+   file, and settings.ejs is being switched onto body.career-workspace
+   in this same change) found the SAME class of bug repeatedly:
+   inline style="color:var(--muted)" / "color:var(--dim)" text, and
+   bare <h1>/<h2>/<h3> headings with no color at all — neither is
+   reachable by a class-based selector, so the per-selector overrides
+   above this block only ever fixed the specific elements already
+   known about on dashboard-history.ejs, not every page sharing this
+   file.
+
+   FIX: redefine --muted/--dim/--card-hover/--border scoped to
+   .workspace-content specifically — NOT body.career-workspace
+   directly. This is a deliberate, important distinction: an earlier
+   version of this same idea was tried scoped to body on the Resume
+   Intelligence page and broke the sidebar, because body's CSS
+   variables cascade to ALL descendants, including .shell-nav (the
+   sidebar is a CHILD of body). .workspace-content and .shell-nav are
+   SIBLINGS, not ancestor/descendant, so scoping here structurally
+   cannot reach the sidebar no matter what — .shell-profile-name,
+   .shell-link, .shell-logout etc. (all of which also read
+   var(--white)/var(--muted)/var(--dim)) are completely unaffected by
+   design, not by careful selector-picking.
+
+   var() references inside inline style="..." attributes still
+   resolve through the normal cascade, so this one block retroactively
+   fixes every current inline-styled text on dashboard-reports.ejs and
+   settings.ejs, plus anything similar added to any future page that
+   reuses this same shell + body class.
+
+   --white is deliberately NOT redefined here (same reasoning as
+   above, extra caution) — heading colors are instead handled by an
+   explicit selector below, and every other var(--white) usage found
+   during this audit was already covered by an existing per-selector
+   fix in the blocks above.
+   ============================================================ */
+body.account-settings { background: #F7F6F2; } /* MISSING PIECE — the actual bug. Splitting Settings into its own body class (to fix the .panel min-height collision) never included giving that page a background at all; it stayed dark navy while every text color had already been changed to dark-for-light-background, making the title, active tab, and everything else invisible. */
+body.career-workspace .workspace-content,
+body.account-settings .workspace-content {
+  --muted: #5F6B82;      /* was #9DA8BA at :root */
+  --dim: #5F6B82;         /* was #657188 at :root */
+  --card-hover: #F2F3F1; /* was #1E2A45 at :root — used as a form-input background on Settings */
+  --border: #E5E7EB;      /* was undefined at :root on this page's stylesheets (interview.css/career-workspace.css never define it) — pre-existing bug, harmless on dark, worth fixing while scoping this element anyway */
+}
+body.career-workspace .workspace-content h1,
+body.career-workspace .workspace-content h2,
+body.career-workspace .workspace-content h3,
+body.career-workspace .workspace-content h4,
+body.account-settings .workspace-content h1,
+body.account-settings .workspace-content h2,
+body.account-settings .workspace-content h3,
+body.account-settings .workspace-content h4 {
+  color: #0B1020; /* catches any heading with no explicit color — the actual "Good afternoon" bug was .workspace-content h1 specifically; dashboard-reports.ejs's "Interview Reports" title turned out to be an <h2>, a different level entirely, which is why this is now generic across heading levels rather than another single-selector patch */
+}
+body.career-workspace .activity-score .of100 { color: #5F6B82; } /* was var(--dim) — this specific .of100 variant (used on both Recent Activity and the Reports page's report list) was missed in the earlier of100 pass, which only covered .readiness-score and .minutes-ring-center */
+body.account-settings .subtitle { color: #5F6B82; }
+body.account-settings .panel { background: #FFFFFF; border: 1px solid #E5E7EB; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+body.account-settings .panel h3 { color: #0B1020; }
+
+/* Root-cause fix for the "cards are too tall" complaint on Resume
+   Intelligence and Settings: .panel's shared min-height:258px (base
+   rule, above) exists specifically so Career Workspace's dashboard
+   cards (Interview Readiness, AI Interview Minutes, etc.) line up
+   evenly in a row. It has nothing to do with Resume/Settings, whose
+   panels hold short, variable-length content — a fixed 258px minimum
+   there is exactly what produced the large empty rectangles. Scoped
+   to precisely these two body classes; body.career-workspace's own
+   dashboard cards keep their alignment height untouched. */
+body.resume-intelligence .panel,
+body.account-settings .panel {
+  min-height: 0;
+}
+
+/* General default text color for these two pages specifically —
+   catches bare/unstyled text with no color property or class at all
+   (e.g. Settings' Subscription tab renders values like "Founder" /
+   "Growth" as plain text right after a colored <strong> label, with
+   no color of its own; the Notifications tab's checkbox labels are
+   plain <span>s with no color either) — both were silently inheriting
+   body's white text. Anything with its own explicit color (buttons,
+   links, labeled fields already covered above) is unaffected, since
+   an explicit declaration always wins over inherited color regardless
+   of what the inherited value is. Not applied to body.career-workspace
+   — that page's elements were already given individual, exhaustive
+   color rules in the passes above, so a blanket default isn't needed
+   there and this keeps the blast radius of this rule as small as
+   possible. */
+body.resume-intelligence .workspace-content,
+body.account-settings .workspace-content {
+  color: #0B1020;
+}
+
+/* ============================================================
+   CAREER WORKSPACE — MISSED-ELEMENT FOLLOW-UP (2026-08-27)
+   ------------------------------------------------------------
+   Two elements were missed in the pass above because neither has
+   ANY color property in the base rules — they silently inherit
+   body's white text (set in interview.css, shared by every other
+   page using this file, so that rule itself is correctly untouched).
+   A selector search for explicit color/var(--white)/var(--muted)/
+   var(--dim) usages misses elements with no color property at all;
+   this follow-up was found by instead listing every base-rule
+   selector that DOESN'T set color, then checking which of those
+   render real visible text on this page.
+   ============================================================ */
+body.career-workspace .workspace-content h1 { color: #0B1020; } /* the "Good afternoon, ..." greeting — reported bug */
+body.career-workspace .activity-status-text { color: #0B1020; } /* base fallback for any status value without its own color rule (e.g. "completed" — only .in_progress and .abandoned had explicit colors; the more specific rules below still correctly override this for those two) */

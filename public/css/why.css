@@ -77,12 +77,17 @@
   margin-bottom: 1.25rem;
 }
 
-/* Eyebrows & Section Titles */
+/* Eyebrows & Section Titles
+   Typography normalization (subpage audit): size/weight/tracking no
+   longer overridden here — this page now inherits the same restrained
+   .mh-eyebrow / .mh-section-title tokens as Architecture
+   (var(--eyebrow-size)/var(--h2-size)/var(--h2-tracking) in
+   medhaiq.css), so Why's H1, standalone eyebrows, and in-page H2s
+   ("The Three Pillars", "Why We're Different") match Architecture's
+   scale instead of rendering at a heavier, fixed-px size. Color and
+   margin are intentionally left as they were — this is a size/weight
+   normalization only, not a color or spacing change. */
 .mh-eyebrow {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: #2563EB;
   margin-bottom: 0.375rem;
 }
@@ -92,21 +97,11 @@
 }
 
 .mh-section-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
   margin: 0 0 0.5rem 0;
 }
 
 .mh-title-dark {
   color: #0B1020 !important;
-}
-
-@media (min-width: 768px) {
-  .mh-section-title {
-    font-size: 1.75rem;
-  }
 }
 
 /* --------------------------------------------------------------------------

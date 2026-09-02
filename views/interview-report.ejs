@@ -56,16 +56,20 @@
        markup for each half — only the wrapping structure changed.
 
        hasSubstantiveEvidence branch (2026-08-13, response-intent
-       formalization): when a session has zero real interview_scores
-       rows — every question was SKIP/DONT_KNOW, or Discovery-only —
-       report.overall_score and every vector average are literally 0,
-       which is not "the candidate scored zero," it's "there is nothing
-       to score." Shows "—" / "Not assessed" instead per the approved
-       plan. hasSubstantiveEvidence is computed once in
-       lib/career-intelligence-report.js and is TRUE for every legacy
-       (pre-migration) session by construction — see that file's
-       comment — so this branch never changes what a historical report
-       already looked like. -->
+       formalization; REVISED 2026-08-31 per explicit product direction):
+       report.overall_score is intentionally 0 (not hidden, not a dash)
+       when a session has zero real interview_scores rows — every
+       question was SKIP/DONT_KNOW/OFF_TOPIC/NON_RESPONSIVE, or
+       Discovery-only. The number itself is not the problem; showing it
+       with no explanation was. The Career Intelligence Overview section
+       below now explains, in plain language, why the score is 0 when
+       there's no assessable evidence -- see report.internal_assessment_state
+       and the REPORT_SYSTEM prompt (services/interview.js) that generates
+       that explanation. hasSubstantiveEvidence is still computed in
+       lib/career-intelligence-report.js and still gates individual
+       vector/strength/development-area sections further down (those
+       genuinely have nothing to show when there's no data at all) -- it
+       no longer hides the overall score/ring itself. -->
   <div class="report-hero">
     <div class="report-hero-identity">
       <div class="report-date"><%= formattedDate %></div>
@@ -77,17 +81,11 @@
         <div class="score-ring">
           <svg width="140" height="140" viewBox="0 0 140 140">
             <circle class="bg" cx="70" cy="70" r="60" />
-            <% if (hasSubstantiveEvidence) { %>
             <circle class="fill" cx="70" cy="70" r="60"
               stroke-dasharray="<%= circumference %>"
               stroke-dashoffset="<%= circumferenceOffset %>" />
-            <% } %>
           </svg>
-          <% if (hasSubstantiveEvidence) { %>
-          <div class="score-num"><%= Math.round(report.overall_score) %><span class="score-num-sub">out of 100</span></div>
-          <% } else { %>
-          <div class="score-num">—<span class="score-num-sub">Not assessed</span></div>
-          <% } %>
+          <div class="score-num"><%= Math.round(report.overall_score || 0) %><span class="score-num-sub">out of 100</span></div>
         </div>
         <div class="score-label">Overall Career Intelligence Score</div>
         <% if (hasPdfAccess) { %>
@@ -145,7 +143,7 @@
        Kept full-width — see the CSS block's header comment for why this
        deliberately deviates from the prompt's "half-width" list. -->
 
-  <% if (hasFullReport && hasSubstantiveEvidence && report.executive_summary) { %>
+  <% if (hasFullReport && report.executive_summary) { %>
   <div class="report-section">
     <h3>Your Career Intelligence Overview</h3>
     <p class="exec-summary"><%= report.executive_summary %></p>
