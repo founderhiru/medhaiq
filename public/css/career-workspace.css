@@ -599,7 +599,8 @@ body.career-workspace .view-all-link:hover { color: #5B21B6; } /* was var(--whit
    during this audit was already covered by an existing per-selector
    fix in the blocks above.
    ============================================================ */
-body.career-workspace .workspace-content {
+body.career-workspace .workspace-content,
+body.account-settings .workspace-content {
   --muted: #5F6B82;      /* was #9DA8BA at :root */
   --dim: #5F6B82;         /* was #657188 at :root */
   --card-hover: #F2F3F1; /* was #1E2A45 at :root — used as a form-input background on Settings */
@@ -608,10 +609,50 @@ body.career-workspace .workspace-content {
 body.career-workspace .workspace-content h1,
 body.career-workspace .workspace-content h2,
 body.career-workspace .workspace-content h3,
-body.career-workspace .workspace-content h4 {
+body.career-workspace .workspace-content h4,
+body.account-settings .workspace-content h1,
+body.account-settings .workspace-content h2,
+body.account-settings .workspace-content h3,
+body.account-settings .workspace-content h4 {
   color: #0B1020; /* catches any heading with no explicit color — the actual "Good afternoon" bug was .workspace-content h1 specifically; dashboard-reports.ejs's "Interview Reports" title turned out to be an <h2>, a different level entirely, which is why this is now generic across heading levels rather than another single-selector patch */
 }
 body.career-workspace .activity-score .of100 { color: #5F6B82; } /* was var(--dim) — this specific .of100 variant (used on both Recent Activity and the Reports page's report list) was missed in the earlier of100 pass, which only covered .readiness-score and .minutes-ring-center */
+body.account-settings .subtitle { color: #5F6B82; }
+body.account-settings .panel { background: #FFFFFF; border: 1px solid #E5E7EB; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+body.account-settings .panel h3 { color: #0B1020; }
+
+/* Root-cause fix for the "cards are too tall" complaint on Resume
+   Intelligence and Settings: .panel's shared min-height:258px (base
+   rule, above) exists specifically so Career Workspace's dashboard
+   cards (Interview Readiness, AI Interview Minutes, etc.) line up
+   evenly in a row. It has nothing to do with Resume/Settings, whose
+   panels hold short, variable-length content — a fixed 258px minimum
+   there is exactly what produced the large empty rectangles. Scoped
+   to precisely these two body classes; body.career-workspace's own
+   dashboard cards keep their alignment height untouched. */
+body.resume-intelligence .panel,
+body.account-settings .panel {
+  min-height: 0;
+}
+
+/* General default text color for these two pages specifically —
+   catches bare/unstyled text with no color property or class at all
+   (e.g. Settings' Subscription tab renders values like "Founder" /
+   "Growth" as plain text right after a colored <strong> label, with
+   no color of its own; the Notifications tab's checkbox labels are
+   plain <span>s with no color either) — both were silently inheriting
+   body's white text. Anything with its own explicit color (buttons,
+   links, labeled fields already covered above) is unaffected, since
+   an explicit declaration always wins over inherited color regardless
+   of what the inherited value is. Not applied to body.career-workspace
+   — that page's elements were already given individual, exhaustive
+   color rules in the passes above, so a blanket default isn't needed
+   there and this keeps the blast radius of this rule as small as
+   possible. */
+body.resume-intelligence .workspace-content,
+body.account-settings .workspace-content {
+  color: #0B1020;
+}
 
 /* ============================================================
    CAREER WORKSPACE — MISSED-ELEMENT FOLLOW-UP (2026-08-27)
