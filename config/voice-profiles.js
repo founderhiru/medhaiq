@@ -62,7 +62,7 @@ const VOICE_PROFILES = {
   },
   priya: {
     provider: 'elevenlabs',
-    providerVoice: 'oO7sLA3dWfQXsKeSAjpA', 
+    providerVoice: 'C3aqZfd4M0h7Ys5tWGIS', 
     pace: 1.05,
     style: 'structured executive',
   },
