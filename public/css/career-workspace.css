@@ -392,8 +392,8 @@ body.career-workspace .activity-row { border-top: 1px solid var(--cw-border); }
 /* Interaction color — old blue to purple, flagged item 5 above */
 body.career-workspace .new-interview-btn { background: var(--cw-purple); }
 body.career-workspace .new-interview-btn:hover { filter: brightness(1.12); }
-body.career-workspace .resume-intel-cta { color: var(--cw-purple-text); }
-body.career-workspace .resume-intel-cta:hover { color: var(--white); }
+body.career-workspace .overview-stat .sublabel.resume-intel-cta { color: var(--cw-purple-text); } /* higher specificity than .overview-stat .sublabel above (which was silently winning and rendering this as muted gray, not purple, regardless of source order) */
+body.career-workspace .overview-stat .sublabel.resume-intel-cta:hover { color: #5B21B6; } /* was var(--white) — invisible on this light card */
 body.career-workspace .db-bell-btn:hover { background: var(--cw-purple-tint); color: var(--cw-purple-text); }
 body.career-workspace .db-profile-avatar { background: var(--cw-purple-tint); color: var(--cw-purple-text); }
 body.career-workspace .view-all-link { color: var(--cw-purple-text); }
@@ -504,6 +504,18 @@ body.career-workspace .subtitle { color: #5F6B82; } /* was var(--muted) */
 body.career-workspace .overview-strip { background: #FFFFFF; }
 body.career-workspace .panel { background: #FFFFFF; box-shadow: 0 2px 10px rgba(0,0,0,0.06); } /* was 0 1px 3px rgba(0,0,0,0.3) — that shadow assumed a dark card on a dark page; this is the equivalent "elevated card on light canvas" treatment used on Setup/Active Interview */
 body.career-workspace .db-profile-menu { background: #FFFFFF; box-shadow: 0 10px 30px rgba(0,0,0,0.12); } /* was #12172a / 0 10px 30px rgba(0,0,0,0.45) */
+body.career-workspace .db-profile-menu a:hover { background: rgba(11,16,32,0.04); }
+
+/* Quick Actions — arrow/icon contrast (previously flagged "not decided"
+   in the block above, now explicitly requested). Card background tints
+   are untouched — still subtle; only the icon/arrow foreground colors
+   and the arrow's circular border are strengthened for affordance. */
+body.career-workspace .qa-card.violet .qa-icon  { color: #6D28D9; } /* was #A78BFA */
+body.career-workspace .qa-card.violet .qa-arrow { color: #6D28D9; border-color: rgba(109,40,217,.65); } /* was #A78BFA / rgba(139,124,246,0.4) */
+body.career-workspace .qa-card.green .qa-icon   { color: #059669; } /* was #34D399 */
+body.career-workspace .qa-card.green .qa-arrow  { color: #059669; border-color: rgba(5,150,105,.6); } /* was #34D399 / rgba(16,185,129,0.35) */
+body.career-workspace .qa-card.blue .qa-icon    { color: #1D4ED8; } /* was #60A5FA */
+body.career-workspace .qa-card.blue .qa-arrow   { color: #1D4ED8; border-color: rgba(29,78,216,.6); } /* was #60A5FA / rgba(59,130,246,0.35) */
 
 /* Primary text — numbers, headings, values (was #ffffff / var(--white)) */
 body.career-workspace .overview-stat .num { color: #0B1020; }

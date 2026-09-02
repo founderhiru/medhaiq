@@ -1,4 +1,4 @@
-<%- include('partials/workspace-shell-top', { pageTitle: 'Resume Intelligence — MedhaIQ', activeNav: 'resume', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'] }) %>
+<%- include('partials/workspace-shell-top', { pageTitle: 'Resume Intelligence — MedhaIQ', activeNav: 'resume', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'], bodyClass: 'resume-intelligence' }) %>
 
 <h1>Resume Intelligence</h1>
 <p class="subtitle">Upload your resume once — MedhaIQ personalizes your interview questions and adds your real experience as an evaluation signal, automatically.</p>
@@ -101,6 +101,53 @@
 </div>
 
 <style>
+  /* ============================================================
+     RESUME INTELLIGENCE — WARM-LIGHT CANVAS (2026-08-27)
+     ------------------------------------------------------------
+     Scoped under body.resume-intelligence only. Self-contained in
+     this page's own <style> block (this page doesn't share markup
+     with dashboard-history.ejs's dashboard-specific classes, so a
+     dedicated scope here is cleaner than reusing body.career-workspace
+     in career-workspace.css — no risk of dashboard-only rules there
+     ever accidentally matching something on this page, or vice versa).
+
+     Same palette as Career Workspace / Why / Architecture / About:
+       canvas #F7F6F2 | card #FFFFFF | border #E5E7EB
+       primary text #0B1020 | secondary text #5F6B82
+
+     .panel/.subtitle/h1 here use the SAME class names as the shared
+     interview.css base rules (dark-tuned, correct for every other
+     page using this shell) — hence the scoped overrides below rather
+     than editing those shared rules directly.
+     ============================================================ */
+  body.resume-intelligence {
+    background: #F7F6F2;
+    /* Scoped redefinition, not a global change — interview.css's root
+       values (used by every other page) are untouched. This single
+       block fixes every var(--muted)/var(--dim)/var(--white)/var(--card)/
+       var(--gold) reference on this page, including the ones set via
+       inline style="..." attributes (e.g. #resumeWeakNote, the upload
+       panel's description text) — inline var() references still
+       resolve through the normal cascade, so they pick this up too. */
+    --muted: #5F6B82;
+    --dim:   #5F6B82;
+    --white: #0B1020; /* every var(--white) use on this page is text color (resume-stat-value, button labels), never a background — confirmed by inspection */
+    --card:  #FFFFFF;
+    --gold:  #92400E; /* was a pastel amber tuned for dark backgrounds; darkened for legibility here, same treatment as Career Workspace's minutes-cta */
+  }
+  body.resume-intelligence h1 { color: #0B1020; }
+  body.resume-intelligence .subtitle { color: var(--muted); }
+  body.resume-intelligence .panel {
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+  body.resume-intelligence .panel h3 { color: #0B1020; }
+  body.resume-intelligence .resume-btn-secondary { border-color: #E5E7EB; }
+  body.resume-intelligence .resume-btn-secondary:hover { border-color: var(--bright); }
+  /* .resume-btn-danger and #resumeStatValue's inline emerald/danger
+     colors are untouched — solid semantic red/green already has
+     sufficient contrast on white without adjustment. */
+
   .resume-status-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
