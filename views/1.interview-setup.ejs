@@ -101,65 +101,6 @@
     .left-rail { position: sticky; top: 66px; display: flex; flex-direction: column; }
     .left-rail .panel + .panel { margin-top: 14px; }
     .left-rail .panel:last-child { min-height: 382px; }
-
-    /* ═══════════════════════════════════════════════════════════════
-       CENTER — warm-light treatment (visual consistency pass, 2026-08-26)
-       Reuses the exact palette already documented in
-       public/css/architecture-light.css (which itself matches why.css):
-         light #F7F6F2 | card #FFFFFF | border #E5E7EB
-         primary text #0B1020 | secondary text #5F6B82
-       Scoped to `main.panel` specifically -- .panel is a generic card
-       class also used by the left rail's own "Session Context" /
-       "Session Breakdown" cards, so scoping to .panel alone would have
-       incorrectly lightened those too. main.panel is the one and only
-       <main> element on this page, so this reaches nothing else.
-       Every rule below this point that already reads var(--card),
-       var(--border), var(--muted), var(--dim), var(--surface), or
-       var(--white) picks up these values automatically -- this is the
-       only place those tokens are redefined; no other selector in this
-       file needed to change. Two categories of hardcoded (non-variable)
-       colors still needed explicit fixes below: pastel accent colors
-       tuned for a dark background (difficulty badges, persona-style
-       pills) would be unreadable on white, and .video-panel-equivalent
-       elements don't exist on this page so no dark-media exception is
-       needed here (unlike the Active Interview screen).
-       ═══════════════════════════════════════════════════════════════ */
-    main.panel {
-      --card:     #FFFFFF;
-      --surface:  #F2F3F1;
-      --border:   #E5E7EB;
-      --muted:    #5F6B82;
-      --dim:      #8A94A8;
-      --white:    #0B1020; /* every var(--white) reference inside this subtree is text color, never a background fill -- confirmed by inspection -- so this correctly becomes "primary text on light" here */
-      background: #F7F6F2;
-      color: #0B1020;
-      border-radius: 20px;
-    }
-    /* Card-on-canvas treatment matching Why/Architecture exactly: white
-       bordered cards with a soft shadow sitting on the #F7F6F2 canvas,
-       not a single flat white slab. */
-    main.panel .sel-card,
-    main.panel .role-tab,
-    main.panel .custom-input {
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    main.panel .sel-card:hover { box-shadow: 0 8px 20px rgba(37,99,235,0.08); }
-    main.panel .role-tab.active { background: #1E40AF; border-color: #1E40AF; color: #fff; }
-    /* Pastel accent colors tuned for dark backgrounds -- illegible on
-       white without these explicit, darker equivalents. Variables alone
-       can't fix these since they're hardcoded hex in the base rules. */
-    main.panel .diff-hard   { color: #B91C1C; }
-    main.panel .diff-elite  { color: #6D28D9; }
-    main.panel .diff-medium { color: #92400E; }
-    main.panel .p-style.royal-blue { color: #1E40AF; }
-    main.panel .p-style.emerald    { color: #047857; }
-    main.panel .p-style.gold       { color: #92400E; }
-    main.panel .p-traits li        { color: #5F6B82; }
-    main.panel .p-traits li::before{ color: #94A3B8; }
-    main.panel .exp-yrs,
-    main.panel .rc-desc,
-    main.panel .p-title            { color: #5F6B82; }
-
     .panel-label {
       font-size: 10px; font-weight: 700; letter-spacing: 1.4px;
       text-transform: uppercase; color: var(--blue-hi);

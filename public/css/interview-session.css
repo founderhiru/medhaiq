@@ -175,7 +175,30 @@ button{font-family:inherit}
 .all-ready{margin-top:12px;font-size:12px;font-weight:500;color:var(--green)}
 
 /* ═══ CENTER — question card ═══ */
-.col-center{overflow:hidden;gap:12px} /* the video panel flexes; column itself never scrolls */
+/* ═══════════════════════════════════════════════════════════════
+   CENTER COLUMN — warm-light treatment (visual consistency pass,
+   2026-08-26). Same palette as views/interview-setup.ejs's main.panel
+   override and public/css/architecture-light.css / why.css:
+     light #F7F6F2 | card #FFFFFF | border #E5E7EB
+     primary text #0B1020 | secondary text #5F6B82
+   Every rule below (and everywhere else in this file) that reads
+   var(--card)/var(--card2)/var(--border)/var(--border-soft)/
+   var(--text)/var(--text2)/var(--muted)/var(--muted2)/var(--blue-soft)
+   picks these up automatically since it's scoped to .col-left and
+   .col-right are untouched -- the variable cascade never reaches
+   outside .col-center's own subtree. .video-panel is a deliberate
+   exception, left dark on purpose (see its own comment below) -- a
+   camera surface stays dark the same way a video-call tile does
+   regardless of the surrounding UI's theme.
+   ═══════════════════════════════════════════════════════════════ */
+.col-center{
+  overflow:hidden;gap:12px;
+  background:#F7F6F2;border-radius:20px;padding:16px;color:#0B1020;
+  --card:#FFFFFF; --card2:#FFFFFF; --border:#E5E7EB; --border-soft:#E5E7EB;
+  --text:#0B1020; --text2:#334155; --muted:#5F6B82; --muted2:#8A94A8;
+  --blue-soft:#1E40AF;
+} /* the video panel flexes; column itself never scrolls */
+.col-center .card{box-shadow:0 4px 12px rgba(0,0,0,0.04)}
 .question-card{padding:16px} /* was 20px 16px (shared .card default) — tightened for density, matching Setup's 16px panel padding */
 
 /* Question/loading stacking slot — fixes camera-panel layout jump.
@@ -193,12 +216,14 @@ button{font-family:inherit}
 .q-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .q-report{font-size:12px;color:var(--muted);cursor:default}
 .q-text{font-size:22px;font-weight:700;line-height:1.5;color:#F1F4FA;min-height:1.5em;max-width:720px;margin-bottom:14px}
+.col-center .q-text{color:#0B1020} /* hardcoded hex above (not a variable) — needs an explicit override here */
 .btn-why{
   margin-top:8px;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;
   background:transparent;border:1px solid var(--border-soft);color:var(--blue-soft);
   font-size:12.5px;font-weight:500;padding:6px 14px;border-radius:10px;cursor:pointer;transition:.15s;
 }
 .btn-why:hover{border-color:var(--blue);color:#93C5FD}
+.col-center .btn-why:hover{color:#1E40AF} /* hardcoded light-blue hover above, needs a darker equivalent for legibility on white */
 .btn-why .ic{width:14px;height:14px}
 .q-why-text{display:none;margin-top:10px;font-size:13px;line-height:1.6;color:var(--muted2);border-left:2px solid var(--blue);padding-left:12px}
 .q-why-text.shown{display:block}
@@ -209,7 +234,13 @@ button{font-family:inherit}
 .load-spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--blue);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Video panel */
+/* Video panel — deliberately LEFT DARK. A camera surface reads as a
+   camera/video-call tile regardless of the surrounding theme (same
+   reasoning a light-mode video-call UI still shows a dark video tile);
+   the existing blur/vignette treatment was built for a dark backdrop
+   and the LIVE badge / name tag / audio-wave overlays already use
+   white-on-dark for contrast against the live feed itself, not against
+   the page theme. Left completely untouched by this pass. */
 .video-panel{position:relative;flex:0 0 auto;height:clamp(235px, 30vh, 345px);overflow:hidden;padding:0;background:linear-gradient(135deg,#101a30,#0A1120);border-radius:var(--radius)}
 .video-panel::before{
   content:"";position:absolute;inset:-20%;z-index:0;
