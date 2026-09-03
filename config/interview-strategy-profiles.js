@@ -86,7 +86,7 @@ const STRATEGY_PROFILES = {
     2: { questionType: 'resume_story' },
     3: { questionType: 'jd_scenario' },
     4: { questionType: 'jd_scenario' },
-    5: { questionType: 'executive_judgment' },
+    5: { questionType: 'behavioural' },
   },
   engineering: {
     1: { questionType: 'resume_story' },
@@ -102,13 +102,42 @@ const STRATEGY_PROFILES = {
 // extend without touching the interview engine itself, per the founder's
 // "profiles that can evolve by role and seniority" goal. Unmatched roles
 // (including any future role title) fall through to 'executive'.
+// Practitioner-level roles across the canonical taxonomy that should use
+// the 'engineering' rhythm instead of the 'executive' default at Mid/
+// Senior stages. Deliberately NOT a new/duplicate profile object — this
+// file's own header states profiles carry question TYPE only, not
+// competency content, so the existing 5-question rhythm (resume_story/
+// jd_scenario/behavioural/jd_scenario/resume_story) is reasonably generic
+// across these roles. Includes both the 10 currently-visible launch roles
+// and the 8 parked-but-still-configured roles (Engineering Director,
+// Technical Program Manager, Product Director, MLOps Engineer, Research
+// Scientist, LLM Engineer, Strategy & Transformation) as defense-in-depth
+// in case they're ever reachable outside the UI's visible catalog.
+// 'Executive Leadership' is intentionally absent — it should fall through
+// to 'executive', per spec ("Executive Leadership -> Executive should
+// generate true executive-level questions").
 const ROLE_TO_PROFILE = {
   'Software Engineer': 'engineering',
+  'Engineering Manager': 'engineering',
+  'Engineering Director': 'engineering',
+  'Solutions Architect': 'engineering',
+  'Technical Program Manager': 'engineering',
   'AI Engineer': 'engineering',
+  'AI Product Manager': 'engineering',
   'Data Engineer': 'engineering',
+  'ML Engineer': 'engineering',
+  'MLOps Engineer': 'engineering',
+  'Research Scientist': 'engineering',
+  'LLM Engineer': 'engineering',
+  'Product Manager': 'engineering',
+  'Product Director': 'engineering',
+  'Program Manager': 'engineering',
+  'Business Analyst': 'engineering',
+  'Management Consultant': 'engineering',
+  'Strategy & Transformation': 'engineering',
 };
 
-const GRADUATE_EXPERIENCE_LEVELS = new Set(['entry', 'graduate', 'junior', 'intern']);
+const GRADUATE_EXPERIENCE_LEVELS = new Set(['fresher', 'entry', 'graduate', 'junior', 'intern']);
 
 /**
  * Resolves which strategy profile applies to this session. Experience
