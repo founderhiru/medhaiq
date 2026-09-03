@@ -670,6 +670,27 @@
       <div class="sel-card chip exp-card" data-exp="executive"><div class="check">✓</div><span class="exp-emoji">👑</span><div><div class="exp-name">Executive</div><div class="exp-yrs">15+ yrs</div></div></div>
     </div>
 
+    <!-- Campus Ready entry point -- additive only. A plain navigational
+         CTA shown when the Fresher (0-2 yrs) stage is selected. Does not
+         read or alter state.exp, does not touch the existing card click
+         handling, and does not change the session-creation payload
+         below. Attached via its own addEventListener, alongside
+         whatever handling already runs on .exp-card -- never replacing
+         it. -->
+    <div id="campusReadyPrompt" style="display:none;margin:12px 0 20px;padding:14px 18px;border-radius:10px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);">
+      <span style="font-size:14px;">Preparing for campus placements? </span>
+      <a href="/campus" style="font-size:14px;font-weight:600;color:var(--blue-bright,#3b82f6);">Try Campus Ready →</a>
+    </div>
+    <script>
+      (function () {
+        var fresherCard = document.querySelector('.exp-card[data-exp="fresher"]');
+        var campusPrompt = document.getElementById('campusReadyPrompt');
+        if (fresherCard && campusPrompt) {
+          fresherCard.addEventListener('click', function () { campusPrompt.style.display = 'block'; });
+        }
+      })();
+    </script>
+
     <div class="step-label">3. Select Interviewer Persona</div>
     <%
     // Persona entitlement enforcement (traced gap, closed here + in

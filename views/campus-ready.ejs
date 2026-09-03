@@ -1,0 +1,173 @@
+<%- include('partials/workspace-shell-top', { pageTitle: 'Campus Ready — MedhaIQ', activeNav: 'campus', bodyClass: 'campus-ready-page', shellUser: shellUser, isFounder: typeof isFounder !== 'undefined' ? isFounder : false }) %>
+
+<div class="page-header-row">
+  <div>
+    <h1>Campus Ready</h1>
+    <p class="subtitle"><%= cohortLabel %> Placement Preparation</p>
+  </div>
+</div>
+
+<div id="campusRoot" style="max-width:820px;margin:0 auto;padding:0 16px;">
+  <div id="campusOverallProgress" style="margin-bottom:24px;">
+    <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--font-body,#8892a6);margin-bottom:6px;">
+      <span>Your Progress</span>
+      <span id="campusOverallPct">0%</span>
+    </div>
+    <div style="height:8px;border-radius:4px;background:rgba(255,255,255,0.08);overflow:hidden;">
+      <div id="campusOverallBar" style="height:100%;width:0%;background:var(--blue-bright,#3b82f6);transition:width .3s;"></div>
+    </div>
+  </div>
+
+  <div id="campusModuleList" style="display:flex;flex-direction:column;gap:12px;"></div>
+
+  <!-- Module detail -- a lightweight inline panel, not a separate routed
+       page, per the founder's "one screen" direction. -->
+  <div id="campusModulePanel" style="display:none;margin-top:24px;padding:20px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);"></div>
+
+  <!-- Handoff to the existing individual product -- a PLAIN navigation
+       link only. No pre-filled state, no shared session, no code path
+       into routes/interview.js or the Interview Engine. Technically this
+       is no different from any other <a href="/interview"> already
+       elsewhere in the app (see views/dashboard-history.ejs). -->
+  <div style="margin-top:32px;padding:20px;border-radius:12px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);text-align:center;">
+    <p style="margin:0 0 10px;font-size:15px;">Ready to Practice?</p>
+    <a href="/interview" style="display:inline-block;padding:10px 22px;border-radius:8px;background:var(--blue-bright,#3b82f6);color:#fff;font-weight:600;text-decoration:none;">Start AI Interview →</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  const state = { modules: [], activeModuleKey: null, activeTopics: [] };
+
+  function pct(n) { return Math.round(n) + '%'; }
+
+  async function loadMe() {
+    const res = await fetch('/api/campus/me');
+    if (!res.ok) { document.getElementById('campusModuleList').innerHTML = '<p>Could not load your Campus Ready progress. Please refresh.</p>'; return; }
+    const data = await res.json();
+    state.modules = data.modules;
+    renderModuleList();
+    renderOverall();
+  }
+
+  function renderOverall() {
+    const avg = state.modules.length
+      ? Math.round(state.modules.reduce((s, m) => s + Number(m.percent_complete), 0) / state.modules.length)
+      : 0;
+    document.getElementById('campusOverallPct').textContent = pct(avg);
+    document.getElementById('campusOverallBar').style.width = avg + '%';
+  }
+
+  function statusLabel(m) {
+    if (m.status === 'complete') return '✓ Complete';
+    if (m.status === 'in_progress') return pct(m.percent_complete);
+    return 'Not Started';
+  }
+
+  function renderModuleList() {
+    const el = document.getElementById('campusModuleList');
+    el.innerHTML = state.modules.map((m, i) => `
+      <button class="campus-module-row" data-key="${m.key}" style="all:unset;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">
+        <span>${i + 1}. ${m.name}</span>
+        <span style="font-size:13px;color:${m.status === 'complete' ? '#22c55e' : 'var(--font-body,#8892a6)'};">${statusLabel(m)}</span>
+      </button>
+    `).join('');
+    el.querySelectorAll('.campus-module-row').forEach(btn => {
+      btn.addEventListener('click', () => openModule(btn.dataset.key));
+    });
+  }
+
+  async function openModule(key) {
+    state.activeModuleKey = key;
+    const res = await fetch('/api/campus/modules/' + encodeURIComponent(key));
+    if (!res.ok) return;
+    const data = await res.json();
+    state.activeTopics = data.topics;
+    state.activeModuleDbId = data.module.id;
+    renderModulePanel(data.module);
+  }
+
+  function renderModulePanel(mod) {
+    const panel = document.getElementById('campusModulePanel');
+    panel.style.display = 'block';
+    panel.innerHTML = `<h3 style="margin-top:0;">${mod.name}</h3>` +
+      state.activeTopics.map(topic => renderTopic(topic)).join('') +
+      `<button id="campusCloseModule" style="margin-top:12px;background:none;border:1px solid rgba(255,255,255,0.15);color:inherit;padding:8px 16px;border-radius:8px;cursor:pointer;">Close</button>`;
+    document.getElementById('campusCloseModule').addEventListener('click', () => { panel.style.display = 'none'; });
+    wireTopicInteractions(panel);
+  }
+
+  function renderTopic(topic) {
+    const learn = topic.items.find(i => i.type === 'learn_example');
+    const practice = topic.items.filter(i => i.type === 'practice_prompt');
+    const quiz = topic.items.filter(i => i.type === 'quiz_question');
+    return `
+      <div class="campus-topic" style="margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <h4 style="margin-bottom:6px;">${topic.name}</h4>
+        ${learn ? `
+          <div style="font-size:14px;margin-bottom:10px;">
+            <p style="opacity:0.85;"><strong>Learn:</strong> ${learn.prompt}</p>
+            <p style="opacity:0.7;">${learn.guidance || ''}</p>
+            ${learn.mistakes ? `<p style="opacity:0.6;font-size:13px;"><strong>Common mistakes:</strong> ${learn.mistakes}</p>` : ''}
+          </div>` : ''}
+        ${practice.map(p => `
+          <div class="campus-practice-item" data-item-id="${p.id}" style="margin-bottom:10px;">
+            <p style="font-size:14px;">${p.prompt}</p>
+            <textarea rows="3" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:inherit;padding:8px;" placeholder="Write your answer here -- this is self-reviewed, not graded."></textarea>
+            <button class="campus-submit-practice" style="margin-top:6px;font-size:13px;background:none;border:1px solid rgba(255,255,255,0.15);color:inherit;padding:6px 12px;border-radius:6px;cursor:pointer;">Save Practice</button>
+            <span class="campus-practice-saved" style="display:none;font-size:12px;color:#22c55e;margin-left:8px;">Saved ✓</span>
+          </div>`).join('')}
+        ${quiz.map(q => `
+          <div class="campus-quiz-item" data-item-id="${q.id}" style="margin-bottom:10px;">
+            <p style="font-size:14px;">${q.prompt}</p>
+            <div class="campus-quiz-options" style="display:flex;flex-direction:column;gap:6px;">
+              ${(q.options || []).map(o => `
+                <label style="display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer;">
+                  <input type="radio" name="quiz-${q.id}" value="${o.id}"> ${o.text}
+                </label>`).join('')}
+            </div>
+            <button class="campus-submit-quiz" style="margin-top:6px;font-size:13px;background:none;border:1px solid rgba(255,255,255,0.15);color:inherit;padding:6px 12px;border-radius:6px;cursor:pointer;">Submit Answer</button>
+            <p class="campus-quiz-feedback" style="display:none;font-size:13px;margin-top:6px;"></p>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  function wireTopicInteractions(panel) {
+    panel.querySelectorAll('.campus-submit-practice').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const wrap = btn.closest('.campus-practice-item');
+        const text = wrap.querySelector('textarea').value.trim();
+        if (!text) return;
+        await fetch('/api/campus/practice', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contentItemId: Number(wrap.dataset.itemId), moduleId: state.activeModuleDbId, responseText: text }),
+        });
+        wrap.querySelector('.campus-practice-saved').style.display = 'inline';
+        loadMe();
+      });
+    });
+    panel.querySelectorAll('.campus-submit-quiz').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const wrap = btn.closest('.campus-quiz-item');
+        const itemId = Number(wrap.dataset.itemId);
+        const selected = wrap.querySelector(`input[name="quiz-${itemId}"]:checked`);
+        if (!selected) return;
+        const res = await fetch('/api/campus/quiz', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contentItemId: itemId, moduleId: state.activeModuleDbId, selectedOptionId: selected.value }),
+        });
+        const data = await res.json();
+        const fb = wrap.querySelector('.campus-quiz-feedback');
+        fb.style.display = 'block';
+        fb.style.color = data.isCorrect ? '#22c55e' : '#f59e0b';
+        fb.textContent = (data.isCorrect ? '✓ Correct. ' : '✗ Not quite. ') + (data.explanation || '');
+        loadMe();
+      });
+    });
+  }
+
+  loadMe();
+})();
+</script>
+
+<%- include('partials/workspace-shell-bottom') %>

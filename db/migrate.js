@@ -1052,6 +1052,172 @@ async function runMigrations() {
           `);
         },
       },
+      {
+        name: '031_campus_ready_v1',
+        up: async (c) => {
+          // Campus Ready V1 — fully isolated from the individual product.
+          // Every table here is new; the only existing-table reference is
+          // users(id) for learner identity. Nothing here alters
+          // interview_sessions, package_acquisitions, or any table the
+          // Interview Engine, Vapi, ElevenLabs, or Stripe integration reads.
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS institutions (
+              id SERIAL PRIMARY KEY,
+              name VARCHAR(255) NOT NULL,
+              contact_name VARCHAR(255),
+              contact_email VARCHAR(255),
+              created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_cohorts (
+              id SERIAL PRIMARY KEY,
+              institution_id INTEGER NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+              name VARCHAR(255) NOT NULL,
+              learner_limit INTEGER,
+              starts_at DATE,
+              ends_at DATE,
+              status VARCHAR(20) NOT NULL DEFAULT 'active',
+              created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`CREATE INDEX IF NOT EXISTS campus_cohorts_institution_idx ON campus_cohorts (institution_id)`);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_learner_invites (
+              id SERIAL PRIMARY KEY,
+              cohort_id INTEGER NOT NULL REFERENCES campus_cohorts(id) ON DELETE CASCADE,
+              email VARCHAR(255) NOT NULL,
+              invite_token VARCHAR(255) UNIQUE NOT NULL,
+              status VARCHAR(20) NOT NULL DEFAULT 'pending',
+              invited_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+              created_at TIMESTAMPTZ DEFAULT NOW(),
+              accepted_at TIMESTAMPTZ,
+              expires_at TIMESTAMPTZ
+            )
+          `);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS campus_learner_invites_cohort_email_idx
+            ON campus_learner_invites (cohort_id, LOWER(email))
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_learners (
+              id SERIAL PRIMARY KEY,
+              user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+              cohort_id INTEGER NOT NULL REFERENCES campus_cohorts(id) ON DELETE CASCADE,
+              joined_at TIMESTAMPTZ DEFAULT NOW(),
+              status VARCHAR(20) NOT NULL DEFAULT 'active'
+            )
+          `);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS campus_learners_user_cohort_idx
+            ON campus_learners (user_id, cohort_id)
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_modules (
+              id SERIAL PRIMARY KEY,
+              key VARCHAR(50) UNIQUE NOT NULL,
+              name VARCHAR(255) NOT NULL,
+              sequence INTEGER NOT NULL,
+              description TEXT
+            )
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_topics (
+              id SERIAL PRIMARY KEY,
+              module_id INTEGER NOT NULL REFERENCES campus_modules(id) ON DELETE CASCADE,
+              key VARCHAR(50) NOT NULL,
+              name VARCHAR(255) NOT NULL,
+              sequence INTEGER NOT NULL
+            )
+          `);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS campus_topics_module_key_idx
+            ON campus_topics (module_id, key)
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_content_items (
+              id SERIAL PRIMARY KEY,
+              topic_id INTEGER NOT NULL REFERENCES campus_topics(id) ON DELETE CASCADE,
+              item_type VARCHAR(20) NOT NULL CHECK (item_type IN ('learn_example','practice_prompt','quiz_question')),
+              prompt_text TEXT NOT NULL,
+              answer_guidance TEXT,
+              options JSONB,
+              correct_option_id VARCHAR(10),
+              common_mistake_notes TEXT,
+              sequence INTEGER NOT NULL DEFAULT 0,
+              is_active BOOLEAN NOT NULL DEFAULT true
+            )
+          `);
+          await c.query(`
+            CREATE INDEX IF NOT EXISTS campus_content_items_topic_idx
+            ON campus_content_items (topic_id, item_type)
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_practice_submissions (
+              id SERIAL PRIMARY KEY,
+              learner_id INTEGER NOT NULL REFERENCES campus_learners(id) ON DELETE CASCADE,
+              content_item_id INTEGER NOT NULL REFERENCES campus_content_items(id) ON DELETE CASCADE,
+              response_text TEXT NOT NULL,
+              submitted_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`
+            CREATE INDEX IF NOT EXISTS campus_practice_submissions_learner_idx
+            ON campus_practice_submissions (learner_id)
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_quiz_responses (
+              id SERIAL PRIMARY KEY,
+              learner_id INTEGER NOT NULL REFERENCES campus_learners(id) ON DELETE CASCADE,
+              content_item_id INTEGER NOT NULL REFERENCES campus_content_items(id) ON DELETE CASCADE,
+              selected_option_id VARCHAR(10) NOT NULL,
+              is_correct BOOLEAN NOT NULL,
+              submitted_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS campus_quiz_responses_learner_item_idx
+            ON campus_quiz_responses (learner_id, content_item_id)
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_module_progress (
+              id SERIAL PRIMARY KEY,
+              learner_id INTEGER NOT NULL REFERENCES campus_learners(id) ON DELETE CASCADE,
+              module_id INTEGER NOT NULL REFERENCES campus_modules(id) ON DELETE CASCADE,
+              status VARCHAR(20) NOT NULL DEFAULT 'not_started',
+              percent_complete NUMERIC(5,2) NOT NULL DEFAULT 0,
+              quiz_passed BOOLEAN NOT NULL DEFAULT false,
+              updated_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS campus_module_progress_learner_module_idx
+            ON campus_module_progress (learner_id, module_id)
+          `);
+
+          // Fixed V1 program: 5 independent modules, seeded once. Content
+          // (topics/questions) is seeded separately by
+          // db/campus-content-seed.js at server boot, not here — keeps
+          // schema migrations and content curation on separate cycles.
+          await c.query(`
+            INSERT INTO campus_modules (key, name, sequence, description) VALUES
+              ('tell_your_story', 'Tell Your Story', 1, 'Self-introduction, resume walkthrough, and project storytelling.'),
+              ('technical_interview', 'Technical Interview', 2, 'Core technical concepts and project deep dives.'),
+              ('problem_solving', 'Problem Solving', 3, 'Structured thinking, scenarios, and trade-off reasoning.'),
+              ('behavioral_interview', 'Behavioral Interview', 4, 'Teamwork, conflict, failure, ownership, and adaptability.'),
+              ('hr_final_round', 'HR / Final Round', 5, 'Motivation, fit, and closing-round questions.')
+            ON CONFLICT (key) DO NOTHING
+          `);
+        },
+      },
     ];
 
     for (const m of migrations) {

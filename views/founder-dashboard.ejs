@@ -63,6 +63,7 @@ const _onlineUsers = typeof onlineUsers !== 'undefined' && Array.isArray(onlineU
 // applyTimestamps() function in the <script> below), the same way the
 // auto-refresh functions already format times using the browser's local
 // timezone. This keeps initial load and refreshed data visually consistent.
+
 const toISO = (d) => d ? new Date(d).toISOString() : '';
 %>
 <%- include('partials/workspace-shell-top', { pageTitle: 'Founder Dashboard — MedhaIQ', activeNav: 'founder', shellUser: shellUser, bodyClass: 'founder-dashboard-page', extraStylesheets: ['/css/career-workspace.css', '/css/founder-dashboard.css'] }) %>
@@ -74,7 +75,9 @@ const toISO = (d) => d ? new Date(d).toISOString() : '';
   </div>
   <span class="fdash-status-dot" id="fdash-live-dot">Live</span>
 </div>
+<a href="/founder/institutions" style="display:inline-block;margin-bottom:16px;font-size:13px;color:var(--blue-bright,#3b82f6);">Campus Ready — Institutions →</a>
 
+<!-- Quick Actions -->
 <!-- Section 1 — Executive Snapshot (config-driven, tolerates missing data) -->
 <div class="fdash-kpi-grid" id="fdash-kpi-grid">
   <% kpiConfig.forEach(function(k) { %>

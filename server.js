@@ -102,7 +102,8 @@ app.use('/api/debug/elevenlabs/voices', require('./routes/debug-elevenlabs-voice
 app.use('/api/presence',   require('./routes/presence')); // lightweight Online Now heartbeat, see db/presence.js
 app.use('/api/stripe',     require('./routes/stripe').router); // Sandbox/staging checkout only — webhook is mounted separately above, pre-express.json()
 app.use('/api/feedback',   require('./routes/feedback')); // 5-star post-interview feedback widget — was implemented but never mounted, so POST /api/feedback 404'd and the Submit button always showed "Something went wrong"
-
+app.use('/api/campus',         require('./routes/campus'));
+app.use('/api/founder/campus', require('./routes/campus-admin'));
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/', async (req, res) => {
   try {
@@ -919,6 +920,25 @@ app.get('/founder', requireFounderPage, async (req, res) => {
 // built (limit/offset params existed unused until now) and the existing
 // views/founder-feedback-all.ejs (existed unused until now). No new
 // query, no new template — this route is the only missing piece.
+app.get('/campus', requireAuthPage, async (req, res) => {
+  const { getLearnerForUser } = require('./db/campus');
+  const learner = await getLearnerForUser(req.user.id);
+  if (!learner) return res.redirect('/dashboard/history');
+  res.render('campus-ready', { shellUser: req.user, cohortLabel: learner.cohort_name });
+});
+
+app.get('/campus/join/:token', requireAuthPage, async (req, res) => {
+  const { acceptInvite } = require('./db/campus');
+  const result = await acceptInvite(req.params.token, req.user.id);
+  if (!result.ok) {
+    return res.status(400).render('error-boundary', { url: req.url, errorMessage: 'This invite link is invalid or has expired.' });
+  }
+  res.redirect('/campus');
+});
+
+app.get('/founder/institutions', requireFounderPage, async (req, res) => {
+  res.render('founder-institutions', { shellUser: req.user });
+});
 app.get('/founder/feedback', requireFounderPage, async (req, res) => {
   try {
     const { getRecentFeedback } = require('./db/founder-feedback');
@@ -1222,6 +1242,9 @@ const { runMigrations } = require('./db/migrate');
 
 runMigrations()
   .then(() => {
+
+require('./db/campus-content-seed').ensureCampusContentSeeded()
+  .catch(err => console.error('[campus-seed] failed:', err));
     app.listen(port, () => {
       console.log(`[server] Running on port ${port}`);
       console.log(`[server] NODE_ENV=${process.env.NODE_ENV || 'development'}`);
