@@ -36,7 +36,7 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #F7F6F2; /* was var(--bg) (dark navy) — warm-light now spans the whole application canvas, not just the center column. Text color intentionally stays var(--white): the dark left/right .panel cards below supply their own dark background, so inherited white text remains correct inside them; main.panel (center) sets its own explicit dark text color for its own subtree. */
+      background: var(--bg);
       color: var(--white);
       font-family: 'Inter', system-ui, sans-serif;
       font-size: 14px;
@@ -49,7 +49,7 @@
     /* ── Nav ─────────────────────────────────────────── */
     .nav {
       position: sticky; top: 0; z-index: 20;
-      background: rgba(7,11,20,0.95); /* reverted to dark navy — header stays application chrome, same principle as Career Workspace's dark header/sidebar */
+      background: rgba(7,11,20,0.95);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       height: 52px;
@@ -84,7 +84,6 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06); /* new — dark cards now sit on a light canvas rather than a dark page, this gives them a proper elevated feel instead of looking flat */
     }
     .panel + .panel { margin-top: 14px; }
 
@@ -102,67 +101,6 @@
     .left-rail { position: sticky; top: 66px; display: flex; flex-direction: column; }
     .left-rail .panel + .panel { margin-top: 14px; }
     .left-rail .panel:last-child { min-height: 382px; }
-
-    /* ═══════════════════════════════════════════════════════════════
-       CENTER — warm-light treatment (visual consistency pass, 2026-08-26)
-       Reuses the exact palette already documented in
-       public/css/architecture-light.css (which itself matches why.css):
-         light #F7F6F2 | card #FFFFFF | border #E5E7EB
-         primary text #0B1020 | secondary text #5F6B82
-       Scoped to `main.panel` specifically -- .panel is a generic card
-       class also used by the left rail's own "Session Context" /
-       "Session Breakdown" cards, so scoping to .panel alone would have
-       incorrectly lightened those too. main.panel is the one and only
-       <main> element on this page, so this reaches nothing else.
-       Every rule below this point that already reads var(--card),
-       var(--border), var(--muted), var(--dim), var(--surface), or
-       var(--white) picks up these values automatically -- this is the
-       only place those tokens are redefined; no other selector in this
-       file needed to change. Two categories of hardcoded (non-variable)
-       colors still needed explicit fixes below: pastel accent colors
-       tuned for a dark background (difficulty badges, persona-style
-       pills) would be unreadable on white, and .video-panel-equivalent
-       elements don't exist on this page so no dark-media exception is
-       needed here (unlike the Active Interview screen).
-       ═══════════════════════════════════════════════════════════════ */
-    main.panel {
-      --card:     #FFFFFF;
-      --surface:  #F2F3F1;
-      --border:   #E5E7EB;
-      --muted:    #5F6B82;
-      --dim:      #8A94A8;
-      --white:    #0B1020; /* every var(--white) reference inside this subtree is text color, never a background fill -- confirmed by inspection -- so this correctly becomes "primary text on light" here */
-      background: transparent; /* was #F7F6F2 — the page itself is now that same color, so the center no longer needs its own fill; this is what actually removes the "floating card" look */
-      border: none; /* was inheriting 1px solid var(--border) from the generic .panel rule above — that visible boundary line was a big part of the "card" read */
-      box-shadow: none; /* cancels the shadow the generic .panel rule above now adds for the dark side cards — the center is a canvas, not an elevated card */
-      color: #0B1020;
-      border-radius: 0; /* was 10px, then 20px before that — now genuinely none: "warm workspace, not warm card" taken to its conclusion */
-    }
-    /* Card-on-canvas treatment matching Why/Architecture exactly: white
-       bordered cards with a soft shadow sitting on the #F7F6F2 canvas,
-       not a single flat white slab. */
-    main.panel .sel-card,
-    main.panel .role-tab,
-    main.panel .custom-input {
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    main.panel .sel-card:hover { box-shadow: 0 8px 20px rgba(37,99,235,0.08); }
-    main.panel .role-tab.active { background: #1E40AF; border-color: #1E40AF; color: #fff; }
-    /* Pastel accent colors tuned for dark backgrounds -- illegible on
-       white without these explicit, darker equivalents. Variables alone
-       can't fix these since they're hardcoded hex in the base rules. */
-    main.panel .diff-hard   { color: #B91C1C; }
-    main.panel .diff-elite  { color: #6D28D9; }
-    main.panel .diff-medium { color: #92400E; }
-    main.panel .p-style.royal-blue { color: #1E40AF; }
-    main.panel .p-style.emerald    { color: #047857; }
-    main.panel .p-style.gold       { color: #92400E; }
-    main.panel .p-traits li        { color: #5F6B82; }
-    main.panel .p-traits li::before{ color: #94A3B8; }
-    main.panel .exp-yrs,
-    main.panel .rc-desc,
-    main.panel .p-title            { color: #5F6B82; }
-
     .panel-label {
       font-size: 10px; font-weight: 700; letter-spacing: 1.4px;
       text-transform: uppercase; color: var(--blue-hi);
@@ -391,10 +329,10 @@
     .tailor-card .tc-desc{ font-size:11px;color:var(--muted);line-height:1.5; }
     .tc-add-btn{
       margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:6px;
-      background:rgba(109,40,217,.06); border:1px solid rgba(109,40,217,.45); color:#6D28D9; /* was transparent/rgba(139,92,246,.5)/#c4b5fd — that pastel violet had poor contrast on a light background; darkened to a solid, readable violet while staying visually secondary (not the blue primary-action color) */
+      background:transparent; border:1px solid rgba(139,92,246,.5); color:#c4b5fd;
       font:inherit; font-size:12px; font-weight:600; padding:6px 12px; border-radius:9px; cursor:pointer; transition:.15s;
     }
-    .tc-add-btn:hover{ background:rgba(109,40,217,.14); }
+    .tc-add-btn:hover{ background:rgba(139,92,246,.12); }
 
     /* ── Success state ── */
     .tailor-card.tc-success{
@@ -412,16 +350,16 @@
     .tc-badges{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
     .tc-badge{
       font-size:10px; font-weight:600; padding:3px 8px; border-radius:6px;
-      border:1px solid rgba(30,64,175,.35); color:#1E40AF; background:rgba(30,64,175,.06); /* was color:#93c5fd (pastel, low-contrast on white) */
+      border:1px solid rgba(59,130,246,.45); color:#93c5fd; background:rgba(59,130,246,.08);
     }
-    .tc-badge.ok{ border-color:rgba(4,120,87,.35); color:#047857; background:rgba(4,120,87,.06); } /* was color:#86efac */
+    .tc-badge.ok{ border-color:rgba(34,197,94,.45); color:#86efac; background:rgba(34,197,94,.08); }
     .tc-metrics{ font-size:11px; color:var(--green); font-weight:600; }
     .tc-edit-link{
       margin-top:auto; align-self:flex-start;
       background:none; border:none; padding:0; cursor:pointer;
       font:inherit; font-size:11.5px; font-weight:600; color:var(--muted); text-decoration:underline; text-underline-offset:3px;
     }
-    .tc-edit-link:hover{ color:#0B1020; } /* was #e2e8f0 (near-white — invisible on the light canvas) */
+    .tc-edit-link:hover{ color:#e2e8f0; }
 
     /* ── Modal ── */
     .tc-overlay{
@@ -568,17 +506,19 @@
 
     <div class="step-label">1. Select Target Role</div>
     <div class="role-tabs">
-      <button class="role-tab active" data-tab="tech" onclick="switchTab('tech')">Technology &amp; Engineering</button>
-      <button class="role-tab" data-tab="data" onclick="switchTab('data')">Data &amp; AI</button>
-      <button class="role-tab" data-tab="product" onclick="switchTab('product')">Product &amp; Program</button>
-      <button class="role-tab" data-tab="business" onclick="switchTab('business')">Business &amp; Consulting</button>
+      <button class="role-tab active" data-tab="core" onclick="switchTab('core')">Core Roles</button>
+      <button class="role-tab" data-tab="ai" onclick="switchTab('ai')">AI &amp; Data Roles</button>
     </div>
 
-    <div class="role-panel visible" id="tab-tech">
+    <div class="role-panel visible" id="tab-core">
       <div class="role-grid">
+        <div class="sel-card chip" data-role="Product Manager"><div class="check">✓</div><div class="rc-icon">💼</div><div class="rc-title">Product Manager</div><div class="rc-desc">Strategy • Roadmaps • Delivery</div></div>
         <div class="sel-card chip" data-role="Software Engineer"><div class="check">✓</div><div class="rc-icon">&lt;/&gt;</div><div class="rc-title">Software Engineer</div><div class="rc-desc">Backend • Frontend • Systems</div></div>
         <div class="sel-card chip" data-role="Engineering Manager"><div class="check">✓</div><div class="rc-icon">👥</div><div class="rc-title">Engineering Manager</div><div class="rc-desc">People • Delivery • Execution</div></div>
         <div class="sel-card chip" data-role="Solutions Architect"><div class="check">✓</div><div class="rc-icon">🗂</div><div class="rc-title">Solutions Architect</div><div class="rc-desc">Cloud • Architecture • Integration</div></div>
+        <div class="sel-card chip" data-role="Technical Program Manager"><div class="check">✓</div><div class="rc-icon">🗓</div><div class="rc-title">Technical Program Manager</div><div class="rc-desc">Programs • Delivery • Cross-functional</div></div>
+        <div class="sel-card chip" data-role="Management Consultant"><div class="check">✓</div><div class="rc-icon">📊</div><div class="rc-title">Management Consultant</div><div class="rc-desc">Strategy • Transformation • Advisory</div></div>
+        <div class="sel-card chip" data-role="Executive Leadership"><div class="check">✓</div><div class="rc-icon">👑</div><div class="rc-title">Executive Leadership</div><div class="rc-desc">Vision • Strategy • Leadership</div></div>
 
         <!-- ══ TAILOR FOR A SPECIFIC JOB — replaces the Custom Role tile in
              this grid. NOT a .sel-card: the role-selection handler must never
@@ -591,7 +531,7 @@
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
             </div>
             <div class="tc-title">Tailor for a specific Job</div>
-            <div class="tc-desc">Customize using a Job Description or Company Context.</div>
+            <div class="tc-desc">Personalize this interview for a specific role, company, or job opportunity.</div>
             <button class="tc-add-btn" type="button">＋ Add Context</button>
           </div>
           <!-- State B: post-save success (hidden until Apply Context) -->
@@ -616,85 +556,19 @@
       </div>
     </div>
 
-    <div class="role-panel" id="tab-data">
+    <div class="role-panel" id="tab-ai">
       <div class="role-grid">
         <div class="sel-card chip" data-role="AI Engineer"><div class="check">✓</div><div class="rc-icon">🤖</div><div class="rc-title">AI Engineer</div><div class="rc-desc">Models • Systems • Deployment</div></div>
-        <div class="sel-card chip" data-role="Data Engineer"><div class="check">✓</div><div class="rc-icon">🛠</div><div class="rc-title">Data Engineer</div><div class="rc-desc">Pipelines • Platforms • Reliability</div></div>
         <div class="sel-card chip" data-role="AI Product Manager"><div class="check">✓</div><div class="rc-icon">🧭</div><div class="rc-title">AI Product Manager</div><div class="rc-desc">AI Strategy • Roadmaps • Scale</div></div>
+        <div class="sel-card chip" data-role="Data Engineer"><div class="check">✓</div><div class="rc-icon">🛠</div><div class="rc-title">Data Engineer</div><div class="rc-desc">Pipelines • Platforms • Reliability</div></div>
+        <div class="sel-card chip" data-role="ML Engineer"><div class="check">✓</div><div class="rc-icon">📈</div><div class="rc-title">ML Engineer</div><div class="rc-desc">Training • Evaluation • Deployment</div></div>
+        <div class="sel-card chip" data-role="MLOps Engineer"><div class="check">✓</div><div class="rc-icon">🔁</div><div class="rc-title">MLOps Engineer</div><div class="rc-desc">Infrastructure • Reliability • Scale</div></div>
+        <div class="sel-card chip" data-role="Research Scientist"><div class="check">✓</div><div class="rc-icon">🔬</div><div class="rc-title">Research Scientist</div><div class="rc-desc">Research • Experimentation • Innovation</div></div>
+        <div class="sel-card chip" data-role="LLM Engineer"><div class="check">✓</div><div class="rc-icon">💬</div><div class="rc-title">LLM Engineer</div><div class="rc-desc">LLM Apps • Prompting • Integration</div></div>
 
-        <!-- ══ TAILOR FOR A SPECIFIC JOB — instance 2 of 4. ══ -->
-        <div class="tailor-card" role="button" tabindex="0" aria-haspopup="dialog">
-          <div class="tc-state-empty">
-            <div class="tc-icon">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
-            </div>
-            <div class="tc-title">Tailor for a specific Job</div>
-            <div class="tc-desc">Customize using a Job Description or Company Context.</div>
-            <button class="tc-add-btn" type="button">＋ Add Context</button>
-          </div>
-          <div class="tc-state-done" style="display:none">
-            <div class="tc-company-row">
-              <span class="tc-check">✓</span>
-              <span class="tc-logo">
-                <img class="tc-logo-img" alt="" width="18" height="18" style="display:none">
-                <svg class="tc-logo-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16"/><path d="M14 9h5a1 1 0 0 1 1 1v11"/><path d="M2 21h20"/><path d="M7.5 8h3M7.5 12h3M7.5 16h3"/></svg>
-              </span>
-              <span class="tc-company tc-company-out">—</span>
-            </div>
-            <div class="tc-role-line tc-role-out"></div>
-            <div class="tc-badges">
-              <span class="tc-badge ok tc-jd-badge" style="display:none">JD Attached</span>
-              <span class="tc-badge tc-level-badge" style="display:none"></span>
-            </div>
-            <div class="tc-metrics tc-metrics-out"></div>
-            <button class="tc-edit-link" type="button">Edit Context…</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="role-panel" id="tab-product">
-      <div class="role-grid">
-        <div class="sel-card chip" data-role="Product Manager"><div class="check">✓</div><div class="rc-icon">💼</div><div class="rc-title">Product Manager</div><div class="rc-desc">Strategy • Roadmaps • Delivery</div></div>
-        <div class="sel-card chip" data-role="Program Manager"><div class="check">✓</div><div class="rc-icon">🔗</div><div class="rc-title">Program Manager</div><div class="rc-desc">Programs • Delivery • Stakeholders</div></div>
-
-        <!-- ══ TAILOR FOR A SPECIFIC JOB — instance 3 of 4. ══ -->
-        <div class="tailor-card" role="button" tabindex="0" aria-haspopup="dialog">
-          <div class="tc-state-empty">
-            <div class="tc-icon">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
-            </div>
-            <div class="tc-title">Tailor for a specific Job</div>
-            <div class="tc-desc">Customize using a Job Description or Company Context.</div>
-            <button class="tc-add-btn" type="button">＋ Add Context</button>
-          </div>
-          <div class="tc-state-done" style="display:none">
-            <div class="tc-company-row">
-              <span class="tc-check">✓</span>
-              <span class="tc-logo">
-                <img class="tc-logo-img" alt="" width="18" height="18" style="display:none">
-                <svg class="tc-logo-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16"/><path d="M14 9h5a1 1 0 0 1 1 1v11"/><path d="M2 21h20"/><path d="M7.5 8h3M7.5 12h3M7.5 16h3"/></svg>
-              </span>
-              <span class="tc-company tc-company-out">—</span>
-            </div>
-            <div class="tc-role-line tc-role-out"></div>
-            <div class="tc-badges">
-              <span class="tc-badge ok tc-jd-badge" style="display:none">JD Attached</span>
-              <span class="tc-badge tc-level-badge" style="display:none"></span>
-            </div>
-            <div class="tc-metrics tc-metrics-out"></div>
-            <button class="tc-edit-link" type="button">Edit Context…</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="role-panel" id="tab-business">
-      <div class="role-grid">
-        <div class="sel-card chip" data-role="Business Analyst"><div class="check">✓</div><div class="rc-icon">🔍</div><div class="rc-title">Business Analyst</div><div class="rc-desc">Analysis • Requirements • Solutions</div></div>
-        <div class="sel-card chip" data-role="Management Consultant"><div class="check">✓</div><div class="rc-icon">📊</div><div class="rc-title">Management Consultant</div><div class="rc-desc">Strategy • Transformation • Advisory</div></div>
-
-        <!-- ══ TAILOR FOR A SPECIFIC JOB — instance 4 of 4. ══ -->
+        <!-- ══ TAILOR FOR A SPECIFIC JOB — second instance (AI & Data tab).
+             Identical markup to the Core tab card; the shared handler keeps
+             both instances' states in sync automatically. ══ -->
         <div class="tailor-card" role="button" tabindex="0" aria-haspopup="dialog">
           <div class="tc-state-empty">
             <div class="tc-icon">
@@ -733,27 +607,6 @@
       <div class="sel-card chip exp-card" data-exp="senior"><div class="check">✓</div><span class="exp-emoji">🔥</span><div><div class="exp-name">Senior</div><div class="exp-yrs">8–15 yrs</div></div></div>
       <div class="sel-card chip exp-card" data-exp="executive"><div class="check">✓</div><span class="exp-emoji">👑</span><div><div class="exp-name">Executive</div><div class="exp-yrs">15+ yrs</div></div></div>
     </div>
-
-    <!-- Campus Ready entry point -- additive only. A plain navigational
-         CTA shown when the Fresher (0-2 yrs) stage is selected. Does not
-         read or alter state.exp, does not touch the existing card click
-         handling, and does not change the session-creation payload
-         below. Attached via its own addEventListener, alongside
-         whatever handling already runs on .exp-card -- never replacing
-         it. -->
-    <div id="campusReadyPrompt" style="display:none;margin:12px 0 20px;padding:14px 18px;border-radius:10px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);">
-      <span style="font-size:14px;">Preparing for campus placements? </span>
-      <a href="/campus" style="font-size:14px;font-weight:600;color:var(--blue-bright,#3b82f6);">Try Campus Ready →</a>
-    </div>
-    <script>
-      (function () {
-        var fresherCard = document.querySelector('.exp-card[data-exp="fresher"]');
-        var campusPrompt = document.getElementById('campusReadyPrompt');
-        if (fresherCard && campusPrompt) {
-          fresherCard.addEventListener('click', function () { campusPrompt.style.display = 'block'; });
-        }
-      })();
-    </script>
 
     <div class="step-label">3. Select Interviewer Persona</div>
     <%

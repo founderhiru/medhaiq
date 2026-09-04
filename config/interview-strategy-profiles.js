@@ -81,12 +81,35 @@ const STRATEGY_PROFILES = {
     4: { questionType: 'resume_story' },
     5: { questionType: 'executive_judgment' },
   },
+  // BUG FIX (2026-09-03): Q4 was 'jd_scenario' (a duplicate of Q3's type)
+  // and Q5 was 'executive_judgment' — a Fresher/Graduate candidate has no
+  // basis for board-level judgment questions. Q4 -> 'behavioural' gives
+  // the intended team/problem-solving turn; Q5 -> 'jd_scenario' gives a
+  // role-fit/synthesis close (jd_scenario's own stated purpose is
+  // "Evaluate role fit through a realistic scenario grounded in the
+  // target role" — exactly the intended Q5 shape, using an existing
+  // question type rather than inventing a new one).
   graduate: {
     1: { questionType: 'resume_story' },
     2: { questionType: 'resume_story' },
     3: { questionType: 'jd_scenario' },
+    4: { questionType: 'behavioural' },
+    5: { questionType: 'jd_scenario' },
+  },
+  // PATCH A (2026-09-04): 'professional' — for Mid-Career and Senior
+  // candidates of ANY role. Deliberately the same safe rhythm as
+  // 'engineering' below (no executive_judgment slot — a mid/senior
+  // candidate isn't yet being asked for board-level synthesis) rather
+  // than inventing a new shape. Named separately from 'engineering'
+  // because it now applies universally by experience level, not just to
+  // the 3 roles in ROLE_TO_PROFILE — see the new resolution order in
+  // resolveStrategyProfileName() below.
+  professional: {
+    1: { questionType: 'resume_story' },
+    2: { questionType: 'jd_scenario' },
+    3: { questionType: 'behavioural' },
     4: { questionType: 'jd_scenario' },
-    5: { questionType: 'behavioural' },
+    5: { questionType: 'resume_story' },
   },
   engineering: {
     1: { questionType: 'resume_story' },
@@ -102,53 +125,67 @@ const STRATEGY_PROFILES = {
 // extend without touching the interview engine itself, per the founder's
 // "profiles that can evolve by role and seniority" goal. Unmatched roles
 // (including any future role title) fall through to 'executive'.
-// Practitioner-level roles across the canonical taxonomy that should use
-// the 'engineering' rhythm instead of the 'executive' default at Mid/
-// Senior stages. Deliberately NOT a new/duplicate profile object — this
-// file's own header states profiles carry question TYPE only, not
-// competency content, so the existing 5-question rhythm (resume_story/
-// jd_scenario/behavioural/jd_scenario/resume_story) is reasonably generic
-// across these roles. Includes both the 10 currently-visible launch roles
-// and the 8 parked-but-still-configured roles (Engineering Director,
-// Technical Program Manager, Product Director, MLOps Engineer, Research
-// Scientist, LLM Engineer, Strategy & Transformation) as defense-in-depth
-// in case they're ever reachable outside the UI's visible catalog.
-// 'Executive Leadership' is intentionally absent — it should fall through
-// to 'executive', per spec ("Executive Leadership -> Executive should
-// generate true executive-level questions").
 const ROLE_TO_PROFILE = {
   'Software Engineer': 'engineering',
-  'Engineering Manager': 'engineering',
-  'Engineering Director': 'engineering',
-  'Solutions Architect': 'engineering',
-  'Technical Program Manager': 'engineering',
   'AI Engineer': 'engineering',
-  'AI Product Manager': 'engineering',
   'Data Engineer': 'engineering',
-  'ML Engineer': 'engineering',
-  'MLOps Engineer': 'engineering',
-  'Research Scientist': 'engineering',
-  'LLM Engineer': 'engineering',
-  'Product Manager': 'engineering',
-  'Product Director': 'engineering',
-  'Program Manager': 'engineering',
-  'Business Analyst': 'engineering',
-  'Management Consultant': 'engineering',
-  'Strategy & Transformation': 'engineering',
 };
 
+// BUG FIX (2026-09-03): 'fresher' — the actual value the production UI
+// sends (views/interview-setup.ejs's data-exp="fresher" -> state.exp ->
+// experienceLevel: state.exp) — was never in this set. Every Fresher
+// session fell through resolveStrategyProfileName() to the 'executive'
+// hard fallback below, so Q3 (behavioural) and Q5 (executive_judgment)
+// were generated with zero seniority constraint, surfacing board-level/
+// executive-scoped questions for entry-level candidates. Root-caused via
+// end-to-end log trace (session showing "Profile: executive" for a
+// Fresher-selected interview with no matching role in ROLE_TO_PROFILE).
 const GRADUATE_EXPERIENCE_LEVELS = new Set(['fresher', 'entry', 'graduate', 'junior', 'intern']);
 
+// PATCH A (2026-09-04): the two new recognized-level sets that complete
+// the resolution table. 'mid' and 'senior' previously matched NEITHER
+// GRADUATE_EXPERIENCE_LEVELS nor any role-name check, so they fell all
+// the way through to the 'executive' hard fallback — identical treatment
+// to a true 15+-year Executive candidate, for any role not in
+// ROLE_TO_PROFILE (7 of the 10 launch roles). Explicitly recognizing
+// 'executive' here too (rather than leaving it to also reach the same
+// hard fallback by accident) is what fixes the inverse bug: a Software
+// Engineer + Executive candidate was previously resolving to
+// 'engineering' (via ROLE_TO_PROFILE) instead of 'executive', because
+// role-mapping was checked before any level-based rule existed for
+// 'executive'. Recognizing all three non-Fresher levels explicitly, and
+// checking them BEFORE role mapping, makes experience level the sole
+// determinant whenever it's a recognized value — role only matters when
+// experience level is missing or unrecognized.
+const PROFESSIONAL_EXPERIENCE_LEVELS = new Set(['mid', 'senior']);
+const EXECUTIVE_EXPERIENCE_LEVELS = new Set(['executive']);
+
 /**
- * Resolves which strategy profile applies to this session. Experience
- * level takes precedence over role (an early-career engineer gets the
- * graduate rhythm, not the engineering one) since question rhythm should
- * match seniority first. Always resolves to something real — 'executive'
- * is the hard fallback.
+ * Resolves which strategy profile applies to this session.
+ *
+ * PATCH A (2026-09-04) resolution order — recognized experience level
+ * ALWAYS wins over role, for all four stages, not just the Fresher
+ * family as before:
+ *   1. Fresher-family experience level  -> 'graduate'
+ *   2. Mid or Senior experience level   -> 'professional'
+ *   3. Executive experience level       -> 'executive'
+ *   4. Experience level missing/unrecognized -> ROLE_TO_PROFILE fallback
+ *      (this is the ONLY path that still reaches 'engineering' — kept
+ *      intact, unchanged, exactly as before, purely as a fallback for
+ *      callers that don't send a recognized experienceLevel at all)
+ *   5. Still nothing -> 'executive' (final hard fallback, unchanged)
+ *
+ * This intentionally makes 'engineering' unreachable via the normal UI
+ * flow (which always sends a recognized experienceLevel) — it remains
+ * defined and wired up solely for the missing/unrecognized-level
+ * fallback path, per explicit instruction not to delete ROLE_TO_PROFILE
+ * or the 'engineering' profile.
  */
 function resolveStrategyProfileName(roleTitle, experienceLevel) {
   const levelKey = String(experienceLevel || '').toLowerCase().trim();
   if (GRADUATE_EXPERIENCE_LEVELS.has(levelKey)) return 'graduate';
+  if (PROFESSIONAL_EXPERIENCE_LEVELS.has(levelKey)) return 'professional';
+  if (EXECUTIVE_EXPERIENCE_LEVELS.has(levelKey)) return 'executive';
   const roleProfile = ROLE_TO_PROFILE[roleTitle];
   if (roleProfile && STRATEGY_PROFILES[roleProfile]) return roleProfile;
   return 'executive';
