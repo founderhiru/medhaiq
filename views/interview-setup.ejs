@@ -36,7 +36,7 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: var(--bg);
+      background: #F7F6F2; /* was var(--bg) (dark navy) — warm-light now spans the whole application canvas, not just the center column. Text color intentionally stays var(--white): the dark left/right .panel cards below supply their own dark background, so inherited white text remains correct inside them; main.panel (center) sets its own explicit dark text color for its own subtree. */
       color: var(--white);
       font-family: 'Inter', system-ui, sans-serif;
       font-size: 14px;
@@ -49,7 +49,7 @@
     /* ── Nav ─────────────────────────────────────────── */
     .nav {
       position: sticky; top: 0; z-index: 20;
-      background: rgba(7,11,20,0.95);
+      background: rgba(7,11,20,0.95); /* reverted to dark navy — header stays application chrome, same principle as Career Workspace's dark header/sidebar */
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       height: 52px;
@@ -84,6 +84,7 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06); /* new — dark cards now sit on a light canvas rather than a dark page, this gives them a proper elevated feel instead of looking flat */
     }
     .panel + .panel { margin-top: 14px; }
 
@@ -101,6 +102,67 @@
     .left-rail { position: sticky; top: 66px; display: flex; flex-direction: column; }
     .left-rail .panel + .panel { margin-top: 14px; }
     .left-rail .panel:last-child { min-height: 382px; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       CENTER — warm-light treatment (visual consistency pass, 2026-08-26)
+       Reuses the exact palette already documented in
+       public/css/architecture-light.css (which itself matches why.css):
+         light #F7F6F2 | card #FFFFFF | border #E5E7EB
+         primary text #0B1020 | secondary text #5F6B82
+       Scoped to `main.panel` specifically -- .panel is a generic card
+       class also used by the left rail's own "Session Context" /
+       "Session Breakdown" cards, so scoping to .panel alone would have
+       incorrectly lightened those too. main.panel is the one and only
+       <main> element on this page, so this reaches nothing else.
+       Every rule below this point that already reads var(--card),
+       var(--border), var(--muted), var(--dim), var(--surface), or
+       var(--white) picks up these values automatically -- this is the
+       only place those tokens are redefined; no other selector in this
+       file needed to change. Two categories of hardcoded (non-variable)
+       colors still needed explicit fixes below: pastel accent colors
+       tuned for a dark background (difficulty badges, persona-style
+       pills) would be unreadable on white, and .video-panel-equivalent
+       elements don't exist on this page so no dark-media exception is
+       needed here (unlike the Active Interview screen).
+       ═══════════════════════════════════════════════════════════════ */
+    main.panel {
+      --card:     #FFFFFF;
+      --surface:  #F2F3F1;
+      --border:   #E5E7EB;
+      --muted:    #5F6B82;
+      --dim:      #8A94A8;
+      --white:    #0B1020; /* every var(--white) reference inside this subtree is text color, never a background fill -- confirmed by inspection -- so this correctly becomes "primary text on light" here */
+      background: transparent; /* was #F7F6F2 — the page itself is now that same color, so the center no longer needs its own fill; this is what actually removes the "floating card" look */
+      border: none; /* was inheriting 1px solid var(--border) from the generic .panel rule above — that visible boundary line was a big part of the "card" read */
+      box-shadow: none; /* cancels the shadow the generic .panel rule above now adds for the dark side cards — the center is a canvas, not an elevated card */
+      color: #0B1020;
+      border-radius: 0; /* was 10px, then 20px before that — now genuinely none: "warm workspace, not warm card" taken to its conclusion */
+    }
+    /* Card-on-canvas treatment matching Why/Architecture exactly: white
+       bordered cards with a soft shadow sitting on the #F7F6F2 canvas,
+       not a single flat white slab. */
+    main.panel .sel-card,
+    main.panel .role-tab,
+    main.panel .custom-input {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    main.panel .sel-card:hover { box-shadow: 0 8px 20px rgba(37,99,235,0.08); }
+    main.panel .role-tab.active { background: #1E40AF; border-color: #1E40AF; color: #fff; }
+    /* Pastel accent colors tuned for dark backgrounds -- illegible on
+       white without these explicit, darker equivalents. Variables alone
+       can't fix these since they're hardcoded hex in the base rules. */
+    main.panel .diff-hard   { color: #B91C1C; }
+    main.panel .diff-elite  { color: #6D28D9; }
+    main.panel .diff-medium { color: #92400E; }
+    main.panel .p-style.royal-blue { color: #1E40AF; }
+    main.panel .p-style.emerald    { color: #047857; }
+    main.panel .p-style.gold       { color: #92400E; }
+    main.panel .p-traits li        { color: #5F6B82; }
+    main.panel .p-traits li::before{ color: #94A3B8; }
+    main.panel .exp-yrs,
+    main.panel .rc-desc,
+    main.panel .p-title            { color: #5F6B82; }
+
     .panel-label {
       font-size: 10px; font-weight: 700; letter-spacing: 1.4px;
       text-transform: uppercase; color: var(--blue-hi);
@@ -329,10 +391,10 @@
     .tailor-card .tc-desc{ font-size:11px;color:var(--muted);line-height:1.5; }
     .tc-add-btn{
       margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:6px;
-      background:transparent; border:1px solid rgba(139,92,246,.5); color:#c4b5fd;
+      background:rgba(109,40,217,.06); border:1px solid rgba(109,40,217,.45); color:#6D28D9; /* was transparent/rgba(139,92,246,.5)/#c4b5fd — that pastel violet had poor contrast on a light background; darkened to a solid, readable violet while staying visually secondary (not the blue primary-action color) */
       font:inherit; font-size:12px; font-weight:600; padding:6px 12px; border-radius:9px; cursor:pointer; transition:.15s;
     }
-    .tc-add-btn:hover{ background:rgba(139,92,246,.12); }
+    .tc-add-btn:hover{ background:rgba(109,40,217,.14); }
 
     /* ── Success state ── */
     .tailor-card.tc-success{
@@ -350,16 +412,16 @@
     .tc-badges{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
     .tc-badge{
       font-size:10px; font-weight:600; padding:3px 8px; border-radius:6px;
-      border:1px solid rgba(59,130,246,.45); color:#93c5fd; background:rgba(59,130,246,.08);
+      border:1px solid rgba(30,64,175,.35); color:#1E40AF; background:rgba(30,64,175,.06); /* was color:#93c5fd (pastel, low-contrast on white) */
     }
-    .tc-badge.ok{ border-color:rgba(34,197,94,.45); color:#86efac; background:rgba(34,197,94,.08); }
+    .tc-badge.ok{ border-color:rgba(4,120,87,.35); color:#047857; background:rgba(4,120,87,.06); } /* was color:#86efac */
     .tc-metrics{ font-size:11px; color:var(--green); font-weight:600; }
     .tc-edit-link{
       margin-top:auto; align-self:flex-start;
       background:none; border:none; padding:0; cursor:pointer;
       font:inherit; font-size:11.5px; font-weight:600; color:var(--muted); text-decoration:underline; text-underline-offset:3px;
     }
-    .tc-edit-link:hover{ color:#e2e8f0; }
+    .tc-edit-link:hover{ color:#0B1020; } /* was #e2e8f0 (near-white — invisible on the light canvas) */
 
     /* ── Modal ── */
     .tc-overlay{
