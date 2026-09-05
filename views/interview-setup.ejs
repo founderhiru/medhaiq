@@ -568,19 +568,17 @@
 
     <div class="step-label">1. Select Target Role</div>
     <div class="role-tabs">
-      <button class="role-tab active" data-tab="core" onclick="switchTab('core')">Core Roles</button>
-      <button class="role-tab" data-tab="ai" onclick="switchTab('ai')">AI &amp; Data Roles</button>
+      <button class="role-tab active" data-tab="tech" onclick="switchTab('tech')">Technology &amp; Engineering</button>
+      <button class="role-tab" data-tab="data-ai" onclick="switchTab('data-ai')">Data &amp; AI</button>
+      <button class="role-tab" data-tab="product" onclick="switchTab('product')">Product &amp; Program</button>
+      <button class="role-tab" data-tab="business" onclick="switchTab('business')">Business &amp; Consulting</button>
     </div>
 
-    <div class="role-panel visible" id="tab-core">
+    <div class="role-panel visible" id="tab-tech">
       <div class="role-grid">
-        <div class="sel-card chip" data-role="Product Manager"><div class="check">✓</div><div class="rc-icon">💼</div><div class="rc-title">Product Manager</div><div class="rc-desc">Strategy • Roadmaps • Delivery</div></div>
         <div class="sel-card chip" data-role="Software Engineer"><div class="check">✓</div><div class="rc-icon">&lt;/&gt;</div><div class="rc-title">Software Engineer</div><div class="rc-desc">Backend • Frontend • Systems</div></div>
-        <div class="sel-card chip" data-role="Engineering Manager"><div class="check">✓</div><div class="rc-icon">👥</div><div class="rc-title">Engineering Manager</div><div class="rc-desc">People • Delivery • Execution</div></div>
-        <div class="sel-card chip" data-role="Solutions Architect"><div class="check">✓</div><div class="rc-icon">🗂</div><div class="rc-title">Solutions Architect</div><div class="rc-desc">Cloud • Architecture • Integration</div></div>
-        <div class="sel-card chip" data-role="Technical Program Manager"><div class="check">✓</div><div class="rc-icon">🗓</div><div class="rc-title">Technical Program Manager</div><div class="rc-desc">Programs • Delivery • Cross-functional</div></div>
-        <div class="sel-card chip" data-role="Management Consultant"><div class="check">✓</div><div class="rc-icon">📊</div><div class="rc-title">Management Consultant</div><div class="rc-desc">Strategy • Transformation • Advisory</div></div>
-        <div class="sel-card chip" data-role="Executive Leadership"><div class="check">✓</div><div class="rc-icon">👑</div><div class="rc-title">Executive Leadership</div><div class="rc-desc">Vision • Strategy • Leadership</div></div>
+        <div class="sel-card chip" data-role="Engineering Manager"><div class="check">✓</div><div class="rc-icon">👥</div><div class="rc-title">Engineering Manager</div><div class="rc-desc">People • Delivery • Technical Leadership</div></div>
+        <div class="sel-card chip" data-role="Solutions Architect"><div class="check">✓</div><div class="rc-icon">🗂</div><div class="rc-title">Solutions Architect</div><div class="rc-desc">Architecture • Cloud • Technical Strategy</div></div>
 
         <!-- ══ TAILOR FOR A SPECIFIC JOB — replaces the Custom Role tile in
              this grid. NOT a .sel-card: the role-selection handler must never
@@ -618,19 +616,15 @@
       </div>
     </div>
 
-    <div class="role-panel" id="tab-ai">
+    <div class="role-panel" id="tab-data-ai">
       <div class="role-grid">
-        <div class="sel-card chip" data-role="AI Engineer"><div class="check">✓</div><div class="rc-icon">🤖</div><div class="rc-title">AI Engineer</div><div class="rc-desc">Models • Systems • Deployment</div></div>
-        <div class="sel-card chip" data-role="AI Product Manager"><div class="check">✓</div><div class="rc-icon">🧭</div><div class="rc-title">AI Product Manager</div><div class="rc-desc">AI Strategy • Roadmaps • Scale</div></div>
-        <div class="sel-card chip" data-role="Data Engineer"><div class="check">✓</div><div class="rc-icon">🛠</div><div class="rc-title">Data Engineer</div><div class="rc-desc">Pipelines • Platforms • Reliability</div></div>
-        <div class="sel-card chip" data-role="ML Engineer"><div class="check">✓</div><div class="rc-icon">📈</div><div class="rc-title">ML Engineer</div><div class="rc-desc">Training • Evaluation • Deployment</div></div>
-        <div class="sel-card chip" data-role="MLOps Engineer"><div class="check">✓</div><div class="rc-icon">🔁</div><div class="rc-title">MLOps Engineer</div><div class="rc-desc">Infrastructure • Reliability • Scale</div></div>
-        <div class="sel-card chip" data-role="Research Scientist"><div class="check">✓</div><div class="rc-icon">🔬</div><div class="rc-title">Research Scientist</div><div class="rc-desc">Research • Experimentation • Innovation</div></div>
-        <div class="sel-card chip" data-role="LLM Engineer"><div class="check">✓</div><div class="rc-icon">💬</div><div class="rc-title">LLM Engineer</div><div class="rc-desc">LLM Apps • Prompting • Integration</div></div>
+        <div class="sel-card chip" data-role="AI Engineer"><div class="check">✓</div><div class="rc-icon">🤖</div><div class="rc-title">AI Engineer</div><div class="rc-desc">ML • GenAI • AI Systems</div></div>
+        <div class="sel-card chip" data-role="Data Engineer"><div class="check">✓</div><div class="rc-icon">🛠</div><div class="rc-title">Data Engineer</div><div class="rc-desc">Data Platforms • Pipelines • Analytics</div></div>
+        <div class="sel-card chip" data-role="AI Product Manager"><div class="check">✓</div><div class="rc-icon">🧭</div><div class="rc-title">AI Product Manager</div><div class="rc-desc">AI Products • Strategy • Execution</div></div>
 
-        <!-- ══ TAILOR FOR A SPECIFIC JOB — second instance (AI & Data tab).
-             Identical markup to the Core tab card; the shared handler keeps
-             both instances' states in sync automatically. ══ -->
+        <!-- ══ TAILOR FOR A SPECIFIC JOB — second instance (Data & AI tab).
+             Identical markup to the Technology tab card; the shared handler
+             keeps every instance's state in sync automatically. ══ -->
         <div class="tailor-card" role="button" tabindex="0" aria-haspopup="dialog">
           <div class="tc-state-empty">
             <div class="tc-icon">
@@ -638,6 +632,81 @@
             </div>
             <div class="tc-title">Tailor for a specific Job</div>
             <div class="tc-desc">Customize using a Job Description or Company Context.</div>
+            <button class="tc-add-btn" type="button">＋ Add Context</button>
+          </div>
+          <div class="tc-state-done" style="display:none">
+            <div class="tc-company-row">
+              <span class="tc-check">✓</span>
+              <span class="tc-logo">
+                <img class="tc-logo-img" alt="" width="18" height="18" style="display:none">
+                <svg class="tc-logo-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16"/><path d="M14 9h5a1 1 0 0 1 1 1v11"/><path d="M2 21h20"/><path d="M7.5 8h3M7.5 12h3M7.5 16h3"/></svg>
+              </span>
+              <span class="tc-company tc-company-out">—</span>
+            </div>
+            <div class="tc-role-line tc-role-out"></div>
+            <div class="tc-badges">
+              <span class="tc-badge ok tc-jd-badge" style="display:none">JD Attached</span>
+              <span class="tc-badge tc-level-badge" style="display:none"></span>
+            </div>
+            <div class="tc-metrics tc-metrics-out"></div>
+            <button class="tc-edit-link" type="button">Edit Context…</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="role-panel" id="tab-product">
+      <div class="role-grid">
+        <div class="sel-card chip" data-role="Product Manager"><div class="check">✓</div><div class="rc-icon">💼</div><div class="rc-title">Product Manager</div><div class="rc-desc">Product Strategy • Discovery • Delivery</div></div>
+        <div class="sel-card chip" data-role="Program Manager"><div class="check">✓</div><div class="rc-icon">🗓</div><div class="rc-title">Program Manager</div><div class="rc-desc">Programs • Cross-functional • Delivery</div></div>
+
+        <!-- ══ TAILOR FOR A SPECIFIC JOB — third instance (Product & Program
+             tab). Identical markup/behavior to the other tabs' cards. ══ -->
+        <div class="tailor-card" role="button" tabindex="0" aria-haspopup="dialog">
+          <div class="tc-state-empty">
+            <div class="tc-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
+            </div>
+            <div class="tc-title">Tailor for a specific Job</div>
+            <div class="tc-desc">Personalize this interview for a specific role, company, or job opportunity.</div>
+            <button class="tc-add-btn" type="button">＋ Add Context</button>
+          </div>
+          <div class="tc-state-done" style="display:none">
+            <div class="tc-company-row">
+              <span class="tc-check">✓</span>
+              <span class="tc-logo">
+                <img class="tc-logo-img" alt="" width="18" height="18" style="display:none">
+                <svg class="tc-logo-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16"/><path d="M14 9h5a1 1 0 0 1 1 1v11"/><path d="M2 21h20"/><path d="M7.5 8h3M7.5 12h3M7.5 16h3"/></svg>
+              </span>
+              <span class="tc-company tc-company-out">—</span>
+            </div>
+            <div class="tc-role-line tc-role-out"></div>
+            <div class="tc-badges">
+              <span class="tc-badge ok tc-jd-badge" style="display:none">JD Attached</span>
+              <span class="tc-badge tc-level-badge" style="display:none"></span>
+            </div>
+            <div class="tc-metrics tc-metrics-out"></div>
+            <button class="tc-edit-link" type="button">Edit Context…</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="role-panel" id="tab-business">
+      <div class="role-grid">
+        <div class="sel-card chip" data-role="Business Analyst"><div class="check">✓</div><div class="rc-icon">📋</div><div class="rc-title">Business Analyst</div><div class="rc-desc">Analysis • Requirements • Problem Solving</div></div>
+        <div class="sel-card chip" data-role="Management Consultant"><div class="check">✓</div><div class="rc-icon">📊</div><div class="rc-title">Management Consultant</div><div class="rc-desc">Strategy • Transformation • Client Advisory</div></div>
+
+        <!-- ══ TAILOR FOR A SPECIFIC JOB — fourth instance (Business &
+             Consulting tab). Identical markup/behavior to the other tabs'
+             cards. ══ -->
+        <div class="tailor-card" role="button" tabindex="0" aria-haspopup="dialog">
+          <div class="tc-state-empty">
+            <div class="tc-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
+            </div>
+            <div class="tc-title">Tailor for a specific Job</div>
+            <div class="tc-desc">Personalize this interview for a specific role, company, or job opportunity.</div>
             <button class="tc-add-btn" type="button">＋ Add Context</button>
           </div>
           <div class="tc-state-done" style="display:none">
