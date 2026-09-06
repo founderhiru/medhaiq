@@ -57,7 +57,7 @@ const plans = [
         header: { text: 'AI Practice', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
         items: [
           { text: '30 Welcome AI Minutes', bold: true },
-          { text: '1 Interview Persona', bold: true },
+          { text: '1 Interviewer Persona', bold: true },
           { text: 'AI Interview Experience', bold: false },
         ],
       },
@@ -112,7 +112,7 @@ const plans = [
         header: { text: 'AI Practice', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
         items: [
           { text: '120 AI Interview Minutes', bold: true },
-          { text: '3 Interview Personas', bold: true },
+          { text: '3 Interviewer Personas', bold: true },
           { text: 'Resume Intelligence', bold: false },
           { text: 'JD Intelligence', bold: false },
           { text: 'Adaptive AI Interviews', bold: false },
@@ -168,7 +168,7 @@ const plans = [
         header: { text: 'AI Practice', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
         items: [
           { text: '300 AI Interview Minutes', bold: true },
-          { text: '6 Interview Personas', bold: true },
+          { text: '6 Interviewer Personas', bold: true },
           { text: 'Advanced Follow-up Questions', bold: false },
           { text: 'Longer Practice Sessions', bold: false },
         ],
