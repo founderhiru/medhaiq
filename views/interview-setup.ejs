@@ -274,8 +274,15 @@
     .custom-input.show { display: block; }
 
     /* Experience cards */
-    .exp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-    .exp-card { text-align: left; display: flex; align-items: center; gap: 10px; }
+    /* FIX (2026-09-06): was repeat(4, 1fr) — with 5 cards, the 5th (Executive)
+       wrapped onto its own isolated second row. min-height added so
+       "Junior / Early Career" wrapping to two lines doesn't make that row
+       taller than the other four single-line cards — CSS Grid's default
+       stretch already equalizes height within a row, this just sets a
+       consistent floor so the whole row reads as one intentional size
+       rather than being sized incidentally by whichever card is tallest. */
+    .exp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .exp-card { text-align: left; display: flex; align-items: center; gap: 10px; min-height: 76px; }
     .exp-emoji { font-size: 18px; }
     .exp-name { font-size: 13px; font-weight: 700; }
     .exp-yrs { font-size: 11px; color: var(--muted); }
