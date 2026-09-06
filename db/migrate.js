@@ -1218,6 +1218,124 @@ async function runMigrations() {
           `);
         },
       },
+      {
+        name: '032_cost_analytics_id_types_fix',
+        up: async (c) => {
+          // PRODUCTION INCIDENT FIX (2026-09): Production's cost_analytics
+          // table was found with id/user_id/interview_id typed as UUID —
+          // diverging from users.id/interview_sessions.id, which are
+          // INTEGER/SERIAL everywhere else in this entire codebase, on
+          // both branches, including every other table that references
+          // them. Every real interview passes a plain integer session ID,
+          // so every write to a UUID-typed interview_id column fails.
+          //
+          // REWRITTEN after a safety review found the original version
+          // guessed foreign-key constraint names, and an uncaught error
+          // anywhere in this migration crashes the ENTIRE application at
+          // boot (server.js's runMigrations().catch(() => process.exit(1))
+          // — a cost-schema problem must never become a full outage. This
+          // version never guesses a name — it discovers actual constraints
+          // via pg_constraint — and wraps the correction itself in a
+          // SAVEPOINT so an unexpected failure rolls back ONLY this
+          // migration's own changes and is logged, never re-thrown, never
+          // capable of aborting the app's startup.
+          const colTypes = await c.query(`
+            SELECT column_name, data_type FROM information_schema.columns
+            WHERE table_name = 'cost_analytics' AND column_name IN ('id', 'user_id', 'interview_id')
+          `);
+          const needsFix = colTypes.rows.some((r) => r.data_type === 'uuid');
+
+          if (!needsFix) {
+            console.log('[migrate] 032: cost_analytics id/user_id/interview_id already INTEGER — nothing to do.');
+            return;
+          }
+
+          const countResult = await c.query(`SELECT COUNT(*)::int AS n FROM cost_analytics`);
+          const rowCount = countResult.rows[0].n;
+          if (rowCount > 0) {
+            console.error(`[migrate] 032: cost_analytics has UUID-typed id columns AND ${rowCount} existing row(s) — NOT auto-correcting to avoid data loss. Manual review required before this table can be fixed. Application will continue booting normally.`);
+            return;
+          }
+
+          // SAVEPOINT — this migration's up() runs inside the outer
+          // migration-runner transaction (BEGIN/COMMIT/ROLLBACK wraps
+          // every migration; see the bottom of this file). If the
+          // correction below fails partway through for any unexpected
+          // reason, rolling back to this savepoint undoes ONLY this
+          // migration's own partial changes, leaving the outer
+          // transaction itself still valid to commit — the failure is
+          // logged and swallowed here, never re-thrown, so it can never
+          // propagate up and abort the whole migration run.
+          await c.query('SAVEPOINT cost_analytics_id_fix');
+          try {
+            console.log('[migrate] 032: cost_analytics is empty and UUID-typed — discovering actual foreign key constraints before touching anything.');
+
+            // Discover real foreign-key constraints on user_id/interview_id
+            // by name — NEVER assumed. A constraint that predates this
+            // migration (this table's real origin is unknown) could be
+            // named anything; guessing was the original defect.
+            const fkResult = await c.query(`
+              SELECT DISTINCT con.conname
+              FROM pg_constraint con
+              JOIN pg_class rel ON rel.oid = con.conrelid
+              JOIN pg_attribute att ON att.attrelid = rel.oid AND att.attnum = ANY(con.conkey)
+              WHERE rel.relname = 'cost_analytics'
+                AND con.contype = 'f'
+                AND att.attname IN ('user_id', 'interview_id')
+            `);
+            for (const row of fkResult.rows) {
+              await c.query(`ALTER TABLE cost_analytics DROP CONSTRAINT "${row.conname.replace(/"/g, '""')}"`);
+              console.log(`[migrate] 032: dropped discovered foreign key constraint "${row.conname}"`);
+            }
+            if (fkResult.rows.length === 0) {
+              console.log('[migrate] 032: no foreign key constraints found on user_id/interview_id — nothing to drop.');
+            }
+
+            await c.query(`ALTER TABLE cost_analytics ALTER COLUMN id DROP DEFAULT`);
+            await c.query(`ALTER TABLE cost_analytics ALTER COLUMN id TYPE INTEGER USING NULL`);
+            await c.query(`CREATE SEQUENCE IF NOT EXISTS cost_analytics_id_seq OWNED BY cost_analytics.id`);
+            await c.query(`ALTER TABLE cost_analytics ALTER COLUMN id SET DEFAULT nextval('cost_analytics_id_seq')`);
+            await c.query(`ALTER TABLE cost_analytics ALTER COLUMN user_id TYPE INTEGER USING NULL`);
+            await c.query(`ALTER TABLE cost_analytics ALTER COLUMN interview_id TYPE INTEGER USING NULL`);
+
+            // Recreate the foreign keys fresh — these are NEW constraints
+            // being created right now, so naming them explicitly here is
+            // safe (it is never a guess about something that already
+            // exists), preserving the original intended semantics from
+            // migration 004.
+            await c.query(`ALTER TABLE cost_analytics ADD CONSTRAINT cost_analytics_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL`);
+            await c.query(`ALTER TABLE cost_analytics ADD CONSTRAINT cost_analytics_interview_id_fkey FOREIGN KEY (interview_id) REFERENCES interview_sessions(id) ON DELETE SET NULL`);
+
+            await c.query('RELEASE SAVEPOINT cost_analytics_id_fix');
+            console.log('[migrate] 032: cost_analytics id/user_id/interview_id corrected to INTEGER successfully.');
+          } catch (err) {
+            // UNEXPECTED failure, distinct from the "not applicable"
+            // early returns above. Roll back only this migration's own
+            // partial changes and continue — never take down the app
+            // over a schema-correction problem.
+            await c.query('ROLLBACK TO SAVEPOINT cost_analytics_id_fix');
+            console.error(`[migrate] 032: UNEXPECTED error while correcting cost_analytics — changes rolled back, table left unchanged, application will continue booting. Manual review required. Error: ${err.message}`);
+          }
+        },
+      },
+      {
+        name: '033_cost_analytics_updated_at_defensive',
+        up: async (c) => {
+          // Defensive, additive-only. Production's cost_analytics was
+          // found missing updated_at (already manually patched there via
+          // this exact statement) — migration 004's original CREATE TABLE
+          // already includes it, so any genuinely fresh environment is
+          // unaffected. This exists purely so ANY environment whose
+          // cost_analytics predates migration 004 (same root cause as
+          // migration 032 above) gets this column automatically too,
+          // without needing another manual ALTER TABLE run by hand.
+          await c.query(`
+            ALTER TABLE cost_analytics
+            ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()
+          `);
+          console.log('[migrate] 033: cost_analytics.updated_at confirmed present.');
+        },
+      },
     ];
 
     for (const m of migrations) {
