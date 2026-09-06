@@ -1052,6 +1052,290 @@ async function runMigrations() {
           `);
         },
       },
+      {
+        name: '031_campus_ready_v1',
+        up: async (c) => {
+          // Campus Ready V1 — fully isolated from the individual product.
+          // Every table here is new; the only existing-table reference is
+          // users(id) for learner identity. Nothing here alters
+          // interview_sessions, package_acquisitions, or any table the
+          // Interview Engine, Vapi, ElevenLabs, or Stripe integration reads.
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS institutions (
+              id SERIAL PRIMARY KEY,
+              name VARCHAR(255) NOT NULL,
+              contact_name VARCHAR(255),
+              contact_email VARCHAR(255),
+              created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_cohorts (
+              id SERIAL PRIMARY KEY,
+              institution_id INTEGER NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+              name VARCHAR(255) NOT NULL,
+              learner_limit INTEGER,
+              starts_at DATE,
+              ends_at DATE,
+              status VARCHAR(20) NOT NULL DEFAULT 'active',
+              created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`CREATE INDEX IF NOT EXISTS campus_cohorts_institution_idx ON campus_cohorts (institution_id)`);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_learner_invites (
+              id SERIAL PRIMARY KEY,
+              cohort_id INTEGER NOT NULL REFERENCES campus_cohorts(id) ON DELETE CASCADE,
+              email VARCHAR(255) NOT NULL,
+              invite_token VARCHAR(255) UNIQUE NOT NULL,
+              status VARCHAR(20) NOT NULL DEFAULT 'pending',
+              invited_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+              created_at TIMESTAMPTZ DEFAULT NOW(),
+              accepted_at TIMESTAMPTZ,
+              expires_at TIMESTAMPTZ
+            )
+          `);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS campus_learner_invites_cohort_email_idx
+            ON campus_learner_invites (cohort_id, LOWER(email))
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_learners (
+              id SERIAL PRIMARY KEY,
+              user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+              cohort_id INTEGER NOT NULL REFERENCES campus_cohorts(id) ON DELETE CASCADE,
+              joined_at TIMESTAMPTZ DEFAULT NOW(),
+              status VARCHAR(20) NOT NULL DEFAULT 'active'
+            )
+          `);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS campus_learners_user_cohort_idx
+            ON campus_learners (user_id, cohort_id)
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_modules (
+              id SERIAL PRIMARY KEY,
+              key VARCHAR(50) UNIQUE NOT NULL,
+              name VARCHAR(255) NOT NULL,
+              sequence INTEGER NOT NULL,
+              description TEXT
+            )
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_topics (
+              id SERIAL PRIMARY KEY,
+              module_id INTEGER NOT NULL REFERENCES campus_modules(id) ON DELETE CASCADE,
+              key VARCHAR(50) NOT NULL,
+              name VARCHAR(255) NOT NULL,
+              sequence INTEGER NOT NULL
+            )
+          `);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS campus_topics_module_key_idx
+            ON campus_topics (module_id, key)
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_content_items (
+              id SERIAL PRIMARY KEY,
+              topic_id INTEGER NOT NULL REFERENCES campus_topics(id) ON DELETE CASCADE,
+              item_type VARCHAR(20) NOT NULL CHECK (item_type IN ('learn_example','practice_prompt','quiz_question')),
+              prompt_text TEXT NOT NULL,
+              answer_guidance TEXT,
+              options JSONB,
+              correct_option_id VARCHAR(10),
+              common_mistake_notes TEXT,
+              sequence INTEGER NOT NULL DEFAULT 0,
+              is_active BOOLEAN NOT NULL DEFAULT true
+            )
+          `);
+          await c.query(`
+            CREATE INDEX IF NOT EXISTS campus_content_items_topic_idx
+            ON campus_content_items (topic_id, item_type)
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_practice_submissions (
+              id SERIAL PRIMARY KEY,
+              learner_id INTEGER NOT NULL REFERENCES campus_learners(id) ON DELETE CASCADE,
+              content_item_id INTEGER NOT NULL REFERENCES campus_content_items(id) ON DELETE CASCADE,
+              response_text TEXT NOT NULL,
+              submitted_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`
+            CREATE INDEX IF NOT EXISTS campus_practice_submissions_learner_idx
+            ON campus_practice_submissions (learner_id)
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_quiz_responses (
+              id SERIAL PRIMARY KEY,
+              learner_id INTEGER NOT NULL REFERENCES campus_learners(id) ON DELETE CASCADE,
+              content_item_id INTEGER NOT NULL REFERENCES campus_content_items(id) ON DELETE CASCADE,
+              selected_option_id VARCHAR(10) NOT NULL,
+              is_correct BOOLEAN NOT NULL,
+              submitted_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS campus_quiz_responses_learner_item_idx
+            ON campus_quiz_responses (learner_id, content_item_id)
+          `);
+
+          await c.query(`
+            CREATE TABLE IF NOT EXISTS campus_module_progress (
+              id SERIAL PRIMARY KEY,
+              learner_id INTEGER NOT NULL REFERENCES campus_learners(id) ON DELETE CASCADE,
+              module_id INTEGER NOT NULL REFERENCES campus_modules(id) ON DELETE CASCADE,
+              status VARCHAR(20) NOT NULL DEFAULT 'not_started',
+              percent_complete NUMERIC(5,2) NOT NULL DEFAULT 0,
+              quiz_passed BOOLEAN NOT NULL DEFAULT false,
+              updated_at TIMESTAMPTZ DEFAULT NOW()
+            )
+          `);
+          await c.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS campus_module_progress_learner_module_idx
+            ON campus_module_progress (learner_id, module_id)
+          `);
+
+          // Fixed V1 program: 5 independent modules, seeded once. Content
+          // (topics/questions) is seeded separately by
+          // db/campus-content-seed.js at server boot, not here — keeps
+          // schema migrations and content curation on separate cycles.
+          await c.query(`
+            INSERT INTO campus_modules (key, name, sequence, description) VALUES
+              ('tell_your_story', 'Tell Your Story', 1, 'Self-introduction, resume walkthrough, and project storytelling.'),
+              ('technical_interview', 'Technical Interview', 2, 'Core technical concepts and project deep dives.'),
+              ('problem_solving', 'Problem Solving', 3, 'Structured thinking, scenarios, and trade-off reasoning.'),
+              ('behavioral_interview', 'Behavioral Interview', 4, 'Teamwork, conflict, failure, ownership, and adaptability.'),
+              ('hr_final_round', 'HR / Final Round', 5, 'Motivation, fit, and closing-round questions.')
+            ON CONFLICT (key) DO NOTHING
+          `);
+        },
+      },
+      {
+        name: '032_cost_analytics_id_types_fix',
+        up: async (c) => {
+          // PRODUCTION INCIDENT FIX (2026-09): Production's cost_analytics
+          // table was found with id/user_id/interview_id typed as UUID —
+          // diverging from users.id/interview_sessions.id, which are
+          // INTEGER/SERIAL everywhere else in this entire codebase, on
+          // both branches, including every other table that references
+          // them. Every real interview passes a plain integer session ID,
+          // so every write to a UUID-typed interview_id column fails.
+          //
+          // REWRITTEN after a safety review found the original version
+          // guessed foreign-key constraint names, and an uncaught error
+          // anywhere in this migration crashes the ENTIRE application at
+          // boot (server.js's runMigrations().catch(() => process.exit(1))
+          // — a cost-schema problem must never become a full outage. This
+          // version never guesses a name — it discovers actual constraints
+          // via pg_constraint — and wraps the correction itself in a
+          // SAVEPOINT so an unexpected failure rolls back ONLY this
+          // migration's own changes and is logged, never re-thrown, never
+          // capable of aborting the app's startup.
+          const colTypes = await c.query(`
+            SELECT column_name, data_type FROM information_schema.columns
+            WHERE table_name = 'cost_analytics' AND column_name IN ('id', 'user_id', 'interview_id')
+          `);
+          const needsFix = colTypes.rows.some((r) => r.data_type === 'uuid');
+
+          if (!needsFix) {
+            console.log('[migrate] 032: cost_analytics id/user_id/interview_id already INTEGER — nothing to do.');
+            return;
+          }
+
+          const countResult = await c.query(`SELECT COUNT(*)::int AS n FROM cost_analytics`);
+          const rowCount = countResult.rows[0].n;
+          if (rowCount > 0) {
+            console.error(`[migrate] 032: cost_analytics has UUID-typed id columns AND ${rowCount} existing row(s) — NOT auto-correcting to avoid data loss. Manual review required before this table can be fixed. Application will continue booting normally.`);
+            return;
+          }
+
+          // SAVEPOINT — this migration's up() runs inside the outer
+          // migration-runner transaction (BEGIN/COMMIT/ROLLBACK wraps
+          // every migration; see the bottom of this file). If the
+          // correction below fails partway through for any unexpected
+          // reason, rolling back to this savepoint undoes ONLY this
+          // migration's own partial changes, leaving the outer
+          // transaction itself still valid to commit — the failure is
+          // logged and swallowed here, never re-thrown, so it can never
+          // propagate up and abort the whole migration run.
+          await c.query('SAVEPOINT cost_analytics_id_fix');
+          try {
+            console.log('[migrate] 032: cost_analytics is empty and UUID-typed — discovering actual foreign key constraints before touching anything.');
+
+            // Discover real foreign-key constraints on user_id/interview_id
+            // by name — NEVER assumed. A constraint that predates this
+            // migration (this table's real origin is unknown) could be
+            // named anything; guessing was the original defect.
+            const fkResult = await c.query(`
+              SELECT DISTINCT con.conname
+              FROM pg_constraint con
+              JOIN pg_class rel ON rel.oid = con.conrelid
+              JOIN pg_attribute att ON att.attrelid = rel.oid AND att.attnum = ANY(con.conkey)
+              WHERE rel.relname = 'cost_analytics'
+                AND con.contype = 'f'
+                AND att.attname IN ('user_id', 'interview_id')
+            `);
+            for (const row of fkResult.rows) {
+              await c.query(`ALTER TABLE cost_analytics DROP CONSTRAINT "${row.conname.replace(/"/g, '""')}"`);
+              console.log(`[migrate] 032: dropped discovered foreign key constraint "${row.conname}"`);
+            }
+            if (fkResult.rows.length === 0) {
+              console.log('[migrate] 032: no foreign key constraints found on user_id/interview_id — nothing to drop.');
+            }
+
+            await c.query(`ALTER TABLE cost_analytics ALTER COLUMN id DROP DEFAULT`);
+            await c.query(`ALTER TABLE cost_analytics ALTER COLUMN id TYPE INTEGER USING NULL`);
+            await c.query(`CREATE SEQUENCE IF NOT EXISTS cost_analytics_id_seq OWNED BY cost_analytics.id`);
+            await c.query(`ALTER TABLE cost_analytics ALTER COLUMN id SET DEFAULT nextval('cost_analytics_id_seq')`);
+            await c.query(`ALTER TABLE cost_analytics ALTER COLUMN user_id TYPE INTEGER USING NULL`);
+            await c.query(`ALTER TABLE cost_analytics ALTER COLUMN interview_id TYPE INTEGER USING NULL`);
+
+            // Recreate the foreign keys fresh — these are NEW constraints
+            // being created right now, so naming them explicitly here is
+            // safe (it is never a guess about something that already
+            // exists), preserving the original intended semantics from
+            // migration 004.
+            await c.query(`ALTER TABLE cost_analytics ADD CONSTRAINT cost_analytics_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL`);
+            await c.query(`ALTER TABLE cost_analytics ADD CONSTRAINT cost_analytics_interview_id_fkey FOREIGN KEY (interview_id) REFERENCES interview_sessions(id) ON DELETE SET NULL`);
+
+            await c.query('RELEASE SAVEPOINT cost_analytics_id_fix');
+            console.log('[migrate] 032: cost_analytics id/user_id/interview_id corrected to INTEGER successfully.');
+          } catch (err) {
+            // UNEXPECTED failure, distinct from the "not applicable"
+            // early returns above. Roll back only this migration's own
+            // partial changes and continue — never take down the app
+            // over a schema-correction problem.
+            await c.query('ROLLBACK TO SAVEPOINT cost_analytics_id_fix');
+            console.error(`[migrate] 032: UNEXPECTED error while correcting cost_analytics — changes rolled back, table left unchanged, application will continue booting. Manual review required. Error: ${err.message}`);
+          }
+        },
+      },
+      {
+        name: '033_cost_analytics_updated_at_defensive',
+        up: async (c) => {
+          // Defensive, additive-only. Production's cost_analytics was
+          // found missing updated_at (already manually patched there via
+          // this exact statement) — migration 004's original CREATE TABLE
+          // already includes it, so any genuinely fresh environment is
+          // unaffected. This exists purely so ANY environment whose
+          // cost_analytics predates migration 004 (same root cause as
+          // migration 032 above) gets this column automatically too,
+          // without needing another manual ALTER TABLE run by hand.
+          await c.query(`
+            ALTER TABLE cost_analytics
+            ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()
+          `);
+          console.log('[migrate] 033: cost_analytics.updated_at confirmed present.');
+        },
+      },
     ];
 
     for (const m of migrations) {

@@ -318,7 +318,7 @@ function revenueForRange(purchaseRows, start, end) {
 async function getMonthScopedLedger(start, end) {
   const result = await pool.query(
     `SELECT
-       COUNT(*)::int AS interviews_count,
+       COUNT(*) FILTER (WHERE interview_id IS NOT NULL)::int AS interviews_count,
        COALESCE(SUM(COALESCE(vapi_cost, 0)), 0)::float AS vapi_cost,
        COUNT(vapi_cost)::int AS vapi_capture_count,
        COALESCE(SUM(COALESCE(claude_cost, 0)), 0)::float AS claude_cost,
@@ -439,7 +439,7 @@ async function getUserCounts() {
 async function getFounderDashboardStats(selectedMonthValue) {
   const todayLedgerQuery = pool.query(
     `SELECT
-       COUNT(*)::int AS interviews_today_count,
+       COUNT(*) FILTER (WHERE interview_id IS NOT NULL)::int AS interviews_today_count,
        COALESCE(SUM(COALESCE(vapi_cost, 0)), 0)::float AS todays_vapi_cost,
        COALESCE(SUM(COALESCE(claude_cost, 0)), 0)::float AS todays_claude_cost,
        COALESCE(SUM(COALESCE(elevenlabs_cost, 0)), 0)::float AS todays_elevenlabs_cost,
@@ -455,7 +455,7 @@ async function getFounderDashboardStats(selectedMonthValue) {
   // distinct from the existing "Today's" ones.
   const totalLedgerQuery = pool.query(
     `SELECT
-       COUNT(*)::int AS interviews_total_count,
+       COUNT(*) FILTER (WHERE interview_id IS NOT NULL)::int AS interviews_total_count,
        COALESCE(SUM(COALESCE(vapi_cost, 0)), 0)::float AS total_vapi_cost,
        COALESCE(SUM(COALESCE(claude_cost, 0)), 0)::float AS total_claude_cost,
        COALESCE(SUM(COALESCE(elevenlabs_cost, 0)), 0)::float AS total_elevenlabs_cost,
