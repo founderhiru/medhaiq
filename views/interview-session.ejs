@@ -121,7 +121,7 @@
     <div class="tb-live"><div class="tb-live-dot"></div>LIVE</div>
     <div class="tb-timer" id="timer">00:00</div>
     <div class="tb-qcounter-group">
-      <div class="tb-qcounter" id="qCounter">Question 1 / 5</div>
+      <div class="tb-qcounter" id="qCounter">CORE INTERVIEW · Question 1 of 5</div>
       <div class="tb-followup-badge" id="qFollowupBadge" style="display:none;">Follow-up</div>
     </div>
     <button class="tb-end" id="endBtn">End Session</button>
@@ -424,6 +424,14 @@
   // render, updated (never recomputed) from the response on each turn.
   var IS_EXECUTIVE_EXTENSION = <%= isExecutiveExtension ? 'true' : 'false' %>;
   var EXTENSION_QUESTION_NUMBER = <%= extensionQuestionNumber %>;
+  // LABEL-ONLY STATE (2026-09-06): true whenever a new core-phase question
+  // arrives after QN has already been clamped at MAXQ (i.e. a
+  // post-Q5 replacement question generated while the engine has NOT yet
+  // flagged this turn as an Adaptive/Executive Extension turn). Purely a
+  // display flag — set once per incoming question in submitAnswer's
+  // response handler (see QN clamp below), never read by any counting,
+  // budget, or termination logic. Presentation only.
+  var IS_CORE_REPLACEMENT = false;
   // Authoritative "is this question final" — read once here from the
   // server-rendered initial value, then updated (not predicted) each
   // time a new question arrives from data.question.isFinalQuestion below.
@@ -575,11 +583,11 @@
       // Adaptive Follow-up phase — every progress surface switches to the
       // same phase terminology together, never a mix of the new label in
       // one place and stale "Question 5 of 5" / "0 remaining" in another.
-      // Deliberately no numbering anywhere (no "1"/"2"/"Q1"/"Q2") and no
-      // "6 of 7"-style count — EXTENSION_QUESTION_NUMBER is still computed
-      // (unchanged, still drives the detection logic above) but is no
-      // longer rendered into any visible text.
-      var navPhaseText = 'Adaptive Follow-up';
+      // LABEL TEXT UPDATED (2026-09-06): now includes the existing
+      // EXTENSION_QUESTION_NUMBER (already computed above, previously
+      // unused in this render) as "Follow-up N" — still no "6 of 7"-style
+      // count against the base budget.
+      var navPhaseText = 'ADAPTIVE FOLLOW-UP · Follow-up ' + EXTENSION_QUESTION_NUMBER;
       var panelPhaseText = 'Adaptive Follow-up in Progress';
       document.getElementById('qCounter').textContent = navPhaseText;
       document.getElementById('qFollowupBadge').style.display = 'none';
@@ -592,7 +600,22 @@
       document.getElementById('sbProgRemaining').textContent = 'Validating executive judgement.';
       return;
     }
-    document.getElementById('qCounter').textContent = 'Question '+QN+' / '+MAXQ;
+    if (IS_CORE_REPLACEMENT) {
+      // LABEL-ONLY (2026-09-06): a post-Q5 replacement question generated
+      // while still in the core phase (not yet flagged Adaptive). Same
+      // progress-bar math as the normal branch below — only the counter
+      // text differs, avoiding a stale/impossible "Question 6 of 5" or a
+      // repeated "Question 5 of 5".
+      document.getElementById('qCounter').textContent = 'CORE INTERVIEW · Continue';
+      document.getElementById('qFollowupBadge').style.display = window.MedhaIQ_IsFollowupTurn ? '' : 'none';
+      document.getElementById('sbProgNum').textContent = QN;
+      var pctReplacement = Math.round(((QN-1)/MAXQ)*100);
+      document.getElementById('sbProgFill').style.width = pctReplacement+'%';
+      var remainingReplacement = Math.max(0, MAXQ - QN);
+      document.getElementById('sbProgRemaining').textContent = remainingReplacement + ' remaining';
+      return;
+    }
+    document.getElementById('qCounter').textContent = 'CORE INTERVIEW · Question '+QN+' of '+MAXQ;
     document.getElementById('qFollowupBadge').style.display = window.MedhaIQ_IsFollowupTurn ? '' : 'none';
     document.getElementById('sbProgNum').textContent = QN;
     var pct = Math.round(((QN-1)/MAXQ)*100);
@@ -1445,6 +1468,14 @@
         EXTENSION_QUESTION_NUMBER = data.question.extensionQuestionNumber;
       }
       if (data.question.type !== 'follow_up') {
+        // LABEL-ONLY (2026-09-06): capture, before the clamp, whether this
+        // increment would have pushed QN past MAXQ. If so, and this turn
+        // is NOT (yet) flagged as an Adaptive/Executive Extension turn
+        // (IS_EXECUTIVE_EXTENSION was already set from data.question above,
+        // this line runs after that assignment), it's a core-phase
+        // replacement question — display-only distinction, does not alter
+        // QN's actual clamped value or any counting logic below.
+        IS_CORE_REPLACEMENT = ((QN + 1) > MAXQ) && !IS_EXECUTIVE_EXTENSION;
         QN = Math.min(QN + 1, MAXQ); // clamp — never display past MAXQ even if something upstream misbehaves
       }
       updateCounter();

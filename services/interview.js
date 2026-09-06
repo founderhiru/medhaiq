@@ -244,19 +244,27 @@ function resolveCompetenciesForCategory(category, priority) {
 }
 
 // ── Competency prompt fragments injected into the AI prompt ───────
-// PATCH C (2026-09-04): system_design and communication are now
-// FUNCTIONS gated on isFresherStyle — these were the two confirmed
-// prompt-calibration leaks (level-agnostic "scalability trade-offs" and
+// PATCH C (2026-09-04): system_design and communication were first made
+// FUNCTIONS gated on isFresherStyle — the two confirmed prompt-calibration
+// leaks at that time (level-agnostic "scalability trade-offs" and
 // "executive presence" language injected regardless of career stage).
-// leadership/strategy/technical are untouched, still plain strings — not
-// part of this patch's confirmed leak list. Non-fresher branches are
-// byte-identical to the original text.
+// JUNIOR EXTENSION (2026-09-05): leadership and strategy extended with the
+// exact same pattern, per the Junior Calibration Audit finding that these
+// are the highest-priority competency for 3 of the 10 launch roles
+// (Engineering Manager, Product Manager, Management Consultant) and were
+// never covered by the original Patch C scope. technical remains untouched
+// — not flagged as a leak in either audit. Non-fresher branches are
+// byte-identical to the original text in every case.
 const COMPETENCY_PROMPTS = {
   system_design: (isFresherStyle) => isFresherStyle
     ? 'Focus this question on the candidate\'s own hands-on implementation choices — how they structured their code, a database or API design decision they made, or a straightforward technical constraint they had to work within on a real project. Do not introduce enterprise-scale architecture, large distributed systems, 10x/organization-wide scaling, or infrastructure decisions beyond what an individual contributor on a small project would own.'
     : 'Focus this question on system design, architecture decisions, scalability trade-offs, or technical infrastructure choices.',
-  leadership:     'Focus this question on team leadership, people management, influencing without authority, or navigating org conflict.',
-  strategy:       'Focus this question on strategic thinking, roadmap prioritisation, business trade-offs, or long-term vision setting.',
+  leadership: (isFresherStyle) => isFresherStyle
+    ? 'Focus this question on ownership of a task or piece of work, helping or coordinating with a teammate, taking initiative without being asked, or handling a disagreement about how to approach a shared task. Do not introduce board-level leadership, executive leadership, enterprise transformation, organizational strategy, large-scale stakeholder alignment, C-suite decisions, or assume the candidate manages a team.'
+    : 'Focus this question on team leadership, people management, influencing without authority, or navigating org conflict.',
+  strategy: (isFresherStyle) => isFresherStyle
+    ? 'Focus this question on straightforward prioritization between two or three concrete options, a simple trade-off the candidate had to weigh, task/time planning, or a practical first professional decision. Do not introduce enterprise portfolio strategy, corporate strategy, board-level decisions, C-suite decisions, large-scale transformation, or allocating company-wide resources.'
+    : 'Focus this question on strategic thinking, roadmap prioritisation, business trade-offs, or long-term vision setting.',
   communication: (isFresherStyle) => isFresherStyle
     ? 'Focus this question on first-person, team-level communication — explaining a technical idea to a teammate or mentor, giving or receiving feedback on a project, or coordinating with peers on a shared task.'
     : 'Focus this question on stakeholder communication, executive presence, delivering difficult messages, or cross-functional alignment.',
@@ -264,9 +272,10 @@ const COMPETENCY_PROMPTS = {
 };
 
 // Resolves a COMPETENCY_PROMPTS entry regardless of whether it's the
-// original plain string (leadership/strategy/technical) or one of the
-// two PATCH C functions (system_design/communication) — single call site
-// so callers never need to know which shape a given competency uses.
+// original plain string (technical) or one of the four now-Fresher/Junior
+// gated functions (system_design/leadership/strategy/communication) —
+// single call site so callers never need to know which shape a given
+// competency uses.
 function resolveCompetencyPrompt(competency, isFresherStyle) {
   const entry = COMPETENCY_PROMPTS[competency];
   if (typeof entry === 'function') return entry(!!isFresherStyle);
@@ -916,7 +925,7 @@ function composePrompt({ competency, calibrationState, evidenceProfile, strategy
   // with-résumé case — same ordering as before) and once outside it, only
   // when !hasResumeContext, to avoid rendering it twice. See below.
   const storyGuardrails = `${(!story && !(isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt) && !(questionBlueprint && questionBlueprint.strategy_source === 'JDScenario')) ? `
-CRITICAL — NO STORY WAS SELECTED FOR THIS TURN: the blueprint above deliberately chose not to use a resume story. This is a real decision, not an oversight, and it is not yours to override. Your question MUST NOT name, reference, or allude to ANY company, employer, customer, or project from the candidate's career history — not the one from a previous question, not one you might infer from context, none. Do not open with "At [company]...", "During your [X] work...", "While you were leading...", or any phrase that implies a specific past employer. Build entirely hypothetical, forward-looking, or general-scenario language instead (e.g. "Imagine you inherit an organisation where...", "If you were leading a team where..."). If you catch yourself about to type a real company name, stop and rewrite the sentence without it.
+CRITICAL — NO STORY WAS SELECTED FOR THIS TURN: the blueprint above deliberately chose not to use a resume story. This is a real decision, not an oversight, and it is not yours to override. Your question MUST NOT name, reference, or allude to ANY company, employer, customer, or project from the candidate's career history — not the one from a previous question, not one you might infer from context, none. Do not open with "At [company]...", "During your [X] work...", "While you were leading...", or any phrase that implies a specific past employer. Build entirely hypothetical, forward-looking, or general-scenario language instead (e.g. "Imagine you inherit an organisation where...", "If you were leading a team where...").${isFresherStyle ? ` This candidate is Fresher/Junior and may have no prior professional employment at all — do NOT assume one exists. Ground the question in early-career-appropriate evidence instead: a college/class project, an internship, a hackathon, an academic team activity, or a personal project (e.g. "Think about a college or personal project where...", "Imagine you're working with a teammate on a project where..."), or a straightforward hypothetical scenario. Never phrase this as "Tell me about a time at work when..." or otherwise presume the candidate has held a professional job.` : ''} If you catch yourself about to type a real company name, stop and rewrite the sentence without it.
 ${!isFollowup ? `CRITICAL — DO NOT RE-ANCHOR ON A PREVIOUSLY-DISCUSSED EXPERIENCE (bug fix, 2026-07-28): this is a PRIMARY question, not a follow-up — its job is to broaden the interview into new ground, not deepen what's already been covered. The Conversational History above (layer 8) exists so you understand what's already been asked and scored, NOT as a well of scenario material to keep drawing this new question from. If the candidate described a specific project, transformation, or situation in an earlier answer, do NOT build this new question around that same experience, even reframed as a hypothetical — introduce a genuinely different scenario, angle, or competency instead. Reusing the shape of an experience the candidate already walked through, turn after turn, is exactly the "mining one story" pattern this rule exists to prevent.
 Instead, prefer one of these — pick whichever best fits the competency above, don't force all of them: ${reanchorSuggestions}.` : `NOTE: this IS a follow-up with no résumé story behind it (nothing was ever planned for this thread) — deepen the candidate's immediately preceding answer specifically, using only what they actually said. Do not introduce a new scenario here; that restriction is for primaries only.`}` : ''}${(!story && isFollowup && questionBlueprint && questionBlueprint.grounding_answer_excerpt) ? `
 CRITICAL — GROUND THIS FOLLOW-UP IN WHAT THE CANDIDATE ACTUALLY SAID: a resume story was originally planned for this follow-up, but it does not match what the candidate described in their last answer, so it has been deliberately abandoned — do not use it, and do not invent a similar-sounding one. Build this follow-up ENTIRELY from the candidate's own words below. Do not introduce any company, technology, metric, or project that is not present in this quoted answer:

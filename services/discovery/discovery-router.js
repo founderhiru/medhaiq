@@ -101,6 +101,14 @@ function selectDiscoveryProfile({ experienceLevel, resumeContext, storyLibrary }
   if (stage === 'executive') {
     return finalize('EXECUTIVE', { reason: 'career_stage=executive' });
   }
+  // FIX (2026-09-05): 'junior' previously had no explicit case here, so it
+  // fell into the `stage !== 'fresher'` catch-all below and silently
+  // defaulted to PROFESSIONAL (the Mid-Career Discovery profile) instead
+  // of any early-career-appropriate handling. Routes to the existing
+  // EARLY_PROFESSIONAL profile -- no new Discovery profile created.
+  if (stage === 'junior') {
+    return finalize('EARLY_PROFESSIONAL', { reason: 'career_stage=junior' });
+  }
   if (stage !== 'fresher') {
     // Unknown/unexpected value — fail safe to today's default tier rather
     // than guessing. Mirrors controllers/sessionController.js's own

@@ -487,9 +487,9 @@ console.log('Interview Strategy Profiles — regression suite\n');
     assert.strictEqual(resolveCompetencyPrompt('communication', false), original);
   });
 
-  check('PATCH C: leadership/strategy/technical framings are completely UNTOUCHED by this patch (not part of the confirmed leak list)', () => {
-    assert.strictEqual(resolveCompetencyPrompt('leadership', true), 'Focus this question on team leadership, people management, influencing without authority, or navigating org conflict.');
-    assert.strictEqual(resolveCompetencyPrompt('strategy', true), 'Focus this question on strategic thinking, roadmap prioritisation, business trade-offs, or long-term vision setting.');
+  check('SUPERSEDED (2026-09-05): leadership/strategy are now Fresher/Junior-gated too, per the Junior Calibration Audit -- technical remains untouched', () => {
+    assert.strictEqual(resolveCompetencyPrompt('leadership', false), 'Focus this question on team leadership, people management, influencing without authority, or navigating org conflict.');
+    assert.strictEqual(resolveCompetencyPrompt('strategy', false), 'Focus this question on strategic thinking, roadmap prioritisation, business trade-offs, or long-term vision setting.');
     assert.strictEqual(resolveCompetencyPrompt('technical', true), 'Focus this question on domain-specific technical knowledge, implementation depth, debugging approaches, or engineering best practices.');
   });
 
@@ -555,6 +555,179 @@ console.log('Interview Strategy Profiles — regression suite\n');
     forbiddenPhrases.forEach((phrase) => {
       assert.ok(!prompt.toLowerCase().includes(phrase.toLowerCase()), `composed prompt must not contain "${phrase}" for a Fresher with no resume/JD context`);
     });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Part 6 — JUNIOR / EARLY CAREER IMPLEMENTATION (2026-09-05)
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const iv = loadWithTestExports('services/interview.js', ['resolveCompetencyPrompt', 'buildCalibrationState', 'styleKeyForLevel']);
+  const resolveCompetencyPrompt = iv.__test_resolveCompetencyPrompt;
+  const buildCalibrationState = iv.__test_buildCalibrationState;
+  const styleKeyForLevel = iv.__test_styleKeyForLevel;
+
+  // ── D. Leadership / Strategy calibration ──────────────────────────────
+  check('JUNIOR: leadership Fresher/Junior framing explicitly instructs AGAINST board-level/executive/organizational language, and affirmatively describes peer-level scope', () => {
+    const text = resolveCompetencyPrompt('leadership', true);
+    assert.ok(text.includes('Do not introduce board-level leadership'), 'must explicitly instruct against it, not merely omit the phrase');
+    assert.ok(text.includes('ownership of a task') || text.includes('helping or coordinating with a teammate'));
+  });
+
+  check('JUNIOR: leadership non-Fresher framing is BYTE-IDENTICAL to the pre-existing text', () => {
+    assert.strictEqual(resolveCompetencyPrompt('leadership', false), 'Focus this question on team leadership, people management, influencing without authority, or navigating org conflict.');
+  });
+
+  check('JUNIOR: strategy Fresher/Junior framing explicitly instructs AGAINST enterprise/board/C-suite language, and affirmatively describes practical scope', () => {
+    const text = resolveCompetencyPrompt('strategy', true);
+    assert.ok(text.includes('Do not introduce enterprise portfolio strategy'), 'must explicitly instruct against it, not merely omit the phrase');
+    assert.ok(text.includes('prioritization') || text.includes('trade-off'));
+  });
+
+  check('JUNIOR: strategy non-Fresher framing is BYTE-IDENTICAL to the pre-existing text', () => {
+    assert.strictEqual(resolveCompetencyPrompt('strategy', false), 'Focus this question on strategic thinking, roadmap prioritisation, business trade-offs, or long-term vision setting.');
+  });
+
+  check('JUNIOR: technical framing is unaffected (was never flagged as a leak)', () => {
+    assert.strictEqual(resolveCompetencyPrompt('technical', true), 'Focus this question on domain-specific technical knowledge, implementation depth, debugging approaches, or engineering best practices.');
+  });
+
+  // ── A/regression. Career Stage routing: exact lowercase values now sent ──
+  check('JUNIOR: experienceLevel="junior" resolves to CAREER_STAGES.junior (L2, "Junior Engineer") via buildCalibrationState', () => {
+    const state = buildCalibrationState({ experienceLevel: 'junior', competency: 'communication', roleTitle: 'Software Engineer', jdText: '', qaPairs: [] });
+    assert.strictEqual(state.activeStageSchema.stage, 'Junior Engineer');
+    assert.strictEqual(state.adjustedLevelNum, 2);
+    assert.strictEqual(styleKeyForLevel(state.adjustedLevelNum), 'fresher', 'L2 must fold into the fresher-safe calibration bucket');
+  });
+
+  // ── CRITICAL REGRESSION: the UI state-capture bug found and fixed this
+  //    round. Confirms buildCalibrationState behaves correctly for the
+  //    EXACT lowercase values the UI now sends (views/interview-setup.ejs
+  //    fix: state.exp = el.dataset.exp, replacing the old
+  //    el.querySelector('.exp-name').textContent.trim() capture, which
+  //    sent capitalized/hyphenated display text like "Mid-Career" that
+  //    never matched any CAREER_STAGES key and silently defaulted every
+  //    single session to Mid-Level (L3) regardless of the card selected). ──
+  check('CRITICAL REGRESSION GUARD: lowercase canonical experienceLevel values ("fresher","junior","mid","senior","executive") each resolve to their OWN distinct CAREER_STAGES entry, not a shared silent default', () => {
+    const stages = ['fresher', 'junior', 'mid', 'senior', 'executive'].map((lvl) =>
+      buildCalibrationState({ experienceLevel: lvl, competency: 'communication', roleTitle: 'Software Engineer', jdText: '', qaPairs: [] }).activeStageSchema.stage
+    );
+    assert.deepStrictEqual(stages, ['Student/Fresher', 'Junior Engineer', 'Mid-Level', 'Senior', 'Director / VP']);
+    const uniqueStages = new Set(stages);
+    assert.strictEqual(uniqueStages.size, 5, 'all 5 stages must resolve to distinct calibration text, not collapse to one shared default');
+  });
+
+  check('CRITICAL REGRESSION GUARD: the OLD capitalized/hyphenated display strings the UI used to send ("Fresher","Mid-Career","Senior","Executive") would have ALL collapsed to the same Mid-Level default -- documenting the bug that was fixed, not asserting desired behavior', () => {
+    const oldBuggyValues = ['Fresher', 'Mid-Career', 'Senior', 'Executive'];
+    const stages = oldBuggyValues.map((v) =>
+      buildCalibrationState({ experienceLevel: v, competency: 'communication', roleTitle: 'Software Engineer', jdText: '', qaPairs: [] }).activeStageSchema.stage
+    );
+    assert.ok(stages.every((s) => s === 'Mid-Level'), 'this test documents the pre-fix bug -- if it ever fails, the bug is already gone at the buildCalibrationState layer, but the UI fix (state.exp = el.dataset.exp) must still remain in place as the actual production fix');
+  });
+
+  // ── F. Role coverage: Junior path works across all 10 launch roles ──────
+  const LAUNCH_ROLES = ['Software Engineer', 'Engineering Manager', 'Solutions Architect', 'AI Engineer', 'Data Engineer', 'AI Product Manager', 'Product Manager', 'Program Manager', 'Business Analyst', 'Management Consultant'];
+  LAUNCH_ROLES.forEach((role) => {
+    check(`JUNIOR ROLE COVERAGE: ${role} + junior resolves to the graduate strategy profile (role-specific competency selection untouched)`, () => {
+      const cfg = require('../config/interview-strategy-profiles');
+      assert.strictEqual(cfg.resolveStrategyProfileName(role, 'junior'), 'graduate');
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Part 7 — STORY GUARDRAILS FRESHER/JUNIOR CALIBRATION (2026-09-06)
+//
+// Root cause: for a resume_story turn with hasResumeContext=false and no
+// story available, resumeStep evaluates to '' entirely, and storyGuardrails
+// is the ONLY instruction the model receives for that turn. It was
+// career-stage agnostic and never mentioned college/internship/hackathon/
+// personal-project evidence as valid, which allowed past-professional
+// wording ("Walk me through a time when you had to explain...") even for a
+// true Fresher with zero work history. Fixed with the same isFresherStyle
+// pattern as every other calibration this session.
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const iv = loadWithTestExports('services/interview.js', ['composePrompt', 'EVIDENCE_TIERS']);
+  const composePrompt = iv.__test_composePrompt;
+  const EVIDENCE_TIERS = iv.__test_EVIDENCE_TIERS;
+
+  function noStoryArgs(overrides) {
+    return Object.assign({
+      competency: 'strategy',
+      calibrationState: Object.assign({
+        activeLevelKey: 'L1',
+        activeStageSchema: { level: 'L1', stage: 'Student/Fresher', style: 'Fundamentals & Applied Basics', scope: 'Individual task execution with clear guardrails' },
+        isAiDataDomain: false,
+        scenarioFormatTag: 'analytical',
+        caseTierBand: null,
+        experienceStyle: 'test style',
+        adjustedLevelNum: 1,
+      }, overrides && overrides.calibrationState),
+      evidenceProfile: { evidenceTier: EVIDENCE_TIERS.WEAK, leastValidatedSubskill: 'test_subskill' },
+      strategy: { phase: 'test', mode: 'test', operationalDirective: 'test directive' },
+      candidateModel: { confidence: 50, ownership: 50, communication: 50, technicalDepth: 50, leadership: 50, decisionMaking: 50, learningAgility: 50, businessThinking: 50 },
+      difficulty: 'medium',
+      hasResumeContext: false,
+      isFollowup: false,
+      questionBlueprint: null, // no story, no JD-scenario source -> triggers the no-story guardrail branch
+    }, overrides && Object.keys(overrides).filter(k => k !== 'calibrationState').reduce((o, k) => { o[k] = overrides[k]; return o; }, {}));
+  }
+
+  // 1. Fresher + no resume/story: explicitly allows early-career evidence
+  const fresherNoStory = composePrompt(noStoryArgs({ calibrationState: { adjustedLevelNum: 1 } }));
+  check('STORY GUARDRAILS #1: Fresher + no resume/story explicitly permits college/internship/hackathon/personal-project evidence', () => {
+    assert.ok(fresherNoStory.includes('college/class project'));
+    assert.ok(fresherNoStory.includes('internship'));
+    assert.ok(fresherNoStory.includes('hackathon'));
+    assert.ok(fresherNoStory.includes('personal project'));
+    assert.ok(fresherNoStory.includes('may have no prior professional employment'));
+  });
+
+  // 2. Junior + no resume/story: same early-career fallback available
+  const juniorNoStory = composePrompt(noStoryArgs({ calibrationState: { adjustedLevelNum: 2 } }));
+  check('STORY GUARDRAILS #2: Junior (L2) + no resume/story gets the same early-career fallback as Fresher (L1)', () => {
+    assert.strictEqual(fresherNoStory, juniorNoStory, 'L1 and L2 must produce byte-identical guardrail text (same isFresherStyle bucket)');
+  });
+
+  // 3. Fresher + actual resume/story: existing story-driven behavior intact
+  check('STORY GUARDRAILS #3: Fresher WITH a real story does not trigger the no-story guardrail branch at all', () => {
+    const withStoryArgs = noStoryArgs({
+      calibrationState: { adjustedLevelNum: 1 },
+      hasResumeContext: true,
+      questionBlueprint: { story: { company: 'Test Co', achievement: 'shipped a feature' }, competency: 'strategy', interview_intent: 'test', reason: 'test', question_type: 'resume_story' },
+    });
+    const prompt = composePrompt(withStoryArgs);
+    assert.ok(!prompt.includes('NO STORY WAS SELECTED FOR THIS TURN'), 'the no-story guardrail must not fire when a real story is present');
+    assert.ok(prompt.includes('TODAY\'S STORY'), 'the existing story-driven resumeStep path must still run normally');
+  });
+
+  // 4/5/6. Mid/Senior/Executive + no resume/story: unchanged, byte-identical to each other and to the pre-fix text
+  const midNoStory = composePrompt(noStoryArgs({ calibrationState: { adjustedLevelNum: 3 } }));
+  const seniorNoStory = composePrompt(noStoryArgs({ calibrationState: { adjustedLevelNum: 4 } }));
+  const execNoStory = composePrompt(noStoryArgs({ calibrationState: { adjustedLevelNum: 7 } }));
+
+  check('STORY GUARDRAILS #4/5/6: Mid/Senior/Executive + no resume/story do NOT contain the new Fresher/Junior early-career language', () => {
+    [midNoStory, seniorNoStory, execNoStory].forEach((p) => {
+      assert.ok(!p.includes('college/class project'));
+      assert.ok(!p.includes('may have no prior professional employment'));
+    });
+  });
+
+  check('STORY GUARDRAILS #4/5/6: Mid/Senior/Executive no-story guardrail text is BYTE-IDENTICAL to the original pre-fix wording', () => {
+    const originalText = 'CRITICAL — NO STORY WAS SELECTED FOR THIS TURN: the blueprint above deliberately chose not to use a resume story. This is a real decision, not an oversight, and it is not yours to override. Your question MUST NOT name, reference, or allude to ANY company, employer, customer, or project from the candidate\'s career history — not the one from a previous question, not one you might infer from context, none. Do not open with "At [company]...", "During your [X] work...", "While you were leading...", or any phrase that implies a specific past employer. Build entirely hypothetical, forward-looking, or general-scenario language instead (e.g. "Imagine you inherit an organisation where...", "If you were leading a team where..."). If you catch yourself about to type a real company name, stop and rewrite the sentence without it.';
+    [midNoStory, seniorNoStory, execNoStory].forEach((p) => {
+      assert.ok(p.includes(originalText), 'non-fresher branch must be byte-identical to the pre-fix text');
+    });
+    assert.strictEqual(midNoStory.match(/NO STORY WAS SELECTED[\s\S]*?real company name, stop and rewrite the sentence without it\./)[0],
+      seniorNoStory.match(/NO STORY WAS SELECTED[\s\S]*?real company name, stop and rewrite the sentence without it\./)[0]);
+    assert.strictEqual(seniorNoStory.match(/NO STORY WAS SELECTED[\s\S]*?real company name, stop and rewrite the sentence without it\./)[0],
+      execNoStory.match(/NO STORY WAS SELECTED[\s\S]*?real company name, stop and rewrite the sentence without it\./)[0]);
+  });
+
+  // 7. No role-specific hardcoding introduced — role is not even a parameter of composePrompt
+  check('STORY GUARDRAILS #7: no role-specific hardcoding was introduced (composePrompt has no roleTitle/role parameter at all)', () => {
+    assert.ok(!fresherNoStory.match(/Software Engineer|Product Manager|Solutions Architect|Business Analyst|Management Consultant/), 'the new guardrail text must not name any specific role');
   });
 }
 
