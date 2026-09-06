@@ -635,5 +635,101 @@ console.log('Interview Strategy Profiles — regression suite\n');
   });
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Part 7 — STORY GUARDRAILS FRESHER/JUNIOR CALIBRATION (2026-09-06)
+//
+// Root cause: for a resume_story turn with hasResumeContext=false and no
+// story available, resumeStep evaluates to '' entirely, and storyGuardrails
+// is the ONLY instruction the model receives for that turn. It was
+// career-stage agnostic and never mentioned college/internship/hackathon/
+// personal-project evidence as valid, which allowed past-professional
+// wording ("Walk me through a time when you had to explain...") even for a
+// true Fresher with zero work history. Fixed with the same isFresherStyle
+// pattern as every other calibration this session.
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const iv = loadWithTestExports('services/interview.js', ['composePrompt', 'EVIDENCE_TIERS']);
+  const composePrompt = iv.__test_composePrompt;
+  const EVIDENCE_TIERS = iv.__test_EVIDENCE_TIERS;
+
+  function noStoryArgs(overrides) {
+    return Object.assign({
+      competency: 'strategy',
+      calibrationState: Object.assign({
+        activeLevelKey: 'L1',
+        activeStageSchema: { level: 'L1', stage: 'Student/Fresher', style: 'Fundamentals & Applied Basics', scope: 'Individual task execution with clear guardrails' },
+        isAiDataDomain: false,
+        scenarioFormatTag: 'analytical',
+        caseTierBand: null,
+        experienceStyle: 'test style',
+        adjustedLevelNum: 1,
+      }, overrides && overrides.calibrationState),
+      evidenceProfile: { evidenceTier: EVIDENCE_TIERS.WEAK, leastValidatedSubskill: 'test_subskill' },
+      strategy: { phase: 'test', mode: 'test', operationalDirective: 'test directive' },
+      candidateModel: { confidence: 50, ownership: 50, communication: 50, technicalDepth: 50, leadership: 50, decisionMaking: 50, learningAgility: 50, businessThinking: 50 },
+      difficulty: 'medium',
+      hasResumeContext: false,
+      isFollowup: false,
+      questionBlueprint: null, // no story, no JD-scenario source -> triggers the no-story guardrail branch
+    }, overrides && Object.keys(overrides).filter(k => k !== 'calibrationState').reduce((o, k) => { o[k] = overrides[k]; return o; }, {}));
+  }
+
+  // 1. Fresher + no resume/story: explicitly allows early-career evidence
+  const fresherNoStory = composePrompt(noStoryArgs({ calibrationState: { adjustedLevelNum: 1 } }));
+  check('STORY GUARDRAILS #1: Fresher + no resume/story explicitly permits college/internship/hackathon/personal-project evidence', () => {
+    assert.ok(fresherNoStory.includes('college/class project'));
+    assert.ok(fresherNoStory.includes('internship'));
+    assert.ok(fresherNoStory.includes('hackathon'));
+    assert.ok(fresherNoStory.includes('personal project'));
+    assert.ok(fresherNoStory.includes('may have no prior professional employment'));
+  });
+
+  // 2. Junior + no resume/story: same early-career fallback available
+  const juniorNoStory = composePrompt(noStoryArgs({ calibrationState: { adjustedLevelNum: 2 } }));
+  check('STORY GUARDRAILS #2: Junior (L2) + no resume/story gets the same early-career fallback as Fresher (L1)', () => {
+    assert.strictEqual(fresherNoStory, juniorNoStory, 'L1 and L2 must produce byte-identical guardrail text (same isFresherStyle bucket)');
+  });
+
+  // 3. Fresher + actual resume/story: existing story-driven behavior intact
+  check('STORY GUARDRAILS #3: Fresher WITH a real story does not trigger the no-story guardrail branch at all', () => {
+    const withStoryArgs = noStoryArgs({
+      calibrationState: { adjustedLevelNum: 1 },
+      hasResumeContext: true,
+      questionBlueprint: { story: { company: 'Test Co', achievement: 'shipped a feature' }, competency: 'strategy', interview_intent: 'test', reason: 'test', question_type: 'resume_story' },
+    });
+    const prompt = composePrompt(withStoryArgs);
+    assert.ok(!prompt.includes('NO STORY WAS SELECTED FOR THIS TURN'), 'the no-story guardrail must not fire when a real story is present');
+    assert.ok(prompt.includes('TODAY\'S STORY'), 'the existing story-driven resumeStep path must still run normally');
+  });
+
+  // 4/5/6. Mid/Senior/Executive + no resume/story: unchanged, byte-identical to each other and to the pre-fix text
+  const midNoStory = composePrompt(noStoryArgs({ calibrationState: { adjustedLevelNum: 3 } }));
+  const seniorNoStory = composePrompt(noStoryArgs({ calibrationState: { adjustedLevelNum: 4 } }));
+  const execNoStory = composePrompt(noStoryArgs({ calibrationState: { adjustedLevelNum: 7 } }));
+
+  check('STORY GUARDRAILS #4/5/6: Mid/Senior/Executive + no resume/story do NOT contain the new Fresher/Junior early-career language', () => {
+    [midNoStory, seniorNoStory, execNoStory].forEach((p) => {
+      assert.ok(!p.includes('college/class project'));
+      assert.ok(!p.includes('may have no prior professional employment'));
+    });
+  });
+
+  check('STORY GUARDRAILS #4/5/6: Mid/Senior/Executive no-story guardrail text is BYTE-IDENTICAL to the original pre-fix wording', () => {
+    const originalText = 'CRITICAL — NO STORY WAS SELECTED FOR THIS TURN: the blueprint above deliberately chose not to use a resume story. This is a real decision, not an oversight, and it is not yours to override. Your question MUST NOT name, reference, or allude to ANY company, employer, customer, or project from the candidate\'s career history — not the one from a previous question, not one you might infer from context, none. Do not open with "At [company]...", "During your [X] work...", "While you were leading...", or any phrase that implies a specific past employer. Build entirely hypothetical, forward-looking, or general-scenario language instead (e.g. "Imagine you inherit an organisation where...", "If you were leading a team where..."). If you catch yourself about to type a real company name, stop and rewrite the sentence without it.';
+    [midNoStory, seniorNoStory, execNoStory].forEach((p) => {
+      assert.ok(p.includes(originalText), 'non-fresher branch must be byte-identical to the pre-fix text');
+    });
+    assert.strictEqual(midNoStory.match(/NO STORY WAS SELECTED[\s\S]*?real company name, stop and rewrite the sentence without it\./)[0],
+      seniorNoStory.match(/NO STORY WAS SELECTED[\s\S]*?real company name, stop and rewrite the sentence without it\./)[0]);
+    assert.strictEqual(seniorNoStory.match(/NO STORY WAS SELECTED[\s\S]*?real company name, stop and rewrite the sentence without it\./)[0],
+      execNoStory.match(/NO STORY WAS SELECTED[\s\S]*?real company name, stop and rewrite the sentence without it\./)[0]);
+  });
+
+  // 7. No role-specific hardcoding introduced — role is not even a parameter of composePrompt
+  check('STORY GUARDRAILS #7: no role-specific hardcoding was introduced (composePrompt has no roleTitle/role parameter at all)', () => {
+    assert.ok(!fresherNoStory.match(/Software Engineer|Product Manager|Solutions Architect|Business Analyst|Management Consultant/), 'the new guardrail text must not name any specific role');
+  });
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
