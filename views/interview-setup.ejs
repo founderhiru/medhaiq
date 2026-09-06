@@ -733,8 +733,9 @@
 
     <div class="step-label">2. Select Career Stage</div>
     <div class="exp-grid" id="chips-exp">
-      <div class="sel-card chip exp-card" data-exp="fresher"><div class="check">✓</div><span class="exp-emoji">🌱</span><div><div class="exp-name">Fresher</div><div class="exp-yrs">0–2 yrs</div></div></div>
-      <div class="sel-card chip exp-card" data-exp="mid"><div class="check">✓</div><span class="exp-emoji">⚡</span><div><div class="exp-name">Mid-Career</div><div class="exp-yrs">3–8 yrs</div></div></div>
+      <div class="sel-card chip exp-card" data-exp="fresher"><div class="check">✓</div><span class="exp-emoji">🌱</span><div><div class="exp-name">Campus / Fresher</div><div class="exp-yrs">0 yrs</div></div></div>
+      <div class="sel-card chip exp-card" data-exp="junior"><div class="check">✓</div><span class="exp-emoji">🌿</span><div><div class="exp-name">Junior / Early Career</div><div class="exp-yrs">1–2 yrs</div></div></div>
+      <div class="sel-card chip exp-card" data-exp="mid"><div class="check">✓</div><span class="exp-emoji">⚡</span><div><div class="exp-name">Mid Career</div><div class="exp-yrs">3–8 yrs</div></div></div>
       <div class="sel-card chip exp-card" data-exp="senior"><div class="check">✓</div><span class="exp-emoji">🔥</span><div><div class="exp-name">Senior</div><div class="exp-yrs">8–15 yrs</div></div></div>
       <div class="sel-card chip exp-card" data-exp="executive"><div class="check">✓</div><span class="exp-emoji">👑</span><div><div class="exp-name">Executive</div><div class="exp-yrs">15+ yrs</div></div></div>
     </div>
@@ -930,7 +931,7 @@ function switchTab(tab) {
   // Apply Context (declaration below is hoisted — safe to reference here).
   window.__miqSync = function () { sync(); };
 
-  const EXP_LABELS = { fresher: 'Fresher (0–2 yrs)', mid: 'Mid-Career (3–8 yrs)', senior: 'Senior (8–15 yrs)', executive: 'Executive (15+ yrs)' };
+  const EXP_LABELS = { fresher: 'Campus / Fresher (0 yrs)', junior: 'Junior / Early Career (1–2 yrs)', mid: 'Mid Career (3–8 yrs)', senior: 'Senior (8–15 yrs)', executive: 'Executive (15+ yrs)' };
   const customInput = document.getElementById('roleCustom');
 
   document.querySelectorAll('.sel-card').forEach(el => {
@@ -945,7 +946,23 @@ function switchTab(tab) {
       } else if (el.dataset.exp) {
         el.parentElement.querySelectorAll('.sel-card').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
-        state.exp = el.querySelector('.exp-name').textContent.trim();
+        // CRITICAL FIX (2026-09-05): previously captured the DISPLAY TEXT
+        // of .exp-name ("Fresher", "Mid-Career", "Senior", "Executive") as
+        // state.exp, which is what gets sent to the backend as
+        // experienceLevel below. Since CAREER_STAGES lookups in
+        // services/interview.js (buildCalibrationState) are an EXACT,
+        // case-sensitive key match against lowercase keys ('fresher',
+        // 'mid', 'senior', 'executive'), none of those capitalized/
+        // hyphenated display strings ever matched -- every single session,
+        // regardless of which card was selected, silently fell back to the
+        // 'mid' (L3) calibration depth. resolveStrategyProfileName() in
+        // config/interview-strategy-profiles.js normalizes case, so
+        // Patch A's question-TYPE rhythm was unaffected by this -- but
+        // Patch C's isFresherStyle-gated question-DEPTH calibration never
+        // actually fired for any real candidate. Sending the canonical
+        // lowercase data-exp value directly fixes this for all 5 stages,
+        // not just the new Junior one.
+        state.exp = el.dataset.exp;
         document.getElementById('ctxExp').textContent = EXP_LABELS[el.dataset.exp] || state.exp;
       } else {
         // role card (may live in either tab panel) — STRICT SINGLE-CHOICE:

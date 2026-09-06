@@ -53,6 +53,20 @@ function main() {
     assert.strictEqual(r.profileKey, 'EXECUTIVE');
   });
 
+  // FIX (2026-09-05): 'junior' previously had no explicit case and fell
+  // through to the 'unrecognized' catch-all below, silently defaulting to
+  // PROFESSIONAL (Mid-Career) with no resume-driven early-career heuristic
+  // at all. Now explicitly routes to the existing EARLY_PROFESSIONAL
+  // profile -- same override precedence as mid/senior/executive above.
+  check('junior always resolves to EARLY_PROFESSIONAL, regardless of resume', () => {
+    const r = selectDiscoveryProfile({
+      experienceLevel: 'junior',
+      resumeContext: { companies: [], summary: 'university capstone hackathon intern' }, // adversarial: campus keywords present
+      storyLibrary: [],
+    });
+    assert.strictEqual(r.profileKey, 'EARLY_PROFESSIONAL', 'career stage must override resume signal for junior, same as mid/senior/executive');
+  });
+
   check('unrecognized experienceLevel fails safe to PROFESSIONAL (mirrors sessionController default)', () => {
     const r = selectDiscoveryProfile({ experienceLevel: 'staff', resumeContext: null, storyLibrary: null });
     assert.strictEqual(r.profileKey, 'PROFESSIONAL');

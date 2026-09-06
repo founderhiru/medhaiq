@@ -244,19 +244,27 @@ function resolveCompetenciesForCategory(category, priority) {
 }
 
 // ── Competency prompt fragments injected into the AI prompt ───────
-// PATCH C (2026-09-04): system_design and communication are now
-// FUNCTIONS gated on isFresherStyle — these were the two confirmed
-// prompt-calibration leaks (level-agnostic "scalability trade-offs" and
+// PATCH C (2026-09-04): system_design and communication were first made
+// FUNCTIONS gated on isFresherStyle — the two confirmed prompt-calibration
+// leaks at that time (level-agnostic "scalability trade-offs" and
 // "executive presence" language injected regardless of career stage).
-// leadership/strategy/technical are untouched, still plain strings — not
-// part of this patch's confirmed leak list. Non-fresher branches are
-// byte-identical to the original text.
+// JUNIOR EXTENSION (2026-09-05): leadership and strategy extended with the
+// exact same pattern, per the Junior Calibration Audit finding that these
+// are the highest-priority competency for 3 of the 10 launch roles
+// (Engineering Manager, Product Manager, Management Consultant) and were
+// never covered by the original Patch C scope. technical remains untouched
+// — not flagged as a leak in either audit. Non-fresher branches are
+// byte-identical to the original text in every case.
 const COMPETENCY_PROMPTS = {
   system_design: (isFresherStyle) => isFresherStyle
     ? 'Focus this question on the candidate\'s own hands-on implementation choices — how they structured their code, a database or API design decision they made, or a straightforward technical constraint they had to work within on a real project. Do not introduce enterprise-scale architecture, large distributed systems, 10x/organization-wide scaling, or infrastructure decisions beyond what an individual contributor on a small project would own.'
     : 'Focus this question on system design, architecture decisions, scalability trade-offs, or technical infrastructure choices.',
-  leadership:     'Focus this question on team leadership, people management, influencing without authority, or navigating org conflict.',
-  strategy:       'Focus this question on strategic thinking, roadmap prioritisation, business trade-offs, or long-term vision setting.',
+  leadership: (isFresherStyle) => isFresherStyle
+    ? 'Focus this question on ownership of a task or piece of work, helping or coordinating with a teammate, taking initiative without being asked, or handling a disagreement about how to approach a shared task. Do not introduce board-level leadership, executive leadership, enterprise transformation, organizational strategy, large-scale stakeholder alignment, C-suite decisions, or assume the candidate manages a team.'
+    : 'Focus this question on team leadership, people management, influencing without authority, or navigating org conflict.',
+  strategy: (isFresherStyle) => isFresherStyle
+    ? 'Focus this question on straightforward prioritization between two or three concrete options, a simple trade-off the candidate had to weigh, task/time planning, or a practical first professional decision. Do not introduce enterprise portfolio strategy, corporate strategy, board-level decisions, C-suite decisions, large-scale transformation, or allocating company-wide resources.'
+    : 'Focus this question on strategic thinking, roadmap prioritisation, business trade-offs, or long-term vision setting.',
   communication: (isFresherStyle) => isFresherStyle
     ? 'Focus this question on first-person, team-level communication — explaining a technical idea to a teammate or mentor, giving or receiving feedback on a project, or coordinating with peers on a shared task.'
     : 'Focus this question on stakeholder communication, executive presence, delivering difficult messages, or cross-functional alignment.',
@@ -264,9 +272,10 @@ const COMPETENCY_PROMPTS = {
 };
 
 // Resolves a COMPETENCY_PROMPTS entry regardless of whether it's the
-// original plain string (leadership/strategy/technical) or one of the
-// two PATCH C functions (system_design/communication) — single call site
-// so callers never need to know which shape a given competency uses.
+// original plain string (technical) or one of the four now-Fresher/Junior
+// gated functions (system_design/leadership/strategy/communication) —
+// single call site so callers never need to know which shape a given
+// competency uses.
 function resolveCompetencyPrompt(competency, isFresherStyle) {
   const entry = COMPETENCY_PROMPTS[competency];
   if (typeof entry === 'function') return entry(!!isFresherStyle);

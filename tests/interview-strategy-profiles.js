@@ -487,9 +487,9 @@ console.log('Interview Strategy Profiles — regression suite\n');
     assert.strictEqual(resolveCompetencyPrompt('communication', false), original);
   });
 
-  check('PATCH C: leadership/strategy/technical framings are completely UNTOUCHED by this patch (not part of the confirmed leak list)', () => {
-    assert.strictEqual(resolveCompetencyPrompt('leadership', true), 'Focus this question on team leadership, people management, influencing without authority, or navigating org conflict.');
-    assert.strictEqual(resolveCompetencyPrompt('strategy', true), 'Focus this question on strategic thinking, roadmap prioritisation, business trade-offs, or long-term vision setting.');
+  check('SUPERSEDED (2026-09-05): leadership/strategy are now Fresher/Junior-gated too, per the Junior Calibration Audit -- technical remains untouched', () => {
+    assert.strictEqual(resolveCompetencyPrompt('leadership', false), 'Focus this question on team leadership, people management, influencing without authority, or navigating org conflict.');
+    assert.strictEqual(resolveCompetencyPrompt('strategy', false), 'Focus this question on strategic thinking, roadmap prioritisation, business trade-offs, or long-term vision setting.');
     assert.strictEqual(resolveCompetencyPrompt('technical', true), 'Focus this question on domain-specific technical knowledge, implementation depth, debugging approaches, or engineering best practices.');
   });
 
@@ -554,6 +554,83 @@ console.log('Interview Strategy Profiles — regression suite\n');
     const forbiddenPhrases = ['board-level', 'executive presence', 'enterprise-scale', '10x', 'large distributed', 'executive voice', 'scalability trade-offs'];
     forbiddenPhrases.forEach((phrase) => {
       assert.ok(!prompt.toLowerCase().includes(phrase.toLowerCase()), `composed prompt must not contain "${phrase}" for a Fresher with no resume/JD context`);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Part 6 — JUNIOR / EARLY CAREER IMPLEMENTATION (2026-09-05)
+// ═══════════════════════════════════════════════════════════════════════════
+{
+  const iv = loadWithTestExports('services/interview.js', ['resolveCompetencyPrompt', 'buildCalibrationState', 'styleKeyForLevel']);
+  const resolveCompetencyPrompt = iv.__test_resolveCompetencyPrompt;
+  const buildCalibrationState = iv.__test_buildCalibrationState;
+  const styleKeyForLevel = iv.__test_styleKeyForLevel;
+
+  // ── D. Leadership / Strategy calibration ──────────────────────────────
+  check('JUNIOR: leadership Fresher/Junior framing explicitly instructs AGAINST board-level/executive/organizational language, and affirmatively describes peer-level scope', () => {
+    const text = resolveCompetencyPrompt('leadership', true);
+    assert.ok(text.includes('Do not introduce board-level leadership'), 'must explicitly instruct against it, not merely omit the phrase');
+    assert.ok(text.includes('ownership of a task') || text.includes('helping or coordinating with a teammate'));
+  });
+
+  check('JUNIOR: leadership non-Fresher framing is BYTE-IDENTICAL to the pre-existing text', () => {
+    assert.strictEqual(resolveCompetencyPrompt('leadership', false), 'Focus this question on team leadership, people management, influencing without authority, or navigating org conflict.');
+  });
+
+  check('JUNIOR: strategy Fresher/Junior framing explicitly instructs AGAINST enterprise/board/C-suite language, and affirmatively describes practical scope', () => {
+    const text = resolveCompetencyPrompt('strategy', true);
+    assert.ok(text.includes('Do not introduce enterprise portfolio strategy'), 'must explicitly instruct against it, not merely omit the phrase');
+    assert.ok(text.includes('prioritization') || text.includes('trade-off'));
+  });
+
+  check('JUNIOR: strategy non-Fresher framing is BYTE-IDENTICAL to the pre-existing text', () => {
+    assert.strictEqual(resolveCompetencyPrompt('strategy', false), 'Focus this question on strategic thinking, roadmap prioritisation, business trade-offs, or long-term vision setting.');
+  });
+
+  check('JUNIOR: technical framing is unaffected (was never flagged as a leak)', () => {
+    assert.strictEqual(resolveCompetencyPrompt('technical', true), 'Focus this question on domain-specific technical knowledge, implementation depth, debugging approaches, or engineering best practices.');
+  });
+
+  // ── A/regression. Career Stage routing: exact lowercase values now sent ──
+  check('JUNIOR: experienceLevel="junior" resolves to CAREER_STAGES.junior (L2, "Junior Engineer") via buildCalibrationState', () => {
+    const state = buildCalibrationState({ experienceLevel: 'junior', competency: 'communication', roleTitle: 'Software Engineer', jdText: '', qaPairs: [] });
+    assert.strictEqual(state.activeStageSchema.stage, 'Junior Engineer');
+    assert.strictEqual(state.adjustedLevelNum, 2);
+    assert.strictEqual(styleKeyForLevel(state.adjustedLevelNum), 'fresher', 'L2 must fold into the fresher-safe calibration bucket');
+  });
+
+  // ── CRITICAL REGRESSION: the UI state-capture bug found and fixed this
+  //    round. Confirms buildCalibrationState behaves correctly for the
+  //    EXACT lowercase values the UI now sends (views/interview-setup.ejs
+  //    fix: state.exp = el.dataset.exp, replacing the old
+  //    el.querySelector('.exp-name').textContent.trim() capture, which
+  //    sent capitalized/hyphenated display text like "Mid-Career" that
+  //    never matched any CAREER_STAGES key and silently defaulted every
+  //    single session to Mid-Level (L3) regardless of the card selected). ──
+  check('CRITICAL REGRESSION GUARD: lowercase canonical experienceLevel values ("fresher","junior","mid","senior","executive") each resolve to their OWN distinct CAREER_STAGES entry, not a shared silent default', () => {
+    const stages = ['fresher', 'junior', 'mid', 'senior', 'executive'].map((lvl) =>
+      buildCalibrationState({ experienceLevel: lvl, competency: 'communication', roleTitle: 'Software Engineer', jdText: '', qaPairs: [] }).activeStageSchema.stage
+    );
+    assert.deepStrictEqual(stages, ['Student/Fresher', 'Junior Engineer', 'Mid-Level', 'Senior', 'Director / VP']);
+    const uniqueStages = new Set(stages);
+    assert.strictEqual(uniqueStages.size, 5, 'all 5 stages must resolve to distinct calibration text, not collapse to one shared default');
+  });
+
+  check('CRITICAL REGRESSION GUARD: the OLD capitalized/hyphenated display strings the UI used to send ("Fresher","Mid-Career","Senior","Executive") would have ALL collapsed to the same Mid-Level default -- documenting the bug that was fixed, not asserting desired behavior', () => {
+    const oldBuggyValues = ['Fresher', 'Mid-Career', 'Senior', 'Executive'];
+    const stages = oldBuggyValues.map((v) =>
+      buildCalibrationState({ experienceLevel: v, competency: 'communication', roleTitle: 'Software Engineer', jdText: '', qaPairs: [] }).activeStageSchema.stage
+    );
+    assert.ok(stages.every((s) => s === 'Mid-Level'), 'this test documents the pre-fix bug -- if it ever fails, the bug is already gone at the buildCalibrationState layer, but the UI fix (state.exp = el.dataset.exp) must still remain in place as the actual production fix');
+  });
+
+  // ── F. Role coverage: Junior path works across all 10 launch roles ──────
+  const LAUNCH_ROLES = ['Software Engineer', 'Engineering Manager', 'Solutions Architect', 'AI Engineer', 'Data Engineer', 'AI Product Manager', 'Product Manager', 'Program Manager', 'Business Analyst', 'Management Consultant'];
+  LAUNCH_ROLES.forEach((role) => {
+    check(`JUNIOR ROLE COVERAGE: ${role} + junior resolves to the graduate strategy profile (role-specific competency selection untouched)`, () => {
+      const cfg = require('../config/interview-strategy-profiles');
+      assert.strictEqual(cfg.resolveStrategyProfileName(role, 'junior'), 'graduate');
     });
   });
 }
