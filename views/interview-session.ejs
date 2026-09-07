@@ -466,7 +466,7 @@
      session data for scoring/report generation — it is never rendered.
      The UI shows only the candidate and the System's own presence. */
   document.getElementById('sbRole').textContent   = ROLE  || '—';
-  document.getElementById('sbLevel').textContent  = LEVEL || '—';
+  document.getElementById('sbLevel').textContent  = LEVEL ? (LEVEL.charAt(0).toUpperCase() + LEVEL.slice(1)) : '—';
 
   /* ── Elapsed timer (topbar) + Est. remaining (sidebar) — both driven off
      the SAME real clock, counting down to the SAME real end timestamp.
