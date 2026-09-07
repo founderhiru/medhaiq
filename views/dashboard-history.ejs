@@ -1,4 +1,4 @@
-<%- include('partials/workspace-shell-top', { pageTitle: 'Career Workspace — MedhaIQ', activeNav: 'dashboard', bodyClass: 'career-workspace', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'], previewMode: typeof previewMode !== 'undefined' ? previewMode : false }) %>
+<%- include('partials/workspace-shell-top', { pageTitle: 'Career Workspace — MedhaIQ', activeNav: 'dashboard', bodyClass: 'career-workspace', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'], previewMode: typeof previewMode !== 'undefined' ? previewMode : false, isCampusLearner: typeof isCampusLearner !== 'undefined' ? isCampusLearner : false }) %>
 
 <%
 /* Dynamic greeting — server renders a fallback using its own clock so

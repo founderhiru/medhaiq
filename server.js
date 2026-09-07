@@ -924,6 +924,130 @@ app.get('/founder', requireFounderPage, async (req, res) => {
 // built (limit/offset params existed unused until now) and the existing
 // views/founder-feedback-all.ejs (existed unused until now). No new
 // query, no new template — this route is the only missing piece.
+// ── Campus Ready pages (Phase 1 + Phase 2) ──────────────────────────────
+
+app.get('/campus', requireAuthPage, async (req, res) => {
+  const { getLearnerForUser } = require('./db/campus');
+  const learner = await getLearnerForUser(req.user.id);
+  if (!learner) return res.redirect('/dashboard/history');
+  res.render('campus-ready', { shellUser: req.user, cohortLabel: learner.cohort_name, isCampusLearner: true });
+});
+
+// GET /campus/invite/:token — the invitation landing page (Phase 2B).
+// Guarded by the SAME, unmodified requireAuthPage every other page route
+// uses: an unauthenticated visitor is bounced to
+// /auth/login?next=/campus/invite/<token> and returns here automatically
+// after login/signup, since routes/auth.js's existing safeReturnTo()
+// already accepts any internal path — no changes needed there.
+app.get('/campus/invite/:token', requireAuthPage, async (req, res) => {
+  const { getInviteDetailsForDisplay } = require('./db/campus');
+  const invite = await getInviteDetailsForDisplay(req.params.token);
+  if (!invite) {
+    return res.status(404).render('campus-invite', { shellUser: req.user, invite: null, state: 'not_found', token: req.params.token });
+  }
+  const expired = invite.expires_at && new Date(invite.expires_at) < new Date();
+  const emailMatches = req.user.email.trim().toLowerCase() === invite.email.trim().toLowerCase();
+  let state = 'pending';
+  if (expired) state = 'expired';
+  else if (!emailMatches) state = 'email_mismatch';
+  else if (invite.status === 'accepted') state = 'already_accepted';
+  res.render('campus-invite', { shellUser: req.user, invite, state, token: req.params.token });
+});
+
+// Old URL from Phase 1 (used to silently auto-accept) — kept working so
+// any invite link already sent out still resolves, now landing on the
+// proper confirmation page instead of auto-enrolling.
+app.get('/campus/join/:token', requireAuthPage, (req, res) => {
+  res.redirect('/campus/invite/' + req.params.token);
+});
+
+app.get('/founder/institutions', requireFounderPage, async (req, res) => {
+  res.render('founder-institutions', { shellUser: req.user });
+});
+
+// GET /founder/campus/e2e — Founder-only E2E Test Lab (Phase 2F).
+app.get('/founder/campus/e2e', requireFounderPage, async (req, res) => {
+  res.render('campus-e2e-test-lab', { shellUser: req.user });
+});
+
+// ── TPO / Institution Admin pages (Phase 2C) ────────────────────────────
+// Not institution-scoped in the URL (no :institutionId yet) — this is
+// the entry point that decides where to send the person: straight to
+// their one institution, a picker if they administer several, or (for
+// Founder) the full institutions list. Uses requireAuthPage only; the
+// per-institution authorization check happens once we know which
+// institution is being requested, on the routes below.
+app.get('/campus/tpo', requireAuthPage, async (req, res) => {
+  const { isFounder } = require('./db/founder-access');
+  const { listInstitutionsForAdmin } = require('./db/campus-tpo');
+  const { listInstitutions } = require('./db/campus');
+  const founder = await isFounder(req.user.id);
+  const institutions = founder ? await listInstitutions() : await listInstitutionsForAdmin(req.user.id);
+  if (institutions.length === 1) return res.redirect(`/campus/tpo/${institutions[0].id}`);
+  res.render('campus-tpo', { shellUser: req.user, view: 'institution_picker', institutions, isFounder: founder });
+});
+
+// GET /campus/tpo/:institutionId — cohort picker (or straight to the one
+// cohort) for that institution.
+app.get('/campus/tpo/:institutionId', requireInstitutionAdminPage, async (req, res) => {
+  const { getInstitution } = require('./db/campus');
+  const { listCohortsForInstitutionTpo } = require('./db/campus-tpo');
+  const institution = await getInstitution(req.institutionId);
+  if (!institution) return res.status(404).render('error-boundary', { url: req.url, errorMessage: 'Institution not found.' });
+  const cohorts = await listCohortsForInstitutionTpo(req.institutionId);
+  if (cohorts.length === 1) return res.redirect(`/campus/tpo/${req.institutionId}/${cohorts[0].id}`);
+  res.render('campus-tpo', { shellUser: req.user, view: 'cohort_picker', institution, cohorts, isFounder: req.isFounderOverride });
+});
+
+// GET /campus/tpo/:institutionId/:cohortId — the cohort dashboard itself.
+app.get('/campus/tpo/:institutionId/:cohortId', requireInstitutionAdminPage, async (req, res) => {
+  const { getCohortWithInstitution } = require('./db/campus-tpo');
+  const cohort = await getCohortWithInstitution(req.params.cohortId);
+  if (!cohort || cohort.institution_id !== req.institutionId) {
+    return res.status(404).render('error-boundary', { url: req.url, errorMessage: 'Cohort not found for this institution.' });
+  }
+  res.render('campus-tpo', {
+    shellUser: req.user, view: 'dashboard', institutionId: req.institutionId, cohortId: req.params.cohortId,
+    institutionName: cohort.institution_name, cohortName: cohort.name, isFounder: req.isFounderOverride,
+  });
+});
+
+// GET /campus/tpo/:institutionId/:cohortId/student/:learnerId — dedicated
+// student-detail route (linkable/bookmarkable).
+app.get('/campus/tpo/:institutionId/:cohortId/student/:learnerId', requireInstitutionAdminPage, async (req, res) => {
+  const { getCohortWithInstitution, getStudentDetail } = require('./db/campus-tpo');
+  const cohort = await getCohortWithInstitution(req.params.cohortId);
+  if (!cohort || cohort.institution_id !== req.institutionId) {
+    return res.status(404).render('error-boundary', { url: req.url, errorMessage: 'Cohort not found for this institution.' });
+  }
+  const student = await getStudentDetail(req.params.learnerId);
+  if (!student || student.cohortId !== cohort.id) {
+    return res.status(404).render('error-boundary', { url: req.url, errorMessage: 'Student not found in this cohort.' });
+  }
+  res.render('campus-tpo-student', {
+    shellUser: req.user, institutionId: req.institutionId, cohortId: req.params.cohortId,
+    institutionName: cohort.institution_name, cohortName: cohort.name, student, isFounder: req.isFounderOverride,
+  });
+});
+
+// GET /campus/tpo/:institutionId/:cohortId/report — on-screen cohort report.
+app.get('/campus/tpo/:institutionId/:cohortId/report', requireInstitutionAdminPage, async (req, res) => {
+  const { getCohortWithInstitution, getCohortSnapshot, getModulePerformance, listStudents, computeInsights } = require('./db/campus-tpo');
+  const cohort = await getCohortWithInstitution(req.params.cohortId);
+  if (!cohort || cohort.institution_id !== req.institutionId) {
+    return res.status(404).render('error-boundary', { url: req.url, errorMessage: 'Cohort not found for this institution.' });
+  }
+  const [snapshot, modulePerformance, students] = await Promise.all([
+    getCohortSnapshot(cohort.id), getModulePerformance(cohort.id), listStudents(cohort.id),
+  ]);
+  const insights = computeInsights(modulePerformance, students);
+  res.render('campus-tpo-report', {
+    shellUser: req.user, institutionId: req.institutionId, cohortId: cohort.id,
+    institutionName: cohort.institution_name, cohortName: cohort.name,
+    snapshot, modulePerformance, students, insights, generatedAt: new Date(), isFounder: req.isFounderOverride,
+  });
+});
+
 app.get('/founder/feedback', requireFounderPage, async (req, res) => {
   try {
     const { getRecentFeedback } = require('./db/founder-feedback');
@@ -981,10 +1105,15 @@ async function computeDashboardHistoryData(req) {
   // requireAuthPage (via getCapabilities()) — no need to query either
   // again here. Only sessions/aggregateScores are still fetched fresh,
   // since neither is part of the Capability Engine's shape.
-  const [sessions, aggregateScores] = await Promise.all([
+  // getLearnerForUser is read-only here purely to decide whether to show
+  // the "Campus Ready" sidebar link (see workspace-shell-top.ejs) — this
+  // is the ONLY thing db/campus.js is used for outside routes/campus*.js,
+  // and it never touches campus progress/content tables.
+  const { getLearnerForUser } = require('./db/campus');
+  const [sessions, aggregateScores, campusLearner] = await Promise.all([
     getUserSessions(userId, { limit: 20 }),
     getUserAggregateScores(userId),
-
+    getLearnerForUser(userId),
   ]);
   const careerProfile = req.capabilities.careerProfile;
   const user = req.user;
@@ -1129,6 +1258,7 @@ async function computeDashboardHistoryData(req) {
     lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
     resumeIntelActive, resumeIntelSubLabel,
     bestCompetencyLabel, focusNextLabel,
+    isCampusLearner: !!campusLearner,
   };
 }
 
