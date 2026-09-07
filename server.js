@@ -924,7 +924,7 @@ app.get('/campus', requireAuthPage, async (req, res) => {
   const { getLearnerForUser } = require('./db/campus');
   const learner = await getLearnerForUser(req.user.id);
   if (!learner) return res.redirect('/dashboard/history');
-  res.render('campus-ready', { shellUser: req.user, cohortLabel: learner.cohort_name });
+  res.render('campus-ready', { shellUser: req.user, cohortLabel: learner.cohort_name, isCampusLearner: true });
 });
 
 app.get('/campus/join/:token', requireAuthPage, async (req, res) => {
@@ -996,9 +996,13 @@ async function computeDashboardHistoryData(req) {
   // requireAuthPage (via getCapabilities()) — no need to query either
   // again here. Only sessions/aggregateScores are still fetched fresh,
   // since neither is part of the Capability Engine's shape.
-  const [sessions, aggregateScores] = await Promise.all([
+  // getLearnerForUser is read-only here purely to decide whether to show
+// the "Campus Ready" sidebar link.
+const { getLearnerForUser } = require('./db/campus');
+const [sessions, aggregateScores, campusLearner] = await Promise.all([
     getUserSessions(userId, { limit: 20 }),
     getUserAggregateScores(userId),
+    getLearnerForUser(userId),
 
   ]);
   const careerProfile = req.capabilities.careerProfile;
@@ -1144,6 +1148,7 @@ async function computeDashboardHistoryData(req) {
     lastInterviewLabel, lastSessionLabel, lastReportLabel, preparingForRole,
     resumeIntelActive, resumeIntelSubLabel,
     bestCompetencyLabel, focusNextLabel,
+    isCampusLearner: !!campusLearner,
   };
 }
 
