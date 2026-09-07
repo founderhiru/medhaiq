@@ -1333,10 +1333,75 @@ async function runMigrations() {
             ALTER TABLE cost_analytics
             ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()
           `);
-          console.log('[migrate] 033: cost_analytics.updated_at confirmed present.');
-        },
+                console.log('[migrate] 033: cost_analytics.updated_at confirmed present.');
       },
-    ];
+},
+    {
+      name: '034_campus_learn_views',
+      up: async (c) => {
+        // Additive-only, isolated to Campus Ready.
+        // Persists which Learn content a learner has viewed.
+        await c.query(`
+          CREATE TABLE IF NOT EXISTS campus_learn_views (
+            id SERIAL PRIMARY KEY,
+            learner_id INTEGER NOT NULL REFERENCES campus_learners(id) ON DELETE CASCADE,
+            content_item_id INTEGER NOT NULL REFERENCES campus_content_items(id) ON DELETE CASCADE,
+            viewed_at TIMESTAMPTZ DEFAULT NOW()
+          )
+        `);
+
+        await c.query(`
+          CREATE UNIQUE INDEX IF NOT EXISTS campus_learn_views_learner_item_idx
+          ON campus_learn_views (learner_id, content_item_id)
+        `);
+
+        console.log('[migrate] 034: campus_learn_views created.');
+      },
+    },
+    {
+      name: '035_campus_institution_admins',
+      up: async (c) => {
+        // Additive-only TPO authorization layer (Phase 2C). A row here
+        // means "this user can view this institution's Campus Ready
+        // cohort data" — nothing more. Never touches `users` schema and
+        // grants no capability outside Campus Ready's own routes.
+        // Founder access is layered on top in
+        // middleware/campus-guards.js (requireInstitutionAdmin also
+        // passes for isFounder()), not stored as a row here.
+        await c.query(`
+          CREATE TABLE IF NOT EXISTS campus_institution_admins (
+            id SERIAL PRIMARY KEY,
+            institution_id INTEGER NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            role VARCHAR(20) NOT NULL DEFAULT 'tpo',
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          )
+        `);
+        await c.query(`
+          CREATE UNIQUE INDEX IF NOT EXISTS campus_institution_admins_inst_user_idx
+          ON campus_institution_admins (institution_id, user_id)
+        `);
+        console.log('[migrate] 035: campus_institution_admins created.');
+      },
+    },
+    {
+      name: '036_campus_institutions_is_test',
+      up: async (c) => {
+        // Marks an institution as Founder E2E test data (Phase 2F).
+        // Nullable-safe default false — every existing/real institution
+        // row is unaffected. Existing cascades (campus_cohorts ->
+        // campus_learners -> campus_module_progress/practice/quiz/
+        // learn_views, all ON DELETE CASCADE) mean "DELETE FROM
+        // institutions WHERE is_test = true" alone safely removes an
+        // entire test institution's data with no bespoke deletion-order
+        // logic required.
+        await c.query(`
+          ALTER TABLE institutions ADD COLUMN IF NOT EXISTS is_test BOOLEAN NOT NULL DEFAULT false
+        `);
+        console.log('[migrate] 036: institutions.is_test confirmed present.');
+      },
+    },
+  ];
 
     for (const m of migrations) {
       if (done.has(m.name)) {

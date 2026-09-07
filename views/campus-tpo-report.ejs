@@ -1,0 +1,109 @@
+<%- include('partials/workspace-shell-top', { pageTitle: 'Cohort Report — Campus Ready', activeNav: 'campus', bodyClass: 'campus-tpo-page', shellUser: shellUser, extraStylesheets: ['/css/campus-tpo.css'], isFounder: typeof isFounder !== 'undefined' ? isFounder : false }) %>
+
+<div class="tpo-root" style="max-width: 800px;">
+
+  <div class="tpo-breadcrumb tpo-no-print">
+    <a href="/campus/tpo">Institutions</a> /
+    <a href="/campus/tpo/<%= institutionId %>"><%= institutionName %></a> /
+    <a href="/campus/tpo/<%= institutionId %>/<%= cohortId %>"><%= cohortName %></a> / Report
+  </div>
+
+  <div class="tpo-report-header">
+    <div class="eyebrow">MedhaIQ Campus Ready</div>
+    <h1>Campus Interview Preparation Report</h1>
+    <p class="tpo-subtitle">
+      <%= institutionName %> · <%= cohortName %><br>
+      Reporting period: through <%= generatedAt.toLocaleDateString() %>
+    </p>
+  </div>
+
+  <div class="tpo-report-section-heading">Executive Summary</div>
+  <div class="tpo-snapshot-grid">
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= snapshot.enrolled %></div><div class="tpo-snapshot-label">Enrolled</div></div>
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= snapshot.started %></div><div class="tpo-snapshot-label">Started</div></div>
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= snapshot.completed %></div><div class="tpo-snapshot-label">Completed</div></div>
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= snapshot.completionPct %>%</div><div class="tpo-snapshot-label">Completion %</div></div>
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= snapshot.avgQuizAccuracy %>%</div><div class="tpo-snapshot-label">Avg Quiz Accuracy</div></div>
+  </div>
+
+  <div class="tpo-report-section-heading">Module Performance</div>
+  <table class="tpo-table">
+    <thead><tr><th>Module</th><th>Completion</th><th>Quiz Accuracy</th><th>Practice</th></tr></thead>
+    <tbody>
+      <% modulePerformance.forEach(m => { %>
+        <tr>
+          <td><%= m.name %></td>
+          <td><%= m.avg_percent %>%</td>
+          <td><%= m.avgQuizAccuracy %>%</td>
+          <td><%= m.complete_count %> complete · <%= m.in_progress_count %> in progress · <%= m.not_started_count %> not started</td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <div class="tpo-report-section-heading">Participation</div>
+  <div class="tpo-snapshot-grid">
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= snapshot.started %></div><div class="tpo-snapshot-label">Started</div></div>
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= snapshot.active_7d %></div><div class="tpo-snapshot-label">Active (7d)</div></div>
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= students.filter(s => s.status === 'Inactive').length %></div><div class="tpo-snapshot-label">Inactive</div></div>
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= snapshot.completed %></div><div class="tpo-snapshot-label">Completed</div></div>
+  </div>
+
+  <div class="tpo-report-section-heading">Student Progress</div>
+  <table class="tpo-table">
+    <thead><tr><th>Student</th><th>Progress</th><th>Quiz Accuracy</th><th>Status</th></tr></thead>
+    <tbody>
+      <% students.forEach(s => { %>
+        <tr>
+          <td><%= s.name || s.email %></td>
+          <td><%= s.overallProgress %>%</td>
+          <td><%= s.quizAccuracy %>%</td>
+          <td><span class="tpo-status-pill <%= s.status.replace(/\s+/g, '-') %>"><%= s.status %></span></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <div class="tpo-report-section-heading">Top Areas Requiring Attention</div>
+  <div class="tpo-insights-list">
+    <% if (insights.length) { %>
+      <% insights.forEach(i => { %><div class="tpo-insight"><%= i %></div><% }) %>
+    <% } else { %>
+      <div class="tpo-insight">No notable gaps identified from current data.</div>
+    <% } %>
+  </div>
+
+  <div class="tpo-report-section-heading">Recommended Interventions</div>
+  <%
+    // Deterministic only — derived directly from modulePerformance, never
+    // an LLM. No placement predictions, no "will fail" claims — see
+    // Phase 2 Section 16's explicit language boundary.
+    const recommendations = [];
+    const lowestModule = modulePerformance.length
+      ? modulePerformance.reduce((a, b) => (a.avg_percent < b.avg_percent ? a : b), modulePerformance[0]) : null;
+    if (lowestModule && lowestModule.avg_percent < 50) {
+      recommendations.push(`Prioritize ${lowestModule.name} practice for students with module completion below 50%.`);
+    }
+    const strugglingQuizModule = modulePerformance.length
+      ? modulePerformance.reduce((a, b) => (a.avgQuizAccuracy < b.avgQuizAccuracy ? a : b), modulePerformance[0]) : null;
+    if (strugglingQuizModule && strugglingQuizModule.avgQuizAccuracy < 70) {
+      recommendations.push(`Review ${strugglingQuizModule.name} concepts as a group — cohort quiz accuracy is below the 70% target.`);
+    }
+    const inactiveCount = students.filter(s => s.status === 'Inactive').length;
+    if (inactiveCount > 0) {
+      recommendations.push(`Re-engage ${inactiveCount} inactive student${inactiveCount === 1 ? '' : 's'} before the next milestone.`);
+    }
+  %>
+  <% if (recommendations.length) { %>
+    <% recommendations.forEach(r => { %><div class="tpo-recommendation"><%= r %></div><% }) %>
+  <% } else { %>
+    <div class="tpo-recommendation">Cohort is progressing well — no interventions indicated at this time.</div>
+  <% } %>
+
+  <p class="tpo-subtitle tpo-no-print" style="margin-top:30px;">
+    <button onclick="window.print()" class="campus-btn-secondary">Print / Save as PDF</button>
+  </p>
+
+</div>
+
+<%- include('partials/workspace-shell-bottom') %>

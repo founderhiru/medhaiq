@@ -1,0 +1,434 @@
+<%- include('partials/workspace-shell-top', { pageTitle: 'Campus Ready — MedhaIQ', activeNav: 'campus', bodyClass: 'campus-ready-page', shellUser: shellUser, extraStylesheets: ['/css/campus-ready.css'], isCampusLearner: true, isFounder: typeof isFounder !== 'undefined' ? isFounder : false }) %>
+
+<div class="campus-header-row">
+  <div>
+    <h1>Campus Ready</h1>
+    <p class="campus-subtitle"><%= cohortLabel %> Placement Preparation</p>
+  </div>
+</div>
+
+<div class="campus-root">
+
+  <div class="campus-progress-block">
+    <div class="campus-progress-row">
+      <span>Overall Preparation Progress</span>
+      <strong id="campusOverallPct">0%</strong>
+    </div>
+    <div class="campus-progress-track">
+      <div id="campusOverallBar" class="campus-progress-fill" style="width:0%;"></div>
+    </div>
+    <div id="campusOverallCount" class="campus-progress-count">Loading your progress…</div>
+  </div>
+
+  <div id="campusNextAction" class="campus-next-action" style="display:none;">
+    <div class="campus-next-action-eyebrow">Next Best Action</div>
+    <div id="campusNextActionTitle" class="campus-next-action-title"></div>
+    <div id="campusNextActionDesc" class="campus-next-action-desc"></div>
+    <a id="campusNextActionCta" class="campus-cta" href="#"></a>
+  </div>
+
+  <div id="campusModuleList" class="campus-module-list"></div>
+
+  <!-- Module detail — a lightweight inline panel, not a separate routed
+       page, per the founder's "one screen" direction for V1. -->
+  <div id="campusModulePanel" class="campus-module-panel" style="display:none;"></div>
+
+  <!-- Handoff to the existing individual product — a PLAIN navigation
+       link only. No pre-filled state, no shared session, no code path
+       into routes/interview.js or the Interview Engine. Technically this
+       is no different from any other <a href="/interview"> already
+       elsewhere in the app (see views/dashboard-history.ejs). Locked
+       until all 5 modules are complete; the lock is purely visual here
+       since /interview has its own independent auth/entitlement gate. -->
+  <div id="campusAiInterview" class="campus-ai-interview is-locked">
+    <div class="campus-ai-interview-title">AI Interview</div>
+    <div id="campusAiInterviewDesc" class="campus-ai-interview-desc">Complete Campus Ready to unlock.</div>
+    <a id="campusAiInterviewCta" class="campus-cta is-disabled" href="#">Launch AI Interview →</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  const state = { modules: [], nextAction: null, activeModuleKey: null, activeModuleDbId: null, activeModuleName: null, activeTopics: [], activeTopicId: null, practiceJustSaved: false, quizStageSticky: false };
+
+  function pct(n) { return Math.round(n) + '%'; }
+  function statusLabel(status) {
+    if (status === 'complete') return 'Complete';
+    if (status === 'in_progress') return 'In Progress';
+    return 'Not Started';
+  }
+
+  async function loadMe() {
+    const res = await fetch('/api/campus/me');
+    if (!res.ok) {
+      document.getElementById('campusModuleList').innerHTML = '<p>Could not load your Campus Ready progress. Please refresh.</p>';
+      return;
+    }
+    const data = await res.json();
+    state.modules = data.modules;
+    state.nextAction = data.nextAction;
+    renderOverall();
+    renderNextAction();
+    renderModuleList();
+    renderAiInterviewCard();
+  }
+
+  function renderOverall() {
+    const avg = state.modules.length
+      ? Math.round(state.modules.reduce((s, m) => s + Number(m.percent_complete), 0) / state.modules.length)
+      : 0;
+    const completeCount = state.modules.filter(m => m.status === 'complete').length;
+    document.getElementById('campusOverallPct').textContent = pct(avg);
+    document.getElementById('campusOverallBar').style.width = avg + '%';
+    document.getElementById('campusOverallCount').textContent =
+      completeCount + ' of ' + state.modules.length + ' Modules Completed';
+  }
+
+  function renderNextAction() {
+    const card = document.getElementById('campusNextAction');
+    const na = state.nextAction;
+    if (!na) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    document.getElementById('campusNextActionTitle').textContent = na.title;
+    document.getElementById('campusNextActionDesc').textContent = na.description || '';
+    const cta = document.getElementById('campusNextActionCta');
+    cta.textContent = na.ctaLabel;
+    if (na.type === 'LAUNCH_AI_INTERVIEW') {
+      cta.href = na.href || '/interview';
+      cta.onclick = null;
+    } else {
+      cta.href = '#';
+      cta.onclick = (e) => { e.preventDefault(); openModule(na.moduleKey, na.topicKey); };
+    }
+  }
+
+  function renderModuleList() {
+    const el = document.getElementById('campusModuleList');
+    el.innerHTML = state.modules.map((m, i) => `
+      <button class="campus-module-row ${m.locked ? 'is-locked' : ''}" data-key="${m.key}" ${m.locked ? 'aria-disabled="true"' : ''}>
+        <span class="campus-module-name">
+          <span><span class="seq">${String(i + 1).padStart(2, '0')}</span>${m.name}</span>
+          <span class="campus-module-meta">${m.topic_count} topic${m.topic_count === 1 ? '' : 's'} · ~${m.topic_count * 4} min</span>
+        </span>
+        <span class="campus-status-pill ${m.locked ? 'locked' : m.status}">${m.locked ? 'Locked' : statusLabel(m.status) + (m.status === 'in_progress' ? ' · ' + pct(m.percent_complete) : '')}</span>
+      </button>
+    `).join('');
+    el.querySelectorAll('.campus-module-row:not(.is-locked)').forEach(btn => {
+      btn.addEventListener('click', () => openModule(btn.dataset.key));
+    });
+  }
+
+  function renderAiInterviewCard() {
+    const allComplete = state.modules.length > 0 && state.modules.every(m => m.status === 'complete');
+    const wrap = document.getElementById('campusAiInterview');
+    const cta = document.getElementById('campusAiInterviewCta');
+    if (allComplete) {
+      wrap.classList.remove('is-locked'); wrap.classList.add('is-unlocked');
+      document.getElementById('campusAiInterviewDesc').textContent = 'Put your preparation into a realistic interview.';
+      cta.classList.remove('is-disabled');
+      cta.href = '/interview';
+    } else {
+      wrap.classList.add('is-locked'); wrap.classList.remove('is-unlocked');
+      document.getElementById('campusAiInterviewDesc').textContent = 'Complete Campus Ready to unlock.';
+      cta.classList.add('is-disabled');
+      cta.href = '#';
+    }
+  }
+
+  // ── Phase 2A: one topic, one stage, on screen at a time ──────────────
+  // state.activeTopicId / activeStage track WHERE the learner is within
+  // the open module. practiceJustSaved is a transient (non-persisted) UI
+  // flag: true only for the render immediately after a fresh Save &
+  // Continue, so the self-review comparison shows once per submission —
+  // never on a later revisit of an already-completed topic.
+
+  async function openModule(key, focusTopicKey) {
+    state.activeModuleKey = key;
+    state.activeTopicId = null;
+    state.practiceJustSaved = false;
+    state.quizStageSticky = false;
+    await loadModuleContent(key);
+    if (!state.activeTopics.length) return;
+    const target = focusTopicKey ? state.activeTopics.find(t => t.key === focusTopicKey) : null;
+    const fallback = firstIncompleteTopic();
+    state.activeTopicId = target ? target.id : (fallback ? fallback.id : null);
+    renderModulePanel();
+    if (state.activeTopicId) markLearnViewedInBackground();
+  }
+
+  async function loadModuleContent(key) {
+    const res = await fetch('/api/campus/modules/' + encodeURIComponent(key));
+    if (res.status === 403) { await loadMe(); state.activeTopics = []; return; }
+    if (!res.ok) { state.activeTopics = []; return; }
+    const data = await res.json();
+    state.activeTopics = data.topics;
+    state.activeModuleDbId = data.module.id;
+    state.activeModuleName = data.module.name;
+  }
+
+  function firstIncompleteTopic() {
+    return state.activeTopics.find(t => !t.complete);
+  }
+
+  function getStagesFor(topic) {
+    const stages = [];
+    if (topic.items.some(i => i.type === 'learn_example')) stages.push('learn');
+    if (topic.items.some(i => i.type === 'practice_prompt')) stages.push('practice');
+    if (topic.items.some(i => i.type === 'quiz_question')) stages.push('quiz');
+    return stages;
+  }
+
+  function currentStageFor(topic) {
+    if (state.practiceJustSaved && topic.id === state.activeTopicId) return 'practice';
+    if (state.quizStageSticky && topic.id === state.activeTopicId) return 'quiz';
+    if (!topic.learnDone && topic.items.some(i => i.type === 'learn_example')) return 'learn';
+    if (!topic.practiceDone && topic.items.some(i => i.type === 'practice_prompt')) return 'practice';
+    if (!topic.quizDone && topic.items.some(i => i.type === 'quiz_question')) return 'quiz';
+    return 'complete';
+  }
+
+  // "Viewing the required Learn content is sufficient for V1" — the
+  // Learn stage must already be ON SCREEN (rendered by the caller)
+  // before this runs. This deliberately does NOT re-render: the learner
+  // is still looking at the Learn content, so the visible stage must
+  // not jump forward on its own. It only updates state in the
+  // background so that when they click "Continue", currentStageFor()
+  // already resolves to the next stage using fresh data — no extra
+  // fetch needed at click time.
+  async function markLearnViewedInBackground() {
+    const topic = state.activeTopics.find(t => t.id === state.activeTopicId);
+    if (!topic) return;
+    if (currentStageFor(topic) !== 'learn') return;
+    const learnItem = topic.items.find(i => i.type === 'learn_example');
+    if (!learnItem || learnItem.viewed) return;
+    await fetch('/api/campus/learn/view', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contentItemId: learnItem.id, moduleId: state.activeModuleDbId }),
+    });
+    await loadModuleContent(state.activeModuleKey);
+    loadMe();
+  }
+
+  function renderModulePanel() {
+    const panel = document.getElementById('campusModulePanel');
+    panel.style.display = 'block';
+
+    if (!state.activeTopics.length || state.activeTopicId == null) {
+      panel.innerHTML = renderModuleCompleteScreen();
+      wirePanelCloseAndNav(panel);
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    const topics = state.activeTopics;
+    const activeIndex = topics.findIndex(t => t.id === state.activeTopicId);
+    const topic = topics[activeIndex];
+    const stage = currentStageFor(topic);
+
+    panel.innerHTML =
+      `<h3 style="margin-top:0;">${state.activeModuleName}</h3>` +
+      `<div class="campus-topic-progress-label">Topic ${activeIndex + 1} of ${topics.length}</div>` +
+      `<div class="campus-topic-index">` +
+        topics.map((t, i) => {
+          const cls = t.complete ? 'complete' : (t.id === topic.id ? 'current' : 'upcoming');
+          const clickable = t.complete || t.id === topic.id;
+          const mark = t.complete ? '✓' : (cls === 'current' ? '→' : '○');
+          return `<div class="campus-topic-index-row ${cls} ${clickable ? 'clickable' : ''}" ${clickable ? `data-goto-topic="${t.id}"` : ''}><span class="mark">${mark}</span>${t.name}</div>`;
+        }).join('') +
+      `</div>` +
+      renderStageTracker(topic, stage) +
+      `<div class="campus-stage-body">` + renderStageBody(topic, stage) + `</div>` +
+      `<button id="campusCloseModule" class="campus-close-panel" style="margin-top:16px;">Close</button>`;
+
+    wirePanelCloseAndNav(panel);
+    wireStageInteractions(panel, topic, stage);
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderStageTracker(topic, activeStage) {
+    const labels = { learn: 'Learn', practice: 'Practice', quiz: 'Quick Check' };
+    const stages = getStagesFor(topic);
+    return `<div class="campus-stage-tracker">` +
+      stages.map(s => {
+        const done = (s === 'learn' && topic.learnDone) || (s === 'practice' && topic.practiceDone) || (s === 'quiz' && topic.quizDone);
+        const cls = done ? 'is-done' : (s === activeStage ? 'is-current' : '');
+        return `<div class="campus-stage-pill ${cls}">${done ? '✓ ' : ''}${labels[s]}</div>`;
+      }).join('') +
+    `</div>`;
+  }
+
+  function renderStageBody(topic, stage) {
+    if (stage === 'learn') return renderLearnStage(topic);
+    if (stage === 'practice') return renderPracticeStage(topic);
+    if (stage === 'quiz') return renderQuizStage(topic);
+    return renderTopicCompleteScreen(topic);
+  }
+
+  function renderLearnStage(topic) {
+    const learn = topic.items.find(i => i.type === 'learn_example');
+    return `
+      <p class="campus-est-time">~1–2 min</p>
+      <p class="campus-item-prompt"><strong>${learn.prompt}</strong></p>
+      <p class="campus-learn-guidance">${learn.guidance || ''}</p>
+      ${learn.mistakes ? `<p class="campus-learn-mistakes"><strong>Common mistakes:</strong> ${learn.mistakes}</p>` : ''}
+      <div class="campus-cta-bar"><button class="campus-cta campus-stage-continue" data-action="advance-from-learn">Continue →</button></div>`;
+  }
+
+  function renderPracticeStage(topic) {
+    const practice = topic.items.find(i => i.type === 'practice_prompt');
+    const learn = topic.items.find(i => i.type === 'learn_example');
+
+    if (state.practiceJustSaved) {
+      return `
+        <div class="campus-practice-review">
+          <p class="campus-saved-confirm">✓ Your response is saved.</p>
+          <p>Compare your answer against:</p>
+          ${learn ? `<h4>Strong response looks like</h4><p>${learn.guidance || ''}</p>` : ''}
+          ${learn && learn.mistakes ? `<h4>Common mistake</h4><p>${learn.mistakes}</p>` : ''}
+          <div class="campus-cta-bar"><button class="campus-cta" data-action="continue-from-review">Continue →</button></div>
+        </div>`;
+    }
+
+    return `
+      <p class="campus-est-time">~2–3 min</p>
+      <p class="campus-item-prompt"><strong>YOUR TURN</strong></p>
+      <p class="campus-item-prompt">${practice.prompt}</p>
+      <textarea id="campusPracticeInput" class="campus-textarea" rows="4" placeholder="Write your answer here — this is self-reviewed, not graded.">${practice.savedText ? practice.savedText.replace(/</g, '&lt;') : ''}</textarea>
+      ${learn && learn.mistakes ? `<p class="campus-practice-tip">Tip: ${learn.mistakes.split('.')[0]}.</p>` : ''}
+      <div class="campus-cta-bar"><button class="campus-cta" data-action="save-practice" data-item-id="${practice.id}">Save &amp; Continue →</button></div>`;
+  }
+
+  function renderQuizStage(topic) {
+    state.quizStageSticky = true;
+    const quiz = topic.items.filter(i => i.type === 'quiz_question');
+    const body = quiz.map(q => `
+      <div class="campus-quiz-item" data-item-id="${q.id}">
+        <p class="campus-item-prompt">${q.prompt}</p>
+        <div class="campus-quiz-options">
+          ${(q.options || []).map(o => `
+            <label>
+              <input type="radio" name="quiz-${q.id}" value="${o.id}" ${q.answered && q.selectedOptionId === o.id ? 'checked' : ''}> ${o.text}
+            </label>`).join('')}
+        </div>
+        <button class="campus-btn-secondary campus-submit-quiz" data-item-id="${q.id}">${q.answered ? 'Retake Question' : 'Submit Answer'}</button>
+        <p class="campus-quiz-feedback ${q.answered ? (q.isCorrect ? 'correct' : 'incorrect') : ''}" style="${q.answered ? 'display:block;' : ''}">${q.answered ? (q.isCorrect ? '✓ Correct. ' : 'Not quite. ') + (q.explanation || '') : ''}</p>
+      </div>`).join('');
+    const ready = topic.quizDone;
+    return `<p class="campus-est-time">~1–2 min</p>` + body +
+      (ready ? `<div class="campus-cta-bar"><button class="campus-cta" data-action="advance-from-quiz">Continue →</button></div>` : '');
+  }
+
+  function renderTopicCompleteScreen(topic) {
+    const topics = state.activeTopics;
+    const idx = topics.findIndex(t => t.id === topic.id);
+    const next = topics[idx + 1];
+    return `
+      <div class="campus-complete-screen">
+        <div class="big-check">✓</div>
+        <div class="headline">Topic Complete</div>
+        ${next ? `<div class="subline">Next: ${next.name}</div>` : `<div class="subline">That's the last topic in this module.</div>`}
+        <div class="campus-cta-bar"><button class="campus-cta" data-action="next-topic">${next ? 'Continue →' : 'Finish Module →'}</button></div>
+      </div>`;
+  }
+
+  function renderModuleCompleteScreen() {
+    return `
+      <div class="campus-complete-screen">
+        <div class="big-check">✓</div>
+        <div class="headline">${state.activeModuleName} — Complete</div>
+        <div class="subline">Nice work. Head back to see what's next.</div>
+        <div class="campus-cta-bar"><button id="campusCloseModule2" class="campus-cta">Back to Modules →</button></div>
+      </div>`;
+  }
+
+  function wirePanelCloseAndNav(panel) {
+    const closeBtn = panel.querySelector('#campusCloseModule') || panel.querySelector('#campusCloseModule2');
+    if (closeBtn) closeBtn.addEventListener('click', () => { panel.style.display = 'none'; loadMe(); });
+    panel.querySelectorAll('[data-goto-topic]').forEach(row => {
+      row.addEventListener('click', () => {
+        state.activeTopicId = Number(row.dataset.gotoTopic);
+        state.practiceJustSaved = false;
+        state.quizStageSticky = false;
+        renderModulePanel();
+        markLearnViewedInBackground();
+      });
+    });
+  }
+
+  function wireStageInteractions(panel, topic, stage) {
+    const advance = async () => { await loadModuleContent(state.activeModuleKey); renderModulePanel(); markLearnViewedInBackground(); loadMe(); };
+
+    const learnBtn = panel.querySelector('[data-action="advance-from-learn"]');
+    if (learnBtn) learnBtn.addEventListener('click', advance);
+
+    const saveBtn = panel.querySelector('[data-action="save-practice"]');
+    if (saveBtn) saveBtn.addEventListener('click', async () => {
+      const text = document.getElementById('campusPracticeInput').value.trim();
+      if (!text) return;
+      await fetch('/api/campus/practice', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contentItemId: Number(saveBtn.dataset.itemId), moduleId: state.activeModuleDbId, responseText: text }),
+      });
+      state.practiceJustSaved = true;
+      await loadModuleContent(state.activeModuleKey);
+      renderModulePanel();
+      loadMe();
+    });
+
+    const reviewContinueBtn = panel.querySelector('[data-action="continue-from-review"]');
+    if (reviewContinueBtn) reviewContinueBtn.addEventListener('click', () => {
+      state.practiceJustSaved = false;
+      renderModulePanel();
+    });
+
+    panel.querySelectorAll('.campus-submit-quiz').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const wrap = btn.closest('.campus-quiz-item');
+        const itemId = Number(btn.dataset.itemId);
+        const selected = wrap.querySelector(`input[name="quiz-${itemId}"]:checked`);
+        if (!selected) return;
+        const res = await fetch('/api/campus/quiz', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contentItemId: itemId, moduleId: state.activeModuleDbId, selectedOptionId: selected.value }),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const fb = wrap.querySelector('.campus-quiz-feedback');
+        fb.style.display = 'block';
+        fb.classList.remove('correct', 'incorrect');
+        fb.classList.add(data.isCorrect ? 'correct' : 'incorrect');
+        fb.textContent = (data.isCorrect ? '✓ Correct. ' : 'Not quite. ') + (data.explanation || '');
+        await loadModuleContent(state.activeModuleKey);
+        // Re-render only to reveal the stage-advancing CTA once quizDone
+        // flips true — individual question feedback above is already
+        // shown from the response, so no jarring reset.
+        renderModulePanel();
+        loadMe();
+      });
+    });
+
+    const quizAdvanceBtn = panel.querySelector('[data-action="advance-from-quiz"]');
+    if (quizAdvanceBtn) quizAdvanceBtn.addEventListener('click', () => { state.quizStageSticky = false; advance(); });
+
+    const nextTopicBtn = panel.querySelector('[data-action="next-topic"]');
+    if (nextTopicBtn) nextTopicBtn.addEventListener('click', () => {
+      const topics = state.activeTopics;
+      const idx = topics.findIndex(t => t.id === state.activeTopicId);
+      const next = topics[idx + 1];
+      state.activeTopicId = next ? next.id : null;
+      state.practiceJustSaved = false;
+      state.quizStageSticky = false;
+      renderModulePanel();
+      if (state.activeTopicId) markLearnViewedInBackground();
+      loadMe();
+    });
+
+    const closeBtn2 = panel.querySelector('#campusCloseModule2');
+    if (closeBtn2) closeBtn2.addEventListener('click', () => { panel.style.display = 'none'; loadMe(); });
+  }
+
+  loadMe();
+})();
+</script>
+
+<%- include('partials/workspace-shell-bottom') %>

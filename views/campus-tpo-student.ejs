@@ -1,0 +1,43 @@
+<%- include('partials/workspace-shell-top', { pageTitle: 'Student Detail — Campus Ready TPO', activeNav: 'campus', bodyClass: 'campus-tpo-page', shellUser: shellUser, extraStylesheets: ['/css/campus-tpo.css'], isFounder: typeof isFounder !== 'undefined' ? isFounder : false }) %>
+
+<div class="tpo-root">
+  <div class="tpo-breadcrumb">
+    <a href="/campus/tpo">Institutions</a> /
+    <a href="/campus/tpo/<%= institutionId %>"><%= institutionName %></a> /
+    <a href="/campus/tpo/<%= institutionId %>/<%= cohortId %>"><%= cohortName %></a> /
+    <%= student.name || student.email %>
+  </div>
+
+  <div class="tpo-student-header">
+    <div>
+      <h1><%= student.name || student.email %></h1>
+      <p class="tpo-subtitle"><%= student.email %> · <%= cohortName %> · Enrolled <%= new Date(student.joinedAt).toLocaleDateString() %></p>
+    </div>
+  </div>
+
+  <div class="tpo-snapshot-grid">
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= student.overallProgress %>%</div><div class="tpo-snapshot-label">Overall Progress</div></div>
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= student.quizAccuracy %>%</div><div class="tpo-snapshot-label">Quiz Accuracy</div></div>
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= student.practiceCompletionPct %>%</div><div class="tpo-snapshot-label">Practice Completion</div></div>
+    <div class="tpo-snapshot-card"><div class="tpo-snapshot-value"><%= student.topicsCompleted %> / <%= student.topicsTotal %></div><div class="tpo-snapshot-label">Topics Completed</div></div>
+  </div>
+
+  <div class="tpo-section">
+    <div class="tpo-section-title">Module-by-Module Progress</div>
+    <div style="background:var(--tpo-card);border:1px solid var(--tpo-border);border-radius:var(--radius,12px);padding:8px 18px;">
+      <% student.modules.forEach(m => { %>
+        <div class="tpo-module-progress-row">
+          <span><%= String(m.sequence).padStart(2, '0') %> <%= m.name %></span>
+          <span class="tpo-status-pill <%= m.status.replace(/_/g, '-') %>"><%= m.status === 'complete' ? 'Complete' : m.status === 'in_progress' ? m.percent_complete + '%' : 'Not Started' %></span>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <p class="tpo-subtitle" style="font-size:12px;">
+    Topics remaining: <%= student.topicsTotal - student.topicsCompleted %>.
+    This view emphasizes progress and performance — individual written responses aren't shown here.
+  </p>
+</div>
+
+<%- include('partials/workspace-shell-bottom') %>

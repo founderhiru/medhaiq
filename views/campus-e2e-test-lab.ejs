@@ -1,0 +1,130 @@
+<%- include('partials/workspace-shell-top', { pageTitle: 'E2E Test Lab — Campus Ready', activeNav: 'founder', bodyClass: 'founder-institutions-page', shellUser: shellUser, isFounder: true }) %>
+
+<div class="page-header-row">
+  <div>
+    <h1>Campus Ready — E2E Test Lab</h1>
+    <p class="subtitle">Founder-only. Test the complete learner + TPO journey with isolated, clearly-labeled data.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/founder/institutions" class="new-interview-btn" style="background:none;border:1px solid rgba(255,255,255,0.15);">← Institutions</a>
+  </div>
+</div>
+
+<div style="max-width:760px;margin:0 auto;padding:0 16px;">
+
+  <section style="margin-bottom:28px;padding:16px;border-radius:10px;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.3);">
+    <strong>E2E TEST — DO NOT USE FOR LIVE STUDENTS.</strong> Everything created here is flagged as test data and excluded from real institutional reporting. Use the Reset button below to clear it when you're done.
+  </section>
+
+  <section style="margin-bottom:32px;">
+    <h3>1. Create a test institution + cohort</h3>
+    <button id="createTestInstBtn" style="padding:8px 16px;border-radius:6px;background:var(--blue-bright,#3b82f6);border:none;color:#fff;cursor:pointer;">Create E2E Test Institution</button>
+    <div id="testInstList" style="margin-top:16px;"></div>
+  </section>
+
+  <section style="margin-bottom:32px;">
+    <h3>2. Generate a real test invite</h3>
+    <p style="font-size:13px;opacity:0.7;">Uses the exact same invite mechanism a real student would get — no shortcuts. Open the link in an incognito window and sign up with a real email you control to test the actual journey end to end.</p>
+    <div id="inviteSection" style="display:none;">
+      <form id="inviteForm" style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input name="email" type="email" placeholder="your-test-email+e2e1@gmail.com" required style="flex:1;min-width:220px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:inherit;">
+        <button type="submit" style="padding:8px 16px;border-radius:6px;background:none;border:1px solid rgba(255,255,255,0.15);color:inherit;cursor:pointer;">Generate Invite</button>
+      </form>
+      <p id="inviteResult" style="font-size:13px;margin-top:10px;word-break:break-all;"></p>
+    </div>
+    <p id="inviteHint" style="font-size:13px;opacity:0.6;">Create a test institution first.</p>
+  </section>
+
+  <section style="margin-bottom:32px;">
+    <h3>3. Checklist</h3>
+    <div id="checklist" style="display:flex;flex-direction:column;gap:6px;font-size:14px;"></div>
+  </section>
+
+  <section style="margin-bottom:32px;padding:16px;border-radius:10px;border:1px solid rgba(220,38,38,0.35);background:rgba(220,38,38,0.06);">
+    <h3 style="margin-top:0;color:#DC2626;">Reset E2E Test Data</h3>
+    <p style="font-size:13px;opacity:0.8;">Permanently deletes every E2E test institution, cohort, learner, and their Campus progress. Never touches real institutions, users, interviews, credits, or payments.</p>
+    <input id="resetConfirmInput" placeholder="Type RESET to confirm" style="padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:inherit;margin-right:8px;">
+    <button id="resetBtn" style="padding:8px 16px;border-radius:6px;background:#DC2626;border:none;color:#fff;cursor:pointer;">Reset Test Data</button>
+    <p id="resetResult" style="font-size:13px;margin-top:10px;"></p>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  const API = '/api/founder/campus/e2e';
+  let activeCohortId = null;
+
+  const CHECKLIST_ITEMS = [
+    'Institution created', 'Cohort created', 'Invitation generated', 'Invitation opened',
+    'Authentication completed', 'Cohort accepted', 'Campus Ready loaded', 'Module 1 completed',
+    'Module 2 unlocked', 'Practice saved', 'Quiz answered', 'Progress persisted after logout/login',
+    'Student visible to TPO', 'Student detail correct', 'Cohort metrics correct', 'Insights correct',
+    'Report correct', 'AI Interview handoff works', 'Individual Interview flow unaffected',
+  ];
+  function renderChecklist() {
+    document.getElementById('checklist').innerHTML = CHECKLIST_ITEMS.map((item, i) => `
+      <label style="display:flex;gap:8px;align-items:center;"><input type="checkbox" data-idx="${i}"> ${item}</label>
+    `).join('');
+  }
+
+  async function loadInstitutions() {
+    const res = await fetch(API + '/institutions');
+    const data = await res.json();
+    const el = document.getElementById('testInstList');
+    if (!data.institutions.length) { el.innerHTML = '<p style="opacity:0.6;">No test institutions yet.</p>'; return; }
+    el.innerHTML = data.institutions.map(i => `
+      <div style="padding:12px 14px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;">
+        <strong>${i.name}</strong>
+        <div style="font-size:12px;opacity:0.6;">${i.cohort_count} cohort(s) · <a href="/campus/tpo/${i.id}">View as TPO →</a></div>
+      </div>
+    `).join('');
+    // For the pilot Test Lab flow, one institution = one cohort (created together).
+    if (data.institutions.length) {
+      const instRes = await fetch('/api/founder/campus/institutions/' + data.institutions[0].id);
+      const instData = await instRes.json();
+      if (instData.cohorts && instData.cohorts.length) {
+        activeCohortId = instData.cohorts[0].id;
+        document.getElementById('inviteSection').style.display = 'block';
+        document.getElementById('inviteHint').style.display = 'none';
+      }
+    }
+  }
+
+  document.getElementById('createTestInstBtn').addEventListener('click', async () => {
+    await fetch(API + '/institutions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    loadInstitutions();
+  });
+
+  document.getElementById('inviteForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!activeCohortId) return;
+    const form = new FormData(e.target);
+    const res = await fetch(`${API}/cohorts/${activeCohortId}/invites`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: form.get('email') }),
+    });
+    const data = await res.json();
+    document.getElementById('inviteResult').textContent = res.ok
+      ? 'Test invite link: ' + window.location.origin + data.joinUrl
+      : 'Error: ' + (data.error || 'could not generate invite');
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', async () => {
+    const confirm = document.getElementById('resetConfirmInput').value;
+    const res = await fetch(API + '/reset', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm }),
+    });
+    const data = await res.json();
+    document.getElementById('resetResult').textContent = res.ok
+      ? `Deleted ${data.institutionsDeleted} test institution(s).`
+      : (data.error || 'Reset failed.');
+    if (res.ok) { document.getElementById('resetConfirmInput').value = ''; loadInstitutions(); }
+  });
+
+  renderChecklist();
+  loadInstitutions();
+})();
+</script>
+
+<%- include('partials/workspace-shell-bottom') %>

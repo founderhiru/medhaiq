@@ -1,0 +1,69 @@
+<%- include('partials/workspace-shell-top', { pageTitle: 'Campus Ready Invitation — MedhaIQ', activeNav: 'campus', bodyClass: 'campus-ready-page', shellUser: shellUser, extraStylesheets: ['/css/campus-ready.css'], isCampusLearner: false }) %>
+
+<div class="campus-root" style="max-width: 520px; margin: 60px auto;">
+  <div class="campus-next-action" style="text-align:center;">
+
+    <% if (state === 'not_found') { %>
+      <div class="campus-next-action-title">Invite not found</div>
+      <div class="campus-next-action-desc">This invitation link doesn't match any Campus Ready invite. Double-check the link, or ask your institution to resend it.</div>
+
+    <% } else if (state === 'expired') { %>
+      <div class="campus-next-action-title">This invite has expired</div>
+      <div class="campus-next-action-desc">Invitations to <%= invite.institution_name %> — <%= invite.cohort_name %> are time-limited. Ask your institution's coordinator to send a new one.</div>
+
+    <% } else if (state === 'email_mismatch') { %>
+      <div class="campus-next-action-title">Wrong account</div>
+      <div class="campus-next-action-desc">
+        This invite to <strong><%= invite.institution_name %> — <%= invite.cohort_name %></strong> was sent to <strong><%= invite.email %></strong>.
+        You're currently logged in as a different email. Please log out and sign in with <strong><%= invite.email %></strong> to accept it.
+      </div>
+
+    <% } else if (state === 'already_accepted') { %>
+      <div class="campus-next-action-eyebrow">You're enrolled in</div>
+      <div class="campus-next-action-title"><%= invite.institution_name %></div>
+      <div class="campus-next-action-desc"><%= invite.cohort_name %></div>
+      <a href="/campus" class="campus-cta">Go to Campus Ready →</a>
+
+    <% } else { %>
+      <div class="campus-next-action-eyebrow">You're invited to</div>
+      <div class="campus-next-action-title"><%= invite.institution_name %></div>
+      <div class="campus-next-action-desc">
+        <%= invite.cohort_name %><br>
+        <% if (invite.expires_at) { %>Expires <%= new Date(invite.expires_at).toLocaleDateString() %><% } %>
+      </div>
+      <button id="campusAcceptInvite" class="campus-cta">Accept &amp; Continue →</button>
+      <p id="campusInviteError" style="display:none; color:#B45309; font-size:13px; margin-top:12px;"></p>
+    <% } %>
+
+  </div>
+</div>
+
+<% if (state !== 'not_found' && state !== 'expired' && state !== 'email_mismatch' && state !== 'already_accepted') { %>
+<script>
+document.getElementById('campusAcceptInvite').addEventListener('click', async (e) => {
+  const btn = e.target;
+  btn.disabled = true;
+  btn.textContent = 'Joining…';
+  try {
+    const res = await fetch('/api/campus/join', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: <%- JSON.stringify(token) %> }),
+    });
+    if (res.ok) { window.location.href = '/campus'; return; }
+    const data = await res.json();
+    const err = document.getElementById('campusInviteError');
+    err.style.display = 'block';
+    err.textContent = data.error === 'EMAIL_MISMATCH'
+      ? `This invite was sent to ${data.invitedEmail}. Please log in with that email.`
+      : 'This invite could not be accepted. It may have expired — please refresh the page.';
+    btn.disabled = false;
+    btn.textContent = 'Accept & Continue →';
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Accept & Continue →';
+  }
+});
+</script>
+<% } %>
+
+<%- include('partials/workspace-shell-bottom') %>

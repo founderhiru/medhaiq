@@ -1,0 +1,161 @@
+<%- include('partials/workspace-shell-top', { pageTitle: 'Campus Ready — TPO Dashboard', activeNav: 'campus', bodyClass: 'campus-tpo-page', shellUser: shellUser, extraStylesheets: ['/css/campus-tpo.css'], isFounder: typeof isFounder !== 'undefined' ? isFounder : false }) %>
+
+<div class="tpo-root">
+
+<% if (view === 'institution_picker') { %>
+  <div class="tpo-header-row"><div><h1>Campus Ready — Institutions</h1><p class="tpo-subtitle">Select an institution to view its cohort data.</p></div></div>
+  <% if (!institutions.length) { %>
+    <p class="tpo-subtitle">No institutions found<%= isFounder ? ' yet — create one from Founder → Institutions.' : ' for your account.' %></p>
+  <% } else { %>
+    <div class="tpo-picker-list">
+      <% institutions.forEach(inst => { %>
+        <a class="tpo-picker-row" href="/campus/tpo/<%= inst.id %>">
+          <%= inst.name %><% if (inst.is_test) { %> <span style="color:#B45309;font-size:12px;">(E2E TEST)</span><% } %>
+          <div class="meta"><%= inst.cohort_count || 0 %> cohort(s)</div>
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+
+<% } else if (view === 'cohort_picker') { %>
+  <div class="tpo-breadcrumb"><a href="/campus/tpo">Institutions</a> / <%= institution.name %></div>
+  <div class="tpo-header-row"><div><h1><%= institution.name %></h1><p class="tpo-subtitle">Select a cohort.</p></div></div>
+  <% if (!cohorts.length) { %>
+    <p class="tpo-subtitle">No cohorts yet for this institution.</p>
+  <% } else { %>
+    <div class="tpo-picker-list">
+      <% cohorts.forEach(c => { %>
+        <a class="tpo-picker-row" href="/campus/tpo/<%= institution.id %>/<%= c.id %>">
+          <%= c.name %>
+          <div class="meta"><%= c.learner_count || 0 %> learner(s)</div>
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+
+<% } else { %>
+  <div class="tpo-breadcrumb"><a href="/campus/tpo">Institutions</a> / <a href="/campus/tpo/<%= institutionId %>"><%= institutionName %></a> / <%= cohortName %></div>
+  <div class="tpo-header-row">
+    <div><h1>Campus Ready</h1><p class="tpo-subtitle"><%= institutionName %> — <%= cohortName %></p></div>
+    <div class="tpo-no-print"><a href="/campus/tpo/<%= institutionId %>/<%= cohortId %>/report" class="campus-cta" style="text-decoration:none;">View Report →</a></div>
+  </div>
+
+  <div id="tpoSnapshot" class="tpo-snapshot-grid"></div>
+
+  <div class="tpo-section">
+    <div class="tpo-section-title">Module Performance</div>
+    <table class="tpo-table">
+      <thead><tr><th>Module</th><th>Completion</th><th>Quiz Accuracy</th><th>Participation</th></tr></thead>
+      <tbody id="tpoModuleTable"></tbody>
+    </table>
+  </div>
+
+  <div class="tpo-section">
+    <div class="tpo-section-title">Cohort Insights</div>
+    <div id="tpoInsights" class="tpo-insights-list"></div>
+  </div>
+
+  <div class="tpo-section">
+    <div class="tpo-section-title">Students</div>
+    <div class="tpo-filter-bar">
+      <input id="tpoStudentSearch" type="text" placeholder="Search by name or email…" style="flex:1;min-width:200px;">
+      <select id="tpoStatusFilter">
+        <option value="">All statuses</option>
+        <option>Not Started</option>
+        <option>In Progress</option>
+        <option>Completed</option>
+        <option>Inactive</option>
+      </select>
+    </div>
+    <table class="tpo-table">
+      <thead><tr><th>Student</th><th>Progress</th><th>Quiz Accuracy</th><th>Practice</th><th>Last Active</th><th>Status</th></tr></thead>
+      <tbody id="tpoStudentTable"></tbody>
+    </table>
+  </div>
+
+  <script>
+  (function () {
+    const institutionId = <%- JSON.stringify(institutionId) %>;
+    const cohortId = <%- JSON.stringify(cohortId) %>;
+    let allStudents = [];
+
+    function statusClass(s) { return s.replace(/\s+/g, '-'); }
+    function fmtDate(d) { return d ? new Date(d).toLocaleDateString() : '—'; }
+
+    async function load() {
+      const res = await fetch(`/api/campus/tpo/${institutionId}/cohorts/${cohortId}/dashboard`);
+      if (!res.ok) { document.getElementById('tpoSnapshot').innerHTML = '<p>Could not load cohort data.</p>'; return; }
+      const data = await res.json();
+      allStudents = data.students;
+      renderSnapshot(data.snapshot);
+      renderModules(data.modulePerformance);
+      renderInsights(data.insights);
+      renderStudents(allStudents);
+    }
+
+    function renderSnapshot(s) {
+      const cards = [
+        ['Enrolled', s.enrolled], ['Started', s.started], ['Active (7d)', s.active_7d],
+        ['Completed', s.completed], ['Completion %', s.completionPct + '%'], ['Avg Quiz Accuracy', s.avgQuizAccuracy + '%'],
+      ];
+      document.getElementById('tpoSnapshot').innerHTML = cards.map(([label, value]) => `
+        <div class="tpo-snapshot-card"><div class="tpo-snapshot-value">${value}</div><div class="tpo-snapshot-label">${label}</div></div>
+      `).join('');
+    }
+
+    function renderModules(modules) {
+      document.getElementById('tpoModuleTable').innerHTML = modules.map(m => `
+        <tr>
+          <td>${m.name}</td>
+          <td>${m.avg_percent}%</td>
+          <td>${m.avgQuizAccuracy}%</td>
+          <td>${m.complete_count} complete · ${m.in_progress_count} in progress · ${m.not_started_count} not started</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderInsights(insights) {
+      const el = document.getElementById('tpoInsights');
+      el.innerHTML = insights.length
+        ? insights.map(i => `<div class="tpo-insight">${i}</div>`).join('')
+        : '<div class="tpo-insight">No notable patterns yet — check back once more students have started.</div>';
+    }
+
+    function renderStudents(students) {
+      document.getElementById('tpoStudentTable').innerHTML = students.map(s => `
+        <tr data-learner-id="${s.learnerId}">
+          <td>${s.name || s.email}</td>
+          <td>${s.overallProgress}%</td>
+          <td>${s.quizAccuracy}%</td>
+          <td>${s.practiceCompletionPct}%</td>
+          <td>${fmtDate(s.lastActive)}</td>
+          <td><span class="tpo-status-pill ${statusClass(s.status)}">${s.status}</span></td>
+        </tr>
+      `).join('');
+      document.querySelectorAll('#tpoStudentTable tr').forEach(row => {
+        row.addEventListener('click', () => {
+          window.location.href = `/campus/tpo/${institutionId}/${cohortId}/student/${row.dataset.learnerId}`;
+        });
+      });
+    }
+
+    function applyFilters() {
+      const q = document.getElementById('tpoStudentSearch').value.trim().toLowerCase();
+      const status = document.getElementById('tpoStatusFilter').value;
+      const filtered = allStudents.filter(s =>
+        (!q || (s.name || '').toLowerCase().includes(q) || s.email.toLowerCase().includes(q)) &&
+        (!status || s.status === status)
+      );
+      renderStudents(filtered);
+    }
+    document.getElementById('tpoStudentSearch').addEventListener('input', applyFilters);
+    document.getElementById('tpoStatusFilter').addEventListener('change', applyFilters);
+
+    load();
+  })();
+  </script>
+<% } %>
+
+</div>
+
+<%- include('partials/workspace-shell-bottom') %>

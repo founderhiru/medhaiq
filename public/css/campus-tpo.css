@@ -1,0 +1,91 @@
+/* ============================================================
+   CAMPUS READY TPO — page-scoped, same convention as campus-ready.css /
+   founder-dashboard.css. Applies only under body.campus-tpo-page.
+   ============================================================ */
+
+body.campus-tpo-page {
+  --tpo-bg:         #F7F3EC;
+  --tpo-card:       #FFFDF9;
+  --tpo-border:     #E6DED2;
+  --tpo-ink:        #29251F;
+  --tpo-ink-soft:   #6B6152;
+  --tpo-ink-faint:  #948A78;
+}
+body.campus-tpo-page .workspace-content { background: var(--tpo-bg); color: var(--tpo-ink); }
+body.campus-tpo-page .workspace-content h1,
+body.campus-tpo-page .workspace-content h3,
+body.campus-tpo-page .workspace-content h4 { color: var(--tpo-ink); font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif); }
+
+.tpo-root { max-width: 980px; margin: 0 auto; padding: 0 16px 48px; }
+.tpo-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+.tpo-subtitle { color: var(--tpo-ink-soft); margin-top: 4px; font-size: 14px; }
+.tpo-breadcrumb { font-size: 13px; color: var(--tpo-ink-faint); margin-bottom: 6px; }
+.tpo-breadcrumb a { color: var(--royal); text-decoration: none; }
+
+/* Picker screens (institution / cohort list) */
+.tpo-picker-list { display: flex; flex-direction: column; gap: 10px; max-width: 560px; }
+.tpo-picker-row {
+  display: block; padding: 16px 18px; border-radius: var(--radius, 12px);
+  background: var(--tpo-card); border: 1px solid var(--tpo-border); text-decoration: none; color: var(--tpo-ink);
+  font-weight: 600; font-size: 15px;
+}
+.tpo-picker-row:hover { background: #FBF6EC; }
+.tpo-picker-row .meta { font-weight: 400; font-size: 13px; color: var(--tpo-ink-faint); margin-top: 2px; }
+
+/* Snapshot cards */
+.tpo-snapshot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.tpo-snapshot-card { background: var(--tpo-card); border: 1px solid var(--tpo-border); border-radius: var(--radius, 12px); padding: 16px; text-align: center; }
+.tpo-snapshot-value { font-size: 26px; font-weight: 700; color: var(--tpo-ink); font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif); }
+.tpo-snapshot-label { font-size: 12px; color: var(--tpo-ink-faint); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
+
+/* Module performance table */
+.tpo-section { margin-bottom: 28px; }
+.tpo-section-title { font-size: 15px; font-weight: 700; color: var(--tpo-ink); margin-bottom: 10px; }
+.tpo-table { width: 100%; border-collapse: collapse; background: var(--tpo-card); border: 1px solid var(--tpo-border); border-radius: var(--radius, 12px); overflow: hidden; }
+.tpo-table th, .tpo-table td { text-align: left; padding: 10px 14px; font-size: 13.5px; border-bottom: 1px solid var(--tpo-border); }
+.tpo-table th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--tpo-ink-faint); font-weight: 700; }
+.tpo-table tr:last-child td { border-bottom: none; }
+.tpo-table tbody tr:hover { background: #FBF6EC; cursor: pointer; }
+
+/* Insights */
+.tpo-insights-list { display: flex; flex-direction: column; gap: 8px; }
+.tpo-insight { background: var(--tpo-card); border: 1px solid var(--tpo-border); border-left: 3px solid var(--royal); border-radius: 8px; padding: 10px 14px; font-size: 13.5px; color: var(--tpo-ink); }
+
+/* Status pills reused across student table + detail */
+.tpo-status-pill { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.tpo-status-pill.Completed { background: rgba(5,150,105,0.12); color: var(--emerald); }
+.tpo-status-pill.In-Progress { background: rgba(217,119,6,0.12); color: var(--gold); }
+.tpo-status-pill.Not-Started { background: rgba(30,64,175,0.08); color: var(--royal); }
+
+/* Module-status pills use the DB's own lowercase_underscore vocabulary
+   (not_started/in_progress/complete), kept distinct from the
+   Title-Case student-status pills above. */
+.tpo-status-pill.complete { background: rgba(5,150,105,0.12); color: var(--emerald); }
+.tpo-status-pill.in-progress { background: rgba(217,119,6,0.12); color: var(--gold); }
+.tpo-status-pill.not-started { background: rgba(30,64,175,0.08); color: var(--royal); }
+.tpo-status-pill.Inactive { background: rgba(148,138,120,0.14); color: var(--tpo-ink-faint); }
+
+/* Student filter bar */
+.tpo-filter-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.tpo-filter-bar input, .tpo-filter-bar select {
+  padding: 7px 10px; border-radius: 8px; border: 1px solid var(--tpo-border); background: #fff; color: var(--tpo-ink); font-size: 13px;
+}
+
+/* Student detail */
+.tpo-student-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.tpo-module-progress-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--tpo-border); font-size: 14px; }
+.tpo-module-progress-row:last-child { border-bottom: none; }
+
+/* Report */
+.tpo-report-header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid var(--tpo-ink); }
+.tpo-report-header .eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tpo-ink-faint); }
+.tpo-report-header h1 { margin: 6px 0; }
+.tpo-report-section-heading {
+  font-size: 12.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--tpo-ink-faint); margin: 28px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--tpo-border);
+}
+.tpo-recommendation { background: rgba(30,64,175,0.06); border-left: 3px solid var(--royal); border-radius: 8px; padding: 10px 14px; font-size: 13.5px; margin-bottom: 8px; }
+
+@media print {
+  .tpo-no-print { display: none !important; }
+}
