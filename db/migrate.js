@@ -1334,7 +1334,8 @@ async function runMigrations() {
             ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()
           `);
                 console.log('[migrate] 033: cost_analytics.updated_at confirmed present.');
-    },
+      },
+},
     {
       name: '034_campus_learn_views',
       up: async (c) => {
