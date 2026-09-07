@@ -1333,31 +1333,10 @@ async function runMigrations() {
             ALTER TABLE cost_analytics
             ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()
           `);
-                console.log('[migrate] 033: cost_analytics.updated_at confirmed present.');
-    },
-    {
-      name: '034_campus_learn_views',
-      up: async (c) => {
-        // Additive-only, isolated to Campus Ready.
-        // Persists which Learn content a learner has viewed.
-        await c.query(`
-          CREATE TABLE IF NOT EXISTS campus_learn_views (
-            id SERIAL PRIMARY KEY,
-            learner_id INTEGER NOT NULL REFERENCES campus_learners(id) ON DELETE CASCADE,
-            content_item_id INTEGER NOT NULL REFERENCES campus_content_items(id) ON DELETE CASCADE,
-            viewed_at TIMESTAMPTZ DEFAULT NOW()
-          )
-        `);
-
-        await c.query(`
-          CREATE UNIQUE INDEX IF NOT EXISTS campus_learn_views_learner_item_idx
-          ON campus_learn_views (learner_id, content_item_id)
-        `);
-
-        console.log('[migrate] 034: campus_learn_views created.');
+          console.log('[migrate] 033: cost_analytics.updated_at confirmed present.');
+        },
       },
-    },
-  ];
+    ];
 
     for (const m of migrations) {
       if (done.has(m.name)) {

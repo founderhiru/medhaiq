@@ -6,8 +6,10 @@
 
    Expected locals (all optional, safe defaults below):
    - pageTitle:  string, used in <title>
-   - activeNav:  one of 'dashboard' | 'interview' | 'reports' | 'resume' | 'settings'
+   - activeNav:  one of 'dashboard' | 'interview' | 'reports' | 'resume' | 'settings' | 'campus' | 'founder'
    - shellUser:  { name, email } — pass the logged-in user object through
+   - isCampusLearner: boolean, same opt-in pattern as isFounder below —
+     shows/hides the "Campus Ready" link. Defaults to false/hidden.
    - extraHead:  raw string of any extra <link>/<style> tags a page needs
    - extraStylesheets: array of extra stylesheet hrefs specific to a page
      (e.g. interview-session.css) so each page keeps its own styling on
@@ -84,6 +86,9 @@ const _bodyClass = typeof bodyClass !== 'undefined' && bodyClass ? bodyClass : '
     <% } %>
     <div class="shell-links">
       <a href="/dashboard/history" class="shell-link <%= _activeNav === 'dashboard' ? 'active' : '' %>"><span class="dot"></span> Workspace</a>
+      <% if (typeof isCampusLearner !== 'undefined' && isCampusLearner) { %>
+      <a href="/campus" class="shell-link <%= _activeNav === 'campus' ? 'active' : '' %>"><span class="dot"></span> Campus Ready</a>
+      <% } %>
       <% if (_previewMode) { %>
       <span class="shell-link" aria-disabled="true" title="Create a free account to start an interview" style="opacity:0.5;cursor:not-allowed;"><span class="dot"></span> New Interview</span>
       <% } else { %>

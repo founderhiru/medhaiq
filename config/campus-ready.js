@@ -6,12 +6,14 @@
 // a subscription tier and must never be read by the Capability Engine.
 
 module.exports = {
-  // A module is "complete" once BOTH of these are true for that learner:
-  //   1. they've submitted at least this many practice prompts (any
-  //      topics within the module — modules are independent, not
-  //      sequential, so there's no per-topic gate)
-  //   2. their quiz accuracy across that module's active quiz questions
-  //      is at or above this threshold
-  PRACTICE_REQUIRED_PER_MODULE: 3,
+  // A topic's quiz is "passed" once every quiz item in that topic has
+  // been answered AND accuracy across them is at or above this
+  // threshold. Module completion is then a pure function of topic
+  // completion (Learn viewed + all Practice submitted + Quiz passed,
+  // for every topic in the module) — see db/campus.js getModuleContent().
+  // There is deliberately no separate "required practice count" here
+  // anymore: Phase 2 replaced that flat, content-agnostic counter with
+  // "every practice item this topic actually has," which is data-driven
+  // and never goes stale as topics are added or content volume changes.
   QUIZ_PASS_THRESHOLD: 0.7,
 };

@@ -9,8 +9,8 @@ const router = express.Router();
 const { requireCampusLearner } = require('../middleware/campus-guards');
 const {
   acceptInvite, getLearnerForUser, listModulesWithProgress,
-  getModuleByKey, getModuleContent, submitPractice, submitQuizAnswer,
-  recomputeModuleProgress,
+  getModuleByKey, getModuleContent, markLearnViewed, submitPractice, submitQuizAnswer,
+  recomputeModuleProgress, isModuleLocked, getCampusNextAction,
 } = require('../db/campus');
 
 // POST /api/campus/join — accept an invite token for the logged-in user.
@@ -24,20 +24,45 @@ router.post('/join', async (req, res) => {
   return res.json({ ok: true });
 });
 
-// GET /api/campus/me — learner status + all 5 modules with progress.
-// Independent modules, per founder direction: all returned at once, no
-// forced sequential unlocking.
+// GET /api/campus/me — learner status, all 5 modules with progress + lock
+// state (Phase 1: sequential progression), and the resolved Next Best
+// Action so the frontend never has to re-derive it.
 router.get('/me', requireCampusLearner, async (req, res) => {
   const modules = await listModulesWithProgress(req.campusLearner.id);
-  res.json({ learner: req.campusLearner, modules });
+  const nextAction = await getCampusNextAction(req.campusLearner.id);
+  res.json({ learner: req.campusLearner, modules, nextAction });
 });
 
-// GET /api/campus/modules/:key — topics + content for one module.
+// GET /api/campus/modules/:key — topics + content for one module, with
+// this learner's already-persisted state (Learn viewed / practice saved
+// text / quiz answers) attached to each item so reopening a module
+// resumes exactly where the learner left off.
+// Enforced server-side: a locked module's content is never sent, even if
+// the request is made directly against the API.
 router.get('/modules/:key', requireCampusLearner, async (req, res) => {
   const mod = await getModuleByKey(req.params.key);
   if (!mod) return res.status(404).json({ error: 'Module not found' });
-  const topics = await getModuleContent(mod.id);
+  if (await isModuleLocked(req.campusLearner.id, mod.id)) {
+    return res.status(403).json({ error: 'This module is locked. Complete the previous module first.' });
+  }
+  const topics = await getModuleContent(mod.id, req.campusLearner.id);
   res.json({ module: mod, topics });
+});
+
+// POST /api/campus/learn/view — persists that the learner has viewed a
+// Learn item. No AI, no comprehension check — viewing is sufficient for
+// V1, per the founder's explicit boundary (see db/campus.js).
+router.post('/learn/view', requireCampusLearner, async (req, res) => {
+  const { contentItemId, moduleId } = req.body || {};
+  if (!contentItemId || !moduleId) {
+    return res.status(400).json({ error: 'contentItemId and moduleId are required' });
+  }
+  if (await isModuleLocked(req.campusLearner.id, moduleId)) {
+    return res.status(403).json({ error: 'This module is locked. Complete the previous module first.' });
+  }
+  await markLearnViewed({ learnerId: req.campusLearner.id, contentItemId });
+  const progress = await recomputeModuleProgress(req.campusLearner.id, moduleId);
+  res.json({ ok: true, progress });
 });
 
 // POST /api/campus/practice — self-written, NOT graded. No AI call, no
@@ -46,6 +71,9 @@ router.post('/practice', requireCampusLearner, async (req, res) => {
   const { contentItemId, responseText, moduleId } = req.body || {};
   if (!contentItemId || !responseText || !moduleId) {
     return res.status(400).json({ error: 'contentItemId, moduleId, and responseText are required' });
+  }
+  if (await isModuleLocked(req.campusLearner.id, moduleId)) {
+    return res.status(403).json({ error: 'This module is locked. Complete the previous module first.' });
   }
   await submitPractice({ learnerId: req.campusLearner.id, contentItemId, responseText });
   const progress = await recomputeModuleProgress(req.campusLearner.id, moduleId);
@@ -57,6 +85,9 @@ router.post('/quiz', requireCampusLearner, async (req, res) => {
   const { contentItemId, selectedOptionId, moduleId } = req.body || {};
   if (!contentItemId || !selectedOptionId || !moduleId) {
     return res.status(400).json({ error: 'contentItemId, moduleId, and selectedOptionId are required' });
+  }
+  if (await isModuleLocked(req.campusLearner.id, moduleId)) {
+    return res.status(403).json({ error: 'This module is locked. Complete the previous module first.' });
   }
   const result = await submitQuizAnswer({ learnerId: req.campusLearner.id, contentItemId, selectedOptionId });
   if (!result) return res.status(404).json({ error: 'Question not found' });
