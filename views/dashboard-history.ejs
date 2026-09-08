@@ -1,4 +1,4 @@
-<%- include('partials/workspace-shell-top', { pageTitle: 'Career Workspace — MedhaIQ', activeNav: 'dashboard', bodyClass: 'career-workspace', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'], previewMode: typeof previewMode !== 'undefined' ? previewMode : false }) %>
+<%- include('partials/workspace-shell-top', { pageTitle: 'Career Workspace — MedhaIQ', activeNav: 'dashboard', bodyClass: 'career-workspace', shellUser: shellUser, extraStylesheets: ['/css/career-workspace.css'], previewMode: typeof previewMode !== 'undefined' ? previewMode : false, isCampusLearner: typeof isCampusLearner !== 'undefined' ? isCampusLearner : false }) %>
 
 <%
 /* Dynamic greeting — server renders a fallback using its own clock so
@@ -91,8 +91,8 @@ const _initialGreeting = (_srvHour >= 5 && _srvHour < 12) ? `Good morning, ${_fi
   <!-- First-time user / no history yet: action-oriented empty state,
        per the flow spec — no fabricated numbers, no gauge, no insights. -->
   <div class="report-section" style="text-align:center; padding:48px 32px;">
-    <h3 style="margin-bottom:10px;">Let's get your first read on where you stand</h3>
-    <p style="color:var(--muted); font-size:14px; max-width:440px; margin:0 auto 24px;">
+    <h3 style="margin-bottom:10px; color:#FFFFFF;">Let's get your first read on where you stand</h3>
+    <p style="color:#9DA8BA; font-size:14px; max-width:440px; margin:0 auto 24px;">
       Run one interview and this page fills in with your readiness score, your strengths, and where to focus next.
     </p>
     <a href="/interview" class="cta-btn primary" style="display:inline-block;">＋ Configure your first interview</a>
