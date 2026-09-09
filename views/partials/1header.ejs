@@ -103,43 +103,9 @@ const _isHomeAuthed = !!(_homeCaps && _homeCaps.isAuthenticated);
       </div>
 
       <a href="/why" class="mh-nav-link">Why MedhaIQ</a>
-
-      <!-- Resources — new mega-menu trigger. Reuses the exact same
-           mega-menu markup/classes/JS wiring pattern as "Platform" above.
-           Replaces the standalone "Architecture" link that used to sit
-           here; Architecture now lives only inside this menu. -->
-      <div class="mh-nav-item mh-nav-item-mega" id="mh-resources-wrap">
-        <button type="button"
-                class="mh-nav-link mh-nav-trigger"
-                id="mh-resources-trigger"
-                aria-haspopup="true"
-                aria-expanded="false">
-          Resources
-          <svg class="mh-nav-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-
-        <div class="mh-megamenu" id="mh-resources-megamenu" aria-label="Resources">
-          <div class="mh-megamenu-inner">
-            <nav aria-label="Resources">
-              <ul class="mh-megamenu-list" role="menu">
-                <li role="none"><a href="/explore" class="mh-megamenu-item dropdown-item mh-megamenu-item-link" role="menuitem">
-                  Explore MedhaIQ
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a></li>
-                <li role="none"><a href="/faq" class="mh-megamenu-item dropdown-item mh-megamenu-item-link" role="menuitem">
-                  FAQ
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a></li>
-                <li role="none"><a href="/architecture" class="mh-megamenu-item dropdown-item mh-megamenu-item-link" role="menuitem">
-                  Architecture
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a></li>
-              </ul>
-            </nav>
-          </div>
-        </div>
-      </div>
-
+      <!-- NEW route — see conflict note in chat: no "Architecture" page existed
+           to consolidate; this reuses architecture.ejs's real content. -->
+      <a href="/architecture" class="mh-nav-link">Architecture</a>
       <a href="/#pricing" class="mh-nav-link">Pricing</a>
       <!-- NEW route — see conflict note in chat: reuses founder.ejs's real
            "Vision" content; no "Mission" copy exists anywhere in the repo,
@@ -209,20 +175,7 @@ const _isHomeAuthed = !!(_homeCaps && _homeCaps.isAuthenticated);
       </div>
 
       <a href="/why" class="mh-mobile-link">Why MedhaIQ</a>
-
-      <!-- Resources — mirrors the Platform accordion pattern above -->
-      <div class="mh-mobile-accordion">
-        <button type="button" class="mh-mobile-link mh-mobile-accordion-trigger" id="mh-mobile-resources-trigger" aria-expanded="false">
-          Resources
-          <svg class="mh-mobile-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="mh-mobile-accordion-panel" id="mh-mobile-resources-panel">
-          <a href="/explore" class="mh-mobile-sublink">Explore MedhaIQ</a>
-          <a href="/faq" class="mh-mobile-sublink">FAQ</a>
-          <a href="/architecture" class="mh-mobile-sublink">Architecture</a>
-        </div>
-      </div>
-
+      <a href="/architecture" class="mh-mobile-link">Architecture</a>
       <a href="/#pricing" class="mh-mobile-link">Pricing</a>
       <a href="/about" class="mh-mobile-link">About</a>
       <% if (_isHomeAuthed) { %>
@@ -275,104 +228,91 @@ const _isHomeAuthed = !!(_homeCaps && _homeCaps.isAuthenticated);
     });
   });
 
-  /* ---- desktop mega menu (hover + focus + click + Escape) ----
-     Generalized into a setup function so both "Platform" and the new
-     "Resources" trigger get identical behavior, wired independently.
-     Platform's behavior is unchanged from before this refactor. ---- */
-  function setupMegaMenu(wrapId, triggerId) {
-    var megaWrap = document.getElementById(wrapId);
-    var megaTrigger = document.getElementById(triggerId);
-    if (!megaWrap || !megaTrigger) return;
+  /* ---- NEW: desktop mega menu (hover + focus + click + Escape) ---- */
+  var megaWrap = document.getElementById('mh-platform-wrap');
+  var megaTrigger = document.getElementById('mh-platform-trigger');
 
-    function openMega() {
-      megaWrap.classList.add('mh-mega-open');
-      megaTrigger.setAttribute('aria-expanded', 'true');
-    }
-    function closeMega() {
-      megaWrap.classList.remove('mh-mega-open');
-      megaTrigger.setAttribute('aria-expanded', 'false');
-    }
-
-    // Hover-bridge delay: closing is deferred 150ms so the cursor can
-    // travel from the trigger into the panel without the menu closing
-    // mid-transit. A new mouseenter anywhere in megaWrap (trigger OR
-    // panel) cancels the pending close.
-    var closeTimer = null;
-    function scheduleClose() {
-      clearTimeout(closeTimer);
-      closeTimer = setTimeout(closeMega, 150);
-    }
-    function cancelScheduledClose() {
-      clearTimeout(closeTimer);
-    }
-
-    megaWrap.addEventListener('mouseenter', function() {
-      cancelScheduledClose();
-      openMega();
-    });
-    megaWrap.addEventListener('mouseleave', scheduleClose);
-
-    // Click/tap toggles — covers touch devices where hover doesn't fire
-    megaTrigger.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation(); // prevent the document click-outside listener below from immediately re-closing what this click just opened
-      cancelScheduledClose();
-      if (megaWrap.classList.contains('mh-mega-open')) { closeMega(); }
-      else { openMega(); }
-    });
-
-    // Keyboard: Tab into the menu opens it, Tab out closes it immediately
-    megaWrap.addEventListener('focusin', function() {
-      cancelScheduledClose();
-      openMega();
-    });
-    megaWrap.addEventListener('focusout', function(e) {
-      if (!megaWrap.contains(e.relatedTarget)) { closeMega(); }
-    });
-
-    // Escape closes immediately and returns focus to the trigger
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && megaWrap.classList.contains('mh-mega-open')) {
-        cancelScheduledClose();
-        closeMega();
-        megaTrigger.focus();
-      }
-    });
-
-    // Click anywhere outside the menu closes it immediately
-    document.addEventListener('click', function(e) {
-      if (megaWrap.classList.contains('mh-mega-open') && !megaWrap.contains(e.target)) {
-        cancelScheduledClose();
-        closeMega();
-      }
-    });
-
-    // Clicking/activating any menu item closes the panel immediately
-    megaWrap.querySelectorAll('.mh-megamenu-item').forEach(function(item) {
-      item.addEventListener('click', function() {
-        cancelScheduledClose();
-        closeMega();
-      });
-    });
+  function openMega() {
+    megaWrap.classList.add('mh-mega-open');
+    megaTrigger.setAttribute('aria-expanded', 'true');
+  }
+  function closeMega() {
+    megaWrap.classList.remove('mh-mega-open');
+    megaTrigger.setAttribute('aria-expanded', 'false');
   }
 
-  setupMegaMenu('mh-platform-wrap', 'mh-platform-trigger');
-  setupMegaMenu('mh-resources-wrap', 'mh-resources-trigger');
+  // Hover-bridge delay: closing is deferred 150ms so the cursor can travel
+  // from the trigger into the panel without the menu closing mid-transit.
+  // A new mouseenter anywhere in megaWrap (trigger OR panel) cancels the
+  // pending close. This replaces a hard mouseleave-closes-instantly model.
+  var closeTimer = null;
 
-  /* ---- mobile accordion (Platform + Resources) — generalized the same
-     way as the desktop mega menu above; Platform's behavior unchanged. ---- */
-  function setupMobileAccordion(triggerId, panelId) {
-    var mobTrigger = document.getElementById(triggerId);
-    var mobPanel = document.getElementById(panelId);
-    if (!mobTrigger || !mobPanel) return;
-    mobTrigger.addEventListener('click', function() {
-      var isOpen = mobPanel.classList.toggle('mh-mobile-accordion-panel-open');
-      mobTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
+  function scheduleClose() {
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(closeMega, 150);
+  }
+  function cancelScheduledClose() {
+    clearTimeout(closeTimer);
   }
 
-  setupMobileAccordion('mh-mobile-platform-trigger', 'mh-mobile-platform-panel');
-  setupMobileAccordion('mh-mobile-resources-trigger', 'mh-mobile-resources-panel');
+  megaWrap.addEventListener('mouseenter', function() {
+    cancelScheduledClose();
+    openMega();
+  });
+  megaWrap.addEventListener('mouseleave', scheduleClose);
+
+  // Click/tap toggles — covers touch devices where hover doesn't fire
+  megaTrigger.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation(); // prevent the document click-outside listener below from immediately re-closing what this click just opened
+    cancelScheduledClose();
+    if (megaWrap.classList.contains('mh-mega-open')) { closeMega(); }
+    else { openMega(); }
+  });
+
+  // Keyboard: Tab into the menu opens it, Tab out closes it immediately
+  // (no delay needed for keyboard — there's no "transit" to bridge)
+  megaWrap.addEventListener('focusin', function() {
+    cancelScheduledClose();
+    openMega();
+  });
+  megaWrap.addEventListener('focusout', function(e) {
+    if (!megaWrap.contains(e.relatedTarget)) { closeMega(); }
+  });
+
+  // Escape closes immediately (no delay) and returns focus to the trigger
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && megaWrap.classList.contains('mh-mega-open')) {
+      cancelScheduledClose();
+      closeMega();
+      megaTrigger.focus();
+    }
+  });
+
+  // Click anywhere outside the menu closes it immediately
+  document.addEventListener('click', function(e) {
+    if (megaWrap.classList.contains('mh-mega-open') && !megaWrap.contains(e.target)) {
+      cancelScheduledClose();
+      closeMega();
+    }
+  });
+
+  // Clicking/activating any menu item closes the panel immediately
+  megaWrap.querySelectorAll('.mh-megamenu-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      cancelScheduledClose();
+      closeMega();
+    });
+  });
+
+  /* ---- NEW: mobile Platform accordion ---- */
+  var mobTrigger = document.getElementById('mh-mobile-platform-trigger');
+  var mobPanel = document.getElementById('mh-mobile-platform-panel');
+
+  mobTrigger.addEventListener('click', function() {
+    var isOpen = mobPanel.classList.toggle('mh-mobile-accordion-panel-open');
+    mobTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
 
   /* ---- NEW: avatar profile menu (Logout only, for launch) — same
      click/Escape/outside-click pattern as the Platform mega menu above.
