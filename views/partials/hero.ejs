@@ -68,6 +68,14 @@
     -webkit-text-fill-color: transparent;
   }
 
+  .mh-hero-signature {
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #334155;
+    margin: 0 0 18px 0;
+  }
+
   .mh-hero-h2 {
     font-size: 16.5px;
     line-height: 1.55;
@@ -126,6 +134,36 @@
 
   .mh-hero-chip-icon-magenta { color: #BE123C !important; }
   .mh-hero-chip-icon-magenta svg { filter: drop-shadow(0 0 6px rgba(251, 113, 133, 0.9)) brightness(1.4); }
+
+  /* Compact proof row — replaces the 2x2 chip grid, sits after the CTAs */
+  .mh-hero-proof-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    margin-top: 20px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .mh-hero-proof-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mh-hero-proof-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .mh-hero-proof-sep {
+    color: #CBD5E1;
+    font-weight: 400;
+  }
 
   /* CTAs & Actions */
   .mh-hero-actions {
@@ -419,6 +457,9 @@
     .mh-hero-h1 {
       font-size: 32px;
     }
+    .mh-hero-signature {
+      font-size: 18px;
+    }
     .mh-hero-chips {
       grid-template-columns: 1fr;
     }
@@ -441,39 +482,12 @@
         <span class="mh-hero-badge-text">AI INTERVIEW PRACTICE</span>
       </div>
 
-      <h1 class="mh-hero-h1">Interview readiness<br>isn't crammed.<br>It's <span class="mh-hero-h1-accent">built.</span></h1>
+      <h1 class="mh-hero-h1">Be ready when the interview matters.</h1>
+
+      <p class="mh-hero-signature">Practice. Polish. <span class="mh-hero-h1-accent">Place.</span></p>
 
       <p class="mh-hero-h2">MedhaIQ creates live, adaptive interviews around your resume, target role, and job description — then evaluates your performance across five dimensions that matter in real interviews.</p>
       <p class="mh-hero-support">Every session builds on the last, so you know where you stand and what to improve next.</p>
-      <!-- 2x2 Feature Pills Arrangement -->
-      <div class="mh-hero-chips">
-        <!-- Row 1 -->
-        <div class="mh-hero-chip">
-          <span class="mh-hero-chip-icon mh-hero-chip-icon-purple">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          </span>
-          <span>Live Adaptive Interviews</span>
-        </div>
-        <div class="mh-hero-chip">
-          <span class="mh-hero-chip-icon mh-hero-chip-icon-green">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          </span>
-          <span>Resume + JD Built</span>
-        </div>
-        <!-- Row 2 -->
-        <div class="mh-hero-chip">
-          <span class="mh-hero-chip-icon mh-hero-chip-icon-amber">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-          </span>
-          <span>5-Vector Assessment</span>
-        </div>
-        <div class="mh-hero-chip">
-          <span class="mh-hero-chip-icon mh-hero-chip-icon-magenta">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          </span>
-          <span>Progress That Compounds</span>
-        </div>
-      </div>
 
       <div class="mh-hero-actions">
         <a href="/login" class="mh-btn-primary">
@@ -493,6 +507,16 @@
           </span>
           See How It Works
         </a>
+      </div>
+
+      <div class="mh-hero-proof-row">
+        <span class="mh-hero-proof-item"><span class="mh-hero-proof-dot" style="background:#7E22CE;"></span>Live Adaptive Interviews</span>
+        <span class="mh-hero-proof-sep">·</span>
+        <span class="mh-hero-proof-item"><span class="mh-hero-proof-dot" style="background:#047857;"></span>Resume + JD Built</span>
+        <span class="mh-hero-proof-sep">·</span>
+        <span class="mh-hero-proof-item"><span class="mh-hero-proof-dot" style="background:#B45309;"></span>5-Vector Assessment</span>
+        <span class="mh-hero-proof-sep">·</span>
+        <span class="mh-hero-proof-item"><span class="mh-hero-proof-dot" style="background:#BE123C;"></span>Progress That Compounds</span>
       </div>
 
       <div class="mh-hero-mechanism" aria-hidden="true">
