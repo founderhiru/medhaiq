@@ -2493,101 +2493,125 @@ button { cursor: pointer; }
 .mh-form-error.show { display: block; }
 
 /* ============================================
-   HOW IT WORKS
+   WHAT MAKES IT ADAPTIVE — warm-light island section,
+   deliberately breaking from the page's dark theme for this one
+   section only (matches reference: dark hero -> dark trust bar ->
+   LIGHT this section -> dark report section below). New, uniquely
+   prefixed classes; does not touch .mh-step* (still used by the
+   separate, unincluded views/partials/howitworks.ejs).
    ============================================ */
-.mh-howitworks {
-  padding: 56px 40px 100px;
-  background: var(--navy-deep);
+.mh-adaptive {
+  padding: var(--section-pad-y) var(--section-pad-x);
+  background: #F1EFEA;
 }
-.mh-howitworks-inner { max-width: var(--max-w); margin: 0 auto; }
-.mh-howitworks-sub {
-  font-size: 16px;
-  color: var(--text-muted);
-  margin-top: 16px;
-  max-width: 560px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.7;
-}
-.mh-steps {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0;
-  margin-top: 60px;
-}
-.mh-step { flex: 1; max-width: 300px; text-align: center; padding: 0 32px; }
-.mh-step-num {
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: var(--blue-bright);
+.mh-adaptive-inner { max-width: var(--max-w); margin: 0 auto; }
+.mh-adaptive-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  margin-bottom: 20px;
+  color: #78716C;
+  margin-bottom: 18px;
 }
-.mh-step-icon {
-  width: 72px;
-  height: 72px;
-  border-radius: 20px;
-  background: var(--navy-card);
-  border: 1px solid var(--navy-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 24px;
-  color: var(--blue-bright);
-}
-.mh-step-title {
+.mh-adaptive-headline {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: clamp(28px, 4vw, 38px);
   font-weight: 700;
-  color: var(--white);
-  margin-bottom: 12px;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: #0B0F1D;
+  max-width: 720px;
 }
-.mh-step-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
-.mh-step-connector {
-  width: 80px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--navy-border), transparent);
-  align-self: center;
+.mh-adaptive-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 56px;
+}
+.mh-adaptive-card {
+  background: #FBFAF8;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--radius);
+  padding: 28px 26px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+.mh-adaptive-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue-bright);
+  margin-bottom: 14px;
+}
+.mh-adaptive-title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #0B0F1D;
+  margin-bottom: 10px;
+}
+.mh-adaptive-desc {
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: #6B7280;
+  margin-bottom: 22px;
+}
+
+/* Card 1 — input chips */
+.mh-adaptive-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.mh-adaptive-chip {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #57534E;
+  background: #EDEAE3;
+  border-radius: 6px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+/* Card 2 — miniature follow-up transcript */
+.mh-adaptive-followups { display: flex; flex-direction: column; gap: 10px; }
+.mh-adaptive-followup {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  color: #78716C;
+  padding-left: 12px;
+  border-left: 2px solid rgba(15, 23, 42, 0.12);
+}
+.mh-adaptive-followup.is-emphasis {
+  color: #0B0F1D;
+  font-weight: 700;
+  border-left-color: var(--blue-bright);
+}
+
+/* Card 3 — scoring bars */
+.mh-adaptive-scores { display: flex; flex-direction: column; gap: 10px; }
+.mh-adaptive-score-row { display: flex; align-items: center; gap: 12px; }
+.mh-adaptive-score-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: #57534E;
+  width: 62px;
   flex-shrink: 0;
-  margin-top: 36px;
 }
+.mh-adaptive-score-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: #E7E4DD;
+  overflow: hidden;
+}
+.mh-adaptive-score-fill { height: 100%; border-radius: 3px; background: #0B0F1D; }
+.mh-adaptive-score-fill.is-accent { background: var(--blue-bright); }
 
-/* Step icon glow variants */
-.mh-step-icon-emerald {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.5);
-  color: #10B981;
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3), 0 0 40px rgba(16, 185, 129, 0.1);
-}
-.mh-step-icon-blue {
-  background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(59, 130, 246, 0.5);
-  color: #3B82F6;
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 40px rgba(59, 130, 246, 0.1);
-}
-.mh-step-icon-purple {
-  background: rgba(139, 92, 246, 0.12);
-  border: 1px solid rgba(139, 92, 246, 0.5);
-  color: #8B5CF6;
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.1);
-}
-
-/* SVG arc connecting steps */
-.mh-steps-arc {
-  position: absolute;
-  top: 50px;
-  left: 0;
-  width: 100%;
-  height: 60px;
-  pointer-events: none;
-  z-index: 0;
-}
-.mh-steps {
-  position: relative;
+@media (max-width: 860px) {
+  .mh-adaptive-cards { grid-template-columns: 1fr; gap: 16px; margin-top: 40px; }
+  .mh-adaptive-card { padding: 24px 22px; }
 }
 
 .mh-step-ctas {
