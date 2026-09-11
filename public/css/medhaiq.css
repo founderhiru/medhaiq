@@ -2496,32 +2496,32 @@ button { cursor: pointer; }
    WHAT MAKES IT ADAPTIVE — warm-light island section,
    deliberately breaking from the page's dark theme for this one
    section only (matches reference: dark hero -> dark trust bar ->
-   LIGHT this section -> dark report section below). New, uniquely
-   prefixed classes; does not touch .mh-step* (still used by the
-   separate, unincluded views/partials/howitworks.ejs).
+   LIGHT this section -> dark report section below). Reuses the
+   homepage's own shared tokens (.mh-eyebrow, .mh-section-title,
+   .mh-section-center, var(--font-display)/var(--font-body)) rather
+   than a parallel typography system -- only the light-card visual
+   treatment itself is section-specific, per explicit approval to
+   keep that. Does not touch .mh-step* (still used by the separate,
+   unincluded views/partials/howitworks.ejs).
    ============================================ */
 .mh-adaptive {
   padding: var(--section-pad-y) var(--section-pad-x);
   background: #F1EFEA;
 }
 .mh-adaptive-inner { max-width: var(--max-w); margin: 0 auto; }
-.mh-adaptive-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #78716C;
-  margin-bottom: 18px;
-}
+/* Eyebrow: no local rule at all -- uses the shared .mh-eyebrow class
+   directly in the markup (same font-body/blue-bright/tracking as
+   Pricing's eyebrow), wrapped in the shared .mh-section-center for
+   the same centered composition Pricing uses. */
 .mh-adaptive-headline {
   font-family: var(--font-display);
-  font-size: clamp(28px, 4vw, 38px);
+  font-size: var(--h2-size);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--h2-tracking);
   line-height: 1.2;
   color: #0B0F1D;
-  max-width: 720px;
+  max-width: 620px;
+  margin: 0 auto;
 }
 .mh-adaptive-cards {
   display: grid;
@@ -2537,17 +2537,17 @@ button { cursor: pointer; }
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
 }
 .mh-adaptive-num {
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-family: var(--font-body);
+  font-size: var(--eyebrow-size);
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--eyebrow-tracking);
   text-transform: uppercase;
   color: var(--blue-bright);
   margin-bottom: 14px;
 }
 .mh-adaptive-title {
   font-family: var(--font-display);
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: #0B0F1D;
