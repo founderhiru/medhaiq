@@ -295,6 +295,7 @@
       <p class="campus-item-prompt">${practice.prompt}</p>
       <textarea id="campusPracticeInput" class="campus-textarea" rows="4" placeholder="Write your answer here — this is self-reviewed, not graded.">${practice.savedText ? practice.savedText.replace(/</g, '&lt;') : ''}</textarea>
       ${learn && learn.mistakes ? `<p class="campus-practice-tip">Tip: ${learn.mistakes.split('.')[0]}.</p>` : ''}
+      <p id="campusPracticeMessage" style="display:none;font-size:13px;margin-top:6px;"></p>
       <div class="campus-cta-bar"><button class="campus-cta" data-action="save-practice" data-item-id="${practice.id}">Save &amp; Continue →</button></div>`;
   }
 
@@ -363,16 +364,52 @@
 
     const saveBtn = panel.querySelector('[data-action="save-practice"]');
     if (saveBtn) saveBtn.addEventListener('click', async () => {
-      const text = document.getElementById('campusPracticeInput').value.trim();
-      if (!text) return;
-      await fetch('/api/campus/practice', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contentItemId: Number(saveBtn.dataset.itemId), moduleId: state.activeModuleDbId, responseText: text }),
-      });
-      state.practiceJustSaved = true;
-      await loadModuleContent(state.activeModuleKey);
-      renderModulePanel();
-      loadMe();
+      const textarea = document.getElementById('campusPracticeInput');
+      const msgEl = document.getElementById('campusPracticeMessage');
+      const text = textarea.value.trim();
+      const showMessage = (msg, isError) => {
+        if (!msgEl) return;
+        msgEl.style.display = 'block';
+        msgEl.style.color = isError ? '#B45309' : 'var(--emerald)';
+        msgEl.textContent = msg;
+      };
+      if (!text) {
+        showMessage('Please enter a response before continuing.', true);
+        return;
+      }
+      const originalLabel = saveBtn.textContent;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+      try {
+        const res = await fetch('/api/campus/practice', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contentItemId: Number(saveBtn.dataset.itemId), moduleId: state.activeModuleDbId, responseText: text }),
+        });
+        if (!res.ok) {
+          let message = 'Unable to save your response. Please try again.';
+          try { const data = await res.json(); if (data.error) message = data.error; } catch (_) {}
+          showMessage(message, true);
+          saveBtn.disabled = false;
+          saveBtn.textContent = originalLabel;
+          return;
+        }
+        // Only set practiceJustSaved — and therefore only show the
+        // "saved" review screen — AFTER the server has actually
+        // confirmed success. Previously this ran unconditionally, so a
+        // failed save could still show "✓ saved."
+        state.practiceJustSaved = true;
+        await loadModuleContent(state.activeModuleKey);
+        renderModulePanel();
+        loadMe();
+      } catch (err) {
+        // A rejected fetch (network drop, timeout, CORS, etc.) used to
+        // throw here uninterrupted, halting the handler before
+        // practiceJustSaved was ever set — the screen would sit
+        // unchanged with zero feedback, indistinguishable from "stuck."
+        showMessage('Unable to reach the server. Please check your connection and try again.', true);
+        saveBtn.disabled = false;
+        saveBtn.textContent = originalLabel;
+      }
     });
 
     const reviewContinueBtn = panel.querySelector('[data-action="continue-from-review"]');
