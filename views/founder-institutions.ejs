@@ -1,37 +1,40 @@
-<%- include('partials/workspace-shell-top', { pageTitle: 'Campus Ready Institutions — MedhaIQ', activeNav: 'founder', bodyClass: 'founder-institutions-page', shellUser: shellUser, isFounder: true }) %>
+<%- include('partials/workspace-shell-top', { pageTitle: 'Campus Ready Institutions — MedhaIQ', activeNav: 'founder', bodyClass: 'founder-institutions-page', shellUser: shellUser, extraStylesheets: ['/css/founder-institutions.css', '/css/campus-ready.css'], isFounder: true }) %>
 
 <div class="page-header-row">
   <div>
     <h1>Campus Ready — Institutions</h1>
-    <p class="subtitle">Manage pilot colleges, cohorts, and learner invites.</p>
+    <p class="subtitle">Manage colleges, cohorts, and TPO access.</p>
   </div>
-  <div class="page-header-actions">
-    <a href="/campus/tpo" class="new-interview-btn" style="background:none;border:1px solid rgba(255,255,255,0.15);">TPO View →</a>
-    <a href="/founder/campus/e2e" class="new-interview-btn" style="background:none;border:1px solid rgba(255,255,255,0.15);">E2E Test Lab →</a>
-    <a href="/founder" class="new-interview-btn" style="background:none;border:1px solid rgba(255,255,255,0.15);">← Founder Dashboard</a>
+  <div class="fi-admin-tools">
+    <button id="fiAdminToolsTrigger" class="fi-admin-tools-trigger">Admin Tools ▾</button>
+    <div id="fiAdminToolsMenu" class="fi-admin-tools-menu">
+      <a href="/campus/tpo">TPO Preview</a>
+      <a href="/founder/campus/e2e">E2E Test Lab</a>
+      <a href="/founder">Founder Dashboard</a>
+    </div>
   </div>
 </div>
 
-<div style="max-width:960px;margin:0 auto;padding:0 16px;">
+<div class="fi-root">
 
-  <section style="margin-bottom:32px;">
-    <h3>Add Institution</h3>
-    <form id="newInstitutionForm" style="display:flex;gap:8px;flex-wrap:wrap;">
-      <input name="name" placeholder="Institution name" required style="flex:1;min-width:200px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:inherit;">
-      <input name="contactName" placeholder="TPO / contact name" style="flex:1;min-width:160px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:inherit;">
-      <input name="contactEmail" placeholder="Contact email" type="email" style="flex:1;min-width:160px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:inherit;">
-      <button type="submit" style="padding:8px 16px;border-radius:6px;background:var(--blue-bright,#3b82f6);border:none;color:#fff;cursor:pointer;">Add</button>
+  <section class="fi-section">
+    <div class="fi-section-title">Add Institution</div>
+    <form id="newInstitutionForm" class="fi-form">
+      <input name="name" placeholder="Institution name" required style="flex:1;min-width:200px;">
+      <input name="contactName" placeholder="TPO / contact name" style="flex:1;min-width:160px;">
+      <input name="contactEmail" placeholder="Contact email" type="email" style="flex:1;min-width:160px;">
+      <button type="submit" class="fi-btn-primary">Add</button>
     </form>
   </section>
 
-  <section>
-    <h3>Institutions</h3>
+  <section class="fi-section">
+    <div class="fi-section-title">Institutions</div>
     <div id="institutionList"></div>
   </section>
 
   <!-- Institution detail: cohorts + invites, rendered inline rather than
        as a separate page — keeps this to one net-new admin screen. -->
-  <div id="institutionDetail" style="display:none;margin-top:28px;padding:20px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);"></div>
+  <div id="institutionDetail" class="fi-detail-panel" style="display:none;"></div>
 </div>
 
 <script>
@@ -39,15 +42,20 @@
   const API = '/api/founder/campus';
   let activeInstitutionId = null;
 
+  const toolsBtn = document.getElementById('fiAdminToolsTrigger');
+  const toolsMenu = document.getElementById('fiAdminToolsMenu');
+  toolsBtn.addEventListener('click', (e) => { e.stopPropagation(); toolsMenu.classList.toggle('open'); });
+  document.addEventListener('click', () => toolsMenu.classList.remove('open'));
+
   async function loadInstitutions() {
     const res = await fetch(API + '/institutions');
     const data = await res.json();
     const el = document.getElementById('institutionList');
-    if (!data.institutions.length) { el.innerHTML = '<p style="opacity:0.6;">No institutions yet.</p>'; return; }
+    if (!data.institutions.length) { el.innerHTML = '<p class="fi-empty">No institutions yet.</p>'; return; }
     el.innerHTML = data.institutions.map(i => `
-      <button class="inst-row" data-id="${i.id}" style="all:unset;cursor:pointer;display:flex;justify-content:space-between;width:100%;padding:12px 16px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;">
+      <button class="fi-row inst-row" data-id="${i.id}">
         <span>${i.name}</span>
-        <span style="opacity:0.6;font-size:13px;">${i.cohort_count} cohort(s)</span>
+        <span class="fi-row-meta">${i.cohort_count} cohort(s)</span>
       </button>
     `).join('');
     el.querySelectorAll('.inst-row').forEach(btn => btn.addEventListener('click', () => openInstitution(btn.dataset.id)));
@@ -77,23 +85,23 @@
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <h3 style="margin:0;">${data.institution.name}</h3>
-        <a href="/campus/tpo/${id}" style="font-size:13px;">View as TPO →</a>
+        <a href="/campus/tpo/${id}" class="fi-view-analytics">View as TPO →</a>
       </div>
-      <form id="newCohortForm" style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0;">
-        <input name="name" placeholder="Cohort name (e.g. 2027 CSE)" required style="flex:1;min-width:180px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:inherit;">
-        <input name="learnerLimit" placeholder="Learner limit" type="number" style="width:120px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:inherit;">
-        <button type="submit" style="padding:8px 16px;border-radius:6px;background:var(--blue-bright,#3b82f6);border:none;color:#fff;cursor:pointer;">Add Cohort</button>
+      <form id="newCohortForm" class="fi-form" style="margin:16px 0;">
+        <input name="name" placeholder="Cohort name (e.g. 2027 CSE)" required style="flex:1;min-width:180px;">
+        <input name="learnerLimit" placeholder="Learner limit" type="number" style="width:120px;">
+        <button type="submit" class="fi-btn-primary">Add Cohort</button>
       </form>
       <div id="cohortList"></div>
 
-      <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.08);">
-        <h4 style="margin:0 0 8px;">TPO Access</h4>
-        <div id="tpoAdminList" style="font-size:13px;opacity:0.8;margin-bottom:10px;"></div>
-        <form id="grantTpoForm" style="display:flex;gap:8px;flex-wrap:wrap;">
-          <input name="email" type="email" placeholder="tpo@institution.edu" required style="flex:1;min-width:200px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:inherit;">
-          <button type="submit" style="padding:8px 16px;border-radius:6px;background:none;border:1px solid rgba(255,255,255,0.15);color:inherit;cursor:pointer;">Grant TPO Access</button>
+      <div class="fi-tpo-section">
+        <div class="fi-section-title">TPO Access</div>
+        <div id="tpoAdminList" class="fi-tpo-list"></div>
+        <form id="grantTpoForm" class="fi-form">
+          <input name="email" type="email" placeholder="tpo@institution.edu" required style="flex:1;min-width:200px;">
+          <button type="submit" class="fi-btn-secondary">Grant TPO Access</button>
         </form>
-        <p style="font-size:12px;opacity:0.6;margin-top:8px;">Grants instant access — the TPO still logs in through the normal MedhaIQ sign-in with this email. No invite link is sent.</p>
+        <p class="fi-tpo-hint">Grants instant access — the TPO still logs in through the normal MedhaIQ sign-in with this email. No invite link is sent. Once granted, the TPO can invite their own candidates from their TPO Dashboard.</p>
       </div>
     `;
     renderCohorts(data.cohorts);
@@ -122,25 +130,25 @@
     const el = document.getElementById('tpoAdminList');
     el.innerHTML = admins.length
       ? admins.map(a => `<div>${a.name || a.email} (${a.email})</div>`).join('')
-      : '<div style="opacity:0.6;">No TPOs granted yet.</div>';
+      : '<div class="fi-empty">No TPOs granted yet.</div>';
   }
 
   function renderCohorts(cohorts) {
     const el = document.getElementById('cohortList');
-    if (!cohorts.length) { el.innerHTML = '<p style="opacity:0.6;">No cohorts yet.</p>'; return; }
+    if (!cohorts.length) { el.innerHTML = '<p class="fi-empty">No cohorts yet.</p>'; return; }
     el.innerHTML = cohorts.map(c => `
-      <div style="padding:14px 16px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:10px;">
+      <div class="fi-cohort-card">
         <div style="display:flex;justify-content:space-between;">
           <strong>${c.name}</strong>
-          <span style="opacity:0.6;font-size:13px;">${c.learner_count} learner(s)</span>
+          <span class="fi-row-meta">${c.learner_count} learner(s)</span>
         </div>
-        <div style="margin-top:8px;display:flex;gap:8px;">
-          <input class="invite-email" placeholder="learner@email.com" style="flex:1;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:inherit;font-size:13px;">
-          <button class="invite-btn" data-cohort="${c.id}" style="padding:6px 12px;border-radius:6px;background:none;border:1px solid rgba(255,255,255,0.15);color:inherit;cursor:pointer;font-size:13px;">Generate Invite Link</button>
+        <div class="fi-cohort-invite-row">
+          <input class="invite-email" placeholder="learner@email.com">
+          <button class="invite-btn fi-btn-secondary" data-cohort="${c.id}">Generate Invite Link</button>
         </div>
-        <p class="invite-result" style="font-size:12px;opacity:0.7;margin-top:6px;word-break:break-all;"></p>
-        <a href="#" class="view-analytics" data-cohort="${c.id}" style="font-size:12px;">View cohort progress →</a>
-        <div class="cohort-analytics" style="display:none;margin-top:10px;font-size:13px;"></div>
+        <p class="invite-result fi-invite-result"></p>
+        <a href="#" class="view-analytics fi-view-analytics" data-cohort="${c.id}">View cohort progress →</a>
+        <div class="cohort-analytics fi-analytics-box" style="display:none;"></div>
       </div>
     `).join('');
     el.querySelectorAll('.invite-btn').forEach(btn => {

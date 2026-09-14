@@ -1109,12 +1109,39 @@ async function computeDashboardHistoryData(req) {
   // the "Campus Ready" sidebar link (see workspace-shell-top.ejs) — this
   // is the ONLY thing db/campus.js is used for outside routes/campus*.js,
   // and it never touches campus progress/content tables.
-  const { getLearnerForUser } = require('./db/campus');
-  const [sessions, aggregateScores, campusLearner] = await Promise.all([
-    getUserSessions(userId, { limit: 20 }),
-    getUserAggregateScores(userId),
-    getLearnerForUser(userId),
-  ]);
+  const { getLearnerForUser, listModulesWithProgress } = require('./db/campus');
+const { isFounder } = require('./db/founder-access');
+const { hasAnyInstitutionAdminAccess } = require('./db/campus-tpo');
+
+const [sessions, aggregateScores, campusLearner, founderStatus, tpoRowExists] = await Promise.all([
+  getUserSessions(userId, { limit: 20 }),
+  getUserAggregateScores(userId),
+  getLearnerForUser(userId),
+  isFounder(userId),
+  hasAnyInstitutionAdminAccess(userId),
+]);
+
+const hasTpoAccess = founderStatus || tpoRowExists;
+
+let campusEnrollment = null;
+
+if (campusLearner) {
+  const modules = await listModulesWithProgress(campusLearner.id);
+  const percentComplete = modules.length
+    ? Math.round(
+        modules.reduce(
+          (sum, m) => sum + Number(m.percent_complete),
+          0
+        ) / modules.length
+      )
+    : 0;
+
+  campusEnrollment = {
+    institutionName: campusLearner.institution_name,
+    cohortName: campusLearner.cohort_name,
+    percentComplete,
+  };
+}
   const careerProfile = req.capabilities.careerProfile;
   const user = req.user;
     // Two bugs were compounding here:
@@ -1259,6 +1286,8 @@ async function computeDashboardHistoryData(req) {
     resumeIntelActive, resumeIntelSubLabel,
     bestCompetencyLabel, focusNextLabel,
     isCampusLearner: !!campusLearner,
+    campusEnrollment,
+    hasTpoAccess,
   };
 }
 

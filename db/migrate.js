@@ -1401,6 +1401,17 @@ async function runMigrations() {
         console.log('[migrate] 036: institutions.is_test confirmed present.');
       },
     },
+    {
+      name: '037_campus_learner_invites_candidate_name',
+      up: async (c) => {
+        // Additive, nullable. TPOs enter a candidate name when inviting.
+        // Existing invite rows are unaffected.
+        await c.query(`
+          ALTER TABLE campus_learner_invites ADD COLUMN IF NOT EXISTS candidate_name VARCHAR(255)
+        `);
+        console.log('[migrate] 037: campus_learner_invites.candidate_name confirmed present.');
+      },
+    },
   ];
 
     for (const m of migrations) {

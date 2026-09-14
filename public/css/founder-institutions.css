@@ -1,0 +1,89 @@
+/* ============================================================
+   FOUNDER INSTITUTIONS — page-scoped, same convention as campus-ready.css /
+   campus-tpo.css / founder-dashboard.css. Applies only under
+   body.founder-institutions-page — the shared dark-navy .shell-nav
+   sidebar (workspace-shell.css) is completely untouched, since it lives
+   outside .workspace-content.
+   ============================================================ */
+
+body.founder-institutions-page {
+  --fi-bg:        #F7F3EC;
+  --fi-card:      #FFFDF9;
+  --fi-card-hover:#FBF6EC;
+  --fi-border:    #E6DED2;
+  --fi-ink:       #29251F;
+  --fi-ink-soft:  #6B6152;
+  --fi-ink-faint: #948A78;
+}
+body.founder-institutions-page .workspace-content { background: var(--fi-bg); color: var(--fi-ink); }
+body.founder-institutions-page .workspace-content h1,
+body.founder-institutions-page .workspace-content h3,
+body.founder-institutions-page .workspace-content h4 {
+  color: var(--fi-ink); font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif);
+}
+body.founder-institutions-page .subtitle { color: var(--fi-ink-soft); }
+
+.fi-root { max-width: 960px; margin: 0 auto; padding: 0 16px 48px; }
+
+/* Admin Tools — a small secondary menu, not primary nav (Part 2). */
+.fi-admin-tools { position: relative; }
+.fi-admin-tools-trigger {
+  padding: 8px 14px; border-radius: 8px; background: none; border: 1px solid var(--fi-border);
+  color: var(--fi-ink-soft); font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.fi-admin-tools-trigger:hover { background: var(--fi-card-hover); }
+.fi-admin-tools-menu {
+  display: none; position: absolute; right: 0; top: calc(100% + 6px); z-index: 10;
+  background: var(--fi-card); border: 1px solid var(--fi-border); border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(41,37,31,0.08); min-width: 180px; padding: 6px;
+}
+.fi-admin-tools-menu.open { display: block; }
+.fi-admin-tools-menu a {
+  display: block; padding: 8px 12px; border-radius: 6px; font-size: 13.5px; color: var(--fi-ink);
+  text-decoration: none;
+}
+.fi-admin-tools-menu a:hover { background: var(--fi-card-hover); }
+
+.fi-section { margin-bottom: 32px; }
+.fi-section-title { font-size: 15px; font-weight: 700; color: var(--fi-ink); margin-bottom: 12px; }
+
+.fi-form { display: flex; gap: 8px; flex-wrap: wrap; }
+.fi-form input {
+  padding: 9px 12px; border-radius: 8px; border: 1px solid var(--fi-border); background: #fff;
+  color: var(--fi-ink); font-size: 13.5px;
+}
+.fi-btn-primary {
+  padding: 9px 18px; border-radius: 8px; background: var(--royal, #1E40AF); border: none;
+  color: #fff; font-weight: 600; font-size: 13.5px; cursor: pointer;
+}
+.fi-btn-secondary {
+  padding: 9px 16px; border-radius: 8px; background: none; border: 1px solid var(--fi-border);
+  color: var(--fi-ink); font-weight: 600; font-size: 13.5px; cursor: pointer; text-decoration: none;
+}
+
+.fi-row {
+  display: flex; justify-content: space-between; align-items: center; width: 100%;
+  padding: 14px 16px; border-radius: 10px; background: var(--fi-card); border: 1px solid var(--fi-border);
+  margin-bottom: 8px; cursor: pointer; text-align: left; font-size: 14px; color: var(--fi-ink);
+}
+.fi-row:hover { background: var(--fi-card-hover); }
+.fi-row-meta { font-size: 12.5px; color: var(--fi-ink-faint); }
+
+.fi-detail-panel {
+  margin-top: 24px; padding: 20px; border-radius: 12px; background: var(--fi-card);
+  border: 1px solid var(--fi-border);
+}
+.fi-cohort-card { padding: 14px 16px; border-radius: 10px; background: #fff; border: 1px solid var(--fi-border); margin-bottom: 10px; }
+.fi-cohort-invite-row { margin-top: 10px; display: flex; gap: 8px; }
+.fi-cohort-invite-row input {
+  flex: 1; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--fi-border); background: #fff;
+  color: var(--fi-ink); font-size: 13px;
+}
+.fi-invite-result { font-size: 12.5px; color: var(--fi-ink-soft); margin-top: 6px; word-break: break-all; }
+.fi-view-analytics { font-size: 12.5px; color: var(--royal, #1E40AF); text-decoration: none; }
+.fi-analytics-box { margin-top: 10px; font-size: 13px; color: var(--fi-ink-soft); }
+
+.fi-tpo-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--fi-border); }
+.fi-tpo-list { font-size: 13.5px; color: var(--fi-ink-soft); margin-bottom: 12px; }
+.fi-tpo-hint { font-size: 12px; color: var(--fi-ink-faint); margin-top: 8px; }
+.fi-empty { color: var(--fi-ink-faint); font-size: 13.5px; }

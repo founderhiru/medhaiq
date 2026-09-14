@@ -20,6 +20,17 @@ async function isInstitutionAdmin(userId, institutionId) {
   return rows.length > 0;
 }
 
+// Used only to decide whether to show the persistent TPO nav entry point
+// (see workspace-shell-top.ejs) — deliberately institution-agnostic,
+// unlike isInstitutionAdmin above which checks one specific institution.
+async function hasAnyInstitutionAdminAccess(userId) {
+  const { rows } = await pool.query(
+    `SELECT 1 FROM campus_institution_admins WHERE user_id = $1 LIMIT 1`,
+    [userId]
+  );
+  return rows.length > 0;
+}
+
 async function listInstitutionsForAdmin(userId) {
   const { rows } = await pool.query(
     `SELECT i.* FROM institutions i
@@ -77,6 +88,21 @@ async function getCohortWithInstitution(cohortId) {
     [cohortId]
   );
   return rows[0] || null;
+}
+
+// TPO-facing invite list for one cohort — candidate name/email, status,
+// created/accepted dates. Deliberately does NOT return invite_token in a
+// form the frontend would display in plain sight in the table; the token
+// is only used to build a copy-link URL (see routes/campus-tpo.js),
+// following the same "don't expose links to unauthorized users" rule as
+// the rest of the invite system.
+async function listInvitesForCohort(cohortId) {
+  const { rows } = await pool.query(
+    `SELECT id, email, candidate_name, status, created_at, accepted_at, expires_at, invite_token
+     FROM campus_learner_invites WHERE cohort_id = $1 ORDER BY created_at DESC`,
+    [cohortId]
+  );
+  return rows;
 }
 
 const TOTAL_MODULES_SQL = `(SELECT COUNT(*)::int FROM campus_modules)`;
@@ -276,7 +302,7 @@ function computeInsights(modulePerf, students) {
 }
 
 module.exports = {
-  isInstitutionAdmin, listInstitutionsForAdmin, grantInstitutionAdmin, listInstitutionAdmins,
-  listCohortsForInstitutionTpo, getCohortWithInstitution, getCohortSnapshot, getModulePerformance,
+  isInstitutionAdmin, hasAnyInstitutionAdminAccess, listInstitutionsForAdmin, grantInstitutionAdmin, listInstitutionAdmins,
+  listCohortsForInstitutionTpo, getCohortWithInstitution, listInvitesForCohort, getCohortSnapshot, getModulePerformance,
   listStudents, getStudentDetail, computeInsights,
 };

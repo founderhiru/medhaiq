@@ -66,14 +66,14 @@ async function getCohort(id) {
 
 // ── Invites & Join ───────────────────────────────────────────────────────
 
-async function createLearnerInvite({ cohortId, email, invitedByUserId }) {
+async function createLearnerInvite({ cohortId, email, invitedByUserId, candidateName }) {
   const token = crypto.randomBytes(24).toString('hex');
   const { rows } = await pool.query(
-    `INSERT INTO campus_learner_invites (cohort_id, email, invite_token, invited_by, expires_at)
-     VALUES ($1, $2, $3, $4, NOW() + INTERVAL '30 days')
-     ON CONFLICT (cohort_id, LOWER(email)) DO UPDATE SET invite_token = EXCLUDED.invite_token
+    `INSERT INTO campus_learner_invites (cohort_id, email, invite_token, invited_by, expires_at, candidate_name)
+     VALUES ($1, $2, $3, $4, NOW() + INTERVAL '30 days', $5)
+     ON CONFLICT (cohort_id, LOWER(email)) DO UPDATE SET invite_token = EXCLUDED.invite_token, candidate_name = EXCLUDED.candidate_name
      RETURNING *`,
-    [cohortId, email, token, invitedByUserId || null]
+    [cohortId, email, token, invitedByUserId || null, candidateName || null]
   );
   return rows[0];
 }

@@ -12,10 +12,10 @@ const express = require('express');
 const router = express.Router({ mergeParams: true });
 const { requireInstitutionAdmin } = require('../middleware/campus-guards');
 const {
-  listCohortsForInstitutionTpo, getCohortWithInstitution, getCohortSnapshot,
+  listCohortsForInstitutionTpo, getCohortWithInstitution, listInvitesForCohort, getCohortSnapshot,
   getModulePerformance, listStudents, getStudentDetail, computeInsights,
 } = require('../db/campus-tpo');
-const { getInstitution } = require('../db/campus');
+const { getInstitution, createLearnerInvite } = require('../db/campus');
 
 router.use(requireInstitutionAdmin);
 
@@ -62,6 +62,40 @@ router.get('/cohorts/:cohortId/students/:learnerId', async (req, res) => {
     return res.status(404).json({ error: 'Student not found in this cohort' });
   }
   res.json({ cohort, student: detail });
+});
+
+// GET /api/campus/tpo/:institutionId/cohorts/:cohortId/invites — Part 7:
+// invitation management (candidate, email, status, dates). loadCohortScoped
+// guarantees this TPO is authorized for the institution this cohort
+// belongs to before any invite row is ever returned.
+router.get('/cohorts/:cohortId/invites', async (req, res) => {
+  const cohort = await loadCohortScoped(req, res);
+  if (!cohort) return;
+  const invites = await listInvitesForCohort(cohort.id);
+  // invite_token itself is only ever sent back as a fully-formed joinUrl,
+  // never as a bare token — same discipline as the POST endpoint below.
+  res.json({
+    invites: invites.map(inv => ({
+      id: inv.id, email: inv.email, candidateName: inv.candidate_name, status: inv.status,
+      createdAt: inv.created_at, acceptedAt: inv.accepted_at, expiresAt: inv.expires_at,
+      joinUrl: `/campus/invite/${inv.invite_token}`,
+    })),
+  });
+});
+
+// POST /api/campus/tpo/:institutionId/cohorts/:cohortId/invites — Part 6:
+// this is the capability being moved from Founder-only to TPO. Reuses
+// the exact same createLearnerInvite() the Founder page already calls —
+// no duplicate invitation system, no change to the token/expiry/email-
+// match security model (all of that lives in db/campus.js, untouched
+// here).
+router.post('/cohorts/:cohortId/invites', async (req, res) => {
+  const cohort = await loadCohortScoped(req, res);
+  if (!cohort) return;
+  const { email, candidateName } = req.body || {};
+  if (!email) return res.status(400).json({ error: 'email is required' });
+  const invite = await createLearnerInvite({ cohortId: cohort.id, email, invitedByUserId: req.user.id, candidateName });
+  res.json({ invite, joinUrl: `/campus/invite/${invite.invite_token}` });
 });
 
 module.exports = router;

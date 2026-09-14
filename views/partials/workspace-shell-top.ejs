@@ -6,10 +6,17 @@
 
    Expected locals (all optional, safe defaults below):
    - pageTitle:  string, used in <title>
-   - activeNav:  one of 'dashboard' | 'interview' | 'reports' | 'resume' | 'settings' | 'campus' | 'founder'
+   - activeNav:  one of 'dashboard' | 'interview' | 'reports' | 'resume' | 'settings' | 'campus' | 'campus-tpo' | 'founder'
    - shellUser:  { name, email } — pass the logged-in user object through
    - isCampusLearner: boolean, same opt-in pattern as isFounder below —
      shows/hides the "Campus Ready" link. Defaults to false/hidden.
+   - hasTpoAccess: boolean — shows/hides the "TPO Dashboard" link.
+     Computed once in server.js (Founder OR a campus_institution_admins
+     row) purely to decide whether to render the link; the real
+     authorization check still runs fresh on every /campus/tpo* request
+     via requireInstitutionAdminPage. Kept as a separate flag/label from
+     isCampusLearner so a dual-role user sees both links distinctly
+     rather than one ambiguous "Campus Ready" entry.
    - extraHead:  raw string of any extra <link>/<style> tags a page needs
    - extraStylesheets: array of extra stylesheet hrefs specific to a page
      (e.g. interview-session.css) so each page keeps its own styling on
@@ -88,6 +95,9 @@ const _bodyClass = typeof bodyClass !== 'undefined' && bodyClass ? bodyClass : '
       <a href="/dashboard/history" class="shell-link <%= _activeNav === 'dashboard' ? 'active' : '' %>"><span class="dot"></span> Workspace</a>
       <% if (typeof isCampusLearner !== 'undefined' && isCampusLearner) { %>
       <a href="/campus" class="shell-link <%= _activeNav === 'campus' ? 'active' : '' %>"><span class="dot"></span> Campus Ready</a>
+      <% } %>
+      <% if (typeof hasTpoAccess !== 'undefined' && hasTpoAccess) { %>
+      <a href="/campus/tpo" class="shell-link <%= _activeNav === 'campus-tpo' ? 'active' : '' %>"><span class="dot"></span> TPO Dashboard</a>
       <% } %>
       <% if (_previewMode) { %>
       <span class="shell-link" aria-disabled="true" title="Create a free account to start an interview" style="opacity:0.5;cursor:not-allowed;"><span class="dot"></span> New Interview</span>

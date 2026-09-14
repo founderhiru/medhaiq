@@ -1,4 +1,4 @@
-<%- include('partials/workspace-shell-top', { pageTitle: 'Campus Ready — TPO Dashboard', activeNav: 'campus', bodyClass: 'campus-tpo-page', shellUser: shellUser, extraStylesheets: ['/css/campus-tpo.css'], isFounder: typeof isFounder !== 'undefined' ? isFounder : false }) %>
+<%- include('partials/workspace-shell-top', { pageTitle: 'Campus Ready — TPO Dashboard', activeNav: 'campus-tpo', bodyClass: 'campus-tpo-page', shellUser: shellUser, extraStylesheets: ['/css/campus-tpo.css'], isFounder: typeof isFounder !== 'undefined' ? isFounder : false }) %>
 
 <div class="tpo-root">
 
@@ -37,53 +37,96 @@
   <div class="tpo-breadcrumb"><a href="/campus/tpo">Institutions</a> / <a href="/campus/tpo/<%= institutionId %>"><%= institutionName %></a> / <%= cohortName %></div>
   <div class="tpo-header-row">
     <div><h1>Campus Ready</h1><p class="tpo-subtitle"><%= institutionName %> — <%= cohortName %></p></div>
-    <div class="tpo-no-print"><a href="/campus/tpo/<%= institutionId %>/<%= cohortId %>/report" class="campus-cta" style="text-decoration:none;">View Report →</a></div>
   </div>
 
-  <div id="tpoSnapshot" class="tpo-snapshot-grid"></div>
-
-  <div class="tpo-section">
-    <div class="tpo-section-title">Module Performance</div>
-    <table class="tpo-table">
-      <thead><tr><th>Module</th><th>Completion</th><th>Quiz Accuracy</th><th>Participation</th></tr></thead>
-      <tbody id="tpoModuleTable"></tbody>
-    </table>
+  <div class="tpo-tabs">
+    <button class="tpo-tab active" data-tab="overview">Overview</button>
+    <button class="tpo-tab" data-tab="candidates">Candidates</button>
+    <button class="tpo-tab" data-tab="progress">Progress</button>
+    <button class="tpo-tab" data-tab="insights">Insights</button>
+    <a class="tpo-tab tpo-tab-link" href="/campus/tpo/<%= institutionId %>/<%= cohortId %>/report">Reports →</a>
   </div>
 
-  <div class="tpo-section">
-    <div class="tpo-section-title">Cohort Insights</div>
-    <div id="tpoInsights" class="tpo-insights-list"></div>
-  </div>
-
-  <div class="tpo-section">
-    <div class="tpo-section-title">Students</div>
-    <div class="tpo-filter-bar">
-      <input id="tpoStudentSearch" type="text" placeholder="Search by name or email…" style="flex:1;min-width:200px;">
-      <select id="tpoStatusFilter">
-        <option value="">All statuses</option>
-        <option>Not Started</option>
-        <option>In Progress</option>
-        <option>Completed</option>
-        <option>Inactive</option>
-      </select>
+  <div id="tabOverview" class="tpo-tab-panel">
+    <div id="tpoSnapshot" class="tpo-snapshot-grid"></div>
+    <div class="tpo-section">
+      <div class="tpo-section-title">Module Performance</div>
+      <table class="tpo-table">
+        <thead><tr><th>Module</th><th>Completion</th><th>Quiz Accuracy</th><th>Participation</th></tr></thead>
+        <tbody id="tpoModuleTable"></tbody>
+      </table>
     </div>
-    <table class="tpo-table">
-      <thead><tr><th>Student</th><th>Progress</th><th>Quiz Accuracy</th><th>Practice</th><th>Last Active</th><th>Status</th></tr></thead>
-      <tbody id="tpoStudentTable"></tbody>
-    </table>
+  </div>
+
+  <div id="tabCandidates" class="tpo-tab-panel" style="display:none;">
+    <div class="tpo-section">
+      <div class="tpo-section-title-row">
+        <div class="tpo-section-title">Candidates</div>
+        <button id="tpoShowInviteForm" class="campus-cta">+ Invite Candidates</button>
+      </div>
+      <form id="tpoInviteForm" class="tpo-invite-form" style="display:none;">
+        <input name="candidateName" placeholder="Candidate name" style="flex:1;min-width:160px;">
+        <input name="email" type="email" placeholder="Candidate email" required style="flex:1;min-width:200px;">
+        <button type="submit" class="campus-cta">Send Invite</button>
+      </form>
+      <p id="tpoInviteResult" style="display:none;font-size:13px;margin:8px 0;word-break:break-all;"></p>
+      <table class="tpo-table">
+        <thead><tr><th>Candidate</th><th>Email</th><th>Status</th><th>Created</th><th>Accepted</th><th></th></tr></thead>
+        <tbody id="tpoInviteTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tabProgress" class="tpo-tab-panel" style="display:none;">
+    <div class="tpo-section">
+      <div class="tpo-section-title">Students</div>
+      <div class="tpo-filter-bar">
+        <input id="tpoStudentSearch" type="text" placeholder="Search by name or email…" style="flex:1;min-width:200px;">
+        <select id="tpoStatusFilter">
+          <option value="">All statuses</option>
+          <option>Not Started</option>
+          <option>In Progress</option>
+          <option>Completed</option>
+          <option>Inactive</option>
+        </select>
+      </div>
+      <table class="tpo-table">
+        <thead><tr><th>Student</th><th>Progress</th><th>Quiz Accuracy</th><th>Practice</th><th>Last Active</th><th>Status</th></tr></thead>
+        <tbody id="tpoStudentTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tabInsights" class="tpo-tab-panel" style="display:none;">
+    <div class="tpo-section">
+      <div class="tpo-section-title">Cohort Insights</div>
+      <div id="tpoInsights" class="tpo-insights-list"></div>
+    </div>
   </div>
 
   <script>
   (function () {
     const institutionId = <%- JSON.stringify(institutionId) %>;
     const cohortId = <%- JSON.stringify(cohortId) %>;
+    const API_BASE = `/api/campus/tpo/${institutionId}/cohorts/${cohortId}`;
     let allStudents = [];
 
     function statusClass(s) { return s.replace(/\s+/g, '-'); }
     function fmtDate(d) { return d ? new Date(d).toLocaleDateString() : '—'; }
 
+    // ── Tabs ──────────────────────────────────────────────────────────
+    document.querySelectorAll('.tpo-tab[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tpo-tab[data-tab]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tpo-tab-panel').forEach(p => p.style.display = 'none');
+        document.getElementById('tab' + btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1)).style.display = 'block';
+        if (btn.dataset.tab === 'candidates') loadInvites();
+      });
+    });
+
     async function load() {
-      const res = await fetch(`/api/campus/tpo/${institutionId}/cohorts/${cohortId}/dashboard`);
+      const res = await fetch(`${API_BASE}/dashboard`);
       if (!res.ok) { document.getElementById('tpoSnapshot').innerHTML = '<p>Could not load cohort data.</p>'; return; }
       const data = await res.json();
       allStudents = data.students;
@@ -150,6 +193,53 @@
     }
     document.getElementById('tpoStudentSearch').addEventListener('input', applyFilters);
     document.getElementById('tpoStatusFilter').addEventListener('change', applyFilters);
+
+    // ── Candidates / Invitations ─────────────────────────────────────
+    document.getElementById('tpoShowInviteForm').addEventListener('click', () => {
+      const form = document.getElementById('tpoInviteForm');
+      form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+    });
+
+    document.getElementById('tpoInviteForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const resultEl = document.getElementById('tpoInviteResult');
+      const res = await fetch(`${API_BASE}/invites`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: form.get('email'), candidateName: form.get('candidateName') }),
+      });
+      const data = await res.json();
+      resultEl.style.display = 'block';
+      resultEl.textContent = res.ok
+        ? 'Invite sent. Share this link: ' + window.location.origin + data.joinUrl
+        : 'Error: ' + (data.error || 'could not send invite');
+      if (res.ok) { e.target.reset(); e.target.style.display = 'none'; loadInvites(); }
+    });
+
+    async function loadInvites() {
+      const res = await fetch(`${API_BASE}/invites`);
+      if (!res.ok) return;
+      const data = await res.json();
+      document.getElementById('tpoInviteTable').innerHTML = data.invites.length
+        ? data.invites.map(inv => `
+          <tr>
+            <td>${inv.candidateName || '—'}</td>
+            <td>${inv.email}</td>
+            <td><span class="tpo-status-pill ${inv.status === 'accepted' ? 'complete' : 'not-started'}">${inv.status === 'accepted' ? 'Accepted' : 'Pending'}</span></td>
+            <td>${fmtDate(inv.createdAt)}</td>
+            <td>${fmtDate(inv.acceptedAt)}</td>
+            <td><button class="campus-btn-secondary tpo-copy-link" data-url="${window.location.origin + inv.joinUrl}">Copy Link</button></td>
+          </tr>
+        `).join('')
+        : '<tr><td colspan="6" style="opacity:0.6;">No candidates invited yet.</td></tr>';
+      document.querySelectorAll('.tpo-copy-link').forEach(btn => {
+        btn.addEventListener('click', () => {
+          navigator.clipboard?.writeText(btn.dataset.url);
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = 'Copy Link'; }, 1500);
+        });
+      });
+    }
 
     load();
   })();
