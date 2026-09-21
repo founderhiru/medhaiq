@@ -54,6 +54,9 @@ app.use((req, _res, next) => {
   next();
 });
 
+// Auth cookie hardening (Slice 0)
+app.use(require('./middleware/auth-cookie').fromEnv());
+
 // Anti-Abuse & Free-Offer Guardrail — attaches req.deviceHash/req.ipHash
 // (salted hashes only, see middleware/device-id.js). Must run after the
 // cookie parser (reads/sets req.cookies) and after trust proxy is set
