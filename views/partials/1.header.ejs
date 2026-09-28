@@ -88,17 +88,6 @@ const _isHomeAuthed = !!(_homeCaps && _homeCaps.isAuthenticated);
                     <span class="mh-megamenu-desc">See MedhaIQ in action</span>
                   </span>
                 </a></li>
-                <!-- NEW — Slice 1 (Screening & Assessment Copilot public entry).
-                     Added as a 5th item only; the four items above are
-                     unchanged (labels, hrefs, order, markup). Public landing
-                     page, no auth required. -->
-                <li role="none"><a href="/recruit/screening" class="mh-megamenu-item dropdown-item" role="menuitem">
-                  <span class="mh-megamenu-icon">🗂️</span>
-                  <span class="mh-megamenu-text">
-                    <span class="mh-megamenu-title">Screening &amp; Assessment Copilot</span>
-                    <span class="mh-megamenu-desc">Evidence-backed candidate screening for recruiters</span>
-                  </span>
-                </a></li>
 
                 <li class="mh-megamenu-divider-row" role="none"><hr class="mh-megamenu-divider"></li>
 
@@ -223,8 +212,6 @@ const _isHomeAuthed = !!(_homeCaps && _homeCaps.isAuthenticated);
           <a href="<%= _menuHref('insights', '/dashboard/history?focus=insights') %>" class="mh-mobile-sublink">⭐ Interview Insights</a>
           <a href="<%= _menuHref('progress', '/dashboard/history') %>" class="mh-mobile-sublink">📈 Career Progress</a>
           <a href="/experience" class="mh-mobile-sublink">⚡ The Experience</a>
-          <!-- NEW — Slice 1, matches the desktop addition above. -->
-          <a href="/recruit/screening" class="mh-mobile-sublink">🗂️ Screening &amp; Assessment Copilot</a>
           <hr class="mh-mobile-sublink-divider">
           <a href="/professional-horizons" class="mh-mobile-sublink">Who it's for →</a>
         </div>

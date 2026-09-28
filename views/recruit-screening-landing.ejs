@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screening & Assessment Copilot | MedhaIQ</title>
+  <meta name="description" content="MedhaIQ Screening & Assessment Copilot turns candidate screening into an evidence-backed workflow — reduce manual resume review, surface missing or uncertain evidence, and build a faster shortlist, while the recruiter keeps the final decision.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0A0F1E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/medhaiq.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/hero-v2.css">
+  <link rel="stylesheet" href="/css/value-footer.css">
+  <link rel="stylesheet" href="/css/recruit-screening.css">
+</head>
+<body class="mh-screening-body">
+  <%- include('partials/header') %>
+
+  <!-- ============================================
+       01 — HERO (DARK THEME) — shared partials/page-hero,
+       same component Why/Architecture use. No new hero markup.
+       ============================================ -->
+  <%- include('partials/page-hero', {
+    eyebrow: 'SCREENING & ASSESSMENT COPILOT',
+    title: 'Screening &amp; Assessment Copilot',
+    sub: 'Turn candidate screening into an evidence-backed workflow.'
+  }) %>
+
+  <main class="mh-screening-main-light">
+
+    <!-- ============================================
+         02 — POSITIONING STATEMENT
+         ============================================ -->
+    <section class="mh-screening-positioning reveal">
+      <div class="mh-screening-positioning-inner">
+        <p class="mh-screening-lead">Help recruiters and talent teams reduce manual resume review, identify missing or uncertain evidence, ask targeted verification questions, and build a faster shortlist — while keeping the final decision with the recruiter.</p>
+      </div>
+    </section>
+
+    <!-- ============================================
+         03 — HOW IT WORKS
+         ============================================ -->
+    <section class="mh-screening-workflow reveal" id="how-it-works">
+      <div class="mh-screening-workflow-inner mh-section-center">
+        <div class="mh-eyebrow">HOW IT WORKS</div>
+        <h2 class="mh-section-title">Review what needs your attention</h2>
+        <p class="mh-section-sub">Not a giant ATS dashboard — a focused copilot for the part of screening that actually costs recruiters time.</p>
+
+        <div class="mh-screening-steps">
+          <div class="mh-screening-step">
+            <div class="mh-screening-step-num">1</div>
+            <div class="mh-screening-step-title">JD → Screening Criteria</div>
+            <div class="mh-screening-step-desc">Upload or paste a job description. MedhaIQ proposes required and preferred criteria — you review and approve before anything else runs.</div>
+          </div>
+          <div class="mh-screening-step">
+            <div class="mh-screening-step-num">2</div>
+            <div class="mh-screening-step-title">Batch Resume Evidence</div>
+            <div class="mh-screening-step-desc">Upload resumes in bulk. Each one is checked against your approved criteria, with the exact supporting text kept alongside every finding.</div>
+          </div>
+          <div class="mh-screening-step">
+            <div class="mh-screening-step-num">3</div>
+            <div class="mh-screening-step-title">Screening Inbox</div>
+            <div class="mh-screening-step-desc">Candidates are organized by evidence coverage — clear, partial, missing, or uncertain — so you focus on what needs a human look.</div>
+          </div>
+          <div class="mh-screening-step">
+            <div class="mh-screening-step-num">4</div>
+            <div class="mh-screening-step-title">Targeted Verification</div>
+            <div class="mh-screening-step-desc">For criteria that are missing or unclear, MedhaIQ drafts a specific follow-up question — grounded in your rubric, and editable by you.</div>
+          </div>
+          <div class="mh-screening-step">
+            <div class="mh-screening-step-num">5</div>
+            <div class="mh-screening-step-title">Shortlist, Your Way</div>
+            <div class="mh-screening-step-desc">Mark candidates Shortlist, Hold, Needs Verification, or Not Moving Forward. Optionally continue into a MedhaIQ AI interview for an evidence-backed assessment.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+         04 — PRINCIPLE CALLOUT
+         ============================================ -->
+    <section class="mh-screening-principle reveal">
+      <div class="mh-screening-principle-inner">
+        <p class="mh-screening-principle-text">MedhaIQ organizes the evidence and flags what deserves your attention. It does not decide who gets hired — every shortlist, hold, and rejection is a call you make.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================
+       05 — CTA (DARK)
+       ============================================ -->
+  <section class="mh-screening-cta reveal">
+    <div class="mh-screening-cta-inner">
+      <div class="mh-screening-cta-title">Bring this to your screening workflow</div>
+      <p class="mh-screening-cta-sub">Screening & Assessment Copilot is rolling out to early talent teams. Tell us about your hiring volume and we'll set up a pilot.</p>
+      <div class="mh-screening-cta-actions">
+        <button type="button" id="mh-screening-request-pilot" class="mh-btn-primary">Request a Pilot</button>
+        <a href="#how-it-works" class="mh-btn-outline">Explore Screening</a>
+      </div>
+      <div class="mh-screening-cta-note">No setup required to talk to us — we'll walk you through it.</div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+  <%- include('partials/contact-modal') %>
+
+  <script>
+  (function() {
+    // Opens the shared contact modal from partials/contact-modal — same
+    // display-toggle mechanism that partial already wires for the footer's
+    // #mh-contact-btn, just triggered from this page's own CTA button too.
+    // No new endpoint: submits through the existing /api/contact route.
+    var pilotBtn = document.getElementById('mh-screening-request-pilot');
+    var modal = document.getElementById('mh-contact-modal');
+    if (pilotBtn && modal) {
+      pilotBtn.addEventListener('click', function() {
+        modal.style.display = 'flex';
+      });
+    }
+  })();
+
+  // Scroll-reveal — identical script to why.ejs/explore.ejs.
+  (function() {
+    var reveals = document.querySelectorAll('.reveal');
+    if (!reveals.length) return;
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+    reveals.forEach(function(el) { observer.observe(el); });
+  })();
+  </script>
+</body>
+</html>

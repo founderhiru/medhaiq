@@ -1,0 +1,171 @@
+/* ============================================
+   RECRUIT-SCREENING.CSS — scoped to /recruit/screening only.
+   Reuses existing tokens/classes from medhaiq.css:
+   --navy-deep, --navy-card, --navy-border, --royal-blue, --blue-bright,
+   --emerald, --emerald-soft, --gold, --white, --text-muted, --text-faint,
+   --light-surface, --radius, --radius-lg, --radius-xl, --max-w,
+   .mh-btn-primary, .mh-btn-outline, .mh-section-center, .mh-eyebrow,
+   .mh-section-title, .mh-section-sub, .mh-why-hero (via partials/page-hero).
+   Reuses .card/.card-hover/.badge/.badge-emerald from components.css.
+   Only new, page-specific rules live here — same convention as
+   explore.css / why.css / company-library.css.
+   ============================================ */
+
+.mh-screening-body {
+  background-color: #0A0F1E;
+}
+
+/* Warm light canvas for the content sections between hero and CTA —
+   same "dark hero / light content / dark CTA" rhythm as Explore and Why. */
+.mh-screening-main-light {
+  background-color: #F7F6F2;
+  color: #0F172A;
+  width: 100%;
+  display: block;
+}
+
+/* ---- Positioning statement — single centered lead paragraph ---- */
+.mh-screening-positioning {
+  width: 100%;
+  padding: 64px 1.5rem 8px;
+}
+
+.mh-screening-positioning-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.mh-screening-lead {
+  font-family: var(--font-body);
+  font-size: 19px;
+  line-height: 1.65;
+  color: #334155;
+}
+
+/* ---- Workflow — step grid ---- */
+.mh-screening-workflow {
+  width: 100%;
+  padding: 56px 1.5rem 16px;
+}
+
+.mh-screening-workflow-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.mh-screening-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.mh-screening-step {
+  background: #FFFFFF;
+  border: 1px solid #E7E5DE;
+  border-radius: var(--radius-lg);
+  padding: 22px 20px;
+}
+
+.mh-screening-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--blue-glow);
+  color: var(--royal-blue);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.mh-screening-step-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: #0F172A;
+  margin-bottom: 6px;
+}
+
+.mh-screening-step-desc {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.55;
+  color: #5B6472;
+}
+
+/* ---- Principle callout — "the recruiter always decides" ---- */
+.mh-screening-principle {
+  width: 100%;
+  padding: 24px 1.5rem 64px;
+}
+
+.mh-screening-principle-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--emerald-soft);
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 22px 26px;
+  text-align: center;
+}
+
+.mh-screening-principle-text {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: #065F46;
+  font-weight: 600;
+}
+
+/* ---- CTA — dark card, mirrors Explore's closing CTA ---- */
+.mh-screening-cta {
+  width: 100%;
+  background: var(--navy-deep);
+  padding: 64px 1.5rem;
+}
+
+.mh-screening-cta-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.mh-screening-cta-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(24px, 4vw, 32px);
+  color: var(--white);
+  margin-bottom: 10px;
+}
+
+.mh-screening-cta-sub {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+.mh-screening-cta-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.mh-screening-cta-note {
+  margin-top: 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+@media (max-width: 640px) {
+  .mh-screening-steps { grid-template-columns: 1fr; }
+}

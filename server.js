@@ -135,6 +135,11 @@ app.get('/architecture', (_req, res) => res.render('architecture'));
 app.get('/about',        (_req, res) => res.render('about'));
 app.get('/why',     (_req, res) => res.render('why'));
 app.get('/experience', (_req, res) => res.render('experience'));
+// Screening & Assessment Copilot — Slice 1 (public entry only). Public,
+// unauthenticated explainer page, same shape as /why /explore /architecture
+// above: no auth guard, no DB, no AI calls. Recruiter workspace routes are
+// a later slice and will be mounted separately (see medhaiq-recruit notes).
+app.get('/recruit/screening', (_req, res) => res.render('recruit-screening-landing'));
 app.get('/sample-report', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'sample-report', 'index.html'));
 });
