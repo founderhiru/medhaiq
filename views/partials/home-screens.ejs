@@ -1,0 +1,181 @@
+<!-- HOME SECTION — The Platform (home page only). Illustrative screens drawn in HTML/CSS with sample data:
+     no images, no network calls, no audio. Animates once when scrolled into view (reduced-motion: final state). -->
+<style>
+  .mh-sc { position: relative; background: #F7F6F2; padding: 88px 24px; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: #0F172A; overflow: hidden; }
+  .mh-sc-inner { max-width: 1280px; margin: 0 auto; }
+  .mh-sc-head { text-align: center; max-width: 720px; margin: 0 auto 48px; }
+  .mh-sc-eyebrow { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .12em; color: #1D4ED8; margin-bottom: 14px; }
+  .mh-sc h2 { margin: 0 0 14px; color: #0B1220; text-wrap: balance; }
+  .mh-sc h2 span { background: linear-gradient(90deg, #2F6BFF, #8B5CF6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .mh-sc-sub { margin: 0; font-size: 16.5px; line-height: 1.55; color: #475569; }
+  .mh-sc-rail { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+  .mh-sc-item { margin: 0; display: flex; flex-direction: column; }
+  .mh-sc-win { position: relative; background: linear-gradient(180deg, #0E1A3C 0%, #0A1330 100%); border-radius: 18px; border: 1px solid rgba(15,23,42,.12); box-shadow: 0 30px 60px -28px rgba(8,15,40,.55), 0 2px 6px rgba(8,15,40,.08); overflow: hidden; height: 360px; color: #EAF0FF; transition: translate .35s ease, box-shadow .35s ease; }
+  .mh-sc-item:hover .mh-sc-win { translate: 0 -4px; box-shadow: 0 38px 70px -26px rgba(8,15,40,.6), 0 2px 6px rgba(8,15,40,.08); }
+  .mh-sc-bar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-bottom: 1px solid rgba(150,180,255,.12); font: 600 9.5px ui-monospace, Menlo, Consolas, monospace; letter-spacing: .08em; color: #93A3C4; }
+  .mh-sc-bar i { width: 7px; height: 7px; border-radius: 50%; background: #2A3450; } .mh-sc-bar span { margin-left: 6px; }
+  .mh-sc-body { padding: 14px; display: grid; gap: 10px; align-content: start; }
+  .mh-sc-lbl { font: 600 9px ui-monospace, Menlo, monospace; letter-spacing: .1em; color: #93A3C4; margin-bottom: 4px; }
+  .mh-sc-input { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 11px; border-radius: 10px; border: 1px solid rgba(150,180,255,.2); background: rgba(255,255,255,.04); font-size: 12px; color: #D6E4FF; }
+  .mh-sc-input i { font-style: normal; width: 16px; height: 16px; border-radius: 50%; background: rgba(34,197,94,.18); color: #22C55E; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex: none; }
+  .mh-sc-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 3px; border-radius: 11px; background: rgba(255,255,255,.05); }
+  .mh-sc-seg b { text-align: center; padding: 6px 0; border-radius: 8px; font-size: 11px; font-weight: 600; color: #8A94A8; }
+  .mh-sc-seg b.on { background: linear-gradient(135deg, #2F6BFF, #1D4ED8); color: #fff; }
+  .mh-sc-btn { margin-top: 2px; text-align: center; padding: 9px; border-radius: 10px; background: linear-gradient(135deg, #2F6BFF, #1D4ED8); font-size: 12px; font-weight: 700; color: #fff; }
+  .mh-sc-q { padding: 10px 12px; border-radius: 13px 13px 13px 4px; background: linear-gradient(135deg, rgba(47,107,255,.28), rgba(139,92,246,.2)); border: 1px solid rgba(111,166,255,.35); font-size: 12.5px; font-weight: 600; line-height: 1.4; color: #fff; }
+  .mh-sc-ans { padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(150,180,255,.16); display: grid; gap: 6px; }
+  .mh-sc-ans i { display: block; height: 6px; border-radius: 3px; background: rgba(197,210,238,.22); }
+  .mh-sc-ans i.s { background: rgba(59,130,246,.55); } .mh-sc-ans i.t { background: rgba(167,139,250,.55); } .mh-sc-ans i.a { background: rgba(34,197,94,.5); }
+  .mh-sc-rail2 { display: flex; align-items: flex-start; }
+  .mh-sc-st { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 34px; font-size: 8.5px; color: #8A94A8; }
+  .mh-sc-nd { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border: 1px solid #2A3450; color: #8A94A8; }
+  .mh-sc-nd.done { border-color: rgba(34,197,94,.55); color: #22C55E; background: rgba(34,197,94,.12); }
+  .mh-sc-nd.miss { border-color: #EF4444; color: #EF4444; box-shadow: 0 0 0 2px rgba(239,68,68,.3); }
+  .mh-sc-cn { flex: 1; height: 1px; background: #22C55E; margin-top: 13px; min-width: 6px; } .mh-sc-cn.off { background: #2A3450; }
+  .mh-sc-note { font-size: 10px; color: #F87171; }
+  .mh-sc-score { display: grid; grid-template-columns: 78px 1fr; gap: 12px; align-items: center; }
+  .mh-sc-ring { position: relative; width: 78px; height: 78px; } .mh-sc-ring svg { width: 78px; height: 78px; transform: rotate(-90deg); display: block; }
+  .mh-sc-ring circle { fill: none; stroke-width: 8; } .mh-sc-ring .bg { stroke: #1B2740; }
+  .mh-sc-ring .fg { stroke: url(#mh-sc-grad); stroke-linecap: round; stroke-dasharray: 201; stroke-dashoffset: 44; transition: stroke-dashoffset 1.2s cubic-bezier(.2,.7,.2,1) .3s; }
+  .mh-sc-ring b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; }
+  .mh-sc-score strong { display: block; font-size: 13.5px; color: #fff; } .mh-sc-score span { font-size: 11px; color: #A9B8D6; line-height: 1.4; display: block; margin-top: 2px; }
+  .mh-sc-vec { display: grid; grid-template-columns: 96px 1fr 20px; gap: 8px; align-items: center; font-size: 10.5px; color: #B4C3E2; margin-bottom: 6px; }
+  .mh-sc-trk { height: 4px; border-radius: 3px; background: rgba(255,255,255,.07); overflow: hidden; }
+  .mh-sc-trk i { display: block; height: 100%; width: var(--w); border-radius: 3px; background: var(--c); transform-origin: left center; transition: scale 1s cubic-bezier(.2,.7,.2,1) .35s; }
+  .mh-sc-vec em { font: 500 10px ui-monospace, Menlo, monospace; font-style: normal; text-align: right; color: #D6E4FF; }
+  .mh-sc-chart { width: 100%; height: 150px; display: block; }
+  .mh-sc-chart .ln { stroke: url(#mh-sc-grad2); stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 0; transition: stroke-dashoffset 1.6s cubic-bezier(.3,.6,.2,1) .3s; }
+  .mh-sc-chart .pt { fill: #0A1330; stroke: #60A5FA; stroke-width: 2; transition: opacity .4s ease 1.4s; }
+  .mh-sc-chart .ax { fill: #6F7FA6; font: 600 9px ui-monospace, Menlo, monospace; }
+  .mh-sc-delta { display: flex; align-items: baseline; gap: 8px; } .mh-sc-delta b { font-size: 26px; font-weight: 800; color: #4ADE80; } .mh-sc-delta span { font-size: 11px; color: #A9B8D6; }
+  /* armed: JS adds .mh-armed so that without JS the final state is shown */
+  .mh-sc.mh-armed:not(.is-in) .mh-sc-trk i { scale: 0 1; }
+  .mh-sc.mh-armed:not(.is-in) .mh-sc-ring .fg { stroke-dashoffset: 201; }
+  .mh-sc.mh-armed:not(.is-in) .mh-sc-chart .ln { stroke-dashoffset: 1; }
+  .mh-sc.mh-armed:not(.is-in) .mh-sc-chart .pt { opacity: 0; }
+  .mh-sc.mh-armed .mh-sc-item { opacity: 0; translate: 0 22px; transition: opacity .6s ease, translate .6s ease; }
+  .mh-sc.is-in .mh-sc-item { opacity: 1; translate: 0 0; }
+  .mh-sc.is-in .mh-sc-item:nth-child(2) { transition-delay: .12s; } .mh-sc.is-in .mh-sc-item:nth-child(3) { transition-delay: .24s; } .mh-sc.is-in .mh-sc-item:nth-child(4) { transition-delay: .36s; }
+  .mh-sc-tag { align-self: flex-start; margin: 16px 0 8px; padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: .05em; color: #4F6BCB; background: rgba(47,107,255,.08); border: 1px solid rgba(47,107,255,.2); }
+  .mh-sc-item h3 { margin: 0 0 4px; font-size: 17px; font-weight: 700; color: #0B1220; letter-spacing: -.01em; }
+  .mh-sc-item p { margin: 0; font-size: 14px; line-height: 1.5; color: #475569; }
+  .mh-sc-ctas { display: flex; flex-wrap: wrap; gap: 14px 28px; justify-content: center; align-items: center; margin-top: 44px; }
+  .mh-sc-btn1 { display: inline-flex; align-items: center; gap: 8px; padding: 13px 24px; border-radius: 12px; background: linear-gradient(135deg, #2F6BFF, #1D4ED8); color: #fff; font-weight: 600; font-size: 14.5px; text-decoration: none; box-shadow: 0 8px 26px rgba(47,107,255,.35); }
+  .mh-sc-btn1:hover { filter: brightness(1.08); } .mh-sc-btn1:focus-visible, .mh-sc-lnk:focus-visible { outline: 2px solid #1D4ED8; outline-offset: 3px; }
+  .mh-sc-lnk { font-size: 14.5px; font-weight: 600; color: #1D4ED8; text-decoration: none; } .mh-sc-lnk:hover { text-decoration: underline; }
+  .mh-sc-fine { margin: 18px 0 0; text-align: center; font-size: 12px; color: #64748B; }
+  @media (prefers-reduced-motion: reduce) { .mh-sc *, .mh-sc-item { transition: none !important; animation: none !important; } .mh-sc.mh-armed .mh-sc-item { opacity: 1; translate: none; } }
+  @media (max-width: 1100px) {
+    .mh-sc-rail { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 18px; padding: 4px 4px 14px; margin: 0 -4px; }
+    .mh-sc-item { flex: 0 0 min(320px, 82vw); scroll-snap-align: start; }
+  }
+  @media (max-width: 640px) { .mh-sc { padding: 56px 16px; } }
+</style>
+
+<section class="mh-sc" id="the-product" aria-labelledby="mh-sc-h">
+  <div class="mh-sc-inner">
+    <div class="mh-sc-head">
+      <span class="mh-sc-eyebrow">THE PLATFORM</span>
+      <h2 id="mh-sc-h">See the product, <span>not just the promise.</span></h2>
+      <p class="mh-sc-sub">From setup to scorecard to progress: the whole loop, shown with sample data.</p>
+    </div>
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+      <linearGradient id="mh-sc-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5B9BFF"/><stop offset="1" stop-color="#A78BFA"/></linearGradient>
+      <linearGradient id="mh-sc-grad2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5B9BFF"/><stop offset="1" stop-color="#A78BFA"/></linearGradient>
+    </defs></svg>
+
+    <div class="mh-sc-rail" role="group" aria-label="MedhaIQ product screens, sample data" tabindex="0">
+      <figure class="mh-sc-item">
+        <div class="mh-sc-win" role="img" aria-label="Interview setup screen with resume, target role, job description and interviewer style (sample data)">
+          <div class="mh-sc-bar"><i></i><i></i><i></i><span>NEW INTERVIEW</span></div>
+          <div class="mh-sc-body">
+            <div><div class="mh-sc-lbl">RESUME</div><div class="mh-sc-input"><span>resume.pdf</span><i>&#10003;</i></div></div>
+            <div><div class="mh-sc-lbl">TARGET ROLE</div><div class="mh-sc-input"><span>Senior Product Manager &middot; Fintech</span></div></div>
+            <div><div class="mh-sc-lbl">JOB DESCRIPTION</div><div class="mh-sc-input"><span>Pasted</span><i>&#10003;</i></div></div>
+            <div><div class="mh-sc-lbl">INTERVIEWER STYLE</div><div class="mh-sc-seg"><b>Friendly</b><b class="on">Skeptical</b><b>Executive</b></div></div>
+            <div class="mh-sc-btn">Start interview &rarr;</div>
+          </div>
+        </div>
+        <span class="mh-sc-tag">SAMPLE DATA</span>
+        <h3>Set up in a minute</h3><p>Add your resume, the role and the job description.</p>
+      </figure>
+
+      <figure class="mh-sc-item">
+        <div class="mh-sc-win" role="img" aria-label="Live interview screen with a follow-up question and STAR progress (sample data)">
+          <div class="mh-sc-bar"><i></i><i></i><i></i><span>LIVE INTERVIEW</span></div>
+          <div class="mh-sc-body">
+            <div class="mh-sc-q">Why that trade-off? What did you own versus the team?</div>
+            <div class="mh-sc-ans"><i class="s" style="width:92%"></i><i class="s" style="width:70%"></i><i class="t" style="width:84%"></i><i class="a" style="width:78%"></i><i class="a" style="width:46%"></i></div>
+            <div class="mh-sc-rail2">
+              <div class="mh-sc-st"><span class="mh-sc-nd done">S</span>Situation</div><span class="mh-sc-cn"></span>
+              <div class="mh-sc-st"><span class="mh-sc-nd done">T</span>Task</div><span class="mh-sc-cn"></span>
+              <div class="mh-sc-st"><span class="mh-sc-nd done">A</span>Action</div><span class="mh-sc-cn off"></span>
+              <div class="mh-sc-st"><span class="mh-sc-nd miss">R</span>Result</div>
+            </div>
+            <div class="mh-sc-note">&#10005; This answer missed: Result</div>
+          </div>
+        </div>
+        <span class="mh-sc-tag">SAMPLE DATA</span>
+        <h3>An interview that adapts</h3><p>Vague answers get a follow-up, with STAR tracked live.</p>
+      </figure>
+
+      <figure class="mh-sc-item">
+        <div class="mh-sc-win" role="img" aria-label="Scorecard with an overall score of 78 and five vectors (sample data)">
+          <div class="mh-sc-bar"><i></i><i></i><i></i><span>SCORECARD</span></div>
+          <div class="mh-sc-body">
+            <div class="mh-sc-score">
+              <div class="mh-sc-ring"><svg viewBox="0 0 78 78"><circle class="bg" cx="39" cy="39" r="32"/><circle class="fg" cx="39" cy="39" r="32"/></svg><b>78</b></div>
+              <div><strong>Strong, complete answer</strong><span>Overall intelligence score</span></div>
+            </div>
+            <div>
+              <div class="mh-sc-vec"><span>Structure</span><div class="mh-sc-trk"><i style="--w:85%;--c:#3B82F6"></i></div><em>85</em></div>
+              <div class="mh-sc-vec"><span>Domain Expertise</span><div class="mh-sc-trk"><i style="--w:80%;--c:#A78BFA"></i></div><em>80</em></div>
+              <div class="mh-sc-vec"><span>Strategic Thinking</span><div class="mh-sc-trk"><i style="--w:78%;--c:#22C55E"></i></div><em>78</em></div>
+              <div class="mh-sc-vec"><span>Communication</span><div class="mh-sc-trk"><i style="--w:66%;--c:#FB923C"></i></div><em>66</em></div>
+              <div class="mh-sc-vec"><span>Leadership &amp; Exec.</span><div class="mh-sc-trk"><i style="--w:82%;--c:#F59E0B"></i></div><em>82</em></div>
+            </div>
+          </div>
+        </div>
+        <span class="mh-sc-tag">SAMPLE DATA</span>
+        <h3>Scored on five vectors</h3><p>Know exactly what to fix before the real interview.</p>
+      </figure>
+
+      <figure class="mh-sc-item">
+        <div class="mh-sc-win" role="img" aria-label="Progress chart showing an overall score rising across five sessions (sample data)">
+          <div class="mh-sc-bar"><i></i><i></i><i></i><span>PROGRESS</span></div>
+          <div class="mh-sc-body">
+            <div class="mh-sc-delta"><b>+20</b><span>overall score across 5 sessions</span></div>
+            <svg class="mh-sc-chart" viewBox="0 0 280 150" preserveAspectRatio="none" aria-hidden="true">
+              <path class="ln" pathLength="1" d="M20 112 L85 96 L150 74 L215 52 L262 32"/>
+              <g class="pt"><circle cx="20" cy="112" r="4"/><circle cx="85" cy="96" r="4"/><circle cx="150" cy="74" r="4"/><circle cx="215" cy="52" r="4"/><circle cx="262" cy="32" r="4"/></g>
+              <g class="ax"><text x="14" y="142">S1</text><text x="79" y="142">S2</text><text x="144" y="142">S3</text><text x="209" y="142">S4</text><text x="256" y="142">S5</text></g>
+            </svg>
+          </div>
+        </div>
+        <span class="mh-sc-tag">SAMPLE DATA</span>
+        <h3>See your trajectory</h3><p>Track progress across sessions and close the gap to your target role.</p>
+      </figure>
+    </div>
+
+    <div class="mh-sc-ctas">
+      <a href="/sample-report" class="mh-sc-btn1">View Sample Report
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      <a href="/resume-intelligence-preview" class="mh-sc-lnk">Try Resume Intelligence Preview &rarr;</a>
+    </div>
+    <p class="mh-sc-fine">Screens are illustrations drawn with sample data, not real results.</p>
+  </div>
+</section>
+
+<script>
+(function () {
+  var sec = document.getElementById('the-product');
+  if (!sec) return;
+  var reduced = false;
+  try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  if (reduced || !('IntersectionObserver' in window)) return;
+  sec.classList.add('mh-armed');
+  var io = new IntersectionObserver(function (e) { if (e[0].isIntersecting) { sec.classList.add('is-in'); io.disconnect(); } }, { threshold: 0.18 });
+  io.observe(sec);
+})();
+</script>

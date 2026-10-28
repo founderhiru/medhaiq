@@ -283,195 +283,108 @@
     display: inline-block;
     animation: mh-live-pulse 1.8s infinite ease-in-out;
   }
-
-  /* 3D Product Stage Visual Anchor */
-  .mh-hero-product-stack {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: 100%;
-    max-width: 900px;
-    height: 490px;
-    margin-top: 44px;
-    perspective: 1600px;
-    perspective-origin: 55% 45%;
+  .mh-hero-tagline {
+    font-size: 17px; font-weight: 600; letter-spacing: -0.005em; line-height: 1.4;
+    color: #1D4ED8; margin: -6px 0 16px 0;
   }
 
-  /* REAR LAYER: CAREER WORKSPACE */
-  .mh-career-mock {
-    position: absolute;
-    right: 250px;
-    top: 12px;
-    width: 530px;
-    height: 450px;
-    background: #0B1226;
-    border: 1.5px solid rgba(99, 102, 241, 0.28);
-    border-radius: 18px;
-    padding: 18px 20px;
-    z-index: 1;
-    transform-style: preserve-3d;
-    transform: rotateY(-18deg) rotateX(7deg) rotateZ(2deg);
-    box-shadow: 
-      0 0 8px rgba(99, 102, 241, 0.14),
-      -25px 35px 70px rgba(0, 0, 0, 0.85),
-      inset 0 0 6px rgba(99, 102, 241, 0.05);
-    overflow: hidden;
-  }
-
-  .mh-career-mock-card {
-    background: #0F172A;
-    border: 1px solid rgba(148, 163, 184, 0.14);
-    border-radius: 12px;
-    padding: 10px 12px;
-  }
-
-  /* FRONT LAYER: LIVE INTERVIEW TERMINAL */
-  .mh-hero-mockup-wrap {
-    position: absolute;
-    right: 0px;
-    top: 0px;
-    width: 340px;
-    height: 475px;
-    z-index: 2;
-    transform-style: preserve-3d;
-    transform: rotateY(-18deg) rotateX(7deg) rotateZ(2deg);
-  }
-
-  .mh-terminal-v2 {
-    height: 100%;
-    background: #060B17;
-    border: 1.5px solid rgba(99, 102, 241, 0.4);
-    border-radius: 18px;
-    padding: 10px 14px;
-    box-shadow: 
-      0 0 10px rgba(99, 102, 241, 0.16),
-      -20px 30px 60px rgba(0, 0, 0, 0.95),
-      inset 0 0 6px rgba(99, 102, 241, 0.08);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    overflow: hidden;
-  }
-
-  .mh-terminal-v2-body {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 4px !important;
-    height: calc(100% - 24px);
-    justify-content: space-between;
-  }
-
-  .mh-terminal-v2-block {
-    padding: 5px 9px !important;
-    margin-bottom: 0 !important;
-    background: rgba(15, 23, 42, 0.75);
-    border-radius: 8px;
-    border: 1px solid rgba(148, 163, 184, 0.1);
-  }
-
-  .mh-terminal-v2-header {
-    padding-bottom: 3px;
-    margin-bottom: 3px;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .mh-terminal-v2-engine {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .mh-terminal-v2-ring-svg {
-    width: 30px;
-    height: 30px;
-    flex-shrink: 0;
-  }
-
-  .mh-terminal-v2-vectors {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2.5px;
-  }
-
-  .mh-terminal-v2-vectors li {
-    font-size: 9.5px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #CBD5E1;
-  }
-
-  .mh-vector-bar {
-    flex: 1;
-    height: 3px;
-    background: rgba(148, 163, 184, 0.15);
-    border-radius: 2px;
-    margin: 0 4px;
-  }
-
-  /* Responsive Fallback */
+  /* ── Live interview + intelligence showcase (illustrative; no API calls, no audio, no photos) ── */
+  .mh-ii { position: relative; width: 100%; max-width: 640px; margin-left: auto; padding: 18px 0 26px; }
+  .mh-ii-orb { position: absolute; border-radius: 50%; filter: blur(46px); pointer-events: none; z-index: 0; animation: mh-ii-drift 14s ease-in-out infinite alternate; }
+  .mh-ii-orb.o1 { width: 300px; height: 300px; right: -60px; top: -10px; background: radial-gradient(circle, rgba(91,155,255,.55), transparent 70%); }
+  .mh-ii-orb.o2 { width: 260px; height: 260px; left: -40px; bottom: 10px; background: radial-gradient(circle, rgba(139,92,246,.38), transparent 70%); animation-delay: -6s; }
+  .mh-ii-card { position: relative; z-index: 1; border-radius: 22px; padding: 1px; background: linear-gradient(160deg, rgba(111,166,255,.9), rgba(139,92,246,.35) 45%, rgba(150,180,255,.14)); box-shadow: 0 40px 90px -26px rgba(8,15,40,.65); animation: mh-ii-in .7s ease-out both; }
+  .mh-ii-win { border-radius: 21px; background: linear-gradient(180deg, #0E1A3C 0%, #0A1330 100%); color: #EAF0FF; padding: 14px 16px 12px; }
+  .mh-ii-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid rgba(150,180,255,.12); font: 600 10.5px ui-monospace, Menlo, Consolas, monospace; letter-spacing: .08em; color: #93A3C4; }
+  .mh-ii-top b { color: #EAF0FF; font-weight: 700; }
+  .mh-ii-top .lv { display: inline-flex; align-items: center; gap: 7px; }
+  .mh-ii-top .lv i { width: 7px; height: 7px; border-radius: 50%; background: #3DDBA9; animation: mh-live-pulse 1.8s infinite ease-in-out; }
+  .mh-ii-pause { appearance: none; border: 1px solid rgba(150,180,255,.25); background: rgba(255,255,255,.05); color: #D6E4FF; border-radius: 999px; font: 600 10px ui-monospace, Menlo, monospace; letter-spacing: .06em; padding: 4px 10px; cursor: pointer; }
+  .mh-ii-pause:hover { background: rgba(255,255,255,.1); } .mh-ii-pause:focus-visible { outline: 2px solid #5B9BFF; outline-offset: 2px; }
+  .mh-ii-body { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); gap: 16px; padding-top: 14px; }
+  .mh-ii-col { display: grid; gap: 10px; align-content: start; min-width: 0; }
+  /* conversation */
+  .mh-ii-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 6px; font: 600 9.5px ui-monospace, Menlo, monospace; letter-spacing: .1em; color: #93A3C4; }
+  .mh-ii-h em { font-style: normal; display: inline-flex; align-items: center; gap: 6px; color: #5B9BFF; }
+  .mh-ii-h em.you { color: #3DDBA9; }
+  .mh-ii-wave { display: inline-flex; gap: 2px; align-items: center; height: 12px; }
+  .mh-ii-wave i { width: 2.5px; height: 100%; border-radius: 2px; background: currentColor; transform: scaleY(.2); }
+  .mh-ii[data-spk="ai"] .mh-ii-wave.a i, .mh-ii[data-spk="you"] .mh-ii-wave.y i { animation: mh-ii-eq .9s ease-in-out infinite; }
+  .mh-ii-wave i:nth-child(2n) { animation-delay: -.3s; } .mh-ii-wave i:nth-child(3n) { animation-delay: -.6s; }
+  .mh-ii-q { padding: 11px 13px; border-radius: 14px 14px 14px 4px; background: linear-gradient(135deg, rgba(47,107,255,.28), rgba(139,92,246,.2)); border: 1px solid rgba(111,166,255,.35); font-size: 14px; line-height: 1.45; font-weight: 600; color: #fff; min-height: 66px; }
+  .mh-ii-a { padding: 11px 13px; border-radius: 14px; background: rgba(255,255,255,.04); border: 1px solid rgba(150,180,255,.16); font-size: 12.5px; line-height: 1.6; color: #C5D2EE; min-height: 142px; }
+  .mh-ii-a mark { background: none; color: inherit; border-radius: 4px; padding: 1px 0; box-shadow: inset 0 -2px 0 transparent; transition: background .4s, box-shadow .4s, color .4s; }
+  .mh-ii-a mark.s.on { background: rgba(59,130,246,.2); box-shadow: inset 0 -2px 0 #3B82F6; color: #EAF0FF; }
+  .mh-ii-a mark.t.on { background: rgba(167,139,250,.2); box-shadow: inset 0 -2px 0 #A78BFA; color: #EAF0FF; }
+  .mh-ii-a mark.a.on { background: rgba(34,197,94,.18); box-shadow: inset 0 -2px 0 #22C55E; color: #EAF0FF; }
+  .mh-ii-a mark.r.on { background: rgba(245,158,11,.2); box-shadow: inset 0 -2px 0 #F59E0B; color: #EAF0FF; }
+  .mh-ii-caret { display: inline-block; width: 6px; height: 12px; background: #5B9BFF; vertical-align: -2px; margin-left: 1px; animation: mh-ii-blink 1s steps(1) infinite; }
+  .mh-ii-ins { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; border-radius: 12px; background: rgba(91,155,255,.09); border: 1px solid rgba(91,155,255,.22); }
+  .mh-ii-ins > b { flex: none; width: 22px; height: 22px; border-radius: 7px; background: rgba(240,185,75,.16); color: #F0B94B; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .mh-ii-ins p { margin: 0; font-size: 11.5px; line-height: 1.5; color: #D6E4FF; min-height: 34px; }
+  .mh-ii-ins p small { display: block; margin-bottom: 2px; font: 600 9px ui-monospace, Menlo, monospace; letter-spacing: .1em; color: #93A3C4; }
+  /* results */
+  .mh-ii-score { display: grid; grid-template-columns: 84px minmax(0,1fr); gap: 12px; align-items: center; }
+  .mh-ii-ring { position: relative; width: 84px; height: 84px; }
+  .mh-ii-ring svg { width: 84px; height: 84px; transform: rotate(-90deg); display: block; }
+  .mh-ii-ring circle { fill: none; stroke-width: 8; }
+  .mh-ii-ring .bg { stroke: #1B2740; }
+  .mh-ii-ring .fg { stroke: url(#mh-ii-grad); stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 1s cubic-bezier(.2,.7,.2,1); }
+  .mh-ii-ring b { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 25px; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+  .mh-ii-ring b small { font-size: 9px; font-weight: 600; color: #6F7FA6; margin-top: 3px; letter-spacing: .04em; }
+  .mh-ii-st strong { display: block; font-size: 14px; line-height: 1.25; font-weight: 700; color: #fff; }
+  .mh-ii-st span { display: block; margin-top: 3px; font-size: 11px; line-height: 1.4; color: #A9B8D6; }
+  .mh-ii-box { padding-top: 10px; border-top: 1px solid rgba(150,180,255,.12); }
+  .mh-ii-rail { display: flex; align-items: flex-start; }
+  .mh-ii-step { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 40px; }
+  .mh-ii-node { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 700; border: 1px solid #2A3450; color: #8A94A8; transition: all .3s; }
+  .mh-ii-step small { font-size: 8.5px; color: #8A94A8; }
+  .mh-ii-node.active { border-color: #3B82F6; color: #60A5FA; background: rgba(59,130,246,.15); box-shadow: 0 0 14px rgba(59,130,246,.45); animation: mh-ii-pulse 1.4s ease-in-out infinite; }
+  .mh-ii-node.done { border-color: rgba(34,197,94,.55); color: #22C55E; background: rgba(34,197,94,.12); }
+  .mh-ii-node.missed { border-color: #EF4444; color: #EF4444; box-shadow: 0 0 0 2px rgba(239,68,68,.35); }
+  .mh-ii-conn { flex: 1; min-width: 6px; height: 1px; background: #2A3450; margin-top: 14px; transition: background .3s; }
+  .mh-ii-conn.done { background: #22C55E; }
+  .mh-ii-snote { margin-top: 5px; min-height: 28px; font-size: 10px; line-height: 1.4; color: transparent; transition: color .3s; }
+  .mh-ii-snote.miss { color: #F87171; } .mh-ii-snote.ok { color: #4ADE80; }
+  .mh-ii-vec { display: grid; grid-template-columns: 14px minmax(0,1fr) 22px; gap: 3px 7px; align-items: center; font-size: 10.5px; color: #B4C3E2; margin-bottom: 6px; }
+  .mh-ii-vec:last-child { margin-bottom: 0; }
+  .mh-ii-vec > i { width: 14px; height: 14px; border-radius: 5px; background: color-mix(in srgb, var(--c) 20%, transparent); position: relative; }
+  .mh-ii-vec > i::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c); }
+  .mh-ii-vec > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mh-ii-bar { grid-column: 2 / 4; height: 4px; border-radius: 3px; background: rgba(255,255,255,.07); overflow: hidden; }
+  .mh-ii-bar i { display: block; height: 100%; width: 0; border-radius: 3px; background: var(--c); transition: width .9s cubic-bezier(.2,.7,.2,1); }
+  .mh-ii-vec em { font: 500 10px ui-monospace, Menlo, monospace; font-style: normal; color: #D6E4FF; text-align: right; }
+  .mh-ii-foot { margin-top: 12px; font-size: 10.5px; color: #7D8DB3; }
+  .mh-ii-chip { position: absolute; z-index: 3; right: -10px; bottom: 6px; background: #fff; color: #0F172A; border-radius: 14px; padding: 9px 14px; display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 700; box-shadow: 0 18px 44px -10px rgba(15,23,42,.35), 0 0 0 1px rgba(15,23,42,.05); opacity: 0; transform: translateY(8px); transition: opacity .45s, transform .45s; }
+  .mh-ii-chip.on { opacity: 1; transform: none; }
+  .mh-ii-chip i { width: 20px; height: 20px; border-radius: 50%; background: #DCFCE7; color: #16A34A; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-style: normal; }
+  .mh-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .mh-hero-proof { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 22px; }
+  .mh-hero-proof li { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 500; color: #475569; }
+  .mh-hero-proof + .mh-hero-tertiary-row { margin-top: 18px; }
+  .mh-hero-proof svg { width: 16px; height: 16px; flex: none; }
+  @keyframes mh-ii-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes mh-ii-drift { from { transform: translate(0,0) scale(1); } to { transform: translate(26px,-18px) scale(1.12); } }
+  @keyframes mh-ii-pulse { 0%,100% { opacity: 1; } 50% { opacity: .6; } }
+  @keyframes mh-ii-eq { 0%,100% { transform: scaleY(.2); } 50% { transform: scaleY(1); } }
+  @keyframes mh-ii-blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .mh-ii *, .mh-ii-card { animation: none !important; transition: none !important; } }
   @media (max-width: 1024px) {
-    .mh-hero-inner {
-      grid-template-columns: 1fr;
-      gap: 50px;
-    }
-    .mh-hero-h1 {
-      font-size: 40px;
-    }
-    .mh-hero-chips {
-      grid-template-columns: repeat(2, 1fr);
-      width: 100%;
-    }
-    .mh-hero-product-stack {
-      height: auto;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 0;
-      perspective: none;
-    }
-    .mh-career-mock,
-    .mh-hero-mockup-wrap {
-      position: relative;
-      left: auto;
-      right: auto;
-      top: auto;
-      width: 100%;
-      max-width: 530px;
-      height: auto;
-      transform: none;
-    }
-    .mh-hero-mockup-wrap {
-      margin-top: -20px;
-    }
+    .mh-hero-inner { grid-template-columns: minmax(0, 1fr) !important; gap: 44px; }
+    .mh-hero-h1 { font-size: 42px; }
+    .mh-ii { margin: 0 auto; max-width: 620px; }
   }
-
   @media (max-width: 640px) {
-    .mh-hero {
-      padding: 40px 16px 64px;
-    }
-    .mh-hero-h1 {
-      font-size: 32px;
-    }
-    .mh-hero-signature {
-      font-size: 18px;
-    }
-    .mh-hero-chips {
-      grid-template-columns: 1fr;
-    }
-    .mh-hero-actions {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .mh-btn-primary, .mh-btn-outline {
-      justify-content: center;
-    }
+    .mh-hero { padding: 40px 16px 64px; }
+    .mh-hero-h1 { font-size: 33px; }
+    .mh-hero-signature { font-size: 18px; }
+    .mh-hero-actions { flex-direction: column; align-items: stretch; }
+    .mh-btn-primary, .mh-btn-outline { justify-content: center; }
+    .mh-ii { padding: 0 0 22px; }
+    .mh-ii-win { padding: 12px 12px 12px; }
+    .mh-ii-body { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .mh-ii-a { min-height: 150px; }
+    .mh-ii-chip { right: 6px; bottom: 0; }
   }
 </style>
 
@@ -488,6 +401,8 @@
 
       <p class="mh-hero-signature">Practice. Polish. <span class="mh-hero-h1-accent">Place.</span></p>
 
+      <p class="mh-hero-tagline">Build the thinking behind great answers.</p>
+
       <p class="mh-hero-h2">MedhaIQ creates live, adaptive interviews around your resume, target role, and job description — helping you understand your performance, improve where it matters, and build lasting interview readiness.</p>
 
       <div class="mh-hero-actions">
@@ -501,6 +416,11 @@
         </a>
       </div>
 
+      <ul class="mh-hero-proof">
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#DCFCE7"/><path d="M5.8 10.3l2.8 2.8 5.6-5.9" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>30 welcome AI minutes, free</li>
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#DCFCE7"/><path d="M5.8 10.3l2.8 2.8 5.6-5.9" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>No credit card required</li>
+      </ul>
+
       <div class="mh-hero-tertiary-row">
         <a href="#how-it-works" class="mh-hero-tertiary">
           <span class="mh-hero-tertiary-icon">
@@ -511,204 +431,133 @@
       </div>
     </div>
 
-    <!-- Right Column: Embedded 3D Stage Stack -->
-    <div class="mh-hero-product-stack">
-      
-      <!-- REAR LAYER: CAREER WORKSPACE -->
-      <div class="mh-career-mock" aria-hidden="true">
-        <div class="mh-career-mock-header">
-          <span class="mh-career-mock-title" style="font-size:10px; color:#64748B; letter-spacing:0.05em;">CAREER WORKSPACE</span>
-          <h3 class="mh-career-mock-greeting" style="margin:2px 0 0 0; font-size:14.5px; color:#F8FAFC;">Good evening, Alex 🌙</h3>
-          <p class="mh-career-mock-sub" style="margin:2px 0 10px 0; font-size:10px; color:#94A3B8;">Track your progress, improve every day, and land your next opportunity.</p>
+
+    <!-- Right Column: live interview + intelligence showcase. Illustrative sample only:
+         no network calls, no audio, no photos. -->
+    <div class="mh-ii" id="mh-ii" data-spk="none" role="region" aria-label="Illustrative sample of a MedhaIQ live interview and its intelligence results">
+      <p class="mh-sr-only">Illustrative sample, not a real assessment. An AI interviewer asks a question, a sample answer appears, STAR evidence is detected, a follow-up is asked, and the overall score and five vectors improve.</p>
+      <span class="mh-ii-orb o1" aria-hidden="true"></span><span class="mh-ii-orb o2" aria-hidden="true"></span>
+      <div class="mh-ii-card"><div class="mh-ii-win">
+        <div class="mh-ii-top">
+          <span class="lv"><i></i><b>LIVE INTERVIEW</b> &middot; sample</span>
+          <button type="button" class="mh-ii-pause" id="mh-ii-pause" aria-pressed="false">PAUSE</button>
         </div>
-
-        <div class="mh-career-mock-row" style="display:flex; gap:10px;">
-          <!-- AI Interview Minutes Meter -->
-          <div class="mh-career-mock-card" style="flex:1;">
-            <div style="font-size:8.5px; color:#64748B; margin-bottom:3px; font-weight:600;">⚡ AI INTERVIEW MINUTES</div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <div style="font-size:15px; font-weight:700; color:#F59E0B;">110 <span style="font-size:9px; color:#94A3B8;">mins</span></div>
-              <div style="flex:1; height:4px; background:#1E293B; border-radius:2px; overflow:hidden;">
-                <div style="width:91%; height:100%; background:#F59E0B;"></div>
-              </div>
-            </div>
-            <div style="font-size:8px; color:#64748B; margin-top:3px;">Used 10 mins · 120 Total</div>
-          </div>
-
-          <!-- Interview Readiness -->
-          <div class="mh-career-mock-card" style="flex:1;">
-            <div style="font-size:8.5px; color:#64748B; margin-bottom:3px; font-weight:600;">INTERVIEW READINESS</div>
-            <div style="display:flex; align-items:baseline; gap:4px;">
-              <span style="font-size:15px; font-weight:700; color:#10B981;">0</span>
-              <span style="font-size:9px; color:#64748B;">/100</span>
-              <span style="font-size:8px; color:#F43F5E; margin-left:auto;">Needs Focus</span>
-            </div>
-            <div style="font-size:8px; color:#94A3B8; margin-top:3px;">Focus next: <span style="color:#F59E0B;">Domain Expertise</span></div>
-          </div>
-        </div>
-
-        <div class="mh-career-mock-row" style="display:flex; gap:10px; margin-top:8px;">
-          <!-- Recent Activity -->
-          <div class="mh-career-mock-card" style="flex:1;">
-            <div class="mh-career-mock-label" style="font-size:8.5px; color:#64748B; margin-bottom:5px;">RECENT ACTIVITY</div>
-            <div style="display:flex; justify-content:space-between; font-size:9px; color:#CBD5E1; margin-bottom:2px;">
-              <span>Management Consultant</span>
-              <span style="color:#64748B;">Aug 15</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:9px; color:#CBD5E1;">
-              <span>Technical Program Manager</span>
-              <span style="color:#64748B;">Aug 13</span>
-            </div>
-          </div>
-
-          <!-- Quick Start Practice -->
-          <div class="mh-career-mock-card" style="flex:1; background:rgba(30, 41, 59, 0.6);">
-            <div class="mh-career-mock-label" style="font-size:8.5px; color:#64748B; margin-bottom:3px;">QUICK ACTIONS</div>
-            <div style="font-size:9.5px; font-weight:700; color:#F8FAFC;">Start Interview</div>
-            <div style="font-size:8px; color:#94A3B8;">Practice with AI interviewer &amp; get instant feedback</div>
-          </div>
-        </div>
-
-        <!-- YOUR PROGRESS MATRIX CARD -->
-        <div class="mh-career-mock-card" style="margin-top:10px; padding:10px 12px;">
-          <div style="font-size:8.5px; color:#64748B; margin-bottom:6px; font-weight:600; text-transform:uppercase;">Your Progress</div>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="mh-ii-body" aria-hidden="true">
+          <div class="mh-ii-col">
             <div>
-              <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">24</span>
-              <span style="font-size:8px; color:#94A3B8;">Interviews Completed</span>
-              <span style="font-size:8px; color:#10B981; display:block; margin-top:2px; font-weight:600;">↑ 12%</span>
+              <div class="mh-ii-h"><span>AI INTERVIEWER</span><em><span class="mh-ii-wave a" id="mh-ii-wa"></span><span id="mh-ii-stat">READY</span></em></div>
+              <div class="mh-ii-q" id="mh-ii-q"></div>
             </div>
             <div>
-              <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">14h 30m</span>
-              <span style="font-size:8px; color:#94A3B8;">Total Practice Time</span>
-              <span style="font-size:8px; color:#10B981; display:block; margin-top:2px; font-weight:600;">↑ 8%</span>
+              <div class="mh-ii-h"><span>YOUR ANSWER (SAMPLE)</span><em class="you"><span class="mh-ii-wave y" id="mh-ii-wy"></span></em></div>
+              <div class="mh-ii-a"><span id="mh-ii-at"></span><span class="mh-ii-caret" id="mh-ii-caret" style="display:none"></span></div>
             </div>
-            <div>
-              <span style="font-size:14px; font-weight:700; color:#F8FAFC; display:block;">78%</span>
-              <span style="font-size:8px; color:#94A3B8;">Average Score</span>
-              <span style="font-size:8px; color:#10B981; display:block; margin-top:2px; font-weight:600;">↑ 15%</span>
+            <div class="mh-ii-ins"><b>&#9728;</b><p id="mh-ii-ins"><small>AI INSIGHT</small><span id="mh-ii-it">&nbsp;</span></p></div>
+          </div>
+          <div class="mh-ii-col">
+            <div class="mh-ii-score">
+              <div class="mh-ii-ring">
+                <svg viewBox="0 0 84 84"><defs><linearGradient id="mh-ii-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5B9BFF"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs><circle class="bg" cx="42" cy="42" r="35"/><circle class="fg" id="mh-ii-fg" cx="42" cy="42" r="35"/></svg>
+                <b><span id="mh-ii-num">--</span><small>/100</small></b>
+              </div>
+              <div class="mh-ii-st"><div class="mh-ii-h" style="margin-bottom:4px"><span>OVERALL SCORE</span></div><strong id="mh-ii-ttl">Listening&hellip;</strong><span id="mh-ii-sub">Scored as you speak.</span></div>
             </div>
+            <div class="mh-ii-box">
+              <div class="mh-ii-h"><span>STAR PROGRESS</span></div>
+              <div class="mh-ii-rail" id="mh-ii-rail">
+                <div class="mh-ii-step"><span class="mh-ii-node">S</span><small>Situation</small></div><span class="mh-ii-conn"></span>
+                <div class="mh-ii-step"><span class="mh-ii-node">T</span><small>Task</small></div><span class="mh-ii-conn"></span>
+                <div class="mh-ii-step"><span class="mh-ii-node">A</span><small>Action</small></div><span class="mh-ii-conn"></span>
+                <div class="mh-ii-step"><span class="mh-ii-node">R</span><small>Result</small></div>
+              </div>
+              <div class="mh-ii-snote" id="mh-ii-snote"></div>
+            </div>
+            <div class="mh-ii-box"><div class="mh-ii-h"><span>5-VECTOR INTELLIGENCE</span></div><div id="mh-ii-vecs"></div></div>
           </div>
         </div>
-
-      </div>
-
-      <!-- FRONT LAYER: LIVE INTERVIEW TERMINAL -->
-      <div class="mh-hero-mockup-wrap">
-        <div class="mh-terminal-v2">
-          <div class="mh-terminal-v2-header">
-            <span class="mh-terminal-v2-title" style="font-size:10.5px; font-weight:700; color:#F8FAFC;">⚡ LIVE INTERVIEW TERMINAL</span>
-            <span style="font-size:9px; color:#10B981; display:flex; align-items:center; gap:5px; font-weight:700;">
-              <span class="mh-live-dot"></span>LIVE
-            </span>
-          </div>
-
-          <div class="mh-terminal-v2-body">
-
-            <div class="mh-terminal-v2-block">
-              <div style="font-size:8px; color:#64748B; margin-bottom:3px; font-weight:600;">AI ENGINE STATUS</div>
-              <div class="mh-terminal-v2-engine">
-                <svg width="30" height="30" viewBox="0 0 52 52" class="mh-terminal-v2-ring-svg">
-                  <defs>
-                    <linearGradient id="mh-ring-grad-tt" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="#3B82F6"/>
-                      <stop offset="100%" stop-color="#8B5CF6"/>
-                    </linearGradient>
-                  </defs>
-                  <circle cx="26" cy="26" r="21" fill="none" stroke="url(#mh-ring-grad-tt)" stroke-width="4"/>
-                </svg>
-                <div>
-                  <div style="font-size:10.5px; font-weight:700; color:#F8FAFC;">Ready</div>
-                  <div style="font-size:8.5px; color:#94A3B8;">AI systems initialized</div>
-                  <div style="font-size:8.5px; color:#94A3B8;">Waiting for interview to begin&hellip;</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="mh-terminal-v2-block">
-              <div style="font-size:8px; color:#64748B; margin-bottom:3px; font-weight:600;">STAR PROGRESS <span style="opacity:0.7;">(Real-time detection)</span></div>
-              <div style="display:flex; align-items:center; justify-content:space-between; padding:1px 0;">
-                <div style="text-align:center;">
-                  <div style="width:18px; height:18px; border-radius:50%; border:1px solid #3B82F6; color:#3B82F6; font-size:8.5px; display:flex; align-items:center; justify-content:center; margin:0 auto;">S</div>
-                  <span style="font-size:7.5px; color:#F8FAFC; margin-top:2px; display:block;">Situation</span>
-                </div>
-                <div style="height:1px; flex:1; background:rgba(148,163,184,0.2); margin:0 3px;"></div>
-                <div style="text-align:center;">
-                  <div style="width:18px; height:18px; border-radius:50%; border:1px solid rgba(148,163,184,0.3); color:#64748B; font-size:8.5px; display:flex; align-items:center; justify-content:center; margin:0 auto;">T</div>
-                  <span style="font-size:7.5px; color:#64748B; margin-top:2px; display:block;">Task</span>
-                </div>
-                <div style="height:1px; flex:1; background:rgba(148,163,184,0.2); margin:0 3px;"></div>
-                <div style="text-align:center;">
-                  <div style="width:18px; height:18px; border-radius:50%; border:1px solid rgba(148,163,184,0.3); color:#64748B; font-size:8.5px; display:flex; align-items:center; justify-content:center; margin:0 auto;">A</div>
-                  <span style="font-size:7.5px; color:#64748B; margin-top:2px; display:block;">Action</span>
-                </div>
-                <div style="height:1px; flex:1; background:rgba(148,163,184,0.2); margin:0 3px;"></div>
-                <div style="text-align:center;">
-                  <div style="width:18px; height:18px; border-radius:50%; border:1px solid rgba(148,163,184,0.3); color:#64748B; font-size:8.5px; display:flex; align-items:center; justify-content:center; margin:0 auto;">R</div>
-                  <span style="font-size:7.5px; color:#64748B; margin-top:2px; display:block;">Result</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="mh-terminal-v2-block">
-              <div style="font-size:8px; color:#64748B; margin-bottom:3px; font-weight:600;">OVERALL INTELLIGENCE SCORE</div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <div style="width:26px; height:26px; border-radius:50%; background:#0F172A; border:1px dashed rgba(148,163,184,0.3); display:flex; align-items:center; justify-content:center; font-size:9.5px; color:#64748B;">--</div>
-                <div>
-                  <div style="font-size:9.5px; color:#10B981; font-weight:600;">Score will appear here</div>
-                  <div style="font-size:8px; color:#64748B;">after your interview</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="mh-terminal-v2-block">
-              <div style="font-size:8px; color:#64748B; margin-bottom:3px; font-weight:600;">5-VECTOR INTELLIGENCE</div>
-              <ul class="mh-terminal-v2-vectors">
-                <li>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                  <span>Structure</span>
-                  <div class="mh-vector-bar"></div>
-                  <span style="color:#64748B;">--</span>
-                </li>
-                <li>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg>
-                  <span>Domain Expertise</span>
-                  <div class="mh-vector-bar"></div>
-                  <span style="color:#64748B;">--</span>
-                </li>
-                <li>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  <span>Strategic Thinking</span>
-                  <div class="mh-vector-bar"></div>
-                  <span style="color:#64748B;">--</span>
-                </li>
-                <li>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  <span>Communication</span>
-                  <div class="mh-vector-bar"></div>
-                  <span style="color:#64748B;">--</span>
-                </li>
-                <li>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  <span>Leadership &amp; Execution</span>
-                  <div class="mh-vector-bar"></div>
-                  <span style="color:#64748B;">--</span>
-                </li>
-              </ul>
-            </div>
-
-            <div class="mh-terminal-v2-block">
-              <div style="font-size:8px; color:#64748B; margin-bottom:2px; font-weight:600;">AI ACTIVITY FEED</div>
-              <div style="font-size:8px; color:#CBD5E1; line-height:1.25; display:flex; align-items:center; gap:5px;">
-                <span style="width:4px; height:4px; background:#3B82F6; border-radius:50%; display:inline-block;"></span>
-                <span>AI systems ready. Click 'Start Free Trial' to begin.</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
+        <div class="mh-ii-foot" aria-hidden="true">Sample session &middot; illustrative content, not a real assessment</div>
+      </div></div>
+      <div class="mh-ii-chip" id="mh-ii-b" aria-hidden="true"><i>&#8593;</i><span>Structure +11 with a measurable result</span></div>
     </div>
   </div>
 </section>
+
+<script>
+(function () {
+  var root = document.getElementById('mh-ii');
+  if (!root) return;
+  var $ = function (id) { return document.getElementById(id); };
+  var Q1 = 'Tell me about a time you influenced a difficult decision.';
+  var Q2 = 'What was the measurable result of that decision?';
+  // Sample answer, split by STAR part so each part is highlighted when the engine "detects" it.
+  var SEG = [
+    ['s', 'We had two weeks and three regions with uneven data, '],
+    ['t', 'so my task was to recommend where to focus first. '],
+    ['a', 'I ranked regions by revenue at risk and aligned the team on one trade-off. '],
+    ['r', 'Escalations fell 18% in six weeks.']
+  ];
+  var NAMES = ['Structure', 'Domain Expertise', 'Strategic Thinking', 'Communication', 'Leadership & Execution'];
+  var COL = ['#3B82F6', '#A78BFA', '#22C55E', '#FB923C', '#F59E0B'];
+  var V1 = [74, 72, 70, 62, 76], V2 = [85, 80, 78, 66, 82];
+  var LOOP = 21000, t = 0, paused = false, visible = true, reduced = false, C = 220, lastKey = '';
+  try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  ['mh-ii-wa', 'mh-ii-wy'].forEach(function (id) { var w = $(id); for (var i = 0; i < 7; i++) w.appendChild(document.createElement('i')); });
+  var vecs = $('mh-ii-vecs');
+  NAMES.forEach(function (n, i) { var r = document.createElement('div'); r.className = 'mh-ii-vec'; r.style.setProperty('--c', COL[i]); r.innerHTML = '<i></i><span>' + n.replace('&', '&amp;') + '</span><em>--</em><div class="mh-ii-bar"><i></i></div>'; vecs.appendChild(r); });
+  var bars = vecs.querySelectorAll('.mh-ii-bar i'), nums = vecs.querySelectorAll('em');
+  var nodes = $('mh-ii-rail').querySelectorAll('.mh-ii-node'), conns = $('mh-ii-rail').querySelectorAll('.mh-ii-conn');
+  var at = $('mh-ii-at'), bEl = $('mh-ii-b');
+  function setText(el, v) { if (el.textContent !== v) el.textContent = v; }
+  function slice(s, from, to) { var p = Math.max(0, Math.min(1, (t - from) / (to - from))); return s.slice(0, Math.round(s.length * p)); }
+  // Typed answer: each segment is typed within its own window, so highlights line up with the STAR detection.
+  var WIN = [[3200, 5000], [5200, 6600], [6800, 8800], [13200, 14800]];
+  function answerHTML() {
+    var h = '', i;
+    for (i = 0; i < SEG.length; i++) {
+      var typed = slice(SEG[i][1], WIN[i][0], WIN[i][1]);
+      if (!typed) continue;
+      var on = (i === 0 && t >= 5000) || (i === 1 && t >= 6600) || (i === 2 && t >= 8800) || (i === 3 && t >= 14800);
+      h += '<mark class="' + SEG[i][0] + (on ? ' on' : '') + '">' + typed + '</mark>';
+    }
+    return h;
+  }
+  // Timeline (ms): 400 asks | 3200 you answer S | 5200 T | 6800 A | 9600 scored (R missing) | 10600 follow-up | 13200 you add the result | 14800 full STAR | 19000 hold | 21000 loop
+  function render() {
+    var spk = 'none', stat = 'READY', q = '';
+    if (t >= 400 && t < 3200) { spk = 'ai'; stat = 'SPEAKING'; q = slice(Q1, 400, 2800); }
+    else if (t >= 3200 && t < 10600) { spk = 'you'; stat = 'LISTENING'; q = Q1; }
+    else if (t >= 10600 && t < 13200) { spk = 'ai'; stat = 'FOLLOW-UP'; q = slice(Q2, 10600, 12800); }
+    else if (t >= 13200) { spk = 'you'; stat = 'LISTENING'; q = Q2; }
+    root.setAttribute('data-spk', spk); setText($('mh-ii-stat'), stat); setText($('mh-ii-q'), q);
+    var live = (t >= 3200 && t < 9600) || (t >= 13200 && t < 14800);
+    $('mh-ii-caret').style.display = live ? 'inline-block' : 'none';
+    if (t < 3200) at.innerHTML = ''; else at.innerHTML = answerHTML();
+    var det = [t >= 5000, t >= 6600, t >= 8800, t >= 14800], fin1 = t >= 9600, fin2 = t >= 15600, k;
+    for (k = 0; k < 4; k++) nodes[k].className = 'mh-ii-node' + (det[k] ? ((k < 3 ? fin1 : fin2) ? ' done' : ' active') : (fin1 && k === 3 ? ' missed' : ''));
+    for (k = 0; k < 3; k++) conns[k].className = 'mh-ii-conn' + (det[k] && det[k + 1] && (k < 2 ? fin1 : fin2) ? ' done' : '');
+    var sn = $('mh-ii-snote');
+    sn.className = 'mh-ii-snote' + (fin2 ? ' ok' : (fin1 ? ' miss' : ''));
+    setText(sn, fin2 ? '\u2713 Full STAR structure \u2014 all four components covered' : (fin1 ? '\u2715 This answer missed: Result' : ''));
+    var V = fin2 ? V2 : (fin1 ? V1 : null), sc = fin2 ? 78 : (fin1 ? 71 : 0);
+    for (k = 0; k < 5; k++) { bars[k].style.width = V ? V[k] + '%' : '0'; setText(nums[k], V ? String(V[k]) : '--'); }
+    $('mh-ii-fg').style.strokeDashoffset = C * (1 - sc / 100); setText($('mh-ii-num'), sc ? String(sc) : '--');
+    setText($('mh-ii-ttl'), fin2 ? 'Strong, complete answer' : (fin1 ? 'Good start' : 'Listening\u2026'));
+    setText($('mh-ii-sub'), fin2 ? 'Structure and impact are clear.' : (fin1 ? 'Result missing, so a follow-up was asked.' : 'Scored as you speak.'));
+    var ins = fin2 ? 'Complete STAR answer. Quantified results lift Structure and Strategic Thinking.' : (fin1 ? 'Clear situation and action. Add a measurable result to strengthen Structure.' : '');
+    setText($('mh-ii-it'), ins || '\u00a0');
+    bEl.className = 'mh-ii-chip' + (t >= 16000 && t < 20000 ? ' on' : '');
+  }
+  var pb = $('mh-ii-pause');
+  if (reduced) { pb.style.display = 'none'; t = 18000; render(); return; }
+  pb.addEventListener('click', function () { paused = !paused; pb.setAttribute('aria-pressed', paused ? 'true' : 'false'); pb.textContent = paused ? 'PLAY' : 'PAUSE'; });
+  try { new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0.15 }).observe(root); } catch (e) {}
+  render();
+  var last = Date.now();
+  setInterval(function () {
+    var now = Date.now(), dt = now - last; last = now;
+    if (paused || !visible || document.hidden) return;
+    t += Math.min(dt, 250); if (t >= LOOP) t = 0;
+    render();
+  }, 100);
+})();
+</script>
