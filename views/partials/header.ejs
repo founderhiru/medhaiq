@@ -136,6 +136,13 @@ const _isHomeAuthed = !!(_homeCaps && _homeCaps.isAuthenticated);
                     <span class="mh-megamenu-desc">Answers to common questions</span>
                   </span>
                 </a></li>
+                <li role="none"><a href="/resume-intelligence-preview" class="mh-megamenu-item dropdown-item" role="menuitem">
+                  <span class="mh-megamenu-icon">📄</span>
+                  <span class="mh-megamenu-text">
+                    <span class="mh-megamenu-title">Resume Intelligence Preview</span>
+                    <span class="mh-megamenu-desc">Your profile through a recruiter's eyes</span>
+                  </span>
+                </a></li>
                 <li role="none"><a href="/architecture" class="mh-megamenu-item dropdown-item" role="menuitem">
                   <span class="mh-megamenu-icon">🏗️</span>
                   <span class="mh-megamenu-text">
@@ -150,10 +157,7 @@ const _isHomeAuthed = !!(_homeCaps && _homeCaps.isAuthenticated);
       </div>
 
       <a href="/#pricing" class="mh-nav-link">Pricing</a>
-      <!-- NEW route — see conflict note in chat: reuses founder.ejs's real
-           "Vision" content; no "Mission" copy exists anywhere in the repo,
-           so none was invented here. -->
-      <a href="/about" class="mh-nav-link">About</a>
+      <!-- About lives in the footer only (removed from the top nav by request). -->
     </nav>
 
     <!-- CTA + hamburger — Sign In restored (was present in an earlier
@@ -228,12 +232,12 @@ const _isHomeAuthed = !!(_homeCaps && _homeCaps.isAuthenticated);
         <div class="mh-mobile-accordion-panel" id="mh-mobile-resources-panel">
           <a href="/explore" class="mh-mobile-sublink">🧭 Explore</a>
           <a href="/faq" class="mh-mobile-sublink">💬 FAQ</a>
+          <a href="/resume-intelligence-preview" class="mh-mobile-sublink">📄 Resume Intelligence Preview</a>
           <a href="/architecture" class="mh-mobile-sublink">🏗️ Architecture</a>
         </div>
       </div>
 
       <a href="/#pricing" class="mh-mobile-link">Pricing</a>
-      <a href="/about" class="mh-mobile-link">About</a>
       <% if (_isHomeAuthed) { %>
         <a href="<%= _homeCaps.primaryNavigation.href %>" class="mh-mobile-cta"><%= _homeCaps.primaryNavigation.label %></a>
         <!-- Same as desktop: static for now, foundation for a future Profile menu. -->

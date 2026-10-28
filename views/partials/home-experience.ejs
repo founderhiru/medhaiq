@@ -1,0 +1,150 @@
+<!-- HOME SECTION — The Experience (home page only).
+     The separate partials/experience.ejs powers the /experience page and is NOT touched.
+     Illustrative simulated sample: no network calls, no audio. Starts when scrolled into view.
+     Optional image: /images/home/experience-interviewer.jpg (falls back to a plain silhouette). -->
+<style>
+  .mh-xp { position: relative; background: radial-gradient(900px 480px at 78% 30%, rgba(47,107,255,.22), transparent 65%), linear-gradient(180deg, #070E24 0%, #0A1330 100%); color: #EAF0FF; padding: 96px 24px; overflow: hidden; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  .mh-xp-inner { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 64px; align-items: center; }
+  .mh-xp-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 9999px; background: rgba(91,155,255,.12); border: 1px solid rgba(91,155,255,.3); font-size: 11px; font-weight: 700; letter-spacing: .1em; color: #BBD2FF; margin-bottom: 20px; }
+  .mh-xp-eyebrow i { width: 6px; height: 6px; border-radius: 50%; background: #5B9BFF; box-shadow: 0 0 8px rgba(91,155,255,.8); }
+  .mh-xp h2 { margin: 0 0 16px; font-size: 44px; line-height: 1.1; font-weight: 800; letter-spacing: -.025em; color: #fff; text-wrap: balance; }
+  .mh-xp-sub { margin: 0 0 26px; font-size: 16.5px; line-height: 1.55; color: #B4C3E2; max-width: 520px; }
+  .mh-xp-list { list-style: none; margin: 0 0 32px; padding: 0; display: grid; gap: 13px; }
+  .mh-xp-list li { display: flex; align-items: center; gap: 12px; font-size: 15.5px; color: #EAF0FF; font-weight: 500; }
+  .mh-xp-list svg { flex: none; width: 20px; height: 20px; }
+  .mh-xp-cta { display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; background: linear-gradient(135deg, #2F6BFF 0%, #1D4ED8 100%); color: #fff; font-weight: 600; font-size: 14.5px; border-radius: 12px; text-decoration: none; box-shadow: 0 8px 30px rgba(47,107,255,.45); transition: transform .25s, box-shadow .25s; }
+  .mh-xp-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(47,107,255,.6); }
+  .mh-xp-cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+  /* right: composition = photo card + speech bubble + response card, with a vertical STAR stack */
+  .mh-xp-stage { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; align-items: start; padding: 0 0 0 0; }
+  .mh-xp-left { position: relative; display: grid; gap: 12px; padding-top: 74px; }
+  .mh-xp-bubble { position: absolute; top: 0; left: 18px; right: 28px; background: #fff; color: #0F172A; border-radius: 16px 16px 16px 4px; padding: 12px 16px; font-size: 14px; font-weight: 600; line-height: 1.4; box-shadow: 0 14px 40px rgba(0,0,0,.35); min-height: 62px; z-index: 3; }
+  .mh-xp-bubble::after { content: ''; position: absolute; left: 22px; bottom: -8px; width: 16px; height: 16px; background: #fff; transform: rotate(45deg); border-radius: 2px; }
+  .mh-xp-photo { position: relative; aspect-ratio: 4 / 3.3; border-radius: 20px; overflow: hidden; border: 1px solid rgba(150,180,255,.22); background: linear-gradient(180deg, #14224d, #0a1230); box-shadow: 0 30px 70px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(47,107,255,.15), 0 0 60px rgba(47,107,255,.12); }
+  .mh-xp-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; }
+  .mh-xp-photo.noimg img { display: none; }
+  .mh-xp-photo.noimg::before { content: ''; position: absolute; left: 50%; bottom: 0; width: 46%; aspect-ratio: 1 / 1.1; transform: translateX(-50%); background: linear-gradient(180deg, rgba(91,155,255,.85), rgba(91,155,255,.2)); border-radius: 50% 50% 0 0 / 40% 40% 0 0; }
+  .mh-xp-photo::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 55%, rgba(6,10,21,.75) 100%); }
+  .mh-xp-plate { position: absolute; z-index: 2; left: 12px; bottom: 12px; display: flex; align-items: center; gap: 10px; background: rgba(6,10,21,.75); border: 1px solid rgba(150,180,255,.22); border-radius: 12px; padding: 7px 12px; backdrop-filter: blur(6px); }
+  .mh-xp-plate b { display: block; font-size: 13px; font-weight: 700; }
+  .mh-xp-plate span { display: block; font-size: 10.5px; color: #B4C3E2; }
+  .mh-xp-chip { position: absolute; z-index: 2; right: 12px; bottom: 12px; padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(6,10,21,.75); border: 1px solid rgba(91,155,255,.5); color: #BBD2FF; backdrop-filter: blur(6px); }
+  .mh-xp-resp { border: 1px solid rgba(150,180,255,.18); border-radius: 16px; background: rgba(255,255,255,.04); padding: 12px 16px 14px; }
+  .mh-xp-resp h5 { margin: 0 0 6px; font-size: 11.5px; font-weight: 600; color: #93A3C4; }
+  .mh-xp-resp p { margin: 0; font-size: 13px; line-height: 1.55; color: #D6E2FA; min-height: 6.2em; }
+  .mh-xp-caret { display: inline-block; width: 6px; height: 13px; background: #5B9BFF; vertical-align: -2px; margin-left: 2px; animation: mh-xp-blink 1s steps(1) infinite; }
+  .mh-xp-listen { margin-top: 10px; display: flex; align-items: center; gap: 10px; font-size: 11.5px; color: #93A3C4; }
+  .mh-xp-wave { flex: 1; display: flex; align-items: center; gap: 2px; height: 20px; }
+  .mh-xp-wave i { flex: 1; max-width: 4px; height: 100%; border-radius: 2px; background: linear-gradient(180deg, #5B9BFF, #3DDBA9); transform: scaleY(.15); }
+  .mh-xp[data-live="1"] .mh-xp-wave i { animation: mh-xp-eq 1s ease-in-out infinite; }
+  .mh-xp-wave i:nth-child(3n) { animation-delay: -.3s; } .mh-xp-wave i:nth-child(3n+1) { animation-delay: -.6s; } .mh-xp-wave i:nth-child(5n) { animation-delay: -.15s; }
+  .mh-xp-star { display: grid; gap: 10px; padding-top: 74px; }
+  .mh-xp-card { display: grid; grid-template-columns: 36px 1fr 22px; gap: 12px; align-items: center; padding: 13px 14px; border-radius: 14px; border: 1px solid rgba(150,180,255,.16); background: rgba(255,255,255,.035); transition: border-color .4s, background .4s, box-shadow .4s; }
+  .mh-xp-card b { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; border: 1px solid rgba(150,180,255,.3); color: #93A3C4; transition: all .4s; }
+  .mh-xp-card strong { display: block; font-size: 14px; font-weight: 700; color: #EAF0FF; }
+  .mh-xp-card span { display: block; font-size: 11.5px; color: #7D8DB3; line-height: 1.35; transition: color .4s; }
+  .mh-xp-card s { text-decoration: none; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; background: #3DDBA9; color: #06241B; opacity: 0; transform: scale(.4); transition: all .4s cubic-bezier(.2,.9,.3,1.4); }
+  .mh-xp-card.on { border-color: rgba(61,219,169,.5); background: rgba(61,219,169,.07); box-shadow: 0 0 24px rgba(61,219,169,.12); }
+  .mh-xp-card.on b { border-color: #3DDBA9; color: #3DDBA9; background: rgba(61,219,169,.12); }
+  .mh-xp-card.on span { color: #A9E8D2; }
+  .mh-xp-card.on s { opacity: 1; transform: none; }
+  .mh-xp-note { grid-column: 1 / -1; margin-top: 4px; font-size: 11px; color: #7D8DB3; }
+  @keyframes mh-xp-eq { 0%,100% { transform: scaleY(.15); } 50% { transform: scaleY(1); } }
+  @keyframes mh-xp-blink { 50% { opacity: 0; } }
+  .mh-xp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  @media (prefers-reduced-motion: reduce) { .mh-xp *, .mh-xp-cta { animation: none !important; transition: none !important; } }
+  @media (max-width: 1024px) {
+    .mh-xp { padding: 72px 20px; }
+    .mh-xp-inner { grid-template-columns: minmax(0, 1fr); gap: 44px; }
+    .mh-xp h2 { font-size: 36px; }
+  }
+  @media (max-width: 640px) {
+    .mh-xp { padding: 56px 16px; }
+    .mh-xp h2 { font-size: 30px; }
+    .mh-xp-stage { grid-template-columns: minmax(0, 1fr); }
+    .mh-xp-star { padding-top: 0; grid-template-columns: minmax(0, 1fr); }
+    .mh-xp-bubble { left: 0; right: 0; }
+  }
+</style>
+
+<section class="mh-xp" id="the-experience" aria-labelledby="mh-xp-h">
+  <div class="mh-xp-inner">
+    <div>
+      <div class="mh-xp-eyebrow"><i></i>THE EXPERIENCE</div>
+      <h2 id="mh-xp-h">A real interview experience, not a static quiz.</h2>
+      <p class="mh-xp-sub">Dynamic questions. Real-time feedback. Evidence-based insights.</p>
+      <ul class="mh-xp-list">
+        <% ['Adaptive follow-up questions', 'Real-time STAR detection', 'Five-dimensional assessment', 'Personalised feedback and recommendations', 'Practice with multiple interviewer personas'].forEach(function (t) { %>
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#2F6BFF"/><path d="M5.5 10.4l3 3 6-6.4" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg><%= t %></li>
+        <% }); %>
+      </ul>
+      <a href="/login" class="mh-xp-cta">Try the Interactive Demo
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <div class="mh-xp-stage" id="mh-xp-stage" role="region" aria-label="Illustrative sample interview">
+      <p class="mh-xp-sr">Illustrative sample, not a live interview. An interviewer asks a question, a sample answer appears, and the four STAR elements are detected one by one.</p>
+      <div class="mh-xp-left" aria-hidden="true">
+        <div class="mh-xp-bubble" id="mh-xp-q"></div>
+        <div class="mh-xp-photo" id="mh-xp-photo">
+          <img src="/images/home/experience-interviewer.jpg" alt="" width="900" height="740" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('noimg')">
+          <div class="mh-xp-plate"><div><b>Marcus Webb</b><span>VP Product &middot; Series B SaaS</span></div></div>
+          <span class="mh-xp-chip">&#9675; Explorer</span>
+        </div>
+        <div class="mh-xp-resp">
+          <h5>Your response (sample)</h5>
+          <p><span id="mh-xp-a"></span><span class="mh-xp-caret" id="mh-xp-caret"></span></p>
+          <div class="mh-xp-listen"><span id="mh-xp-status">Ready</span><span class="mh-xp-wave" id="mh-xp-wave"></span></div>
+        </div>
+      </div>
+      <div class="mh-xp-star" id="mh-xp-star" aria-hidden="true">
+        <div class="mh-xp-card"><b>S</b><div><strong>Situation</strong><span>Clear context provided</span></div><s>&#10003;</s></div>
+        <div class="mh-xp-card"><b>T</b><div><strong>Task</strong><span>Defined responsibility</span></div><s>&#10003;</s></div>
+        <div class="mh-xp-card"><b>A</b><div><strong>Action</strong><span>Specific steps described</span></div><s>&#10003;</s></div>
+        <div class="mh-xp-card"><b>R</b><div><strong>Result</strong><span>Outcome and impact</span></div><s>&#10003;</s></div>
+      </div>
+      <p class="mh-xp-note" aria-hidden="true">Sample session &middot; illustrative content, not a real assessment</p>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var sec = document.getElementById('the-experience');
+  if (!sec) return;
+  var $ = function (id) { return document.getElementById(id); };
+  var Q1 = 'Tell me about a time you had to solve a complex problem with limited information.';
+  var A1 = 'I gathered data from multiple sources, aligned the team on key assumptions, evaluated trade-offs and proposed a phased approach…';
+  var Q2 = 'What was the outcome of that approach?';
+  var A2 = ' The first phase shipped on time and the region met its quarterly target.';
+  var cards = $('mh-xp-star').children, wave = $('mh-xp-wave');
+  for (var i = 0; i < 36; i++) wave.appendChild(document.createElement('i'));
+  var LOOP = 18000, t = 0, visible = false, reduced = false;
+  try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  function sl(s, a, b) { var p = Math.max(0, Math.min(1, (t - a) / (b - a))); return s.slice(0, Math.round(s.length * p)); }
+  // Timeline (ms): 600 question | 3200 answer | 5600 S | 6800 T | 8000 A | 9400 follow-up | 11200 outcome | 13000 R | 16000 hold | 18000 loop
+  function render() {
+    var q = t < 9400 ? sl(Q1, 600, 3000) : sl(Q2, 9400, 10800);
+    var a = t < 11200 ? sl(A1, 3200, 8600) : A1 + sl(A2, 11200, 12900);
+    var live = (t >= 3200 && t < 9400) || (t >= 11200 && t < 13000);
+    var st = t < 600 ? 'Ready' : (t < 3200 ? 'Interviewer speaking' : (t < 9400 ? 'Listening…' : (t < 11200 ? 'Follow-up asked' : (t < 13000 ? 'Listening…' : 'Evidence detected'))));
+    $('mh-xp-q').textContent = q; $('mh-xp-a').textContent = a;
+    $('mh-xp-status').textContent = st; sec.setAttribute('data-live', live ? '1' : '0');
+    $('mh-xp-caret').style.display = live ? 'inline-block' : 'none';
+    var on = [t >= 5600, t >= 6800, t >= 8000, t >= 13000];
+    for (var k = 0; k < 4; k++) cards[k].className = 'mh-xp-card' + (on[k] ? ' on' : '');
+  }
+  if (reduced) { t = 15000; render(); return; }
+  try { new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0.25 }).observe(sec); } catch (e) { visible = true; }
+  render();
+  var last = Date.now();
+  setInterval(function () {
+    var now = Date.now(), dt = now - last; last = now;
+    if (!visible || document.hidden) return;
+    t += Math.min(dt, 250); if (t >= LOOP) t = 0;
+    render();
+  }, 100);
+})();
+</script>

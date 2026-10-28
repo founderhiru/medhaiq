@@ -134,6 +134,7 @@ app.get('/architecture', (_req, res) => res.render('architecture'));
 app.get('/about',        (_req, res) => res.render('about'));
 app.get('/why',     (_req, res) => res.render('why'));
 app.get('/experience', (_req, res) => res.render('experience'));
+app.get('/resume-intelligence-preview', (_req, res) => res.render('resume-intelligence-preview')); // moved from the home page; uses the existing /api/public-preview
 app.get('/sample-report', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'sample-report', 'index.html'));
 });
