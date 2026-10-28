@@ -2268,7 +2268,7 @@ button { cursor: pointer; }
   max-width: var(--max-w);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); /* brand | all link groups (Product & Technology, Company, Legal) in ONE row */
   gap: 40px;
   align-items: start;
 }
@@ -2276,7 +2276,7 @@ button { cursor: pointer; }
 .mh-footer-logo { display: flex; align-items: center; gap: 8px; }
 .mh-footer-tagline { font-size: 13px; font-weight: 700; color: var(--white); }
 .mh-footer-desc { font-size: 12px; color: #8F9BAF; }
-.mh-footer-links-col { display: flex; flex-wrap: wrap; gap: 32px 40px; }
+.mh-footer-links-col { display: flex; flex-wrap: wrap; gap: 32px 56px; }
 .mh-footer-link-group { display: flex; flex-direction: column; gap: 8px; }
 .mh-footer-link-heading { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #AEB8C8; margin-bottom: 12px; }
 .mh-footer-link { font-size: 13px; color: var(--text-faint); transition: color 0.15s ease; }
@@ -2739,6 +2739,7 @@ button { cursor: pointer; }
 }
 .mh-trust-sep { color: #475569; margin: 0 8px; }
 @media (max-width: 640px) {
+  .mh-footer-links-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 24px; } /* phones: link groups in two tidy columns */
   .mh-trust-name { font-size: 13px; }
 }
 
@@ -2746,6 +2747,7 @@ button { cursor: pointer; }
    RESPONSIVE
    ============================================ */
 @media (max-width: 1024px) {
+  .mh-footer-inner { grid-template-columns: minmax(0, 1fr); } /* brand stacks above the link row on tablet/mobile */
   .mh-score-layout { grid-template-columns: 1fr; }
   .mh-recruiter-grid { grid-template-columns: 1fr; }
   .mh-proof-grid { grid-template-columns: 1fr; }
@@ -2789,7 +2791,7 @@ button { cursor: pointer; }
   .mh-audience-grid { grid-template-columns: 1fr; }
     .mh-score-layout { gap: 32px; }
   .mh-form-row { grid-template-columns: 1fr; }
-  .mh-footer-inner { flex-direction: column; gap: 16px; text-align: center; }
+  .mh-footer-inner { flex-direction: column; gap: 16px; text-align: left; }
   .mh-hero-actions {
      flex-wrap: wrap;
    }

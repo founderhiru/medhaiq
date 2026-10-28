@@ -35,10 +35,10 @@ section .mh-adaptive-headline, section.mh-xp h2, section.mh-sc h2, section.mh-au
 }
 section.mh-perspectives .mh-section-title { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: clamp(24px, 2.6vw, 30px); font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
 section.mh-adaptive .mh-eyebrow, section.mh-pricing .mh-eyebrow, section.mh-perspectives .mh-eyebrow { color: #1D4ED8; }
-section.mh-audience .mh-eyebrow { color: #7FB2FF; }
-section.mh-adaptive .mh-eyebrow, section.mh-audience .mh-eyebrow, section.mh-pricing .mh-eyebrow, section.mh-perspectives .mh-eyebrow { font-size: 12px; letter-spacing: .12em; }
-.mh-adaptive .mh-section-center, .mh-audience .mh-section-center, .mh-pricing .mh-section-center { max-width: 760px; margin-left: auto; margin-right: auto; }
-.mh-audience .mh-section-sub, .mh-pricing .mh-section-sub, .mh-xp-sub { font-size: 16.5px; line-height: 1.55; }
+section.mh-audience .mh-eyebrow, section.mh-xp .mh-eyebrow { color: #7FB2FF; }
+section.mh-adaptive .mh-eyebrow, section.mh-audience .mh-eyebrow, section.mh-xp .mh-eyebrow, section.mh-pricing .mh-eyebrow, section.mh-perspectives .mh-eyebrow { font-size: 12px; letter-spacing: .12em; }
+.mh-adaptive .mh-section-center, .mh-audience .mh-section-center, .mh-xp .mh-section-center, .mh-pricing .mh-section-center { max-width: 760px; margin-left: auto; margin-right: auto; }
+.mh-audience .mh-section-sub, .mh-pricing .mh-section-sub, .mh-xp .mh-section-sub { font-size: 16.5px; line-height: 1.55; }
 /* same vertical rhythm for every home section */
 .mh-adaptive, .mh-audience, .mh-pricing { padding-top: 88px; padding-bottom: 88px; }
 @media (max-width: 1024px) { .mh-adaptive, .mh-audience, .mh-pricing { padding-top: 72px; padding-bottom: 72px; } }

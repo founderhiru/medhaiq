@@ -6,11 +6,11 @@
      Images (static, optional, with fallback): /images/home/experience-interviewer.jpg (portrait), experience-ambient.jpg (blurred backdrop), hero-you.jpg (the candidate "You" tile). Portraits are AI-generated; the name and role shown are illustrative. -->
 <style>
   .mh-xp { position: relative; background: radial-gradient(900px 480px at 78% 30%, rgba(47,107,255,.22), transparent 65%), linear-gradient(180deg, #070E24 0%, #0A1330 100%); color: #EAF0FF; padding: 88px 24px; overflow: hidden; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-  .mh-xp-inner { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 64px; align-items: center; }
-  .mh-xp-eyebrow { display: block; font-size: 12px; font-weight: 700; letter-spacing: .12em; color: #7FB2FF; margin-bottom: 14px; }
+  .mh-xp-wrap { max-width: 1280px; margin: 0 auto; }
+  .mh-xp-inner { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 64px; align-items: center; }
   .mh-xp h2 span { display: inline-block; background: linear-gradient(90deg, #6FA3FF, #A98BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .mh-xp h2 { margin: 0 0 16px; color: #fff; text-wrap: balance; }
-  .mh-xp-sub { margin: 0 0 26px; font-size: 16.5px; line-height: 1.55; color: #B4C3E2; max-width: 520px; }
+  .mh-xp .mh-section-center { margin-bottom: 52px; }
+  .mh-xp h2 { margin: 0 0 14px; text-wrap: balance; }
   .mh-xp-list { list-style: none; margin: 0 0 32px; padding: 0; display: grid; gap: 13px; }
   .mh-xp-list li { display: flex; align-items: center; gap: 12px; font-size: 15.5px; color: #EAF0FF; font-weight: 500; }
   .mh-xp-list svg { flex: none; width: 20px; height: 20px; }
@@ -69,6 +69,8 @@
   @media (max-width: 1024px) {
     .mh-xp { padding: 72px 20px; }
     .mh-xp-inner { grid-template-columns: minmax(0, 1fr); gap: 44px; }
+    .mh-xp-inner > div:first-child { display: flex; flex-direction: column; align-items: center; }
+    .mh-xp-steps { width: 100%; }
     .mh-xp-stage { margin: 0 auto; }
   }
   @media (max-width: 640px) {
@@ -81,11 +83,14 @@
 </style>
 
 <section class="mh-xp" id="the-experience" aria-labelledby="mh-xp-h">
+  <div class="mh-xp-wrap">
+    <div class="mh-section-center">
+      <div class="mh-eyebrow">THE EXPERIENCE</div>
+      <h2 class="mh-section-title" id="mh-xp-h">A real interview experience, <span>not a static quiz.</span></h2>
+      <p class="mh-section-sub">Dynamic questions. Real-time feedback. Evidence-based insights.</p>
+    </div>
   <div class="mh-xp-inner">
     <div>
-      <span class="mh-xp-eyebrow">THE EXPERIENCE</span>
-      <h2 id="mh-xp-h">A real interview experience, <span>not a static quiz.</span></h2>
-      <p class="mh-xp-sub">Dynamic questions. Real-time feedback. Evidence-based insights.</p>
       <ol class="mh-xp-list mh-xp-steps">
         <% [
           ['It asks', 'A question built from your resume, the role and the job description.'],
@@ -118,6 +123,7 @@
       </div>
       <p class="mh-xp-note" aria-hidden="true">Sample session &middot; illustrative content, not a real assessment &middot; portraits are AI-generated, not real people</p>
     </div>
+  </div>
   </div>
 </section>
 
