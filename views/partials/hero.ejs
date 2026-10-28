@@ -288,91 +288,91 @@
     color: #1D4ED8; margin: -6px 0 16px 0;
   }
 
-  /* ── Simulated video-call interview (illustrative; no API calls, no audio) ── */
-  .mh-ws { width: 100%; max-width: 660px; margin-left: auto; position: relative; }
-  .mh-ws-frame { border-radius: 22px; padding: 1px; background: linear-gradient(160deg, rgba(111,166,255,.9), rgba(61,219,169,.28) 42%, rgba(150,180,255,.14)); box-shadow: 0 40px 90px -24px rgba(8,15,40,.7); animation: mh-ws-in .7s ease-out both; }
-  .mh-ws-win { border-radius: 21px; background: linear-gradient(180deg, #0E1A3C 0%, #0A1330 100%); color: #EAF0FF; overflow: hidden; }
-  .mh-ws-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 16px; border-bottom: 1px solid rgba(150,180,255,.14); font: 600 10.5px ui-monospace, Menlo, Consolas, monospace; letter-spacing: .07em; color: #93A3C4; }
-  .mh-ws-bar b { color: #EAF0FF; font-weight: 700; }
-  .mh-ws-live { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
-  .mh-ws-live i { width: 7px; height: 7px; border-radius: 50%; background: #3DDBA9; animation: mh-live-pulse 1.8s infinite ease-in-out; }
-  .mh-ws-pause { appearance: none; border: 1px solid rgba(150,180,255,.25); background: rgba(255,255,255,.05); color: #D6E4FF; border-radius: 999px; font: 600 10px ui-monospace, Menlo, monospace; letter-spacing: .06em; padding: 4px 10px; cursor: pointer; }
-  .mh-ws-pause:hover { background: rgba(255,255,255,.1); }
-  .mh-ws-pause:focus-visible { outline: 2px solid #5B9BFF; outline-offset: 2px; }
-  .mh-ws-body { display: grid; grid-template-columns: minmax(0,1.45fr) minmax(0,1fr); gap: 14px; padding: 14px 16px 16px; }
-  .mh-ws-main { display: grid; gap: 10px; align-content: start; min-width: 0; }
-  /* video tile */
-  .mh-ws-video { position: relative; aspect-ratio: 4 / 3.5; border-radius: 15px; overflow: hidden; border: 1px solid rgba(150,180,255,.18); background: radial-gradient(300px 220px at 50% 35%, rgba(91,155,255,.35), transparent 70%), linear-gradient(180deg, #14224d, #0a1230); }
-  .mh-ws-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 8%; transform-origin: 50% 30%; animation: mh-ws-drift 20s ease-in-out infinite alternate; }
-  .mh-ws-fallback { position: absolute; inset: 0; display: none; align-items: flex-end; justify-content: center; }
-  .mh-ws-video.noimg .mh-ws-fallback { display: flex; } .mh-ws-video.noimg .mh-ws-photo { display: none; }
-  .mh-ws-fallback svg { width: 46%; height: auto; display: block; }
-  .mh-ws-video::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(6,10,21,.35) 0%, transparent 22%, transparent 55%, rgba(6,10,21,.78) 100%); }
-  .mh-ws-tags { position: absolute; z-index: 2; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; gap: 8px; }
-  .mh-ws-tag { padding: 4px 9px; border-radius: 999px; font: 600 9.5px ui-monospace, Menlo, monospace; letter-spacing: .06em; background: rgba(6,10,21,.7); border: 1px solid rgba(150,180,255,.22); color: #D6E4FF; backdrop-filter: blur(6px); display: inline-flex; align-items: center; gap: 6px; }
-  .mh-ws-tag.lvl { color: #F0B94B; border-color: rgba(240,185,75,.6); }
-  .mh-ws-tag i { width: 6px; height: 6px; border-radius: 50%; background: #3DDBA9; }
-  .mh-ws[data-speaker="ai"] .mh-ws-tag i { animation: mh-live-pulse 1.2s infinite; }
-  .mh-ws-plate { position: absolute; z-index: 2; left: 10px; bottom: 64px; background: rgba(6,10,21,.72); border: 1px solid rgba(150,180,255,.22); border-radius: 11px; padding: 6px 11px; backdrop-filter: blur(6px); }
-  .mh-ws-plate b { display: block; font-size: 12.5px; font-weight: 700; }
-  .mh-ws-plate span { display: block; font-size: 10px; line-height: 1.3; color: #B4C3E2; }
-  .mh-ws-you { position: absolute; z-index: 2; right: 10px; bottom: 64px; width: 27%; aspect-ratio: 4 / 3.2; border-radius: 10px; overflow: hidden; border: 1.5px solid rgba(150,180,255,.3); background: linear-gradient(180deg, #16254f, #0c1736); transition: border-color .3s, box-shadow .3s; }
-  .mh-ws[data-speaker="you"] .mh-ws-you { border-color: #3DDBA9; box-shadow: 0 0 0 3px rgba(61,219,169,.18); }
-  .mh-ws-you img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 25%; display: block; }
-  .mh-ws-you.noimg img { display: none; } .mh-ws-you.noimg::before { content: ''; position: absolute; left: 50%; top: 58%; width: 46%; aspect-ratio: 1; border-radius: 50% 50% 0 0 / 60% 60% 0 0; background: #5B6B96; transform: translateX(-50%); }
-  .mh-ws-you em { position: absolute; z-index: 1; left: 6px; bottom: 4px; font: 600 8.5px ui-monospace, Menlo, monospace; letter-spacing: .06em; font-style: normal; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
-  .mh-ws-mic { position: absolute; z-index: 1; right: 6px; bottom: 5px; display: inline-flex; gap: 2px; align-items: flex-end; height: 11px; }
-  .mh-ws-mic i { width: 3px; height: 100%; border-radius: 2px; background: #3DDBA9; transform-origin: bottom; transform: scaleY(.2); }
-  .mh-ws[data-speaker="you"] .mh-ws-mic i { animation: mh-ws-eq 1s ease-in-out infinite; }
-  .mh-ws-mic i:nth-child(2) { animation-delay: -.3s; } .mh-ws-mic i:nth-child(3) { animation-delay: -.6s; }
-  .mh-ws-cap { position: absolute; z-index: 2; left: 10px; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 10px; min-height: 28px; background: rgba(6,10,21,.78); border: 1px solid rgba(150,180,255,.2); border-radius: 10px; padding: 6px 10px; backdrop-filter: blur(6px); }
-  .mh-ws-cap p { margin: 0; flex: 1; font-size: 11.5px; line-height: 1.35; color: #fff; min-height: 1.35em; }
-  .mh-ws-wave { display: inline-flex; gap: 2px; align-items: center; height: 14px; flex: none; }
-  .mh-ws-wave i { width: 2.5px; height: 100%; border-radius: 2px; background: #5B9BFF; transform: scaleY(.18); }
-  .mh-ws[data-speaker="ai"] .mh-ws-wave i { animation: mh-ws-eq .9s ease-in-out infinite; }
-  .mh-ws-wave i:nth-child(3n) { animation-delay: -.25s; } .mh-ws-wave i:nth-child(3n+1) { animation-delay: -.5s; } .mh-ws-wave i:nth-child(4n) { animation-delay: -.7s; }
-  .mh-ws-ctl { display: flex; align-items: center; justify-content: space-between; font: 600 10px ui-monospace, Menlo, monospace; letter-spacing: .06em; color: #93A3C4; }
-  .mh-ws-ctl .mh-ws-btns { display: inline-flex; gap: 6px; }
-  .mh-ws-ctl .mh-ws-btns span { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(150,180,255,.22); background: rgba(255,255,255,.05); display: inline-flex; align-items: center; justify-content: center; }
-  .mh-ws-ctl .mh-ws-btns span.end { width: auto; padding: 0 10px; border-radius: 999px; background: #2a1220; border-color: rgba(255,100,120,.4); color: #FF8A9A; font-size: 9.5px; }
-  .mh-ws-tr { border: 1px solid rgba(150,180,255,.16); border-radius: 13px; padding: 9px 12px; background: rgba(255,255,255,.03); }
-  .mh-ws-tr h5, .mh-ws-box h4 { margin: 0 0 6px; font: 600 9.5px ui-monospace, Menlo, monospace; letter-spacing: .08em; color: #93A3C4; }
-  .mh-ws-tr p { margin: 0; font: 400 11.5px/1.55 ui-monospace, Menlo, Consolas, monospace; color: #C5D2EE; min-height: 4.7em; }
-  .mh-ws-caret { display: inline-block; width: 6px; height: 12px; background: #5B9BFF; vertical-align: -2px; animation: mh-ws-blink 1s steps(1) infinite; }
-  /* side panel */
-  .mh-ws-side { display: grid; gap: 10px; align-content: start; min-width: 0; }
-  .mh-ws-box { border: 1px solid rgba(150,180,255,.16); border-radius: 13px; padding: 10px 12px; background: rgba(255,255,255,.035); }
-  .mh-ws-starwrap { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; }
-  .mh-ws-ring { position: relative; width: 64px; height: 64px; }
-  .mh-ws-ring svg { width: 64px; height: 64px; transform: rotate(-90deg); display: block; }
-  .mh-ws-ring circle { fill: none; stroke-width: 6; }
-  .mh-ws-ring .bg { stroke: rgba(255,255,255,.08); }
-  .mh-ws-ring .fg { stroke: #3DDBA9; stroke-linecap: round; stroke-dasharray: 150.8; stroke-dashoffset: 150.8; transition: stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1); }
-  .mh-ws-ring b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; }
-  .mh-ws-star { display: grid; gap: 4px; }
-  .mh-ws-star div { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #6F7FA6; transition: color .35s; }
-  .mh-ws-star i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid #4A5A85; transition: all .35s; flex: none; }
-  .mh-ws-star div.on { color: #EAF0FF; } .mh-ws-star div.on i { background: #3DDBA9; border-color: #3DDBA9; }
-  .mh-ws-star div.miss.on { color: #F0B94B; } .mh-ws-star div.miss.on i { background: #F0B94B; border-color: #F0B94B; }
-  .mh-ws-ins { font-size: 11.5px; line-height: 1.45; color: #C5D2EE; min-height: 50px; opacity: 0; transform: translateY(4px); transition: opacity .4s, transform .4s; }
-  .mh-ws-ins.on { opacity: 1; transform: none; }
-  .mh-ws-vec { display: grid; grid-template-columns: 88px minmax(0,1fr) 22px; gap: 7px; align-items: center; font-size: 10.5px; color: #C5D2EE; margin-bottom: 7px; }
-  .mh-ws-vec:last-child { margin-bottom: 0; }
-  .mh-ws-bar2 { height: 5px; border-radius: 9px; background: rgba(255,255,255,.08); overflow: hidden; }
-  .mh-ws-bar2 i { display: block; height: 100%; width: 0; border-radius: 9px; background: var(--c); transition: width .8s cubic-bezier(.2,.7,.2,1); }
-  .mh-ws-vec em { font: 500 10px ui-monospace, Menlo, monospace; font-style: normal; color: #D6E4FF; opacity: 0; transition: opacity .4s; }
-  .mh-ws-note { padding: 0 16px 12px; font-size: 10.5px; color: #93A3C4; text-align: right; }
-  @keyframes mh-ws-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-  @keyframes mh-ws-drift { from { transform: scale(1.02); } to { transform: scale(1.07) translateY(-1%); } }
-  @keyframes mh-ws-eq { 0%,100% { transform: scaleY(.2); } 50% { transform: scaleY(1); } }
-  @keyframes mh-ws-blink { 50% { opacity: 0; } }
+  /* ── Live interview + intelligence showcase (illustrative; no API calls, no audio, no photos) ── */
+  .mh-ii { position: relative; width: 100%; max-width: 640px; margin-left: auto; padding: 18px 0 26px; }
+  .mh-ii-orb { position: absolute; border-radius: 50%; filter: blur(46px); pointer-events: none; z-index: 0; animation: mh-ii-drift 14s ease-in-out infinite alternate; }
+  .mh-ii-orb.o1 { width: 300px; height: 300px; right: -60px; top: -10px; background: radial-gradient(circle, rgba(91,155,255,.55), transparent 70%); }
+  .mh-ii-orb.o2 { width: 260px; height: 260px; left: -40px; bottom: 10px; background: radial-gradient(circle, rgba(139,92,246,.38), transparent 70%); animation-delay: -6s; }
+  .mh-ii-card { position: relative; z-index: 1; border-radius: 22px; padding: 1px; background: linear-gradient(160deg, rgba(111,166,255,.9), rgba(139,92,246,.35) 45%, rgba(150,180,255,.14)); box-shadow: 0 40px 90px -26px rgba(8,15,40,.65); animation: mh-ii-in .7s ease-out both; }
+  .mh-ii-win { border-radius: 21px; background: linear-gradient(180deg, #0E1A3C 0%, #0A1330 100%); color: #EAF0FF; padding: 14px 16px 12px; }
+  .mh-ii-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid rgba(150,180,255,.12); font: 600 10.5px ui-monospace, Menlo, Consolas, monospace; letter-spacing: .08em; color: #93A3C4; }
+  .mh-ii-top b { color: #EAF0FF; font-weight: 700; }
+  .mh-ii-top .lv { display: inline-flex; align-items: center; gap: 7px; }
+  .mh-ii-top .lv i { width: 7px; height: 7px; border-radius: 50%; background: #3DDBA9; animation: mh-live-pulse 1.8s infinite ease-in-out; }
+  .mh-ii-pause { appearance: none; border: 1px solid rgba(150,180,255,.25); background: rgba(255,255,255,.05); color: #D6E4FF; border-radius: 999px; font: 600 10px ui-monospace, Menlo, monospace; letter-spacing: .06em; padding: 4px 10px; cursor: pointer; }
+  .mh-ii-pause:hover { background: rgba(255,255,255,.1); } .mh-ii-pause:focus-visible { outline: 2px solid #5B9BFF; outline-offset: 2px; }
+  .mh-ii-body { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); gap: 16px; padding-top: 14px; }
+  .mh-ii-col { display: grid; gap: 10px; align-content: start; min-width: 0; }
+  /* conversation */
+  .mh-ii-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 6px; font: 600 9.5px ui-monospace, Menlo, monospace; letter-spacing: .1em; color: #93A3C4; }
+  .mh-ii-h em { font-style: normal; display: inline-flex; align-items: center; gap: 6px; color: #5B9BFF; }
+  .mh-ii-h em.you { color: #3DDBA9; }
+  .mh-ii-wave { display: inline-flex; gap: 2px; align-items: center; height: 12px; }
+  .mh-ii-wave i { width: 2.5px; height: 100%; border-radius: 2px; background: currentColor; transform: scaleY(.2); }
+  .mh-ii[data-spk="ai"] .mh-ii-wave.a i, .mh-ii[data-spk="you"] .mh-ii-wave.y i { animation: mh-ii-eq .9s ease-in-out infinite; }
+  .mh-ii-wave i:nth-child(2n) { animation-delay: -.3s; } .mh-ii-wave i:nth-child(3n) { animation-delay: -.6s; }
+  .mh-ii-q { padding: 11px 13px; border-radius: 14px 14px 14px 4px; background: linear-gradient(135deg, rgba(47,107,255,.28), rgba(139,92,246,.2)); border: 1px solid rgba(111,166,255,.35); font-size: 14px; line-height: 1.45; font-weight: 600; color: #fff; min-height: 66px; }
+  .mh-ii-a { padding: 11px 13px; border-radius: 14px; background: rgba(255,255,255,.04); border: 1px solid rgba(150,180,255,.16); font-size: 12.5px; line-height: 1.6; color: #C5D2EE; min-height: 142px; }
+  .mh-ii-a mark { background: none; color: inherit; border-radius: 4px; padding: 1px 0; box-shadow: inset 0 -2px 0 transparent; transition: background .4s, box-shadow .4s, color .4s; }
+  .mh-ii-a mark.s.on { background: rgba(59,130,246,.2); box-shadow: inset 0 -2px 0 #3B82F6; color: #EAF0FF; }
+  .mh-ii-a mark.t.on { background: rgba(167,139,250,.2); box-shadow: inset 0 -2px 0 #A78BFA; color: #EAF0FF; }
+  .mh-ii-a mark.a.on { background: rgba(34,197,94,.18); box-shadow: inset 0 -2px 0 #22C55E; color: #EAF0FF; }
+  .mh-ii-a mark.r.on { background: rgba(245,158,11,.2); box-shadow: inset 0 -2px 0 #F59E0B; color: #EAF0FF; }
+  .mh-ii-caret { display: inline-block; width: 6px; height: 12px; background: #5B9BFF; vertical-align: -2px; margin-left: 1px; animation: mh-ii-blink 1s steps(1) infinite; }
+  .mh-ii-ins { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; border-radius: 12px; background: rgba(91,155,255,.09); border: 1px solid rgba(91,155,255,.22); }
+  .mh-ii-ins > b { flex: none; width: 22px; height: 22px; border-radius: 7px; background: rgba(240,185,75,.16); color: #F0B94B; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .mh-ii-ins p { margin: 0; font-size: 11.5px; line-height: 1.5; color: #D6E4FF; min-height: 34px; }
+  .mh-ii-ins p small { display: block; margin-bottom: 2px; font: 600 9px ui-monospace, Menlo, monospace; letter-spacing: .1em; color: #93A3C4; }
+  /* results */
+  .mh-ii-score { display: grid; grid-template-columns: 84px minmax(0,1fr); gap: 12px; align-items: center; }
+  .mh-ii-ring { position: relative; width: 84px; height: 84px; }
+  .mh-ii-ring svg { width: 84px; height: 84px; transform: rotate(-90deg); display: block; }
+  .mh-ii-ring circle { fill: none; stroke-width: 8; }
+  .mh-ii-ring .bg { stroke: #1B2740; }
+  .mh-ii-ring .fg { stroke: url(#mh-ii-grad); stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 1s cubic-bezier(.2,.7,.2,1); }
+  .mh-ii-ring b { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 25px; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+  .mh-ii-ring b small { font-size: 9px; font-weight: 600; color: #6F7FA6; margin-top: 3px; letter-spacing: .04em; }
+  .mh-ii-st strong { display: block; font-size: 14px; line-height: 1.25; font-weight: 700; color: #fff; }
+  .mh-ii-st span { display: block; margin-top: 3px; font-size: 11px; line-height: 1.4; color: #A9B8D6; }
+  .mh-ii-box { padding-top: 10px; border-top: 1px solid rgba(150,180,255,.12); }
+  .mh-ii-rail { display: flex; align-items: flex-start; }
+  .mh-ii-step { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 40px; }
+  .mh-ii-node { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 700; border: 1px solid #2A3450; color: #8A94A8; transition: all .3s; }
+  .mh-ii-step small { font-size: 8.5px; color: #8A94A8; }
+  .mh-ii-node.active { border-color: #3B82F6; color: #60A5FA; background: rgba(59,130,246,.15); box-shadow: 0 0 14px rgba(59,130,246,.45); animation: mh-ii-pulse 1.4s ease-in-out infinite; }
+  .mh-ii-node.done { border-color: rgba(34,197,94,.55); color: #22C55E; background: rgba(34,197,94,.12); }
+  .mh-ii-node.missed { border-color: #EF4444; color: #EF4444; box-shadow: 0 0 0 2px rgba(239,68,68,.35); }
+  .mh-ii-conn { flex: 1; min-width: 6px; height: 1px; background: #2A3450; margin-top: 14px; transition: background .3s; }
+  .mh-ii-conn.done { background: #22C55E; }
+  .mh-ii-snote { margin-top: 5px; min-height: 28px; font-size: 10px; line-height: 1.4; color: transparent; transition: color .3s; }
+  .mh-ii-snote.miss { color: #F87171; } .mh-ii-snote.ok { color: #4ADE80; }
+  .mh-ii-vec { display: grid; grid-template-columns: 14px minmax(0,1fr) 22px; gap: 3px 7px; align-items: center; font-size: 10.5px; color: #B4C3E2; margin-bottom: 6px; }
+  .mh-ii-vec:last-child { margin-bottom: 0; }
+  .mh-ii-vec > i { width: 14px; height: 14px; border-radius: 5px; background: color-mix(in srgb, var(--c) 20%, transparent); position: relative; }
+  .mh-ii-vec > i::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c); }
+  .mh-ii-vec > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mh-ii-bar { grid-column: 2 / 4; height: 4px; border-radius: 3px; background: rgba(255,255,255,.07); overflow: hidden; }
+  .mh-ii-bar i { display: block; height: 100%; width: 0; border-radius: 3px; background: var(--c); transition: width .9s cubic-bezier(.2,.7,.2,1); }
+  .mh-ii-vec em { font: 500 10px ui-monospace, Menlo, monospace; font-style: normal; color: #D6E4FF; text-align: right; }
+  .mh-ii-foot { margin-top: 12px; font-size: 10.5px; color: #7D8DB3; }
+  .mh-ii-chip { position: absolute; z-index: 3; right: -10px; bottom: 6px; background: #fff; color: #0F172A; border-radius: 14px; padding: 9px 14px; display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 700; box-shadow: 0 18px 44px -10px rgba(15,23,42,.35), 0 0 0 1px rgba(15,23,42,.05); opacity: 0; transform: translateY(8px); transition: opacity .45s, transform .45s; }
+  .mh-ii-chip.on { opacity: 1; transform: none; }
+  .mh-ii-chip i { width: 20px; height: 20px; border-radius: 50%; background: #DCFCE7; color: #16A34A; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-style: normal; }
   .mh-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  @media (prefers-reduced-motion: reduce) { .mh-ws *, .mh-ws-frame { animation: none !important; transition: none !important; } }
-
+  .mh-hero-proof { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 22px; }
+  .mh-hero-proof li { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 500; color: #475569; }
+  .mh-hero-proof + .mh-hero-tertiary-row { margin-top: 18px; }
+  .mh-hero-proof svg { width: 16px; height: 16px; flex: none; }
+  @keyframes mh-ii-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes mh-ii-drift { from { transform: translate(0,0) scale(1); } to { transform: translate(26px,-18px) scale(1.12); } }
+  @keyframes mh-ii-pulse { 0%,100% { opacity: 1; } 50% { opacity: .6; } }
+  @keyframes mh-ii-eq { 0%,100% { transform: scaleY(.2); } 50% { transform: scaleY(1); } }
+  @keyframes mh-ii-blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .mh-ii *, .mh-ii-card { animation: none !important; transition: none !important; } }
   @media (max-width: 1024px) {
     .mh-hero-inner { grid-template-columns: minmax(0, 1fr) !important; gap: 44px; }
     .mh-hero-h1 { font-size: 42px; }
-    .mh-ws { margin: 0 auto; }
+    .mh-ii { margin: 0 auto; max-width: 620px; }
   }
   @media (max-width: 640px) {
     .mh-hero { padding: 40px 16px 64px; }
@@ -380,10 +380,11 @@
     .mh-hero-signature { font-size: 18px; }
     .mh-hero-actions { flex-direction: column; align-items: stretch; }
     .mh-btn-primary, .mh-btn-outline { justify-content: center; }
-    .mh-ws-body { grid-template-columns: 1fr; padding: 12px 12px 14px; }
-    .mh-ws-bar { padding: 10px 12px; font-size: 9.5px; }
-    .mh-ws-qn, .mh-ws-btns { display: none; }
-    .mh-ws-note { padding: 0 12px 12px; }
+    .mh-ii { padding: 0 0 22px; }
+    .mh-ii-win { padding: 12px 12px 12px; }
+    .mh-ii-body { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .mh-ii-a { min-height: 150px; }
+    .mh-ii-chip { right: 6px; bottom: 0; }
   }
 </style>
 
@@ -415,6 +416,11 @@
         </a>
       </div>
 
+      <ul class="mh-hero-proof">
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#DCFCE7"/><path d="M5.8 10.3l2.8 2.8 5.6-5.9" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>30 welcome AI minutes, free</li>
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#DCFCE7"/><path d="M5.8 10.3l2.8 2.8 5.6-5.9" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>No credit card required</li>
+      </ul>
+
       <div class="mh-hero-tertiary-row">
         <a href="#how-it-works" class="mh-hero-tertiary">
           <span class="mh-hero-tertiary-icon">
@@ -426,83 +432,122 @@
     </div>
 
 
-    <!-- Right Column: simulated video-call interview. Illustrative sample only:
-         no network calls, no audio. Images are static files with graceful fallback:
-         /images/home/hero-interviewer.jpg and /images/home/hero-you.jpg -->
-    <div class="mh-ws" id="mh-ws" data-speaker="none" role="region" aria-label="Illustrative sample interview">
-      <p class="mh-sr-only">Illustrative sample, not a live interview. An AI interviewer asks a question, a sample answer appears, and STAR evidence and five assessment vectors fill in.</p>
-      <div class="mh-ws-frame"><div class="mh-ws-win">
-        <div class="mh-ws-bar">
-          <span class="mh-ws-live"><i></i><b>SAMPLE INTERVIEW</b> &middot; illustrative</span>
-          <span style="display:inline-flex;align-items:center;gap:10px"><span class="mh-ws-qn">QUESTION 4 OF 8</span><button type="button" class="mh-ws-pause" id="mh-ws-pause" aria-pressed="false">PAUSE</button></span>
+    <!-- Right Column: live interview + intelligence showcase. Illustrative sample only:
+         no network calls, no audio, no photos. -->
+    <div class="mh-ii" id="mh-ii" data-spk="none" role="region" aria-label="Illustrative sample of a MedhaIQ live interview and its intelligence results">
+      <p class="mh-sr-only">Illustrative sample, not a real assessment. An AI interviewer asks a question, a sample answer appears, STAR evidence is detected, a follow-up is asked, and the overall score and five vectors improve.</p>
+      <span class="mh-ii-orb o1" aria-hidden="true"></span><span class="mh-ii-orb o2" aria-hidden="true"></span>
+      <div class="mh-ii-card"><div class="mh-ii-win">
+        <div class="mh-ii-top">
+          <span class="lv"><i></i><b>LIVE INTERVIEW</b> &middot; sample</span>
+          <button type="button" class="mh-ii-pause" id="mh-ii-pause" aria-pressed="false">PAUSE</button>
         </div>
-        <div class="mh-ws-body" aria-hidden="true">
-          <div class="mh-ws-main">
-            <div class="mh-ws-video" id="mh-ws-video">
-              <img class="mh-ws-photo" src="/images/home/hero-interviewer.jpg" alt="" width="1200" height="945" decoding="async" fetchpriority="high" onerror="this.parentNode.classList.add('noimg')">
-              <div class="mh-ws-fallback"><svg viewBox="0 0 200 240"><defs><linearGradient id="mh-ws-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5B9BFF" stop-opacity=".9"/><stop offset="1" stop-color="#5B9BFF" stop-opacity=".2"/></linearGradient></defs><path d="M22 240C22 176 62 150 100 150S178 176 178 240Z" fill="url(#mh-ws-g)"/><circle cx="100" cy="92" r="35" fill="url(#mh-ws-g)"/></svg></div>
-              <div class="mh-ws-tags"><span class="mh-ws-tag"><i></i><span id="mh-ws-status">READY</span></span><span class="mh-ws-tag lvl">Elite</span></div>
-              <div class="mh-ws-plate"><b>Priya Ramesh</b><span>Partner &middot; McKinsey Consulting</span></div>
-              <div class="mh-ws-you" id="mh-ws-you"><img src="/images/home/hero-you.jpg" alt="" width="400" height="320" decoding="async" onerror="this.parentNode.classList.add('noimg')"><em>YOU</em><span class="mh-ws-mic"><i></i><i></i><i></i></span></div>
-              <div class="mh-ws-cap"><span class="mh-ws-wave" id="mh-ws-wave"></span><p id="mh-ws-qtext"></p></div>
+        <div class="mh-ii-body" aria-hidden="true">
+          <div class="mh-ii-col">
+            <div>
+              <div class="mh-ii-h"><span>AI INTERVIEWER</span><em><span class="mh-ii-wave a" id="mh-ii-wa"></span><span id="mh-ii-stat">READY</span></em></div>
+              <div class="mh-ii-q" id="mh-ii-q"></div>
             </div>
-            <div class="mh-ws-ctl"><span id="mh-ws-clock">00:00 / 01:00</span><span class="mh-ws-btns"><span>&#127908;</span><span>&#127909;</span><span class="end">END</span></span></div>
-            <div class="mh-ws-tr"><h5>YOUR RESPONSE (SAMPLE)</h5><p><span id="mh-ws-atext"></span><span class="mh-ws-caret" id="mh-ws-caret" style="display:none"></span></p></div>
+            <div>
+              <div class="mh-ii-h"><span>YOUR ANSWER (SAMPLE)</span><em class="you"><span class="mh-ii-wave y" id="mh-ii-wy"></span></em></div>
+              <div class="mh-ii-a"><span id="mh-ii-at"></span><span class="mh-ii-caret" id="mh-ii-caret" style="display:none"></span></div>
+            </div>
+            <div class="mh-ii-ins"><b>&#9728;</b><p id="mh-ii-ins"><small>AI INSIGHT</small><span id="mh-ii-it">&nbsp;</span></p></div>
           </div>
-          <div class="mh-ws-side">
-            <div class="mh-ws-box"><h4>STAR EVIDENCE</h4>
-              <div class="mh-ws-starwrap">
-                <div class="mh-ws-ring"><svg viewBox="0 0 64 64"><circle class="bg" cx="32" cy="32" r="24"/><circle class="fg" id="mh-ws-fg" cx="32" cy="32" r="24"/></svg><b id="mh-ws-cnt">0/4</b></div>
-                <div class="mh-ws-star" id="mh-ws-star"><div><i></i>Situation</div><div><i></i>Task</div><div><i></i>Action</div><div class="miss"><i></i>Result</div></div>
+          <div class="mh-ii-col">
+            <div class="mh-ii-score">
+              <div class="mh-ii-ring">
+                <svg viewBox="0 0 84 84"><defs><linearGradient id="mh-ii-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5B9BFF"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs><circle class="bg" cx="42" cy="42" r="35"/><circle class="fg" id="mh-ii-fg" cx="42" cy="42" r="35"/></svg>
+                <b><span id="mh-ii-num">--</span><small>/100</small></b>
               </div>
+              <div class="mh-ii-st"><div class="mh-ii-h" style="margin-bottom:4px"><span>OVERALL SCORE</span></div><strong id="mh-ii-ttl">Listening&hellip;</strong><span id="mh-ii-sub">Scored as you speak.</span></div>
             </div>
-            <div class="mh-ws-box"><h4>SAMPLE INSIGHT</h4><div class="mh-ws-ins" id="mh-ws-ins">Clear situation and action. No measurable result yet, so a follow-up is likely.</div></div>
-            <div class="mh-ws-box"><h4>5-VECTOR ASSESSMENT</h4><div id="mh-ws-vecs"></div></div>
+            <div class="mh-ii-box">
+              <div class="mh-ii-h"><span>STAR PROGRESS</span></div>
+              <div class="mh-ii-rail" id="mh-ii-rail">
+                <div class="mh-ii-step"><span class="mh-ii-node">S</span><small>Situation</small></div><span class="mh-ii-conn"></span>
+                <div class="mh-ii-step"><span class="mh-ii-node">T</span><small>Task</small></div><span class="mh-ii-conn"></span>
+                <div class="mh-ii-step"><span class="mh-ii-node">A</span><small>Action</small></div><span class="mh-ii-conn"></span>
+                <div class="mh-ii-step"><span class="mh-ii-node">R</span><small>Result</small></div>
+              </div>
+              <div class="mh-ii-snote" id="mh-ii-snote"></div>
+            </div>
+            <div class="mh-ii-box"><div class="mh-ii-h"><span>5-VECTOR INTELLIGENCE</span></div><div id="mh-ii-vecs"></div></div>
           </div>
         </div>
-        <div class="mh-ws-note">Sample session &middot; illustrative content, not a real assessment</div>
+        <div class="mh-ii-foot" aria-hidden="true">Sample session &middot; illustrative content, not a real assessment</div>
       </div></div>
+      <div class="mh-ii-chip" id="mh-ii-b" aria-hidden="true"><i>&#8593;</i><span>Structure +11 with a measurable result</span></div>
     </div>
   </div>
 </section>
 
 <script>
 (function () {
-  var root = document.getElementById('mh-ws');
+  var root = document.getElementById('mh-ii');
   if (!root) return;
   var $ = function (id) { return document.getElementById(id); };
-  var Q = 'Tell me about a time you influenced a difficult decision.';
-  var A = 'We had two weeks and three regions with uneven data, so I ranked regions by revenue at risk, aligned the team on one trade-off, and started where a wrong call would cost the most.';
-  var F = 'What was the measurable result of that decision?';
-  var VEC = [['Structure', 85, '#3DDBA9'], ['Domain', 80, '#5B9BFF'], ['Strategy', 78, '#A78BFA'], ['Communication', 66, '#F0B94B'], ['Leadership', 82, '#F472B6']];
-  var LOOP = 19000, t = 0, paused = false, visible = true, reduced = false;
+  var Q1 = 'Tell me about a time you influenced a difficult decision.';
+  var Q2 = 'What was the measurable result of that decision?';
+  // Sample answer, split by STAR part so each part is highlighted when the engine "detects" it.
+  var SEG = [
+    ['s', 'We had two weeks and three regions with uneven data, '],
+    ['t', 'so my task was to recommend where to focus first. '],
+    ['a', 'I ranked regions by revenue at risk and aligned the team on one trade-off. '],
+    ['r', 'Escalations fell 18% in six weeks.']
+  ];
+  var NAMES = ['Structure', 'Domain Expertise', 'Strategic Thinking', 'Communication', 'Leadership & Execution'];
+  var COL = ['#3B82F6', '#A78BFA', '#22C55E', '#FB923C', '#F59E0B'];
+  var V1 = [74, 72, 70, 62, 76], V2 = [85, 80, 78, 66, 82];
+  var LOOP = 21000, t = 0, paused = false, visible = true, reduced = false, C = 220, lastKey = '';
   try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
-  var wave = $('mh-ws-wave'); for (var i = 0; i < 18; i++) wave.appendChild(document.createElement('i'));
-  var vecs = $('mh-ws-vecs');
-  VEC.forEach(function (v) { var r = document.createElement('div'); r.className = 'mh-ws-vec'; r.innerHTML = '<span>' + v[0] + '</span><div class="mh-ws-bar2"><i style="--c:' + v[2] + '"></i></div><em>' + v[1] + '</em>'; vecs.appendChild(r); });
-  var bars = vecs.querySelectorAll('.mh-ws-bar2 i'), nums = vecs.querySelectorAll('em'), star = $('mh-ws-star').children;
-  var C = 150.8;
+  ['mh-ii-wa', 'mh-ii-wy'].forEach(function (id) { var w = $(id); for (var i = 0; i < 7; i++) w.appendChild(document.createElement('i')); });
+  var vecs = $('mh-ii-vecs');
+  NAMES.forEach(function (n, i) { var r = document.createElement('div'); r.className = 'mh-ii-vec'; r.style.setProperty('--c', COL[i]); r.innerHTML = '<i></i><span>' + n.replace('&', '&amp;') + '</span><em>--</em><div class="mh-ii-bar"><i></i></div>'; vecs.appendChild(r); });
+  var bars = vecs.querySelectorAll('.mh-ii-bar i'), nums = vecs.querySelectorAll('em');
+  var nodes = $('mh-ii-rail').querySelectorAll('.mh-ii-node'), conns = $('mh-ii-rail').querySelectorAll('.mh-ii-conn');
+  var at = $('mh-ii-at'), bEl = $('mh-ii-b');
+  function setText(el, v) { if (el.textContent !== v) el.textContent = v; }
   function slice(s, from, to) { var p = Math.max(0, Math.min(1, (t - from) / (to - from))); return s.slice(0, Math.round(s.length * p)); }
-  function pad(n) { return (n < 10 ? '0' : '') + n; }
-  // Timeline (ms): 0 ready | 900 asks | 4200 you answer | 9600 STAR | 11200 insight | 12000 vectors | 13600 follow-up | 17000 hold | 19000 loop
-  function render() {
-    var speaker = 'none', status = 'READY', q = '';
-    if (t >= 900 && t < 4200) { speaker = 'ai'; status = 'SPEAKING'; q = slice(Q, 900, 3600); }
-    else if (t >= 4200 && t < 13600) { speaker = 'you'; status = 'LISTENING'; q = Q; }
-    else if (t >= 13600 && t < 17000) { speaker = 'ai'; status = 'FOLLOW-UP'; q = slice(F, 13600, 15600); }
-    else if (t >= 17000) { status = 'LISTENING'; q = F; }
-    root.setAttribute('data-speaker', speaker);
-    $('mh-ws-status').textContent = status; $('mh-ws-qtext').textContent = q;
-    $('mh-ws-atext').textContent = t >= 4200 ? slice(A, 4500, 9400) : '';
-    $('mh-ws-caret').style.display = (t >= 4200 && t < 13600) ? 'inline-block' : 'none';
-    var on = [t >= 9600, t >= 9600, t >= 10000, t >= 10400], n = 0;
-    for (var s = 0; s < 4; s++) { star[s].className = (on[s] ? 'on' : '') + (s === 3 ? ' miss' : ''); if (on[s] && s < 3) n++; }
-    $('mh-ws-fg').style.strokeDashoffset = C * (1 - n / 4); $('mh-ws-cnt').textContent = n + '/4';
-    $('mh-ws-ins').className = 'mh-ws-ins' + (t >= 11200 ? ' on' : '');
-    for (var k = 0; k < bars.length; k++) { var o = t >= 12000 + k * 150; bars[k].style.width = o ? VEC[k][1] + '%' : '0'; nums[k].style.opacity = o ? 1 : 0; }
-    $('mh-ws-clock').textContent = '00:' + pad(Math.min(59, Math.floor(t / 1000 * 3))) + ' / 01:00';
+  // Typed answer: each segment is typed within its own window, so highlights line up with the STAR detection.
+  var WIN = [[3200, 5000], [5200, 6600], [6800, 8800], [13200, 14800]];
+  function answerHTML() {
+    var h = '', i;
+    for (i = 0; i < SEG.length; i++) {
+      var typed = slice(SEG[i][1], WIN[i][0], WIN[i][1]);
+      if (!typed) continue;
+      var on = (i === 0 && t >= 5000) || (i === 1 && t >= 6600) || (i === 2 && t >= 8800) || (i === 3 && t >= 14800);
+      h += '<mark class="' + SEG[i][0] + (on ? ' on' : '') + '">' + typed + '</mark>';
+    }
+    return h;
   }
-  var pb = $('mh-ws-pause');
+  // Timeline (ms): 400 asks | 3200 you answer S | 5200 T | 6800 A | 9600 scored (R missing) | 10600 follow-up | 13200 you add the result | 14800 full STAR | 19000 hold | 21000 loop
+  function render() {
+    var spk = 'none', stat = 'READY', q = '';
+    if (t >= 400 && t < 3200) { spk = 'ai'; stat = 'SPEAKING'; q = slice(Q1, 400, 2800); }
+    else if (t >= 3200 && t < 10600) { spk = 'you'; stat = 'LISTENING'; q = Q1; }
+    else if (t >= 10600 && t < 13200) { spk = 'ai'; stat = 'FOLLOW-UP'; q = slice(Q2, 10600, 12800); }
+    else if (t >= 13200) { spk = 'you'; stat = 'LISTENING'; q = Q2; }
+    root.setAttribute('data-spk', spk); setText($('mh-ii-stat'), stat); setText($('mh-ii-q'), q);
+    var live = (t >= 3200 && t < 9600) || (t >= 13200 && t < 14800);
+    $('mh-ii-caret').style.display = live ? 'inline-block' : 'none';
+    if (t < 3200) at.innerHTML = ''; else at.innerHTML = answerHTML();
+    var det = [t >= 5000, t >= 6600, t >= 8800, t >= 14800], fin1 = t >= 9600, fin2 = t >= 15600, k;
+    for (k = 0; k < 4; k++) nodes[k].className = 'mh-ii-node' + (det[k] ? ((k < 3 ? fin1 : fin2) ? ' done' : ' active') : (fin1 && k === 3 ? ' missed' : ''));
+    for (k = 0; k < 3; k++) conns[k].className = 'mh-ii-conn' + (det[k] && det[k + 1] && (k < 2 ? fin1 : fin2) ? ' done' : '');
+    var sn = $('mh-ii-snote');
+    sn.className = 'mh-ii-snote' + (fin2 ? ' ok' : (fin1 ? ' miss' : ''));
+    setText(sn, fin2 ? '\u2713 Full STAR structure \u2014 all four components covered' : (fin1 ? '\u2715 This answer missed: Result' : ''));
+    var V = fin2 ? V2 : (fin1 ? V1 : null), sc = fin2 ? 78 : (fin1 ? 71 : 0);
+    for (k = 0; k < 5; k++) { bars[k].style.width = V ? V[k] + '%' : '0'; setText(nums[k], V ? String(V[k]) : '--'); }
+    $('mh-ii-fg').style.strokeDashoffset = C * (1 - sc / 100); setText($('mh-ii-num'), sc ? String(sc) : '--');
+    setText($('mh-ii-ttl'), fin2 ? 'Strong, complete answer' : (fin1 ? 'Good start' : 'Listening\u2026'));
+    setText($('mh-ii-sub'), fin2 ? 'Structure and impact are clear.' : (fin1 ? 'Result missing, so a follow-up was asked.' : 'Scored as you speak.'));
+    var ins = fin2 ? 'Complete STAR answer. Quantified results lift Structure and Strategic Thinking.' : (fin1 ? 'Clear situation and action. Add a measurable result to strengthen Structure.' : '');
+    setText($('mh-ii-it'), ins || '\u00a0');
+    bEl.className = 'mh-ii-chip' + (t >= 16000 && t < 20000 ? ' on' : '');
+  }
+  var pb = $('mh-ii-pause');
   if (reduced) { pb.style.display = 'none'; t = 18000; render(); return; }
   pb.addEventListener('click', function () { paused = !paused; pb.setAttribute('aria-pressed', paused ? 'true' : 'false'); pb.textContent = paused ? 'PLAY' : 'PAUSE'; });
   try { new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0.15 }).observe(root); } catch (e) {}

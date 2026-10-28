@@ -1,0 +1,26 @@
+/* Home page motion layer (additive, home only).
+   Pure CSS scroll-driven reveals, same approach as a restrained product site:
+   no JS, content fully visible by default, and the effect only applies when the browser
+   supports animation-timeline and the visitor has not asked for reduced motion.
+   Uses the independent `translate` / `scale` properties so it never fights existing hover transforms. */
+@keyframes mhm-rise { from { opacity: 0; translate: 0 24px; } to { opacity: 1; translate: 0 0; } }
+@keyframes mhm-grow { from { scale: 0 1; } to { scale: 1 1; } }
+@keyframes mhm-fade { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .mh-adaptive-card, .mh-audience-card, .mh-pricing-cards > *, .mh-xp-list li, .mh-xp-cta {
+      animation: mhm-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 55%;
+    }
+    .mh-adaptive-card:nth-child(2), .mh-audience-card:nth-child(2), .mh-pricing-cards > *:nth-child(2) { animation-range: entry 8% entry 63%; }
+    .mh-adaptive-card:nth-child(3), .mh-audience-card:nth-child(3), .mh-pricing-cards > *:nth-child(3) { animation-range: entry 16% entry 71%; }
+    .mh-xp-list li:nth-child(2) { animation-range: entry 4% entry 59%; } .mh-xp-list li:nth-child(3) { animation-range: entry 8% entry 63%; }
+    .mh-xp-list li:nth-child(4) { animation-range: entry 12% entry 67%; } .mh-xp-list li:nth-child(5) { animation-range: entry 16% entry 71%; }
+    /* the five-vector bars in "What makes it adaptive" fill as the card scrolls into view */
+    .mh-adaptive-score-fill { transform-origin: left center; animation: mhm-grow linear both; animation-timeline: view(); animation-range: entry 25% cover 38%; }
+    /* a thread that draws across the three adaptive cards */
+    .mh-adaptive-cards { position: relative; }
+    .mh-adaptive-cards::before { content: ''; position: absolute; left: 6%; right: 6%; top: -28px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #2F6BFF, #8B5CF6); transform-origin: left center; animation: mhm-grow linear both; animation-timeline: view(); animation-range: entry 0% entry 70%; }
+  }
+}
+@media (max-width: 900px) { .mh-adaptive-cards::before { display: none; } }

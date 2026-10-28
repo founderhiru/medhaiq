@@ -17,7 +17,7 @@
   .mh-xp-cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
   /* right: composition = photo card + speech bubble + response card, with a vertical STAR stack */
-  .mh-xp-stage { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; align-items: start; padding: 0 0 0 0; }
+  .mh-xp-stage { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; align-items: start; padding: 0 0 0 0; }
   .mh-xp-left { position: relative; display: grid; gap: 12px; padding-top: 74px; }
   .mh-xp-bubble { position: absolute; top: 0; left: 18px; right: 28px; background: #fff; color: #0F172A; border-radius: 16px 16px 16px 4px; padding: 12px 16px; font-size: 14px; font-weight: 600; line-height: 1.4; box-shadow: 0 14px 40px rgba(0,0,0,.35); min-height: 62px; z-index: 3; }
   .mh-xp-bubble::after { content: ''; position: absolute; left: 22px; bottom: -8px; width: 16px; height: 16px; background: #fff; transform: rotate(45deg); border-radius: 2px; }
@@ -39,16 +39,39 @@
   .mh-xp-wave i { flex: 1; max-width: 4px; height: 100%; border-radius: 2px; background: linear-gradient(180deg, #5B9BFF, #3DDBA9); transform: scaleY(.15); }
   .mh-xp[data-live="1"] .mh-xp-wave i { animation: mh-xp-eq 1s ease-in-out infinite; }
   .mh-xp-wave i:nth-child(3n) { animation-delay: -.3s; } .mh-xp-wave i:nth-child(3n+1) { animation-delay: -.6s; } .mh-xp-wave i:nth-child(5n) { animation-delay: -.15s; }
-  .mh-xp-star { display: grid; gap: 10px; padding-top: 74px; }
-  .mh-xp-card { display: grid; grid-template-columns: 36px 1fr 22px; gap: 12px; align-items: center; padding: 13px 14px; border-radius: 14px; border: 1px solid rgba(150,180,255,.16); background: rgba(255,255,255,.035); transition: border-color .4s, background .4s, box-shadow .4s; }
-  .mh-xp-card b { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; border: 1px solid rgba(150,180,255,.3); color: #93A3C4; transition: all .4s; }
-  .mh-xp-card strong { display: block; font-size: 14px; font-weight: 700; color: #EAF0FF; }
-  .mh-xp-card span { display: block; font-size: 11.5px; color: #7D8DB3; line-height: 1.35; transition: color .4s; }
-  .mh-xp-card s { text-decoration: none; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; background: #3DDBA9; color: #06241B; opacity: 0; transform: scale(.4); transition: all .4s cubic-bezier(.2,.9,.3,1.4); }
-  .mh-xp-card.on { border-color: rgba(61,219,169,.5); background: rgba(61,219,169,.07); box-shadow: 0 0 24px rgba(61,219,169,.12); }
-  .mh-xp-card.on b { border-color: #3DDBA9; color: #3DDBA9; background: rgba(61,219,169,.12); }
-  .mh-xp-card.on span { color: #A9E8D2; }
-  .mh-xp-card.on s { opacity: 1; transform: none; }
+  /* right: engine panel modelled on the live interview screen (Star Progress, Overall Intelligence Score, AI Activity Feed) */
+  .mh-xp-eng { margin-top: 74px; border: 1px solid rgba(150,180,255,.18); border-radius: 18px; background: rgba(10,17,32,.85); padding: 16px 16px 14px; box-shadow: 0 30px 70px -24px rgba(0,0,0,.6); }
+  .mh-xp-eh { font: 700 10px ui-monospace, Menlo, Consolas, monospace; letter-spacing: .1em; color: #94A3B8; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 10px; }
+  .mh-xp-eh em { font-style: normal; font-weight: 500; letter-spacing: .03em; color: #6B7690; }
+  .mh-xp-eh.sep { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(27,39,64,.9); }
+  .mh-xp-eh .live { display: inline-flex; align-items: center; gap: 5px; color: #3DDBA9; }
+  .mh-xp-eh .live i { width: 5px; height: 5px; border-radius: 50%; background: #3DDBA9; }
+  .mh-xp-rail { display: flex; align-items: flex-start; }
+  .mh-xp-st { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 40px; }
+  .mh-xp-nd { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; border: 1px solid #2A3450; color: #8A94A8; transition: all .3s; }
+  .mh-xp-st small { font-size: 9px; color: #8A94A8; }
+  .mh-xp-nd.active { border-color: #3B82F6; color: #60A5FA; background: rgba(59,130,246,.15); box-shadow: 0 0 12px rgba(59,130,246,.4); animation: mh-xp-pulse 1.4s ease-in-out infinite; }
+  .mh-xp-nd.done { border-color: rgba(34,197,94,.55); color: #22C55E; background: rgba(34,197,94,.12); }
+  .mh-xp-nd.missed { border-color: #EF4444; color: #EF4444; box-shadow: 0 0 0 2px rgba(239,68,68,.35); }
+  .mh-xp-cn { flex: 1; min-width: 6px; height: 1px; background: #2A3450; margin-top: 17px; transition: background .3s; }
+  .mh-xp-cn.done { background: #22C55E; }
+  .mh-xp-sn { margin-top: 8px; min-height: 30px; font-size: 10.5px; line-height: 1.4; color: transparent; transition: color .3s; }
+  .mh-xp-sn.miss { color: #EF4444; } .mh-xp-sn.ok { color: #22C55E; }
+  .mh-xp-sc { display: flex; align-items: center; gap: 12px; }
+  .mh-xp-ring { position: relative; width: 70px; height: 70px; flex: none; }
+  .mh-xp-ring svg { width: 70px; height: 70px; transform: rotate(-90deg); display: block; }
+  .mh-xp-ring circle { fill: none; stroke-width: 7; }
+  .mh-xp-ring .bg { stroke: #1B2740; }
+  .mh-xp-ring .fg { stroke: #3B82F6; stroke-linecap: round; stroke-dasharray: 188.5; stroke-dashoffset: 188.5; transition: stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1); }
+  .mh-xp-ring b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 800; color: #fff; }
+  .mh-xp-sc div { font-size: 12px; line-height: 1.45; color: #94A3B8; }
+  .mh-xp-sc div strong { display: block; color: #E5EAF3; font-size: 13px; margin-bottom: 2px; }
+  .mh-xp-feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; min-height: 76px; align-content: start; }
+  .mh-xp-feed li { font-size: 11.5px; color: #94A3B8; display: flex; gap: 8px; align-items: baseline; animation: mh-xp-fin .4s ease-out both; }
+  .mh-xp-feed li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #3B82F6; flex: none; transform: translateY(-1px); }
+  .mh-xp-feed li.g::before { background: #22C55E; } .mh-xp-feed li.r::before { background: #EF4444; }
+  @keyframes mh-xp-pulse { 0%,100% { opacity: 1; } 50% { opacity: .6; } }
+  @keyframes mh-xp-fin { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
   .mh-xp-note { grid-column: 1 / -1; margin-top: 4px; font-size: 11px; color: #7D8DB3; }
   @keyframes mh-xp-eq { 0%,100% { transform: scaleY(.15); } 50% { transform: scaleY(1); } }
   @keyframes mh-xp-blink { 50% { opacity: 0; } }
@@ -59,11 +82,15 @@
     .mh-xp-inner { grid-template-columns: minmax(0, 1fr); gap: 44px; }
     .mh-xp h2 { font-size: 36px; }
   }
+  @media (max-width: 1240px) {
+    .mh-xp-stage { grid-template-columns: minmax(0, 1fr); }
+    .mh-xp-eng { margin-top: 0; }
+    .mh-xp-left, .mh-xp-eng { max-width: 620px; }
+  }
   @media (max-width: 640px) {
     .mh-xp { padding: 56px 16px; }
     .mh-xp h2 { font-size: 30px; }
     .mh-xp-stage { grid-template-columns: minmax(0, 1fr); }
-    .mh-xp-star { padding-top: 0; grid-template-columns: minmax(0, 1fr); }
     .mh-xp-bubble { left: 0; right: 0; }
   }
 </style>
@@ -99,11 +126,22 @@
           <div class="mh-xp-listen"><span id="mh-xp-status">Ready</span><span class="mh-xp-wave" id="mh-xp-wave"></span></div>
         </div>
       </div>
-      <div class="mh-xp-star" id="mh-xp-star" aria-hidden="true">
-        <div class="mh-xp-card"><b>S</b><div><strong>Situation</strong><span>Clear context provided</span></div><s>&#10003;</s></div>
-        <div class="mh-xp-card"><b>T</b><div><strong>Task</strong><span>Defined responsibility</span></div><s>&#10003;</s></div>
-        <div class="mh-xp-card"><b>A</b><div><strong>Action</strong><span>Specific steps described</span></div><s>&#10003;</s></div>
-        <div class="mh-xp-card"><b>R</b><div><strong>Result</strong><span>Outcome and impact</span></div><s>&#10003;</s></div>
+      <div class="mh-xp-eng" aria-hidden="true">
+        <div class="mh-xp-eh"><span>STAR PROGRESS</span><em>(Real-time detection)</em></div>
+        <div class="mh-xp-rail" id="mh-xp-rail">
+          <div class="mh-xp-st"><span class="mh-xp-nd">S</span><small>Situation</small></div><span class="mh-xp-cn"></span>
+          <div class="mh-xp-st"><span class="mh-xp-nd">T</span><small>Task</small></div><span class="mh-xp-cn"></span>
+          <div class="mh-xp-st"><span class="mh-xp-nd">A</span><small>Action</small></div><span class="mh-xp-cn"></span>
+          <div class="mh-xp-st"><span class="mh-xp-nd">R</span><small>Result</small></div>
+        </div>
+        <div class="mh-xp-sn" id="mh-xp-sn"></div>
+        <div class="mh-xp-eh sep"><span>OVERALL INTELLIGENCE SCORE</span><span class="live"><i></i>LIVE</span></div>
+        <div class="mh-xp-sc">
+          <div class="mh-xp-ring"><svg viewBox="0 0 70 70"><circle class="bg" cx="35" cy="35" r="30"/><circle class="fg" id="mh-xp-fg" cx="35" cy="35" r="30"/></svg><b id="mh-xp-score">--</b></div>
+          <div><strong id="mh-xp-scs">Listening&hellip;</strong><span id="mh-xp-scd">Score updates as you answer</span></div>
+        </div>
+        <div class="mh-xp-eh sep"><span>AI ACTIVITY FEED</span></div>
+        <ul class="mh-xp-feed" id="mh-xp-feed"></ul>
       </div>
       <p class="mh-xp-note" aria-hidden="true">Sample session &middot; illustrative content, not a real assessment</p>
     </div>
@@ -119,7 +157,7 @@
   var A1 = 'I gathered data from multiple sources, aligned the team on key assumptions, evaluated trade-offs and proposed a phased approach…';
   var Q2 = 'What was the outcome of that approach?';
   var A2 = ' The first phase shipped on time and the region met its quarterly target.';
-  var cards = $('mh-xp-star').children, wave = $('mh-xp-wave');
+  var nodes = $('mh-xp-rail').querySelectorAll('.mh-xp-nd'), conns = $('mh-xp-rail').querySelectorAll('.mh-xp-cn'), wave = $('mh-xp-wave'), feed = $('mh-xp-feed'), feedN = -1;
   for (var i = 0; i < 36; i++) wave.appendChild(document.createElement('i'));
   var LOOP = 18000, t = 0, visible = false, reduced = false;
   try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
@@ -133,8 +171,21 @@
     $('mh-xp-q').textContent = q; $('mh-xp-a').textContent = a;
     $('mh-xp-status').textContent = st; sec.setAttribute('data-live', live ? '1' : '0');
     $('mh-xp-caret').style.display = live ? 'inline-block' : 'none';
-    var on = [t >= 5600, t >= 6800, t >= 8000, t >= 13000];
-    for (var k = 0; k < 4; k++) cards[k].className = 'mh-xp-card' + (on[k] ? ' on' : '');
+    // Rail mirrors the live screen: blue while a letter is detected mid-answer, green once the answer is finalised, red ring if one was missed.
+    var det = [t >= 5600, t >= 6800, t >= 8000, t >= 13000], fin1 = t >= 9400, fin2 = t >= 13400, k;
+    var fin = fin1 && (t < 11200 ? true : fin2);
+    for (k = 0; k < 4; k++) nodes[k].className = 'mh-xp-nd' + (det[k] ? ((k < 3 ? fin1 : fin2) ? ' done' : ' active') : (fin1 && k === 3 ? ' missed' : ''));
+    for (k = 0; k < 3; k++) conns[k].className = 'mh-xp-cn' + (det[k] && det[k + 1] && (k < 2 ? fin1 : fin2) ? ' done' : '');
+    var sn = $('mh-xp-sn'), full = det[3] && fin2;
+    sn.className = 'mh-xp-sn' + (full ? ' ok' : (fin1 ? ' miss' : ''));
+    sn.textContent = full ? '\u2713 Full STAR structure \u2014 all four components covered' : (fin1 ? '\u2715 This answer missed: Result' : '');
+    var sc = t >= 13400 ? 84 : (t >= 9400 ? 62 : 0);
+    $('mh-xp-fg').style.strokeDashoffset = 188.5 * (1 - sc / 100); $('mh-xp-score').textContent = sc ? sc : '--';
+    $('mh-xp-scs').textContent = sc >= 84 ? 'Strong answer' : (sc ? 'Good start' : 'Listening\u2026');
+    $('mh-xp-scd').textContent = sc >= 84 ? 'Structure complete, result quantified' : (sc ? 'Result missing, follow-up asked' : 'Score updates as you answer');
+    var F = [[600, 'Interviewer asked a question', ''], [3200, 'Listening to your response\u2026', ''], [5600, 'Situation detected', 'g'], [8000, 'Action detected', 'g'], [9400, 'Result missing \u2014 follow-up asked', 'r'], [13000, 'Result detected', 'g']], n = 0;
+    while (n < F.length && t >= F[n][0]) n++;
+    if (n !== feedN) { feedN = n; feed.innerHTML = ''; F.slice(Math.max(0, n - 4), n).forEach(function (f) { var li = document.createElement('li'); li.className = f[2]; li.textContent = f[1]; feed.appendChild(li); }); }
   }
   if (reduced) { t = 15000; render(); return; }
   try { new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0.25 }).observe(sec); } catch (e) { visible = true; }
