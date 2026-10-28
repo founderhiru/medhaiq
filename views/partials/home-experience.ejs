@@ -3,7 +3,7 @@
      (The hero shows the results side: STAR, score and vectors.)
      The separate partials/experience.ejs powers the /experience page and is NOT touched.
      Illustrative simulated sample: no network calls, no audio. Starts when scrolled into view.
-     Images (static, optional, with fallback): /images/home/experience-interviewer.jpg (portrait), experience-ambient.jpg (blurred backdrop), hero-you.jpg (the "You" tile). -->
+     Images (static, optional, with fallback): /images/home/experience-interviewer.jpg (portrait), experience-ambient.jpg (blurred backdrop), hero-you.jpg (the candidate "You" tile). Portraits are AI-generated; the name and role shown are illustrative. -->
 <style>
   .mh-xp { position: relative; background: radial-gradient(900px 480px at 78% 30%, rgba(47,107,255,.22), transparent 65%), linear-gradient(180deg, #070E24 0%, #0A1330 100%); color: #EAF0FF; padding: 88px 24px; overflow: hidden; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
   .mh-xp-inner { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 64px; align-items: center; }
@@ -48,10 +48,6 @@
   .mh-xp-wave i { width: 3px; height: 100%; border-radius: 2px; background: #5B9BFF; transform: scaleY(.18); }
   .mh-xp-stage[data-spk="ai"] .mh-xp-wave i { animation: mh-xp-eq .9s ease-in-out infinite; }
   .mh-xp-wave i:nth-child(3n) { animation-delay: -.25s; } .mh-xp-wave i:nth-child(3n+1) { animation-delay: -.5s; } .mh-xp-wave i:nth-child(4n) { animation-delay: -.7s; }
-  .mh-xp-styles { display: flex; align-items: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
-  .mh-xp-styles > span { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: #93A3C4; margin-right: 4px; }
-  .mh-xp-styles b { padding: 6px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: #B4C3E2; border: 1px solid rgba(150,180,255,.18); background: rgba(255,255,255,.04); }
-  .mh-xp-styles b.on { color: #FFE2A8; border-color: rgba(240,185,75,.6); background: rgba(240,185,75,.1); }
   .mh-xp-flow { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
   .mh-xp-step { display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #8A94A8; border: 1px solid rgba(150,180,255,.16); transition: all .4s; }
   .mh-xp-step i { width: 7px; height: 7px; border-radius: 50%; background: #2A3450; transition: background .4s; }
@@ -95,22 +91,21 @@
     </div>
 
     <div class="mh-xp-stage" id="mh-xp-stage" data-spk="none" role="region" aria-label="Illustrative sample of a MedhaIQ interview">
-      <p class="mh-xp-sr">Illustrative sample, not a live interview. A sample skeptical interviewer asks a question, listen to your answer, then ask a sharper follow-up when the answer is vague.</p>
+      <p class="mh-xp-sr">Illustrative sample, not a live interview. A sample interviewer asks a question, listen to your answer, then ask a sharper follow-up when the answer is vague.</p>
       <div class="mh-xp-vid" id="mh-xp-vid" aria-hidden="true">
-        <img class="mh-xp-amb" src="/images/home/experience-ambient.jpg" alt="" width="680" height="405" loading="lazy" decoding="async">
-        <div class="mh-xp-pt"><img src="/images/home/experience-interviewer.jpg" alt="" width="480" height="600" loading="lazy" decoding="async" onerror="this.closest('.mh-xp-vid').classList.add('noimg')"></div>
-        <div class="mh-xp-tags"><span class="mh-xp-tag"><i></i><span id="mh-xp-status">READY</span></span><span class="mh-xp-tag style">SKEPTICAL</span></div>
-        <div class="mh-xp-plate"><b>Marcus Webb</b><span>VP Product &middot; Series B SaaS</span></div>
-        <div class="mh-xp-you" id="mh-xp-you"><img src="/images/home/hero-you.jpg" alt="" width="296" height="260" decoding="async" onerror="this.parentNode.classList.add('noimg')"><em>YOU</em><span class="mh-xp-mic"><i></i><i></i><i></i></span></div>
+        <img class="mh-xp-amb" src="/images/home/experience-ambient.jpg" alt="" width="680" height="549" loading="lazy" decoding="async">
+        <div class="mh-xp-pt"><img src="/images/home/experience-interviewer.jpg" alt="" width="634" height="793" loading="lazy" decoding="async" onerror="this.closest('.mh-xp-vid').classList.add('noimg')"></div>
+        <div class="mh-xp-tags"><span class="mh-xp-tag"><i></i><span id="mh-xp-status">READY</span></span><span class="mh-xp-tag">SAMPLE INTERVIEWER</span></div>
+        <div class="mh-xp-plate"><b>Ananya Rao</b><span>Head of Product &middot; Sample</span></div>
+        <div class="mh-xp-you" id="mh-xp-you"><img src="/images/home/hero-you.jpg" alt="" width="600" height="527" decoding="async" onerror="this.parentNode.classList.add('noimg')"><em>YOU</em><span class="mh-xp-mic"><i></i><i></i><i></i></span></div>
         <div class="mh-xp-cap"><span class="mh-xp-wave" id="mh-xp-wave"></span><p id="mh-xp-cap"></p></div>
       </div>
-      <div class="mh-xp-styles" aria-hidden="true"><span>INTERVIEWER STYLE</span><b>Friendly</b><b class="on">Skeptical</b><b>Executive</b></div>
       <div class="mh-xp-flow" aria-hidden="true">
         <span class="mh-xp-step" id="mh-xp-s0"><i></i>Question</span><span class="mh-xp-arrow">&rarr;</span>
         <span class="mh-xp-step" id="mh-xp-s1"><i></i>You answer</span><span class="mh-xp-arrow">&rarr;</span>
         <span class="mh-xp-step probe" id="mh-xp-s2"><i></i>Vague? It probes</span>
       </div>
-      <p class="mh-xp-note" aria-hidden="true">Sample session &middot; illustrative content, not a real assessment</p>
+      <p class="mh-xp-note" aria-hidden="true">Sample session &middot; illustrative content, not a real assessment &middot; portraits are AI-generated, not real people</p>
     </div>
   </div>
 </section>
