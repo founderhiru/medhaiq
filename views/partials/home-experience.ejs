@@ -3,13 +3,12 @@
      (The hero shows the results side: STAR, score and vectors.)
      The separate partials/experience.ejs powers the /experience page and is NOT touched.
      Illustrative simulated sample: no network calls, no audio. Starts when scrolled into view.
-     Images (static, optional, with fallback): /images/home/experience-interviewer.jpg (Marcus),
-     /images/home/hero-interviewer.jpg (Priya), /images/home/hero-you.jpg (the "You" tile). -->
+     Images (static, optional, with fallback): /images/home/experience-interviewer.jpg (portrait), experience-ambient.jpg (blurred backdrop), hero-you.jpg (the "You" tile). -->
 <style>
   .mh-xp { position: relative; background: radial-gradient(900px 480px at 78% 30%, rgba(47,107,255,.22), transparent 65%), linear-gradient(180deg, #070E24 0%, #0A1330 100%); color: #EAF0FF; padding: 88px 24px; overflow: hidden; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
   .mh-xp-inner { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 64px; align-items: center; }
-  .mh-xp-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 9999px; background: rgba(91,155,255,.12); border: 1px solid rgba(91,155,255,.3); font-size: 11px; font-weight: 700; letter-spacing: .1em; color: #BBD2FF; margin-bottom: 20px; }
-  .mh-xp-eyebrow i { width: 6px; height: 6px; border-radius: 50%; background: #5B9BFF; box-shadow: 0 0 8px rgba(91,155,255,.8); }
+  .mh-xp-eyebrow { display: block; font-size: 12px; font-weight: 700; letter-spacing: .12em; color: #7FB2FF; margin-bottom: 14px; }
+  .mh-xp h2 span { display: inline-block; background: linear-gradient(90deg, #6FA3FF, #A98BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .mh-xp h2 { margin: 0 0 16px; color: #fff; text-wrap: balance; }
   .mh-xp-sub { margin: 0 0 26px; font-size: 16.5px; line-height: 1.55; color: #B4C3E2; max-width: 520px; }
   .mh-xp-list { list-style: none; margin: 0 0 32px; padding: 0; display: grid; gap: 13px; }
@@ -19,52 +18,50 @@
   .mh-xp-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(47,107,255,.6); }
   .mh-xp-cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
-  /* right: video-call scene */
+  /* right: video-call scene — ONE interviewer. Portrait is shown at its true resolution over a softly blurred call background, so it stays crisp. */
   .mh-xp-stage { position: relative; max-width: 540px; margin-left: auto; width: 100%; }
-  .mh-xp-vid { position: relative; aspect-ratio: 16 / 11.5; border-radius: 22px; overflow: hidden; border: 1px solid rgba(150,180,255,.25); background: linear-gradient(180deg, #14224d, #0a1230); box-shadow: 0 40px 90px -26px rgba(0,0,0,.65), 0 0 0 1px rgba(47,107,255,.15), 0 0 70px rgba(47,107,255,.14); }
-  .mh-xp-ph { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 14%; opacity: 0; transform: scale(1.03); filter: saturate(1.06); transition: opacity .7s ease; }
-  .mh-xp-ph.on { opacity: 1; animation: mh-xp-drift 16s ease-in-out infinite alternate; }
-  .mh-xp-fb { position: absolute; inset: 0; display: none; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity .7s ease; }
-  .mh-xp-fb.on { opacity: 1; } .mh-xp-vid.noimg .mh-xp-fb { display: flex; } .mh-xp-vid.noimg .mh-xp-ph { display: none; }
-  .mh-xp-fb svg { width: 36%; height: auto; display: block; }
-  .mh-xp-vid::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(6,10,21,.4) 0%, transparent 24%, transparent 52%, rgba(6,10,21,.82) 100%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
-  .mh-xp-tags { position: absolute; z-index: 2; top: 14px; left: 14px; right: 14px; display: flex; justify-content: space-between; gap: 8px; }
+  .mh-xp-vid { position: relative; aspect-ratio: 16 / 12; border-radius: 22px; overflow: hidden; border: 1px solid rgba(150,180,255,.25); background: linear-gradient(180deg, #14224d, #0a1230); box-shadow: 0 40px 90px -26px rgba(0,0,0,.65), 0 0 0 1px rgba(47,107,255,.15), 0 0 70px rgba(47,107,255,.14); }
+  .mh-xp-amb { position: absolute; inset: -8%; width: 116%; height: 116%; object-fit: cover; filter: blur(26px) saturate(1.15); opacity: .55; }
+  .mh-xp-vid::before { content: ''; position: absolute; inset: 0; z-index: 1; background: radial-gradient(ellipse at 50% 38%, rgba(10,19,48,0) 0%, rgba(6,10,21,.55) 100%), linear-gradient(180deg, rgba(6,10,21,.35) 0%, transparent 30%, rgba(6,10,21,.7) 100%); }
+  .mh-xp-pt { position: absolute; z-index: 2; left: 50%; top: 12%; width: 38%; aspect-ratio: 4 / 5; transform: translateX(-50%); border-radius: 20px; overflow: hidden; border: 2px solid rgba(150,180,255,.35); background: #14224d; box-shadow: 0 18px 50px rgba(0,0,0,.5); transition: border-color .4s, box-shadow .4s; }
+  .mh-xp-pt img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mh-xp-stage[data-spk="ai"] .mh-xp-pt { border-color: #5B9BFF; animation: mh-xp-ring 1.6s ease-in-out infinite; }
+  .mh-xp-vid.noimg .mh-xp-pt img { display: none; } .mh-xp-vid.noimg .mh-xp-pt::before { content: ''; position: absolute; left: 50%; top: 52%; width: 56%; aspect-ratio: 1; border-radius: 50% 50% 0 0 / 60% 60% 0 0; background: #5B6B96; transform: translateX(-50%); }
+  .mh-xp-vid::after { content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .1 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .mh-xp-tags { position: absolute; z-index: 4; top: 14px; left: 14px; right: 14px; display: flex; justify-content: space-between; gap: 8px; }
   .mh-xp-tag { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border-radius: 999px; font: 600 10.5px ui-monospace, Menlo, monospace; letter-spacing: .07em; background: rgba(6,10,21,.7); border: 1px solid rgba(150,180,255,.25); color: #D6E4FF; backdrop-filter: blur(6px); }
   .mh-xp-tag i { width: 7px; height: 7px; border-radius: 50%; background: #3DDBA9; animation: mh-xp-pulse 1.6s infinite ease-in-out; }
-  .mh-xp-tag.style { color: #F0B94B; border-color: rgba(240,185,75,.55); transition: opacity .3s; }
-  .mh-xp-plate { position: absolute; z-index: 2; left: 14px; bottom: 80px; padding: 8px 13px; border-radius: 12px; background: rgba(6,10,21,.74); border: 1px solid rgba(150,180,255,.24); backdrop-filter: blur(6px); transition: opacity .3s; }
+  .mh-xp-tag.style { color: #F0B94B; border-color: rgba(240,185,75,.55); }
+  .mh-xp-plate { position: absolute; z-index: 4; left: 50%; bottom: 84px; transform: translateX(-50%); padding: 7px 16px; border-radius: 12px; text-align: center; white-space: nowrap; background: rgba(6,10,21,.82); border: 1px solid rgba(150,180,255,.28); backdrop-filter: blur(6px); }
   .mh-xp-plate b { display: block; font-size: 14px; font-weight: 700; color: #fff; } .mh-xp-plate span { display: block; font-size: 11px; color: #B4C3E2; }
-  .mh-xp-you { position: absolute; z-index: 2; right: 14px; bottom: 80px; width: 25%; aspect-ratio: 4 / 3.2; border-radius: 12px; overflow: hidden; border: 1.5px solid rgba(150,180,255,.35); background: linear-gradient(180deg, #16254f, #0c1736); transition: border-color .3s, box-shadow .3s; }
-  .mh-xp-you img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 25%; display: block; }
+  .mh-xp-you { position: absolute; z-index: 4; right: 14px; bottom: 84px; width: 24%; aspect-ratio: 296 / 260; border-radius: 12px; overflow: hidden; border: 1.5px solid rgba(150,180,255,.35); background: linear-gradient(180deg, #16254f, #0c1736); transition: border-color .3s, box-shadow .3s; }
+  .mh-xp-you img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .mh-xp-you.noimg img { display: none; } .mh-xp-you.noimg::before { content: ''; position: absolute; left: 50%; top: 56%; width: 46%; aspect-ratio: 1; border-radius: 50% 50% 0 0 / 60% 60% 0 0; background: #5B6B96; transform: translateX(-50%); }
   .mh-xp-you em { position: absolute; left: 7px; bottom: 5px; font: 600 9px ui-monospace, Menlo, monospace; letter-spacing: .06em; font-style: normal; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.7); }
   .mh-xp-mic { position: absolute; right: 7px; bottom: 6px; display: inline-flex; gap: 2px; align-items: flex-end; height: 11px; }
   .mh-xp-mic i { width: 3px; height: 100%; border-radius: 2px; background: #3DDBA9; transform-origin: bottom; transform: scaleY(.2); }
   .mh-xp-stage[data-spk="you"] .mh-xp-you { border-color: #3DDBA9; box-shadow: 0 0 0 3px rgba(61,219,169,.18); }
   .mh-xp-stage[data-spk="you"] .mh-xp-mic i { animation: mh-xp-eq 1s ease-in-out infinite; } .mh-xp-mic i:nth-child(2) { animation-delay: -.3s; } .mh-xp-mic i:nth-child(3) { animation-delay: -.6s; }
-  .mh-xp-cap { position: absolute; z-index: 2; left: 14px; right: 14px; bottom: 14px; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 9px 14px; border-radius: 13px; background: rgba(6,10,21,.8); border: 1px solid rgba(150,180,255,.22); backdrop-filter: blur(6px); }
+  .mh-xp-cap { position: absolute; z-index: 4; left: 14px; right: 14px; bottom: 14px; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 9px 14px; border-radius: 13px; background: rgba(6,10,21,.84); border: 1px solid rgba(150,180,255,.22); backdrop-filter: blur(6px); }
   .mh-xp-cap p { margin: 0; flex: 1; font-size: 14px; line-height: 1.4; font-weight: 600; color: #fff; }
   .mh-xp-wave { display: inline-flex; gap: 2px; align-items: center; height: 18px; flex: none; }
   .mh-xp-wave i { width: 3px; height: 100%; border-radius: 2px; background: #5B9BFF; transform: scaleY(.18); }
   .mh-xp-stage[data-spk="ai"] .mh-xp-wave i { animation: mh-xp-eq .9s ease-in-out infinite; }
   .mh-xp-wave i:nth-child(3n) { animation-delay: -.25s; } .mh-xp-wave i:nth-child(3n+1) { animation-delay: -.5s; } .mh-xp-wave i:nth-child(4n) { animation-delay: -.7s; }
-  .mh-xp-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
-  .mh-xp-chip { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px; border: 1px solid rgba(150,180,255,.16); background: rgba(255,255,255,.04); min-width: 0; transition: border-color .4s, background .4s, box-shadow .4s; }
-  .mh-xp-chip.on { border-color: rgba(91,155,255,.7); background: rgba(47,107,255,.14); box-shadow: 0 0 24px rgba(47,107,255,.2); }
-  .mh-xp-av { width: 34px; height: 34px; border-radius: 50%; flex: none; overflow: hidden; background: linear-gradient(135deg, #2F6BFF, #8B5CF6); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #fff; }
-  .mh-xp-av img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; display: block; }
-  .mh-xp-chip b { display: block; font-size: 12.5px; font-weight: 700; color: #EAF0FF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mh-xp-chip span { display: block; font-size: 11px; color: #93A3C4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mh-xp-styles { display: flex; align-items: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .mh-xp-styles > span { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: #93A3C4; margin-right: 4px; }
+  .mh-xp-styles b { padding: 6px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: #B4C3E2; border: 1px solid rgba(150,180,255,.18); background: rgba(255,255,255,.04); }
+  .mh-xp-styles b.on { color: #FFE2A8; border-color: rgba(240,185,75,.6); background: rgba(240,185,75,.1); }
   .mh-xp-flow { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
   .mh-xp-step { display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #8A94A8; border: 1px solid rgba(150,180,255,.16); transition: all .4s; }
   .mh-xp-step i { width: 7px; height: 7px; border-radius: 50%; background: #2A3450; transition: background .4s; }
   .mh-xp-step.on { color: #EAF0FF; border-color: rgba(91,155,255,.6); background: rgba(47,107,255,.12); } .mh-xp-step.on i { background: #5B9BFF; }
   .mh-xp-step.probe.on { color: #FFE2A8; border-color: rgba(240,185,75,.6); background: rgba(240,185,75,.1); } .mh-xp-step.probe.on i { background: #F0B94B; }
   .mh-xp-arrow { color: #4A5A85; font-size: 12px; }
-  .mh-xp-note { margin: 12px 2px 0; font-size: 11px; color: #7D8DB3; }
+  .mh-xp-note { margin: 12px 2px 0; font-size: 11px; color: #8E9CC0; }
   @keyframes mh-xp-eq { 0%,100% { transform: scaleY(.2); } 50% { transform: scaleY(1); } }
   @keyframes mh-xp-pulse { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
-  @keyframes mh-xp-drift { from { transform: scale(1.03); } to { transform: scale(1.08) translateY(-1%); } }
+  @keyframes mh-xp-ring { 0%,100% { box-shadow: 0 18px 50px rgba(0,0,0,.5), 0 0 0 0 rgba(91,155,255,.45); } 50% { box-shadow: 0 18px 50px rgba(0,0,0,.5), 0 0 0 10px rgba(91,155,255,0); } }
   .mh-xp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   @media (prefers-reduced-motion: reduce) { .mh-xp *, .mh-xp-cta { animation: none !important; transition: none !important; } }
   @media (max-width: 1024px) {
@@ -74,19 +71,18 @@
   }
   @media (max-width: 640px) {
     .mh-xp { padding: 56px 16px; }
-    .mh-xp-plate { bottom: 76px; padding: 6px 10px; } .mh-xp-plate b { font-size: 12.5px; }
-    .mh-xp-you { width: 28%; bottom: 76px; }
+    .mh-xp-vid { aspect-ratio: 1 / 1; } .mh-xp-pt { width: 42%; top: 11%; }
+    .mh-xp-plate { bottom: 80px; padding: 6px 12px; left: 14px; transform: none; text-align: left; } .mh-xp-plate b { font-size: 12.5px; }
+    .mh-xp-you { width: 27%; bottom: 80px; }
     .mh-xp-cap p { font-size: 12.5px; }
-    .mh-xp-chips { grid-template-columns: minmax(0, 1fr); }
-    .mh-xp-chip.more { display: none; }
   }
 </style>
 
 <section class="mh-xp" id="the-experience" aria-labelledby="mh-xp-h">
   <div class="mh-xp-inner">
     <div>
-      <div class="mh-xp-eyebrow"><i></i>THE EXPERIENCE</div>
-      <h2 id="mh-xp-h">A real interview experience, not a static quiz.</h2>
+      <span class="mh-xp-eyebrow">THE EXPERIENCE</span>
+      <h2 id="mh-xp-h">A real interview experience, <span>not a static quiz.</span></h2>
       <p class="mh-xp-sub">Dynamic questions. Real-time feedback. Evidence-based insights.</p>
       <ul class="mh-xp-list">
         <% ['Adaptive follow-up questions', 'Real-time STAR detection', 'Five-dimensional assessment', 'Personalised feedback and recommendations', 'Practice with multiple interviewer personas'].forEach(function (t) { %>
@@ -99,21 +95,16 @@
     </div>
 
     <div class="mh-xp-stage" id="mh-xp-stage" data-spk="none" role="region" aria-label="Illustrative sample of a MedhaIQ interview">
-      <p class="mh-xp-sr">Illustrative sample, not a live interview. Two sample interviewers, one skeptical and one executive, each ask a question, listen to your answer, then ask a sharper follow-up when the answer is vague.</p>
+      <p class="mh-xp-sr">Illustrative sample, not a live interview. A sample skeptical interviewer asks a question, listen to your answer, then ask a sharper follow-up when the answer is vague.</p>
       <div class="mh-xp-vid" id="mh-xp-vid" aria-hidden="true">
-        <img class="mh-xp-ph" id="mh-xp-p0" src="/images/home/experience-interviewer.jpg" alt="" width="910" height="679" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('noimg')">
-        <img class="mh-xp-ph" id="mh-xp-p1" src="/images/home/hero-interviewer.jpg" alt="" width="912" height="786" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('noimg')">
-        <div class="mh-xp-fb" id="mh-xp-fb"><svg viewBox="0 0 200 240"><defs><linearGradient id="mh-xp-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5B9BFF" stop-opacity=".9"/><stop offset="1" stop-color="#5B9BFF" stop-opacity=".2"/></linearGradient></defs><path d="M22 240C22 176 62 150 100 150S178 176 178 240Z" fill="url(#mh-xp-g)"/><circle cx="100" cy="92" r="35" fill="url(#mh-xp-g)"/></svg></div>
-        <div class="mh-xp-tags"><span class="mh-xp-tag"><i></i><span id="mh-xp-status">READY</span></span><span class="mh-xp-tag style" id="mh-xp-style">SKEPTICAL</span></div>
-        <div class="mh-xp-plate" id="mh-xp-plate"><b id="mh-xp-name">Marcus Webb</b><span id="mh-xp-role">VP Product &middot; Series B SaaS</span></div>
-        <div class="mh-xp-you" id="mh-xp-you"><img src="/images/home/hero-you.jpg" alt="" width="370" height="310" decoding="async" onerror="this.parentNode.classList.add('noimg')"><em>YOU</em><span class="mh-xp-mic"><i></i><i></i><i></i></span></div>
+        <img class="mh-xp-amb" src="/images/home/experience-ambient.jpg" alt="" width="680" height="405" loading="lazy" decoding="async">
+        <div class="mh-xp-pt"><img src="/images/home/experience-interviewer.jpg" alt="" width="480" height="600" loading="lazy" decoding="async" onerror="this.closest('.mh-xp-vid').classList.add('noimg')"></div>
+        <div class="mh-xp-tags"><span class="mh-xp-tag"><i></i><span id="mh-xp-status">READY</span></span><span class="mh-xp-tag style">SKEPTICAL</span></div>
+        <div class="mh-xp-plate"><b>Marcus Webb</b><span>VP Product &middot; Series B SaaS</span></div>
+        <div class="mh-xp-you" id="mh-xp-you"><img src="/images/home/hero-you.jpg" alt="" width="296" height="260" decoding="async" onerror="this.parentNode.classList.add('noimg')"><em>YOU</em><span class="mh-xp-mic"><i></i><i></i><i></i></span></div>
         <div class="mh-xp-cap"><span class="mh-xp-wave" id="mh-xp-wave"></span><p id="mh-xp-cap"></p></div>
       </div>
-      <div class="mh-xp-chips" aria-hidden="true">
-        <div class="mh-xp-chip" id="mh-xp-c0"><span class="mh-xp-av"><img src="/images/home/experience-interviewer.jpg" alt="" width="40" height="40" loading="lazy" onerror="this.remove()"></span><div><b>Marcus Webb</b><span>Skeptical</span></div></div>
-        <div class="mh-xp-chip" id="mh-xp-c1"><span class="mh-xp-av"><img src="/images/home/hero-interviewer.jpg" alt="" width="40" height="40" loading="lazy" onerror="this.remove()"></span><div><b>Priya Ramesh</b><span>Executive</span></div></div>
-        <div class="mh-xp-chip more"><span class="mh-xp-av">+4</span><div><b>More styles</b><span>Friendly and others</span></div></div>
-      </div>
+      <div class="mh-xp-styles" aria-hidden="true"><span>INTERVIEWER STYLE</span><b>Friendly</b><b class="on">Skeptical</b><b>Executive</b></div>
       <div class="mh-xp-flow" aria-hidden="true">
         <span class="mh-xp-step" id="mh-xp-s0"><i></i>Question</span><span class="mh-xp-arrow">&rarr;</span>
         <span class="mh-xp-step" id="mh-xp-s1"><i></i>You answer</span><span class="mh-xp-arrow">&rarr;</span>
@@ -129,29 +120,19 @@
   var sec = document.getElementById('the-experience');
   if (!sec) return;
   var $ = function (id) { return document.getElementById(id); };
-  var P = [
-    { name: 'Marcus Webb', role: 'VP Product · Series B SaaS', style: 'SKEPTICAL', q: 'Why that trade-off? What did you own versus the team?', f: 'Give me the number.' },
-    { name: 'Priya Ramesh', role: 'Partner · McKinsey Consulting', style: 'EXECUTIVE', q: 'How did that decision move the business?', f: 'What would you change at ten times the scale?' }
-  ];
-  var CYCLE = 10000, LOOP = CYCLE * P.length, t = 0, visible = false, reduced = false, last = -1;
+  var p = { q: 'Why that trade-off? What did you own versus the team?', f: 'Give me the number.' };
+  var LOOP = 10000, t = 0, visible = false, reduced = false;
   try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
   var wave = $('mh-xp-wave'); for (var i = 0; i < 22; i++) wave.appendChild(document.createElement('i'));
-  var stage = $('mh-xp-stage'), photos = [$('mh-xp-p0'), $('mh-xp-p1')];
-  function sl(s, a, b, now) { var p = Math.max(0, Math.min(1, (now - a) / (b - a))); return s.slice(0, Math.round(s.length * p)); }
-  // Per interviewer (10s): 0 appears | 600 asks | 3400 you answer | 6400 vague answer, it probes | 8800 hold | 10000 next interviewer
+  var stage = $('mh-xp-stage');
+  function sl(s, a, b, now) { var k = Math.max(0, Math.min(1, (now - a) / (b - a))); return s.slice(0, Math.round(s.length * k)); }
+  // 600 asks | 3400 you answer | 6400 vague answer, it probes | 8800 hold | 10000 loop
   function render() {
-    var idx = Math.floor(t / CYCLE) % P.length, lt = t % CYCLE, p = P[idx], spk = 'none', status = 'READY', cap = '';
+    var lt = t, spk = 'none', status = 'READY', cap = '';
     if (lt >= 600 && lt < 3400) { spk = 'ai'; status = 'ASKING'; cap = sl(p.q, 600, 2900, lt); }
     else if (lt >= 3400 && lt < 6400) { spk = 'you'; status = 'LISTENING'; cap = p.q; }
     else if (lt >= 6400) { spk = 'ai'; status = 'FOLLOW-UP'; cap = sl(p.f, 6400, 7800, lt); }
     stage.setAttribute('data-spk', spk);
-    if (idx !== last) {
-      last = idx;
-      $('mh-xp-name').textContent = p.name; $('mh-xp-role').textContent = p.role; $('mh-xp-style').textContent = p.style;
-      photos.forEach(function (ph, k) { ph.className = 'mh-xp-ph' + (k === idx ? ' on' : ''); });
-      $('mh-xp-fb').className = 'mh-xp-fb on';
-      for (var c = 0; c < 2; c++) $('mh-xp-c' + c).className = 'mh-xp-chip' + (c === idx ? ' on' : '');
-    }
     $('mh-xp-status').textContent = status; $('mh-xp-cap').textContent = cap;
     $('mh-xp-s0').className = 'mh-xp-step' + (lt >= 600 ? ' on' : '');
     $('mh-xp-s1').className = 'mh-xp-step' + (lt >= 3400 ? ' on' : '');
