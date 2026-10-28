@@ -1,11 +1,11 @@
-<!-- HOME SECTION — The Product (home page only). Illustrative screens drawn in HTML/CSS with sample data:
+<!-- HOME SECTION — The Platform (home page only). Illustrative screens drawn in HTML/CSS with sample data:
      no images, no network calls, no audio. Animates once when scrolled into view (reduced-motion: final state). -->
 <style>
-  .mh-sc { position: relative; background: #F7F6F2; padding: 96px 24px 88px; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: #0F172A; overflow: hidden; }
+  .mh-sc { position: relative; background: #F7F6F2; padding: 88px 24px; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: #0F172A; overflow: hidden; }
   .mh-sc-inner { max-width: 1280px; margin: 0 auto; }
   .mh-sc-head { text-align: center; max-width: 720px; margin: 0 auto 48px; }
-  .mh-sc-eyebrow { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .12em; color: #2F6BFF; margin-bottom: 14px; }
-  .mh-sc h2 { margin: 0 0 14px; font-size: 40px; line-height: 1.12; font-weight: 800; letter-spacing: -.025em; color: #0B1220; text-wrap: balance; }
+  .mh-sc-eyebrow { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .12em; color: #1D4ED8; margin-bottom: 14px; }
+  .mh-sc h2 { margin: 0 0 14px; color: #0B1220; text-wrap: balance; }
   .mh-sc h2 span { background: linear-gradient(90deg, #2F6BFF, #8B5CF6); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .mh-sc-sub { margin: 0; font-size: 16.5px; line-height: 1.55; color: #475569; }
   .mh-sc-rail { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
@@ -69,13 +69,13 @@
     .mh-sc-rail { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 18px; padding: 4px 4px 14px; margin: 0 -4px; }
     .mh-sc-item { flex: 0 0 min(320px, 82vw); scroll-snap-align: start; }
   }
-  @media (max-width: 640px) { .mh-sc { padding: 64px 16px 56px; } .mh-sc h2 { font-size: 30px; } }
+  @media (max-width: 640px) { .mh-sc { padding: 56px 16px; } }
 </style>
 
 <section class="mh-sc" id="the-product" aria-labelledby="mh-sc-h">
   <div class="mh-sc-inner">
     <div class="mh-sc-head">
-      <span class="mh-sc-eyebrow">THE PRODUCT</span>
+      <span class="mh-sc-eyebrow">THE PLATFORM</span>
       <h2 id="mh-sc-h">See the product, <span>not just the promise.</span></h2>
       <p class="mh-sc-sub">From setup to scorecard to progress: the whole loop, shown with sample data.</p>
     </div>
