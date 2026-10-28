@@ -14,6 +14,12 @@
   .mh-xp-list { list-style: none; margin: 0 0 32px; padding: 0; display: grid; gap: 13px; }
   .mh-xp-list li { display: flex; align-items: center; gap: 12px; font-size: 15.5px; color: #EAF0FF; font-weight: 500; }
   .mh-xp-list svg { flex: none; width: 20px; height: 20px; }
+  .mh-xp-steps { gap: 0; margin-bottom: 30px; max-width: 520px; counter-reset: none; }
+  .mh-xp-steps li { align-items: flex-start; gap: 16px; padding: 14px 0; border-top: 1px solid rgba(150,180,255,.14); }
+  .mh-xp-steps li:last-child { border-bottom: 1px solid rgba(150,180,255,.14); }
+  .mh-xp-stepno { flex: none; width: 34px; font: 700 12px ui-monospace, Menlo, monospace; letter-spacing: .08em; color: #7FB2FF; padding-top: 3px; }
+  .mh-xp-steptxt { display: block; font-size: 14.5px; line-height: 1.5; font-weight: 400; color: #B4C3E2; }
+  .mh-xp-steptxt b { display: block; margin-bottom: 2px; font-size: 16px; font-weight: 700; color: #fff; }
   .mh-xp-cta { display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; background: linear-gradient(135deg, #2F6BFF 0%, #1D4ED8 100%); color: #fff; font-weight: 600; font-size: 14.5px; border-radius: 12px; text-decoration: none; box-shadow: 0 8px 30px rgba(47,107,255,.45); transition: transform .25s, box-shadow .25s; }
   .mh-xp-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(47,107,255,.6); }
   .mh-xp-cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
@@ -80,18 +86,23 @@
       <span class="mh-xp-eyebrow">THE EXPERIENCE</span>
       <h2 id="mh-xp-h">A real interview experience, <span>not a static quiz.</span></h2>
       <p class="mh-xp-sub">Dynamic questions. Real-time feedback. Evidence-based insights.</p>
-      <ul class="mh-xp-list">
-        <% ['Adaptive follow-up questions', 'Real-time STAR detection', 'Five-dimensional assessment', 'Personalised feedback and recommendations', 'Practice with multiple interviewer personas'].forEach(function (t) { %>
-        <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#2F6BFF"/><path d="M5.5 10.4l3 3 6-6.4" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg><%= t %></li>
+      <ol class="mh-xp-list mh-xp-steps">
+        <% [
+          ['It asks', 'A question built from your resume, the role and the job description.'],
+          ['It listens', 'Situation, Task, Action and Result are picked out as you speak.'],
+          ['It probes', 'If a piece is missing or vague, you get a sharper follow-up.'],
+          ['It scores', 'Five vectors per answer, tracked from one session to the next.']
+        ].forEach(function (st, i) { %>
+        <li><span class="mh-xp-stepno"><%= '0' + (i + 1) %></span><span class="mh-xp-steptxt"><b><%= st[0] %></b><%= st[1] %></span></li>
         <% }); %>
-      </ul>
-      <a href="/login" class="mh-xp-cta">Try the Interactive Demo
+      </ol>
+      <a href="/login" class="mh-xp-cta">Try Demo
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
     </div>
 
     <div class="mh-xp-stage" id="mh-xp-stage" data-spk="none" role="region" aria-label="Illustrative sample of a MedhaIQ interview">
-      <p class="mh-xp-sr">Illustrative sample, not a live interview. A sample interviewer asks a question, listen to your answer, then ask a sharper follow-up when the answer is vague.</p>
+      <p class="mh-xp-sr">Illustrative sample, not a live interview. A sample interviewer asks a question, listens to your answer, then asks a sharper follow-up when the answer is vague.</p>
       <div class="mh-xp-vid" id="mh-xp-vid" aria-hidden="true">
         <img class="mh-xp-amb" src="/images/home/experience-ambient.jpg" alt="" width="680" height="549" loading="lazy" decoding="async">
         <div class="mh-xp-pt"><img src="/images/home/experience-interviewer.jpg" alt="" width="634" height="793" loading="lazy" decoding="async" onerror="this.closest('.mh-xp-vid').classList.add('noimg')"></div>
