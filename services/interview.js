@@ -2540,6 +2540,7 @@ Produce the structured debrief in valid JSON format.`;
       maxTokens: 2048,
       onUsage,
       capability: 'generateReport',
+      redact: { names: [candidateName] },
     });
   } catch (e) {
     console.error('[interview] report parse error:', e.message);

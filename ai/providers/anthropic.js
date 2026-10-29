@@ -49,6 +49,32 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { withRetry } = require('../core/retry');
 const { withTelemetry } = require('../core/telemetry');
 const { normalizeText, normalizeJSON } = require('../core/normalizer');
+const { createSession: createRedactionSession, isEnabled: isRedactionEnabled } = require('../core/redactor');
+
+// PII REDACTION (opt-in, default OFF). Only active when AI_REDACTION=on.
+// When off, beginRedaction() returns null and every call below behaves
+// byte-for-byte as before. Callers may pass options.redact =
+// { names: [...], detectHeaderName: true } to add known names; options.redact
+// === false opts a single call out. Mapping stays in memory for the duration
+// of one call; only per-type COUNTS are logged, never values.
+function beginRedaction(options, capability) {
+  try {
+    if (!isRedactionEnabled() || options.redact === false) return null;
+    const cfg = (options.redact && typeof options.redact === 'object') ? options.redact : {};
+    return { session: createRedactionSession(cfg), capability };
+  } catch (err) {
+    console.error('[redactor] init failed, continuing without redaction:', err.message);
+    return null;
+  }
+}
+
+function logRedaction(r) {
+  if (!r) return;
+  const total = r.session.getTotal();
+  if (total > 0) {
+    console.log(`[redactor] capability=${r.capability || 'n/a'} removed=${JSON.stringify(r.session.getCounts())}`);
+  }
+}
 
 if (!process.env.ANTHROPIC_API_KEY) {
   console.warn('[ai/providers/anthropic] WARNING: ANTHROPIC_API_KEY is not set. AI features will fail.');
@@ -167,14 +193,19 @@ async function chat(message, options = {}) {
     throw new Error('[ai/providers/anthropic] chat: "model" is required');
   }
 
-  const hasSystem = system && (typeof system === 'string' ? true : (system.static || system.dynamic));
+  const redaction = beginRedaction(options, capability);
+  const sendSystem = redaction ? redaction.session.redactSystem(system) : system;
+  const sendMessage = redaction ? redaction.session.redact(message) : message;
+  logRedaction(redaction);
+
+  const hasSystem = sendSystem && (typeof sendSystem === 'string' ? true : (sendSystem.static || sendSystem.dynamic));
 
   const call = () =>
     anthropic.messages.create({
       model,
       max_tokens: maxTokens,
-      messages: [{ role: 'user', content: message }],
-      system: hasSystem ? buildSystemBlock(system, cache) : undefined,
+      messages: [{ role: 'user', content: sendMessage }],
+      system: hasSystem ? buildSystemBlock(sendSystem, cache) : undefined,
     });
 
   const response = await withTelemetry(() => withRetry(call, retry), {
@@ -184,7 +215,8 @@ async function chat(message, options = {}) {
     onUsage,
   });
 
-  return normalizeText(response);
+  const text = normalizeText(response);
+  return redaction ? redaction.session.restore(text) : text;
 }
 
 async function chatJSON(message, options = {}) {
@@ -204,24 +236,29 @@ async function chatJSON(message, options = {}) {
 
   const JSON_INSTRUCTION = '\n\nYou must respond with valid JSON only. No markdown, no prose.';
 
+  const redaction = beginRedaction(options, capability);
+  const sendSystem = redaction ? redaction.session.redactSystem(system) : system;
+  const sendMessage = redaction ? redaction.session.redact(message) : message;
+  logRedaction(redaction);
+
   // Object form: { static, dynamic } — the JSON instruction is per-turn
   // boilerplate, so it belongs on the dynamic (uncached) tail, appended
   // in the exact same position it always occupied relative to the rest
   // of the system text (immediately after it, nothing in between).
-  const systemPrompt = (system && typeof system === 'object' && !Array.isArray(system))
-    ? { static: system.static || '', dynamic: `${system.dynamic || ''}${JSON_INSTRUCTION}` }
-    : `${system}${JSON_INSTRUCTION}`;
+  const systemPrompt = (sendSystem && typeof sendSystem === 'object' && !Array.isArray(sendSystem))
+    ? { static: sendSystem.static || '', dynamic: `${sendSystem.dynamic || ''}${JSON_INSTRUCTION}` }
+    : `${sendSystem}${JSON_INSTRUCTION}`;
 
   // Diagnostic-only, fire-and-forget — never blocks or delays the real
   // call. Measures exactly what's being sent (systemPrompt, post
   // JSON_INSTRUCTION), not the raw input.
-  logCacheBoundaryDiagnostics({ model, system: systemPrompt, message, capability });
+  logCacheBoundaryDiagnostics({ model, system: systemPrompt, message: sendMessage, capability });
 
   const call = () =>
     anthropic.messages.create({
       model,
       max_tokens: maxTokens,
-      messages: [{ role: 'user', content: message }],
+      messages: [{ role: 'user', content: sendMessage }],
       system: buildSystemBlock(systemPrompt, cache),
     });
 
@@ -232,7 +269,8 @@ async function chatJSON(message, options = {}) {
     onUsage,
   });
 
-  return normalizeJSON(response); // throws on invalid JSON — intentional, see normalizer.js
+  const json = normalizeJSON(response); // throws on invalid JSON — intentional, see normalizer.js
+  return redaction ? redaction.session.restore(json) : json;
 }
 
 module.exports = {
