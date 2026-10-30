@@ -47,6 +47,33 @@ const SAMPLE = [
     assert(c.PHONE === 2 && c.URL === 2 && c.NAME >= 1, JSON.stringify(c));
   });
 
+  await test('phone numbers in US / UK / unlabelled formats are removed', () => {
+    for (const p of ['(555) 123-4567', '555-123-4567', '555.123.4567', '555 123 4567', '+1 555 123 4567']) {
+      const s = createSession();
+      const out = s.redact('Call me on ' + p + ' today');
+      assert(out.includes('[PHONE_1]') && !/123.?4567/.test(out), `${p} -> ${out}`);
+    }
+    for (const t of ['Phone: (020) 7946 0958', 'Tel: 07700 900123', 'Mobile - 98765 43210']) {
+      const out = createSession().redact(t);
+      assert(out.includes('[PHONE_1]'), `${t} -> ${out}`);
+    }
+  });
+
+  await test('numbers that are not phones are left alone', () => {
+    const t = 'Revenue 4,500,000 in 2019-2023, team of 12, score 98.5%, ticket 123-45, order 2023 1015.';
+    const s = createSession();
+    assert.strictEqual(s.redact(t), t);
+  });
+
+  await test('sample resume (JOHN DOE): email, phone and name removed, rest kept', () => {
+    const t = 'JOHN DOE\nLocation: City, State | Phone: (555) 123-4567 | Email: john.doe@email.com | LinkedIn: linkedin.com\nLead Coordinator | Enterprise Solutions Inc. | January 2023 – Present\nincreased productivity by 15%, team of 8, 98% satisfaction.';
+    const s = createSession({ detectHeaderName: true });
+    const out = s.redact(t);
+    assert(!/john|doe|555|123-4567/i.test(out), out);
+    assert(out.includes('Enterprise Solutions Inc.') && out.includes('15%') && out.includes('team of 8') && out.includes('98%') && out.includes('January 2023'));
+    assert.deepStrictEqual(s.getCounts(), { EMAIL: 1, PHONE: 1, NAME: 1 });
+  });
+
   await test('keeps skills, titles, companies, colleges, numbers and years', () => {
     const out = createSession({ detectHeaderName: true }).redact(SAMPLE);
     for (const kept of ['Senior Engineering Manager', 'Infosys', 'IIT Madras', 'Node.js', 'Kubernetes',

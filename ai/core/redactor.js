@@ -50,6 +50,10 @@ const PATTERNS = [
   { type: 'ADDRESS', re: /^[ \t]*(?:address|residence|residential address|permanent address|current address)\s*[:\-][^\n]{3,200}$/gim },
   // International numbers with an explicit +country code, e.g. +91 98765 43210, +1 (415) 555-0100
   { type: 'PHONE', re: /(?<![\w])\+\d{1,3}[\s.-]?\(?\d{1,5}\)?(?:[\s.-]?\d{2,5}){2,4}(?![\d])/g },
+  // Labelled numbers in any format: "Phone: (555) 123-4567", "Mobile - 020 7946 0958", "Tel: 07700 900123"
+  { type: 'PHONE', re: /(?<=\b(?:phone|mobile|mob|tel|telephone|cell|contact|whatsapp)(?:\s*(?:no\.?|number|#))?\s*[:\-]\s*)\+?\(?\d[\d\s().-]{6,18}\d(?!\d)/gi },
+  // North American format without +1: (555) 123-4567, 555-123-4567, 555.123.4567, 555 123 4567
+  { type: 'PHONE', re: /(?<![\w.])\(?[2-9]\d{2}\)?[\s.-]\d{3}[\s.-]\d{4}(?![\d])/g },
   // Indian mobiles without a country code: 98765 43210 / 9876543210 / 98765-43210 / 0 98765 43210
   { type: 'PHONE', re: /(?<![\w.])(?:0|91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}(?![\d])/g },
 ];
