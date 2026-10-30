@@ -107,6 +107,8 @@ app.use('/api/stripe',     require('./routes/stripe').router); // Sandbox/stagin
 app.use('/api/feedback',   require('./routes/feedback')); // 5-star post-interview feedback widget — was implemented but never mounted, so POST /api/feedback 404'd and the Submit button always showed "Something went wrong"
 app.use('/api/campus',         require('./routes/campus'));
 app.use('/api/founder/campus', require('./routes/campus-admin'));
+app.use('/api/founder/screening', require('./routes/screening-admin')); // Screening Copilot: founder grants access
+app.use('/api/screening',      require('./routes/screening'));        // Screening & Assessment Copilot API
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/', async (req, res) => {
   try {
@@ -935,6 +937,8 @@ app.get('/campus', requireAuthPage, async (req, res) => {
   res.render('campus-ready', { shellUser: req.user, cohortLabel: learner.cohort_name, isCampusLearner: true });
 });
 
+app.use('/screening', require('./routes/screening-pages')); // Screening & Assessment Copilot pages (guarded inside)
+
 app.get('/campus/join/:token', requireAuthPage, async (req, res) => {
   const { acceptInvite } = require('./db/campus');
   const result = await acceptInvite(req.params.token, req.user.id);
@@ -1007,11 +1011,12 @@ async function computeDashboardHistoryData(req) {
   // getLearnerForUser is read-only here purely to decide whether to show
 // the "Campus Ready" sidebar link.
 const { getLearnerForUser } = require('./db/campus');
-const [sessions, aggregateScores, campusLearner] = await Promise.all([
+const [sessions, aggregateScores, campusLearner, isScreeningUser] = await Promise.all([
     getUserSessions(userId, { limit: 20 }),
     getUserAggregateScores(userId),
     getLearnerForUser(userId),
-
+    // Screening Copilot sidebar link only — never blocks the dashboard.
+    require('./db/screening').canUseScreening(userId).catch(() => false),
   ]);
   const careerProfile = req.capabilities.careerProfile;
   const user = req.user;
@@ -1157,6 +1162,7 @@ const [sessions, aggregateScores, campusLearner] = await Promise.all([
     resumeIntelActive, resumeIntelSubLabel,
     bestCompetencyLabel, focusNextLabel,
     isCampusLearner: !!campusLearner,
+    isScreeningUser: !!isScreeningUser,
   };
 }
 

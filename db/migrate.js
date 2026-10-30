@@ -1360,6 +1360,9 @@ async function runMigrations() {
     },
   ];
 
+    // Screening & Assessment Copilot (additive-only; own file so this array stays untouched).
+    migrations.push(require('./screening-migration'));
+
     for (const m of migrations) {
       if (done.has(m.name)) {
         console.log(`[migrate] already applied: ${m.name}`);

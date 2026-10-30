@@ -1,0 +1,24 @@
+<%- include('partials/workspace-shell-top', { pageTitle: pageTitle, activeNav: 'screening', shellUser: shellUser, isScreeningUser: true, extraStylesheets: ['/css/career-workspace.css', '/css/recruit-screening.css'] }) %>
+<div class="scr-wrap" id="scr-root" data-scr="home">
+  <h1>Screening &amp; Assessment Copilot</h1>
+  <p class="scr-muted">Turn each job description into criteria you approve, then see what every resume does and does not show. You make every decision.</p>
+
+  <div class="scr-panel">
+    <h3>New role</h3>
+    <form id="scr-new-job" class="scr-form" autocomplete="off">
+      <label>Role title<input type="text" name="title" maxlength="160" required placeholder="e.g. Backend Engineer"></label>
+      <label>Job description
+        <textarea name="jdText" rows="8" placeholder="Paste the job description here"></textarea>
+      </label>
+      <label>…or upload it (PDF or Word, up to 5 MB)<input type="file" name="jdFile" accept=".pdf,.docx"></label>
+      <div class="scr-row"><button type="submit" class="scr-btn scr-btn-primary">Create role</button><span class="scr-status" id="scr-new-status" role="status"></span></div>
+    </form>
+  </div>
+
+  <div class="scr-panel">
+    <h3>Your roles</h3>
+    <div id="scr-jobs" aria-live="polite"><p class="scr-muted">Loading…</p></div>
+  </div>
+</div>
+<script src="/js/screening.js" defer></script>
+<%- include('partials/workspace-shell-bottom') %>

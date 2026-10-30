@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Screening evidence report — <%= model.candidate.code %></title>
+  <style>
+    :root { --ink:#111827; --muted:#4b5563; --line:#d1d5db; --soft:#f3f4f6; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; color: var(--ink); background:#fff; margin:0; line-height:1.5; font-size:14px; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 28px 24px 60px; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    h2 { font-size: 16px; margin: 26px 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+    .meta { color: var(--muted); font-size: 13px; }
+    .note { background: var(--soft); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: 13px; margin: 14px 0; }
+    .crit { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; margin: 10px 0; page-break-inside: avoid; }
+    .crit-head { display:flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-weight: 600; }
+    .tag { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
+    .status { font-weight: 600; }
+    blockquote { margin: 6px 0; padding: 6px 10px; border-left: 3px solid var(--ink); background: var(--soft); white-space: pre-wrap; font-size: 13px; }
+    .src { font-size: 12px; color: var(--muted); }
+    ul { margin: 6px 0 0 18px; padding: 0; }
+    .counts span { display: inline-block; margin-right: 14px; }
+    .noprint { margin-top: 18px; }
+    button { font: inherit; padding: 6px 12px; border: 1px solid var(--ink); background: #fff; border-radius: 6px; cursor: pointer; }
+    @media print { .noprint { display: none; } .wrap { padding: 0; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Screening evidence report</h1>
+  <div class="meta">
+    Role: <strong><%= model.job.title %></strong> &middot;
+    Candidate: <strong><%= model.candidate.code %><%= model.candidate.label ? ' — ' + model.candidate.label : '' %></strong> &middot;
+    Generated <%= generatedAt.toISOString().slice(0, 10) %>
+  </div>
+
+  <div class="note">
+    <strong>How to read this report.</strong> Findings marked “AI extraction” were produced by an AI from the resume text, with personal identifiers removed. Each quoted passage was checked to exist in that text. They can still be wrong or incomplete. “Not Found in Resume” does not mean the candidate lacks the skill or experience. Items marked “Recruiter reviewed” were confirmed or changed by a person. This report contains no score, ranking or hiring recommendation; any decision shown was made by the recruiter.
+  </div>
+
+  <% if (model.anyStale) { %>
+  <div class="note"><strong>Out of date:</strong> the screening criteria changed after some of these findings were produced. Re-run the analysis before relying on them.</div>
+  <% } %>
+
+  <h2>Evidence coverage (counts only)</h2>
+  <div class="counts">
+    <span>Evidence Found: <strong><%= model.coverage.evidence_found %></strong></span>
+    <span>Partial Evidence: <strong><%= model.coverage.partial_evidence %></strong></span>
+    <span>Not Found in Resume: <strong><%= model.coverage.not_found %></strong></span>
+    <span>Requires Verification: <strong><%= model.coverage.requires_verification %></strong></span>
+    <span>Not Applicable: <strong><%= model.coverage.not_applicable %></strong></span>
+  </div>
+
+  <h2>Criteria and evidence</h2>
+  <% model.rows.forEach(function (r) { const e = r.evidence; %>
+  <div class="crit">
+    <div class="crit-head">
+      <span><%= r.criterion.text %> <span class="tag">(<%= r.criterion.importance %>)</span></span>
+      <span class="status"><%= e ? e.effectiveStatusLabel : 'Not analysed' %></span>
+    </div>
+    <% if (e) { %>
+      <div class="src">
+        <% if (e.recruiterStatus) { %>
+          Recruiter reviewed<%= e.recruiterStatus !== e.aiStatus ? ' (changed from AI finding: ' + e.aiStatusLabel + ')' : ' (confirmed AI finding)' %>
+        <% } else { %>
+          AI extraction — not yet reviewed
+        <% } %>
+        <%= e.stale ? ' — OUT OF DATE' : '' %>
+      </div>
+      <% if (e.aiRationale) { %><div><%= e.aiRationale %></div><% } %>
+      <% e.quotes.forEach(function (q) { %>
+        <blockquote><%= q.text %></blockquote>
+        <div class="src">Resume page <%= q.page %>, line <%= q.line %></div>
+      <% }); %>
+      <% if (e.recruiterNote) { %><div><em>Recruiter note:</em> <%= e.recruiterNote %></div><% } %>
+    <% } %>
+    <% const aq = r.questions.filter(function (q) { return q.state === 'approved'; }); if (aq.length) { %>
+      <div class="tag" style="margin-top:6px;">Verification questions</div>
+      <ul><% aq.forEach(function (q) { %><li><%= q.text %></li><% }); %></ul>
+    <% } %>
+  </div>
+  <% }); %>
+
+  <h2>Recruiter decision</h2>
+  <% if (model.candidate.decisionLabel) { %>
+    <p><strong><%= model.candidate.decisionLabel %></strong> — set by the recruiter<%= model.candidate.decidedAt ? ' on ' + new Date(model.candidate.decidedAt).toISOString().slice(0, 10) : '' %>.</p>
+    <% if (model.candidate.decisionNote) { %><p><%= model.candidate.decisionNote %></p><% } %>
+  <% } else { %>
+    <p>No decision recorded yet.</p>
+  <% } %>
+
+  <div class="noprint"><button type="button" id="scr-print">Print / save as PDF</button> <a href="/screening/candidates/<%= model.candidate.id %>">Back to candidate</a></div>
+</div>
+<script>document.getElementById('scr-print').addEventListener('click', function () { window.print(); });</script>
+</body>
+</html>

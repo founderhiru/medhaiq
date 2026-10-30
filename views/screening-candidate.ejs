@@ -1,0 +1,23 @@
+<%- include('partials/workspace-shell-top', { pageTitle: pageTitle, activeNav: 'screening', shellUser: shellUser, isScreeningUser: true, extraStylesheets: ['/css/career-workspace.css', '/css/recruit-screening.css'] }) %>
+<div class="scr-wrap scr-wide" id="scr-root" data-scr="candidate" data-candidate-id="<%= candidateId %>" data-job-id="<%= jobId %>">
+  <p><a id="scr-back" href="/screening/jobs/<%= jobId %>#inbox" class="scr-link">&larr; Back to role</a></p>
+  <h1 id="scr-cand-title">Candidate</h1>
+  <div class="scr-notice" role="note">
+    Findings below are extracted by AI from the resume text and can be wrong. “Not Found in Resume” does not mean the candidate lacks the skill. Check the highlighted text yourself. MedhaIQ does not score, rank or recommend candidates &mdash; the decision is yours.
+  </div>
+  <div id="scr-cand-flags"></div>
+  <div id="scr-cand-actions" class="scr-row"></div>
+  <div class="scr-split">
+    <div id="scr-cand-criteria" class="scr-col"></div>
+    <div class="scr-col">
+      <div class="scr-panel scr-sticky">
+        <h3>Resume text <span class="scr-muted scr-small">(personal identifiers removed)</span></h3>
+        <div id="scr-resume" class="scr-resume" tabindex="0"></div>
+      </div>
+    </div>
+  </div>
+  <div id="scr-cand-questions"></div>
+  <div id="scr-cand-decision" class="scr-panel"></div>
+</div>
+<script src="/js/screening.js" defer></script>
+<%- include('partials/workspace-shell-bottom') %>

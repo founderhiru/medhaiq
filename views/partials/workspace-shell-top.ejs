@@ -6,8 +6,11 @@
 
    Expected locals (all optional, safe defaults below):
    - pageTitle:  string, used in <title>
-   - activeNav:  one of 'dashboard' | 'interview' | 'reports' | 'resume' | 'settings' | 'campus' | 'founder'
+   - activeNav:  one of 'dashboard' | 'interview' | 'reports' | 'resume' | 'settings' | 'campus' | 'screening' | 'founder'
    - shellUser:  { name, email } — pass the logged-in user object through
+   - isScreeningUser: boolean, opt-in like isCampusLearner — shows the
+     "Screening" link for founder-granted Screening Copilot users. Defaults
+     to false/hidden. activeNav: 'screening' highlights it.
    - isCampusLearner: boolean, same opt-in pattern as isFounder below —
      shows/hides the "Campus Ready" link. Defaults to false/hidden.
    - extraHead:  raw string of any extra <link>/<style> tags a page needs
@@ -88,6 +91,9 @@ const _bodyClass = typeof bodyClass !== 'undefined' && bodyClass ? bodyClass : '
       <a href="/dashboard/history" class="shell-link <%= _activeNav === 'dashboard' ? 'active' : '' %>"><span class="dot"></span> Workspace</a>
       <% if (typeof isCampusLearner !== 'undefined' && isCampusLearner) { %>
       <a href="/campus" class="shell-link <%= _activeNav === 'campus' ? 'active' : '' %>"><span class="dot"></span> Campus Ready</a>
+      <% } %>
+      <% if (typeof isScreeningUser !== 'undefined' && isScreeningUser) { %>
+      <a href="/screening" class="shell-link <%= _activeNav === 'screening' ? 'active' : '' %>"><span class="dot"></span> Screening</a>
       <% } %>
       <% if (_previewMode) { %>
       <span class="shell-link" aria-disabled="true" title="Create a free account to start an interview" style="opacity:0.5;cursor:not-allowed;"><span class="dot"></span> New Interview</span>

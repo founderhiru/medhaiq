@@ -1,0 +1,16 @@
+<%- include('partials/workspace-shell-top', { pageTitle: pageTitle, activeNav: 'screening', shellUser: shellUser, isScreeningUser: true, extraStylesheets: ['/css/career-workspace.css', '/css/recruit-screening.css'] }) %>
+<div class="scr-wrap" id="scr-root" data-scr="job" data-job-id="<%= jobId %>">
+  <p><a href="/screening" class="scr-link">&larr; All roles</a></p>
+  <h1 id="scr-job-title">Role</h1>
+  <div id="scr-job-flags"></div>
+  <div class="scr-tabs" role="tablist">
+    <button type="button" class="scr-tab" role="tab" data-tab="criteria">Criteria</button>
+    <button type="button" class="scr-tab" role="tab" data-tab="candidates">Candidates</button>
+    <button type="button" class="scr-tab" role="tab" data-tab="inbox">Evidence Inbox</button>
+  </div>
+  <div id="scr-tab-criteria" class="scr-tabpane"></div>
+  <div id="scr-tab-candidates" class="scr-tabpane"></div>
+  <div id="scr-tab-inbox" class="scr-tabpane"></div>
+</div>
+<script src="/js/screening.js" defer></script>
+<%- include('partials/workspace-shell-bottom') %>
