@@ -199,8 +199,10 @@ async function chat(message, options = {}) {
   }
 
   const redaction = beginRedaction(options, capability);
-  const sendSystem = redaction ? redaction.session.redactSystem(system) : system;
+  // Message first: a name found at the top of the user content (e.g. a resume)
+  // is then also removed from the system prompt.
   const sendMessage = redaction ? redaction.session.redact(message) : message;
+  const sendSystem = redaction ? redaction.session.redactSystem(system) : system;
   logRedaction(redaction);
 
   const hasSystem = sendSystem && (typeof sendSystem === 'string' ? true : (sendSystem.static || sendSystem.dynamic));
@@ -242,8 +244,10 @@ async function chatJSON(message, options = {}) {
   const JSON_INSTRUCTION = '\n\nYou must respond with valid JSON only. No markdown, no prose.';
 
   const redaction = beginRedaction(options, capability);
-  const sendSystem = redaction ? redaction.session.redactSystem(system) : system;
+  // Message first: a name found at the top of the user content (e.g. a resume)
+  // is then also removed from the system prompt.
   const sendMessage = redaction ? redaction.session.redact(message) : message;
+  const sendSystem = redaction ? redaction.session.redactSystem(system) : system;
   logRedaction(redaction);
 
   // Object form: { static, dynamic } — the JSON instruction is per-turn

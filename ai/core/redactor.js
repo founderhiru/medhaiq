@@ -75,7 +75,7 @@ function escapeRegExp(s) {
  * no heading words. Returns the name string or null.
  */
 function detectHeaderName(text) {
-  const lines = String(text || '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(0, 6);
+  const lines = String(text || '').split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !/^<\/?[A-Za-z_][\w-]*>$/.test(l)).slice(0, 6);
   for (const line of lines) {
     if (line.length > 60 || /[0-9@:/\\|]/.test(line)) continue;
     const words = line.replace(/[,]+$/, '').split(/\s+/);
@@ -134,13 +134,18 @@ function createSession(opts = {}) {
     counts[type] = (counts[type] || 0) + 1;
   }
 
-  /** Redacts one string. Never throws. */
-  function redact(text) {
+  /**
+   * Redacts one string. Never throws.
+   * Header-name detection only runs on user content (the default), never on
+   * system prompts (isSystem=true): instructions are not a resume, and
+   * checking them first used to "use up" the one-time detection.
+   */
+  function redact(text, isSystem) {
     if (typeof text !== 'string' || text.length === 0) return text;
     try {
       let out = text;
 
-      if (opts.detectHeaderName && !headerChecked) {
+      if (opts.detectHeaderName && !headerChecked && !isSystem) {
         headerChecked = true;
         const found = detectHeaderName(out);
         if (found) names = expandNames([...names, found]);
@@ -170,12 +175,12 @@ function createSession(opts = {}) {
 
   /** Redacts a system prompt given as a string or { static, dynamic }. */
   function redactSystem(system) {
-    if (typeof system === 'string') return redact(system);
+    if (typeof system === 'string') return redact(system, true);
     if (system && typeof system === 'object' && !Array.isArray(system)) {
       return {
         ...system,
-        static: typeof system.static === 'string' ? redact(system.static) : system.static,
-        dynamic: typeof system.dynamic === 'string' ? redact(system.dynamic) : system.dynamic,
+        static: typeof system.static === 'string' ? redact(system.static, true) : system.static,
+        dynamic: typeof system.dynamic === 'string' ? redact(system.dynamic, true) : system.dynamic,
       };
     }
     return system;

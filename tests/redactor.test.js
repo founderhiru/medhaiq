@@ -74,6 +74,15 @@ const SAMPLE = [
     assert.deepStrictEqual(s.getCounts(), { EMAIL: 1, PHONE: 1, NAME: 1 });
   });
 
+  await test('header name is found even when a system prompt is redacted first, and inside <raw_resume> wrapper', () => {
+    const s = createSession({ detectHeaderName: true });
+    const sys = s.redactSystem('You are the Resume Intelligence engine. Return JSON per schema.');
+    const msg = s.redact('<raw_resume>\nJOHN DOE\n\nLocation: City | Phone: (555) 123-4567 | Email: john.doe@email.com\n</raw_resume>\n\nReturn only the JSON object.');
+    assert(!/john|doe/i.test(msg), msg);
+    assert.strictEqual(sys, 'You are the Resume Intelligence engine. Return JSON per schema.');
+    assert.deepStrictEqual(s.getCounts(), { EMAIL: 1, PHONE: 1, NAME: 1 });
+  });
+
   await test('keeps skills, titles, companies, colleges, numbers and years', () => {
     const out = createSession({ detectHeaderName: true }).redact(SAMPLE);
     for (const kept of ['Senior Engineering Manager', 'Infosys', 'IIT Madras', 'Node.js', 'Kubernetes',
@@ -196,6 +205,17 @@ const SAMPLE = [
     assert.deepStrictEqual(res.skills, ['Node.js']);
     assert.strictEqual(sent[0].system[0].text, 'STATIC'); // static (cached) block untouched
     assert(sent[0].system[0].cache_control, 'cache_control still on static block');
+  });
+
+  await test('flag ON: resume parse call (system first, wrapped message) removes the name end to end', async () => {
+    process.env.AI_REDACTION = 'on';
+    sent.length = 0; reply = '{"summary":"[NAME_1] led a team"}';
+    const res = await provider.chatJSON('<raw_resume>\nJOHN DOE\n\nPhone: (555) 123-4567 | Email: john.doe@email.com\nLed a team at Enterprise Solutions Inc.\n</raw_resume>',
+      { model: MODEL, system: 'You are an extraction engine.', redact: { detectHeaderName: true } });
+    const wire = JSON.stringify(sent[0]);
+    assert(!/JOHN|DOE|555|john\.doe/i.test(wire), wire);
+    assert(wire.includes('Enterprise Solutions Inc.'));
+    assert.strictEqual(res.summary, 'JOHN DOE led a team');
   });
 
   await test('flag ON + redact:false opts a call out', async () => {
