@@ -115,7 +115,7 @@ async function parseResume(resumeText) {
   try {
     parsed = await chatJSON(
       buildResumeIntelligenceUserMessage(text),
-      { system: RESUME_INTELLIGENCE_SYSTEM_PROMPT, maxTokens: 4000 }
+      { system: RESUME_INTELLIGENCE_SYSTEM_PROMPT, maxTokens: 4000, redact: { detectHeaderName: true } }
     );
     console.log(`[resume-parser] stage=ai_response status=SUCCESS responseLength=${JSON.stringify(parsed).length}`);
   } catch (err) {
