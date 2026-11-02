@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screening &amp; Assessment Copilot | MedhaIQ</title>
+  <meta name="description" content="MedhaIQ Screening & Assessment Copilot shows the evidence behind every screening decision: criteria you approve, exact resume excerpts, what is still unclear, and a targeted question for each gap. The decision stays with the recruiter.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0A0F1E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/medhaiq.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/hero-v2.css">
+  <link rel="stylesheet" href="/css/value-footer.css">
+  <link rel="stylesheet" href="/css/home-motion.css">
+</head>
+<body class="mh-scr-page">
+  <%- include('partials/header') %>
+
+  <%- include('partials/page-hero', {
+    eyebrow: 'SCREENING & ASSESSMENT COPILOT',
+    title: 'See the evidence behind every screening decision',
+    sub: 'A focused copilot for the part of screening that costs recruiters the most time: reading resumes against the criteria you approved, and knowing exactly what still needs checking.'
+  }) %>
+
+  <main>
+
+    <!-- ── Animated example ─────────────────────────────────────────── -->
+    <section class="mh-scr-demo reveal" aria-labelledby="mh-scr-demo-title">
+      <div class="mh-scr-demo-inner mh-section-center">
+        <div class="mh-eyebrow">SEE IT WORK</div>
+        <h2 class="mh-section-title" id="mh-scr-demo-title">From a job-description line to your decision, with every step visible</h2>
+        <p class="mh-section-sub">One sample role and one sample resume, invented for illustration. Nothing here is a real person or company.</p>
+
+        <div class="mh-scr-stage" id="mh-scr-stage">
+          <div class="mh-scr-toolbar">
+            <span class="mh-scr-sample">Sample data</span>
+            <button type="button" class="mh-scr-pause" id="mh-scr-pause" aria-pressed="false">Pause animation</button>
+          </div>
+
+          <div class="mh-scr-window" role="group" aria-label="Example: three criteria checked against one resume, ending with the recruiter's decision">
+            <div class="mh-scr-window-head">
+              <strong>Senior Engineer</strong>
+              <span>Candidate C-001 &middot; 3 approved criteria</span>
+            </div>
+
+            <article class="mh-scr-row mh-scr-a1">
+              <div class="mh-scr-req"><span class="mh-scr-imp">Required</span> Has led a team of five or more engineers</div>
+              <p class="mh-scr-quote">&ldquo;&hellip;<mark class="mh-scr-m1">led a team of seven engineers across two product squads</mark>, shipping the billing rebuild on schedule&hellip;&rdquo;</p>
+              <div class="mh-scr-result">
+                <span class="mh-scr-chip mh-scr-chip-found mh-scr-c1"><span aria-hidden="true">&#10003;</span> Evidence found</span>
+                <span class="mh-scr-src">Resume, page 1</span>
+              </div>
+            </article>
+
+            <article class="mh-scr-row mh-scr-a2">
+              <div class="mh-scr-req"><span class="mh-scr-imp">Required</span> Has built payment or billing systems</div>
+              <p class="mh-scr-quote">&ldquo;&hellip;<mark class="mh-scr-m2">worked on the checkout service</mark> used by the web app&hellip;&rdquo;</p>
+              <div class="mh-scr-result">
+                <span class="mh-scr-chip mh-scr-chip-partial mh-scr-c2"><span aria-hidden="true">&#9680;</span> Partial evidence</span>
+                <span class="mh-scr-src">Resume, page 1 &middot; role and depth not stated</span>
+              </div>
+            </article>
+
+            <article class="mh-scr-row mh-scr-a3">
+              <div class="mh-scr-req"><span class="mh-scr-imp mh-scr-imp-pref">Preferred</span> Has handled production incidents</div>
+              <p class="mh-scr-quote mh-scr-quote-none">No matching text in this resume.</p>
+              <div class="mh-scr-result">
+                <span class="mh-scr-chip mh-scr-chip-none mh-scr-c3"><span aria-hidden="true">&#9675;</span> Not found in resume</span>
+                <span class="mh-scr-src">Not mentioned does not mean the candidate lacks it.</span>
+              </div>
+              <div class="mh-scr-question">
+                <span class="mh-scr-question-label">Suggested question (you can edit it)</span>
+                Can you describe a production incident you handled from alert to follow-up, and what you changed afterwards?
+              </div>
+            </article>
+
+            <div class="mh-scr-decision" aria-label="Recruiter decision">
+              <span class="mh-scr-decision-label">Your decision</span>
+              <span class="mh-scr-opt">Shortlist</span>
+              <span class="mh-scr-opt">Hold</span>
+              <span class="mh-scr-opt mh-scr-opt-pick">Needs verification</span>
+              <span class="mh-scr-opt">Not moving forward</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── The evidence chain ───────────────────────────────────────── -->
+    <section class="mh-scr-chain" aria-labelledby="mh-scr-chain-title">
+      <div class="mh-scr-chain-inner mh-section-center">
+        <div class="mh-eyebrow">THE EVIDENCE CHAIN</div>
+        <h2 class="mh-section-title" id="mh-scr-chain-title">A traceable chain, not a score</h2>
+        <p class="mh-section-sub">Each criterion carries the same six links, so you can explain a decision to a hiring manager or a candidate.</p>
+        <ol class="mh-scr-steps">
+          <li><span class="mh-scr-step-num">1</span><h3>Requirement</h3><p>A criterion from the job description that you reviewed and approved.</p></li>
+          <li><span class="mh-scr-step-num">2</span><h3>Source excerpt</h3><p>The exact resume text behind it, checked against the resume itself.</p></li>
+          <li><span class="mh-scr-step-num">3</span><h3>Evidence reading</h3><p>Found, partial, not found or needs verification. Always in words, never a number.</p></li>
+          <li><span class="mh-scr-step-num">4</span><h3>What is missing</h3><p>When nothing is found, it says so plainly, without treating silence as a lack of skill.</p></li>
+          <li><span class="mh-scr-step-num">5</span><h3>Verification question</h3><p>A specific question for each gap, ready to edit before you use it.</p></li>
+          <li><span class="mh-scr-step-num">6</span><h3>Your decision</h3><p>Shortlist, hold, needs verification or not moving forward. Yours, not the AI's.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ── Principles ──────────────────────────────────────────────── -->
+    <section class="mh-scr-principles" aria-labelledby="mh-scr-principles-title">
+      <div class="mh-scr-principles-inner mh-section-center">
+        <div class="mh-eyebrow">BUILT TO SUPPORT YOUR JUDGEMENT</div>
+        <h2 class="mh-section-title" id="mh-scr-principles-title">What it deliberately does not do</h2>
+        <ul class="mh-scr-principle-list">
+          <li><strong>No overall score or ranking.</strong> Resumes stay in the order you added them.</li>
+          <li><strong>No hire or reject recommendation.</strong> The AI organises evidence. You decide.</li>
+          <li><strong>No guessing.</strong> If a resume does not show something, it is marked unclear, not invented.</li>
+          <li><strong>Not an ATS.</strong> It sits beside the tools you already use, for the screening step only.</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <section class="mh-scr-cta reveal">
+    <div class="mh-scr-cta-inner">
+      <h2 class="mh-scr-cta-title">Try it on your own screening workflow</h2>
+      <p class="mh-scr-cta-sub">Screening &amp; Assessment Copilot is in early access with a small number of recruiting teams. Tell us about your hiring volume and we will set up a pilot.</p>
+      <button type="button" id="mh-scr-request-pilot" class="mh-btn-primary">Request a pilot</button>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+  <%- include('partials/contact-modal') %>
+
+  <script>
+  (function () {
+    var btn = document.getElementById('mh-scr-request-pilot');
+    var modal = document.getElementById('mh-contact-modal');
+    if (btn && modal) btn.addEventListener('click', function () { modal.style.display = 'flex'; });
+
+    var stage = document.getElementById('mh-scr-stage');
+    var pause = document.getElementById('mh-scr-pause');
+    if (stage && pause) {
+      pause.addEventListener('click', function () {
+        var paused = stage.classList.toggle('is-paused');
+        pause.setAttribute('aria-pressed', paused ? 'true' : 'false');
+        pause.textContent = paused ? 'Play animation' : 'Pause animation';
+      });
+    }
+
+    var reveals = document.querySelectorAll('.reveal');
+    if (reveals.length && 'IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) e.target.classList.add('visible'); });
+      }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+      reveals.forEach(function (el) { io.observe(el); });
+    } else {
+      reveals.forEach(function (el) { el.classList.add('visible'); });
+    }
+  })();
+  </script>
+</body>
+</html>

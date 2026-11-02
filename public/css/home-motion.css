@@ -48,3 +48,105 @@ section#pricing .mh-section-title { font-family: 'Plus Jakarta Sans', system-ui,
 section#pricing .mh-eyebrow { color: #1D4ED8 !important; font-size: 12px; letter-spacing: .12em; }
 /* accent words inside section headings must keep the heading's line height */
 section.mh-xp h2 span, section.mh-sc h2 span { line-height: inherit; }
+
+/* ══ Screening & Assessment Copilot page (/recruit/screening) ═══════════════
+   Appended here (not a new file): this stylesheet is the site's motion layer
+   and this page is mostly one looping demo. Everything is scoped under .mh-scr-*
+   and the page body class, so no other page is affected. Content is fully
+   visible without motion: the animation only applies when the visitor has not
+   asked for reduced motion, and it can be paused with the on-page button. */
+.mh-scr-page { background: #F7F6F2; }
+.mh-scr-demo, .mh-scr-chain { padding: 88px 24px; background: #F7F6F2; }
+.mh-scr-demo .mh-eyebrow, .mh-scr-chain .mh-eyebrow { color: #1D4ED8; font-size: 12px; letter-spacing: .12em; }
+.mh-scr-demo .mh-section-title, .mh-scr-chain .mh-section-title { color: #0B1020; font-size: clamp(26px, 3.2vw, 38px); font-weight: 800; letter-spacing: -.025em; line-height: 1.15; }
+.mh-scr-demo .mh-section-sub, .mh-scr-chain .mh-section-sub { color: #5F6B82; font-size: 16.5px; line-height: 1.55; }
+.mh-scr-demo-inner, .mh-scr-chain-inner, .mh-scr-principles-inner { max-width: 960px; margin: 0 auto; }
+
+.mh-scr-stage { max-width: 760px; margin: 36px auto 0; text-align: left; }
+.mh-scr-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.mh-scr-sample { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5F6B82; }
+.mh-scr-pause { font: inherit; font-size: 13px; font-weight: 600; color: #1D4ED8; background: transparent; border: 1px solid #B7C6EE; border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.mh-scr-pause:hover { background: #EEF3FF; }
+.mh-scr-pause:focus-visible { outline: 3px solid #2F6BFF; outline-offset: 2px; }
+.mh-scr-window { background: #fff; border: 1px solid #DCE2EE; border-radius: 14px; box-shadow: 0 18px 50px rgba(11,16,32,.10); overflow: hidden; color: #0B1020; }
+.mh-scr-window-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px; background: #0A0F1E; color: #fff; font-size: 14px; }
+.mh-scr-window-head span { color: #B8C4E0; }
+.mh-scr-row { padding: 18px 20px; border-top: 1px solid #E8ECF4; }
+.mh-scr-req { font-size: 15px; font-weight: 600; line-height: 1.4; }
+.mh-scr-imp { display: inline-block; margin-right: 8px; padding: 2px 8px; border-radius: 6px; background: #E3EBFF; color: #1E3A9E; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; vertical-align: 1px; }
+.mh-scr-imp-pref { background: #ECEFF5; color: #3B4658; }
+.mh-scr-quote { margin: 10px 0 12px; padding-left: 12px; border-left: 3px solid #C9D3EA; font-size: 14.5px; line-height: 1.55; color: #2A3550; }
+.mh-scr-quote mark { color: #0B1020; border-radius: 3px; padding: 1px 2px; background: linear-gradient(#FFE08A, #FFE08A) no-repeat left center / 100% 100%; }
+.mh-scr-quote-none { font-style: italic; color: #5F6B82; }
+.mh-scr-result { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.mh-scr-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 999px; border: 1px solid; font-size: 13px; font-weight: 700; }
+.mh-scr-chip-found { background: #E6F4EA; color: #14532D; border-color: #86C79A; }
+.mh-scr-chip-partial { background: #FFF4D6; color: #6B4200; border-color: #E5C26A; }
+.mh-scr-chip-none { background: #EEF1F6; color: #2F3A4E; border-color: #B9C2D3; }
+.mh-scr-src { font-size: 13px; color: #5F6B82; }
+.mh-scr-question { margin-top: 12px; padding: 12px 14px; border: 1px dashed #7FA2F5; border-radius: 10px; background: #F3F7FF; font-size: 14.5px; line-height: 1.5; color: #1B2A52; }
+.mh-scr-question-label { display: block; margin-bottom: 4px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #1D4ED8; }
+.mh-scr-decision { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 16px 20px; border-top: 1px solid #E8ECF4; background: #FAFBFD; }
+.mh-scr-decision-label { margin-right: 6px; font-size: 13px; font-weight: 700; color: #3B4658; }
+.mh-scr-opt { padding: 6px 12px; border: 1px solid #C9D3EA; border-radius: 8px; background: #fff; font-size: 13.5px; font-weight: 600; color: #2A3550; }
+.mh-scr-opt-pick { background: #0A0F1E; border-color: #0A0F1E; color: #fff; }
+
+.mh-scr-chain { padding-top: 24px; }
+.mh-scr-steps { list-style: none; margin: 36px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: left; }
+.mh-scr-steps li { padding: 20px; background: #fff; border: 1px solid #DCE2EE; border-radius: 12px; }
+.mh-scr-step-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #0A0F1E; color: #fff; font-size: 13px; font-weight: 700; }
+.mh-scr-steps h3 { margin: 12px 0 6px; font-size: 16px; font-weight: 700; color: #0B1020; }
+.mh-scr-steps p { margin: 0; font-size: 14.5px; line-height: 1.5; color: #4B5873; }
+
+.mh-scr-principles, .mh-scr-cta { padding: 80px 24px; background: #0A0F1E; color: #fff; text-align: center; }
+.mh-scr-principles .mh-eyebrow { color: #7FB2FF; font-size: 12px; letter-spacing: .12em; }
+.mh-scr-principles .mh-section-title { color: #fff; font-size: clamp(26px, 3.2vw, 38px); font-weight: 800; letter-spacing: -.025em; line-height: 1.15; }
+.mh-scr-principle-list { list-style: none; max-width: 640px; margin: 28px auto 0; padding: 0; text-align: left; display: grid; gap: 12px; }
+.mh-scr-principle-list li { padding: 16px 18px; border: 1px solid rgba(255,255,255,.16); border-radius: 12px; background: rgba(255,255,255,.04); font-size: 15.5px; line-height: 1.5; color: #D6DEF0; }
+.mh-scr-principle-list strong { color: #fff; }
+.mh-scr-cta { border-top: 1px solid rgba(255,255,255,.1); }
+.mh-scr-cta-inner { max-width: 640px; margin: 0 auto; }
+.mh-scr-cta-title { margin: 0 0 12px; font-size: clamp(24px, 3vw, 34px); font-weight: 800; letter-spacing: -.02em; }
+.mh-scr-cta-sub { margin: 0 0 24px; font-size: 16px; line-height: 1.55; color: #B8C4E0; }
+
+@media (max-width: 800px) { .mh-scr-steps { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) {
+  .mh-scr-demo, .mh-scr-principles, .mh-scr-cta { padding: 56px 16px; }
+  .mh-scr-chain { padding: 16px 16px 56px; }
+  .mh-scr-steps { grid-template-columns: 1fr; }
+  .mh-scr-row { padding: 16px; }
+}
+
+/* The looping demo. One 18s cycle; every element appears at its own point,
+   holds, then the whole scene fades so the loop restarts cleanly. */
+@keyframes scr-row-a1 { 0%,2% { opacity: 0; translate: 0 14px; } 6%,92% { opacity: 1; translate: 0 0; } 97%,100% { opacity: 0; translate: 0 0; } }
+@keyframes scr-row-a2 { 0%,10% { opacity: 0; translate: 0 14px; } 14%,92% { opacity: 1; translate: 0 0; } 97%,100% { opacity: 0; translate: 0 0; } }
+@keyframes scr-row-a3 { 0%,18% { opacity: 0; translate: 0 14px; } 22%,92% { opacity: 1; translate: 0 0; } 97%,100% { opacity: 0; translate: 0 0; } }
+@keyframes scr-mark-1 { 0%,8% { background-size: 0% 100%; } 18%,92% { background-size: 100% 100%; } 97%,100% { background-size: 0% 100%; } }
+@keyframes scr-mark-2 { 0%,16% { background-size: 0% 100%; } 26%,92% { background-size: 100% 100%; } 97%,100% { background-size: 0% 100%; } }
+@keyframes scr-chip-1 { 0%,19% { opacity: 0; scale: .85; } 23%,92% { opacity: 1; scale: 1; } 97%,100% { opacity: 0; scale: .85; } }
+@keyframes scr-chip-2 { 0%,27% { opacity: 0; scale: .85; } 31%,92% { opacity: 1; scale: 1; } 97%,100% { opacity: 0; scale: .85; } }
+@keyframes scr-chip-3 { 0%,35% { opacity: 0; scale: .85; } 39%,92% { opacity: 1; scale: 1; } 97%,100% { opacity: 0; scale: .85; } }
+@keyframes scr-question { 0%,45% { opacity: 0; translate: 0 10px; } 52%,92% { opacity: 1; translate: 0 0; } 97%,100% { opacity: 0; translate: 0 0; } }
+@keyframes scr-decision { 0%,60% { opacity: 0; } 66%,92% { opacity: 1; } 97%,100% { opacity: 0; } }
+@keyframes scr-pick { 0%,72% { background: #fff; border-color: #C9D3EA; color: #2A3550; } 78%,92% { background: #0A0F1E; border-color: #0A0F1E; color: #fff; } 97%,100% { background: #fff; border-color: #C9D3EA; color: #2A3550; } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .mh-scr-window * { animation-duration: 18s; animation-iteration-count: infinite; animation-timing-function: ease-out; animation-fill-mode: both; }
+  .mh-scr-a1 { animation-name: scr-row-a1; }
+  .mh-scr-a2 { animation-name: scr-row-a2; }
+  .mh-scr-a3 { animation-name: scr-row-a3; }
+  .mh-scr-m1 { animation-name: scr-mark-1; }
+  .mh-scr-m2 { animation-name: scr-mark-2; }
+  .mh-scr-c1 { animation-name: scr-chip-1; }
+  .mh-scr-c2 { animation-name: scr-chip-2; }
+  .mh-scr-c3 { animation-name: scr-chip-3; }
+  .mh-scr-question { animation-name: scr-question; }
+  .mh-scr-decision { animation-name: scr-decision; }
+  .mh-scr-opt-pick { animation-name: scr-pick; }
+  .mh-scr-stage.is-paused .mh-scr-window * { animation-play-state: paused; }
+  @supports (animation-timeline: view()) {
+    .mh-scr-steps li { animation: mhm-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
+  }
+}
+@media (prefers-reduced-motion: reduce) { .mh-scr-pause { display: none; } }
