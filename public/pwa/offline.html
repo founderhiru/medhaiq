@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0A0F1E"><meta name="robots" content="noindex">
+<title>MedhaIQ | Offline</title>
+<style>
+@font-face{font-family:'Plus Jakarta Sans';font-weight:700;src:url(/assets/pwa/pjs-700.woff2) format('woff2')}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(60% 40% at 50% 38%,rgba(59,130,246,.16),#0A0E1A 70%);color:#fff;font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;text-align:center;padding:32px}
+.logo{display:inline-flex;align-items:center;gap:10px;line-height:1;margin-bottom:22px}.logo img{height:30px;width:auto}
+.w{font-weight:700;font-size:23px;letter-spacing:-.04em}.w span{background:linear-gradient(135deg,#3D8BFF 0%,#4F74FF 38%,#6D5CF5 72%,#8B5CF6 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+h1{font-size:26px;letter-spacing:-.02em;margin-bottom:10px}p{color:#9DA8BA;line-height:1.6;max-width:320px;margin:0 auto 24px}
+button{border:0;cursor:pointer;color:#fff;font:600 16px 'Plus Jakarta Sans',system-ui,sans-serif;padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,#3D8BFF,#8B5CF6);box-shadow:0 8px 28px rgba(79,116,255,.35)}
+</style></head>
+<body><main><div class="logo"><img src="/assets/branding/medhaiq-icon.png" alt=""><div class="w">Medha<span>IQ</span></div></div>
+<h1>You're offline</h1><p>MedhaIQ needs an internet connection for live interviews and reports. Check your connection and try again.</p>
+<button type="button" onclick="location.reload()">Try again</button></main>
+<script>addEventListener('online',function(){location.reload()})</script></body></html>

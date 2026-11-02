@@ -1,16 +1,23 @@
 {
+  "id": "/",
   "name": "MedhaIQ",
   "short_name": "MedhaIQ",
-  "start_url": "/",
+  "description": "AI Career Intelligence Platform. Practice. Polish. Place.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "theme_color": "#0A0F1E",
   "background_color": "#0A0F1E",
+  "categories": ["education", "productivity", "business"],
   "icons": [
-    {
-      "src": "/assets/branding/favicon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    }
+    { "src": "/assets/pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/pwa/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Practice interview", "url": "/interview", "icons": [{ "src": "/assets/pwa/icon-192.png", "sizes": "192x192" }] },
+    { "name": "My reports", "url": "/dashboard/reports", "icons": [{ "src": "/assets/pwa/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Explore", "url": "/explore", "icons": [{ "src": "/assets/pwa/icon-192.png", "sizes": "192x192" }] }
   ]
 }

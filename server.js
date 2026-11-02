@@ -71,6 +71,7 @@ app.use(require('./middleware/device-id').attachDeviceSignal);
 // megaMenuItems/headerCTA yet — that wiring is a separate, later change —
 // so this is purely additive infrastructure right now.
 app.use(require('./middleware/capabilities'));
+app.use(require('./middleware/app-shell').inject); // mobile app + installable web app helper tags (see docs/PWA-INSTALL.md)
 
 // EJS view engine
 app.set('view engine', 'ejs');
@@ -105,6 +106,8 @@ app.use('/api/debug/elevenlabs/voices', require('./routes/debug-elevenlabs-voice
 app.use('/api/presence',   require('./routes/presence')); // lightweight Online Now heartbeat, see db/presence.js
 app.use('/api/stripe',     require('./routes/stripe').router); // Sandbox/staging checkout only — webhook is mounted separately above, pre-express.json()
 app.use('/api/feedback',   require('./routes/feedback')); // 5-star post-interview feedback widget — was implemented but never mounted, so POST /api/feedback 404'd and the Submit button always showed "Something went wrong"
+app.use('/app',            require('./routes/app-handoff')); // mobile app login handoff
+app.use(require('./routes/pwa')); // installable web app: /sw.js, /install, sign-in pairing (off unless PWA_ENABLED=on)
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/', async (req, res) => {
