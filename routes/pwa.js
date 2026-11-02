@@ -118,7 +118,7 @@ const BASE_CSS = "@font-face{font-family:'Plus Jakarta Sans';font-weight:700;src
   "*{box-sizing:border-box;margin:0;padding:0}html{background:#0A0E1A}body{min-height:100vh;background:radial-gradient(60% 40% at 50% 0%,rgba(59,130,246,.16),#0A0E1A 70%);color:#fff;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}" +
   ".logo{display:inline-flex;align-items:center;gap:10px;line-height:1;text-decoration:none}.logo img{height:26px;width:auto}.w{font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-weight:700;font-size:20px;letter-spacing:-.04em;color:#fff}.w span{background:linear-gradient(135deg,#3D8BFF 0%,#4F74FF 38%,#6D5CF5 72%,#8B5CF6 100%);-webkit-background-clip:text;background-clip:text;color:transparent}" +
   ".btn{display:inline-block;border:0;cursor:pointer;color:#fff;text-decoration:none;font:600 16px 'Plus Jakarta Sans',system-ui,sans-serif;padding:13px 26px;border-radius:12px;background:linear-gradient(135deg,#3D8BFF,#8B5CF6);box-shadow:0 8px 28px rgba(79,116,255,.3)}" +
-  ".card{background:#111827;border:1px solid #1E293B;border-radius:20px;padding:24px}.mu{color:#9DA8BA;line-height:1.6}";
+  ".btn+.btn{margin-left:12px}.card{background:#111827;border:1px solid #1E293B;border-radius:20px;padding:24px}.mu{color:#9DA8BA;line-height:1.6}";
 const LOGO = '<a class="logo" href="/"><img src="/assets/branding/medhaiq-icon.png" alt=""><span class="w">Medha<span>IQ</span></span></a>';
 
 function claimPage(id, ok) {
