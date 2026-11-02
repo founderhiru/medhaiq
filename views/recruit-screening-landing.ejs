@@ -21,17 +21,93 @@
 
   <%- include('partials/page-hero', {
     eyebrow: 'SCREENING & ASSESSMENT COPILOT',
-    title: 'See the evidence behind every screening decision',
-    sub: 'A focused copilot for the part of screening that costs recruiters the most time: reading resumes against the criteria you approved, and knowing exactly what still needs checking.'
+    title: 'Turn candidate screening into an evidence-backed workflow',
+    sub: 'MedhaIQ helps recruiters move from hundreds of resumes to an evidence-backed shortlist, without blindly trusting an AI score.'
   }) %>
 
   <main>
 
+    <!-- ── Product walkthrough video ─────────────────────────────────── -->
+    <section class="mh-scr-video" aria-labelledby="mh-scr-video-title">
+      <h2 class="mh-scr-sr" id="mh-scr-video-title">Product walkthrough video</h2>
+      <div class="mh-scr-video-inner">
+        <div class="mh-scr-player" id="mh-scr-player" data-state="idle" tabindex="0" aria-label="Product walkthrough video player. Space plays or pauses, M mutes, F toggles full screen.">
+          <video id="mh-scr-vid" preload="none" playsinline poster="/assets/screening/walkthrough-poster.jpg" aria-describedby="mh-scr-vnote">
+            <source src="/assets/screening/walkthrough.mp4" type="video/mp4">
+            Your browser cannot play this video. The transcript below describes it.
+          </video>
+          <button type="button" class="mh-scr-bigplay" id="mh-scr-bigplay" aria-label="Play the 73-second product walkthrough">
+            <svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><path d="M17 11v26l22-13z" fill="currentColor"/></svg>
+          </button>
+          <div class="mh-scr-badge" aria-hidden="true">Product walkthrough &middot; sample data</div>
+          <div class="mh-scr-ctrl" role="group" aria-label="Video controls">
+            <button type="button" class="mh-scr-cb" id="mh-scr-pp" aria-label="Play">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path class="mh-scr-ico-play" d="M8 5v14l11-7z" fill="currentColor"/><path class="mh-scr-ico-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>
+            </button>
+            <span class="mh-scr-time" id="mh-scr-time">0:00 / 1:13</span>
+            <input type="range" class="mh-scr-seek" id="mh-scr-seek" min="0" max="1000" value="0" step="1" aria-label="Seek video">
+            <button type="button" class="mh-scr-cb" id="mh-scr-mute" aria-label="Mute" aria-pressed="false">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path class="mh-scr-ico-wave" d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="mh-scr-ico-x" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <input type="range" class="mh-scr-vol" id="mh-scr-vol" min="0" max="100" value="80" step="5" aria-label="Volume">
+            <button type="button" class="mh-scr-cb" id="mh-scr-fs" aria-label="Full screen">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <p class="mh-scr-vnote" id="mh-scr-vnote">A product walkthrough using fictional sample data and stylised screens. The optional AI interview step shown is <strong>coming soon</strong> and is not available in the live product. Nothing plays, and there is no sound, until you press play.</p>
+        <details class="mh-scr-transcript">
+          <summary>Read the transcript</summary>
+          <ol>
+            <li><span>0:00</span> 200 resumes. One role. Hours of reading. And most AI screening hands you a score you can&rsquo;t explain.</li>
+            <li><span>0:07</span> MedhaIQ Screening &amp; Assessment Copilot: see the evidence behind every screening decision.</li>
+            <li><span>0:13</span> Step 1. Start with the yardstick: you review and approve the criteria. (A job description goes in, criteria are proposed, and the recruiter approves them.)</li>
+            <li><span>0:21</span> Step 2. Drop in resumes. Contact details are removed before AI reads them.</li>
+            <li><span>0:29</span> Step 3. See who needs attention. Nothing is scored or ranked.</li>
+            <li><span>0:37</span> Step 4. Every finding points to the exact words in the resume. Where nothing is found, it says so without claiming the candidate lacks the skill.</li>
+            <li><span>0:44</span> Gaps become questions to ask, never reasons to reject. The recruiter approves a suggested question.</li>
+            <li><span>0:50</span> Optional next step, coming soon: the Interview Engine asks only what is still open, then brings the answer back into the same evidence for the recruiter to confirm.</li>
+            <li><span>1:01</span> Step 6. You decide. Every step is recorded.</li>
+            <li><span>1:07</span> Better screening isn&rsquo;t a score. It&rsquo;s evidence you can explain. No overall score. No AI hire or reject. You make the decision.</li>
+          </ol>
+        </details>
+      </div>
+    </section>
+
+    <!-- ── Five steps ───────────────────────────────────────────────── -->
+    <section class="mh-scr-five" aria-labelledby="mh-scr-five-title">
+      <div class="mh-scr-five-inner mh-section-center">
+        <div class="mh-eyebrow">HOW IT WORKS</div>
+        <h2 class="mh-section-title" id="mh-scr-five-title">From hundreds of resumes to a shortlist you can explain</h2>
+        <ol class="mh-scr-five-list">
+          <li><span class="mh-scr-step-num">1</span><h3>The problem</h3><p>Hundreds of resumes. Too much manual review. Recruiters need to know where to focus.</p></li>
+          <li><span class="mh-scr-step-num">2</span><h3>Define what matters</h3><p>Upload a job description. MedhaIQ proposes criteria. The recruiter approves them.</p></li>
+          <li><span class="mh-scr-step-num">3</span><h3>Understand candidate evidence</h3><p>Review actual resume excerpts, missing information and uncertain findings.</p></li>
+          <li><span class="mh-scr-step-num">4</span><h3>Verify through AI interview <em class="mh-scr-soon">Optional &middot; coming soon</em></h3><p>Optionally invite candidates to a MedhaIQ AI interview to investigate unanswered criteria.</p></li>
+          <li><span class="mh-scr-step-num">5</span><h3>Make a human decision</h3><p>The recruiter reviews the evidence and decides whom to shortlist.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ── Benefits ─────────────────────────────────────────────────── -->
+    <section class="mh-scr-benefits" aria-labelledby="mh-scr-benefits-title">
+      <div class="mh-scr-benefits-inner mh-section-center">
+        <div class="mh-eyebrow">FOR RECRUITMENT TEAMS</div>
+        <h2 class="mh-section-title" id="mh-scr-benefits-title">What your team gets</h2>
+        <div class="mh-scr-benefit-grid">
+          <div><h3>Focus where it matters</h3><p>Resumes are grouped by what the evidence shows, so you know which ones need your attention first.</p></div>
+          <div><h3>Explain every decision</h3><p>Each finding points to the exact resume words behind it, and the review steps are recorded.</p></div>
+          <div><h3>Ask sharper questions</h3><p>Every gap becomes a specific, editable question, not a reason to reject.</p></div>
+          <div><h3>Stay in control</h3><p>No overall score and no AI hire or reject. The recruiter makes every decision.</p></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ── Animated example ─────────────────────────────────────────── -->
     <section class="mh-scr-demo reveal" aria-labelledby="mh-scr-demo-title">
       <div class="mh-scr-demo-inner mh-section-center">
-        <div class="mh-eyebrow">SEE IT WORK</div>
-        <h2 class="mh-section-title" id="mh-scr-demo-title">From a job-description line to your decision, with every step visible</h2>
+        <div class="mh-eyebrow">A CLOSER LOOK</div>
+        <h2 class="mh-section-title" id="mh-scr-demo-title">One criterion, from the job description to your decision</h2>
         <p class="mh-section-sub">One sample role and one sample resume, invented for illustration. Nothing here is a real person or company.</p>
 
         <div class="mh-scr-stage" id="mh-scr-stage">
@@ -138,6 +214,54 @@
     var btn = document.getElementById('mh-scr-request-pilot');
     var modal = document.getElementById('mh-contact-modal');
     if (btn && modal) btn.addEventListener('click', function () { modal.style.display = 'flex'; });
+
+    // ── Walkthrough video player (no autoplay; sound only after the visitor presses play) ──
+    (function () {
+      var box = document.getElementById('mh-scr-player');
+      var v = document.getElementById('mh-scr-vid');
+      if (!box || !v) return;
+      var big = document.getElementById('mh-scr-bigplay'), pp = document.getElementById('mh-scr-pp');
+      var seek = document.getElementById('mh-scr-seek'), vol = document.getElementById('mh-scr-vol');
+      var mute = document.getElementById('mh-scr-mute'), fs = document.getElementById('mh-scr-fs'), tm = document.getElementById('mh-scr-time');
+      v.volume = 0.8;
+      function fmt(x) { x = Math.max(0, Math.floor(x || 0)); return Math.floor(x / 60) + ':' + ('0' + (x % 60)).slice(-2); }
+      function dur() { return isFinite(v.duration) && v.duration > 0 ? v.duration : 73; }
+      function state(st) { box.setAttribute('data-state', st); }
+      function toggle() {
+        if (v.paused || v.ended) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () { state('error'); }); }
+        else v.pause();
+      }
+      function syncPP() { var playing = !v.paused && !v.ended; pp.setAttribute('aria-label', playing ? 'Pause' : (v.ended ? 'Replay' : 'Play')); }
+      function syncMute() { var m = v.muted || v.volume === 0; mute.setAttribute('aria-pressed', m ? 'true' : 'false'); mute.setAttribute('aria-label', m ? 'Unmute' : 'Mute'); box.classList.toggle('is-muted', m); }
+      function tick() { var d = dur(); seek.value = Math.round((v.currentTime / d) * 1000); seek.style.setProperty('--p', (v.currentTime / d * 100) + '%'); tm.textContent = fmt(v.currentTime) + ' / ' + fmt(d); }
+      big.addEventListener('click', toggle);
+      pp.addEventListener('click', toggle);
+      v.addEventListener('click', toggle);
+      v.addEventListener('play', function () { state('playing'); syncPP(); });
+      v.addEventListener('pause', function () { if (!v.ended) state('paused'); syncPP(); });
+      v.addEventListener('ended', function () { state('ended'); syncPP(); });
+      v.addEventListener('timeupdate', tick);
+      v.addEventListener('loadedmetadata', tick);
+      v.addEventListener('error', function () { state('error'); });
+      seek.addEventListener('input', function () { v.currentTime = (seek.value / 1000) * dur(); tick(); });
+      vol.addEventListener('input', function () { v.volume = vol.value / 100; v.muted = v.volume === 0; syncMute(); });
+      mute.addEventListener('click', function () { v.muted = !v.muted; if (!v.muted && v.volume === 0) { v.volume = 0.5; vol.value = 50; } syncMute(); });
+      fs.addEventListener('click', function () {
+        var d = document, el = box;
+        if (d.fullscreenElement || d.webkitFullscreenElement) { (d.exitFullscreen || d.webkitExitFullscreen).call(d); }
+        else if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+      });
+      box.addEventListener('keydown', function (e) {
+        var t = e.target && e.target.tagName;
+        if (t === 'INPUT' || t === 'BUTTON') { if (e.key !== 'm' && e.key !== 'f') return; }
+        if (e.key === ' ' || e.key === 'k') { e.preventDefault(); toggle(); }
+        else if (e.key === 'm') { mute.click(); }
+        else if (e.key === 'f') { fs.click(); }
+      });
+      syncPP(); syncMute(); tick();
+    })();
 
     var stage = document.getElementById('mh-scr-stage');
     var pause = document.getElementById('mh-scr-pause');
