@@ -82,6 +82,26 @@
     }, { passive: true });
   }
 
+  /* ---- "Get the MedhaIQ App" entry points: site footer + home hero (hidden once installed) ---- */
+  function addEntryPoints() {
+    if (standalone) return;
+    var faq = document.querySelector('.mh-footer-link[href="/faq"]');
+    if (faq && !document.getElementById('mh-app-link-footer')) {
+      var f = document.createElement('a');
+      f.id = 'mh-app-link-footer'; f.href = '/install'; f.className = 'mh-footer-link'; f.textContent = 'Get the MedhaIQ App';
+      faq.parentNode.insertBefore(f, faq.nextSibling);
+    }
+    var act = document.querySelector('.mh-hero-actions');
+    if (act && !document.getElementById('mh-app-link-hero')) {
+      var h = document.createElement('a');
+      h.id = 'mh-app-link-hero'; h.href = '/install'; h.className = 'mh-app-cta';
+      h.innerHTML = '<span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></span>' +
+        '<span class="tx"><b>Get the MedhaIQ App</b><span>Take your career intelligence with you.</span></span><span class="ar" aria-hidden="true">&rarr;</span>';
+      act.parentNode.insertBefore(h, act.nextSibling);
+    }
+  }
+  ready(addEntryPoints);
+
   /* ---- sign-in pairing: installed app only, on the sign-in page ---- */
   if (standalone && path === '/auth/login') pairing();
   function post(url, data) {

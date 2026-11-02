@@ -14,6 +14,9 @@ for (const i of mf.icons) assert.ok(fs.existsSync(path.join(ROOT, 'public', i.sr
 assert.ok(mf.icons.some(i => i.sizes === '192x192') && mf.icons.some(i => i.sizes === '512x512') && mf.icons.some(i => i.purpose === 'maskable')); ok('manifest valid, icons exist (192, 512, maskable)');
 for (const f of ['public/js/pwa.js', 'public/css/pwa.css', 'public/pwa/offline.html', 'public/pwa/qrcode.js', 'lib/pwa-sw.js']) assert.ok(fs.existsSync(path.join(ROOT, f)), f);
 assert.ok(!/document\.cookie/.test(fs.readFileSync(path.join(ROOT, 'public/js/pwa.js'), 'utf8'))); ok('client script never touches document.cookie');
+const pj = fs.readFileSync(path.join(ROOT, 'public/js/pwa.js'), 'utf8');
+assert.ok(pj.includes("'Get the MedhaIQ App'") && pj.includes("Take your career intelligence with you.") && (pj.match(/href = '\/install'/g) || []).length === 2); ok('footer + hero entry points both link to /install with the approved wording');
+assert.ok(!/App Store|Google Play/.test(pj)); ok('wording never claims an App Store or Google Play app');
 
 // B. injection
 const HTML = '<html><head><title>x</title></head><body>hi</body></html>';
