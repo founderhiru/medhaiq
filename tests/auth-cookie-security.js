@@ -426,10 +426,13 @@ test("only routes/auth.js issues the user_id cookie (exactly 4 call sites) — s
   // Allowed: routes/auth.js (the real issuer), middleware/auth-cookie.js (its header comment
   // documents the call it wraps), views/server.js (known orphan copy, never loaded),
   // routes/app-handoff.js (mobile app: exactly ONE reviewed call, in GET /app/session, which
-  // only accepts a single-use 120 s HMAC code minted for an already-authenticated user).
-  const outside = hits.filter(([f]) => !['routes/auth.js', 'middleware/auth-cookie.js', 'views/server.js', 'routes/app-handoff.js'].includes(f));
+  // only accepts a single-use 120 s HMAC code minted for an already-authenticated user),
+  // routes/pwa.js (installed web app: exactly ONE reviewed call, in POST /pwa/pair/poll, after the
+  // signed-in user typed the 4-digit code shown in the app; single use, 10 min, 5 tries).
+  const outside = hits.filter(([f]) => !['routes/auth.js', 'middleware/auth-cookie.js', 'views/server.js', 'routes/app-handoff.js', 'routes/pwa.js'].includes(f));
   assert.deepStrictEqual(outside, [], 'no other file may set user_id');
   assert.deepStrictEqual(hits.find(([f]) => f === 'routes/app-handoff.js'), ['routes/app-handoff.js', 1]);
+  assert.deepStrictEqual(hits.find(([f]) => f === 'routes/pwa.js'), ['routes/pwa.js', 1]); // pairing poll only: single-use, typed-code approved
   assert.deepStrictEqual(hits.find(([f]) => f === 'routes/auth.js'), ['routes/auth.js', 4]);
 });
 test('nothing except the server.js cookie parser and this middleware reads the raw Cookie header', () => {

@@ -107,6 +107,7 @@ app.use('/api/presence',   require('./routes/presence')); // lightweight Online 
 app.use('/api/stripe',     require('./routes/stripe').router); // Sandbox/staging checkout only — webhook is mounted separately above, pre-express.json()
 app.use('/api/feedback',   require('./routes/feedback')); // 5-star post-interview feedback widget — was implemented but never mounted, so POST /api/feedback 404'd and the Submit button always showed "Something went wrong"
 app.use('/app',            require('./routes/app-handoff')); // mobile app login handoff
+app.use(require('./routes/pwa')); // installable web app: /sw.js, /install, sign-in pairing
 
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/', async (req, res) => {
