@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0A0E1A">
+  <title>MedhaIQ</title>
+  <style>
+    :root{--navy:#0A0E1A;--text-muted:#9DA8BA;--grad:linear-gradient(135deg,#3D8BFF 0%,#4F74FF 38%,#6D5CF5 72%,#8B5CF6 100%)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;background:var(--navy);color:#fff;font-family:'Plus Jakarta Sans','Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+    .stage{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px;text-align:center;background:radial-gradient(60% 40% at 50% 38%,rgba(59,130,246,.16),transparent 70%)}
+    .logo{display:flex;align-items:center;gap:12px}
+    .logo img{width:72px;height:72px;object-fit:contain}
+    .wordmark{font-weight:700;font-size:38px;letter-spacing:-.04em}
+    .wordmark span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .tag{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+    .bar{width:120px;height:3px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+    .bar i{display:block;height:100%;width:40%;background:var(--grad);border-radius:3px;animation:slide 1.1s ease-in-out infinite}
+    @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
+    .offline .bar{display:none}
+    .msg{display:none;max-width:320px;color:var(--text-muted);line-height:1.6;font-size:15px}
+    .offline .msg,.offline .retry{display:block}
+    .retry{display:none;border:0;cursor:pointer;color:#fff;font:600 16px 'Plus Jakarta Sans',system-ui,sans-serif;padding:13px 28px;border-radius:12px;background:var(--grad);box-shadow:0 8px 28px rgba(79,116,255,.35)}
+  </style>
+</head>
+<body>
+  <main class="stage" id="stage">
+    <div class="logo"><img src="assets/logo.png" alt="MedhaIQ"><div class="wordmark">Medha<span>IQ</span></div></div>
+    <p class="tag">Practice. Polish. Place.</p>
+    <div class="bar"><i></i></div>
+    <p class="msg" id="msg">You're offline. MedhaIQ needs an internet connection for live interviews and reports.</p>
+    <button class="retry" id="retry" type="button">Try again</button>
+  </main>
+  <script>
+    (function () {
+      var SITE = 'https://www.medhaiq.ai/';
+      var stage = document.getElementById('stage');
+      function go() { window.location.replace(SITE); }
+      function check() {
+        stage.classList.remove('offline');
+        var done = false;
+        var t = setTimeout(function () { if (!done) { done = true; stage.classList.add('offline'); } }, 8000);
+        fetch(SITE + 'health', { cache: 'no-store', mode: 'no-cors' })
+          .then(function () { if (!done) { done = true; clearTimeout(t); go(); } })
+          .catch(function () { if (!done) { done = true; clearTimeout(t); stage.classList.add('offline'); } });
+      }
+      document.getElementById('retry').addEventListener('click', check);
+      window.addEventListener('online', check);
+      check();
+    })();
+  </script>
+</body>
+</html>

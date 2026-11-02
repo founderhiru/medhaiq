@@ -1,0 +1,50 @@
+{
+  "appId": "ai.medhaiq.app",
+  "appName": "MedhaIQ",
+  "webDir": "www",
+  "backgroundColor": "#0A0E1A",
+  "server": {
+    "url": "https://www.medhaiq.ai",
+    "cleartext": false,
+    "errorPath": "offline.html",
+    "allowNavigation": [
+      "www.medhaiq.ai",
+      "medhaiq.ai",
+      "*.medhaiq.ai",
+      "checkout.stripe.com",
+      "*.stripe.com",
+      "*.stripe.network"
+    ]
+  },
+  "appendUserAgent": "MedhaIQApp/1.0",
+  "ios": {
+    "contentInset": "always",
+    "scrollEnabled": true,
+    "limitsNavigationsToAppBoundDomains": false,
+    "preferredContentMode": "mobile"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false,
+    "backgroundColor": "#0A0E1A"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "launchAutoHide": true,
+      "backgroundColor": "#0A0E1A",
+      "showSpinner": false,
+      "splashFullScreen": true,
+      "splashImmersive": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0A0E1A",
+      "overlaysWebView": false
+    },
+    "SystemBars": {
+      "style": "DARK",
+      "hidden": false
+    }
+  }
+}
