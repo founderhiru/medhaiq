@@ -399,7 +399,24 @@
     function render() {
       $('scr-cand-title').textContent = M.candidate.code + (M.candidate.label ? ' — ' + M.candidate.label : '');
       $('scr-back').setAttribute('href', '/screening/jobs/' + root.getAttribute('data-job-id') + '#inbox');
-      renderFlags(); renderActions(); renderCriteria(); renderResume(); renderQuestions(); renderDecision();
+      renderFlags(); renderActions(); renderCriteria(); renderResume(); renderQuestions(); renderDecision(); loadHistory();
+    }
+
+    // Review history: what was run and what the recruiter did, in order.
+    function loadHistory() {
+      var box = clear($('scr-cand-history'));
+      box.appendChild(el('h3', { text: 'Review history' }));
+      box.appendChild(el('p', { class: 'scr-muted scr-small', text: 'A record of the analysis and of your actions on this candidate. It contains no resume text.' }));
+      api('GET', '/api/screening/candidates/' + cid + '/history').then(function (d) {
+        var list = el('ol', { class: 'scr-history' });
+        if (!d.history.length) list.appendChild(el('li', { class: 'scr-muted', text: 'Nothing recorded yet.' }));
+        d.history.forEach(function (h) {
+          var when = ''; try { when = new Date(h.at).toLocaleString(); } catch (e) { when = ''; }
+          list.appendChild(el('li', null, [el('span', { class: 'scr-muted scr-small', text: when + ' — ' }), document.createTextNode(h.text)]));
+        });
+        box.appendChild(list);
+        box.appendChild(el('button', { type: 'button', class: 'scr-btn scr-btn-quiet', text: 'Refresh history', onclick: loadHistory }));
+      }).catch(function (e) { box.appendChild(el('p', { class: 'scr-err', text: e.message })); });
     }
 
     function renderFlags() {
@@ -557,7 +574,7 @@
       var st = el('span', { class: 'scr-status', role: 'status' });
       function save(d) {
         api('PUT', '/api/screening/candidates/' + cid + '/decision', { decision: d, note: note.value })
-          .then(function (r) { M.candidate.decision = r.candidate.decision; M.candidate.decisionNote = r.candidate.decisionNote; renderDecision(); })
+          .then(function (r) { M.candidate.decision = r.candidate.decision; M.candidate.decisionNote = r.candidate.decisionNote; renderDecision(); loadHistory(); })
           .catch(function (e) { say(st, e.message, true); });
       }
       var row = el('div', { class: 'scr-row' });

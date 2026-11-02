@@ -1,0 +1,113 @@
+<%- include('partials/workspace-shell-top', { pageTitle: pageTitle, activeNav: 'screening', shellUser: shellUser, isScreeningUser: true, extraStylesheets: ['/css/career-workspace.css', '/css/recruit-screening.css'] }) %>
+<%
+  const f = m.findings, t = m.totals;
+  const pct = (n, d) => d > 0 ? (Math.round((n / d) * 1000) / 10) + '%' : '—';
+  const statusKeys = Object.keys(STATUSES);
+  const recKeys = statusKeys.concat(['not_applicable']);
+  const cell = function (a, r) { const x = m.overrideMatrix.find(function (e) { return e.ai_status === a && e.recruiter_status === r; }); return x ? x.n : 0; };
+  const label = function (k) { return STATUSES[k] || (k === 'not_applicable' ? 'Not Applicable' : k); };
+  const qn = function (origin, state) { const x = m.questions.find(function (e) { return e.origin === origin && e.state === state; }); return x ? x.n : 0; };
+%>
+<div class="scr-wrap scr-wide" id="scr-root" data-scr="metrics">
+  <p><a href="/screening" class="scr-link">&larr; Screening</a></p>
+  <h1>Pilot metrics</h1>
+  <p class="scr-muted">Counts across all recruiters. No resume text, role titles or candidate details are shown here. Use these to judge whether the evidence is accurate enough and whether screening is getting faster.</p>
+
+  <div class="scr-panel">
+    <h3>Activity</h3>
+    <table class="scr-table">
+      <tbody>
+        <tr><th scope="row">Recruiters with a role</th><td><%= t.recruiters %></td></tr>
+        <tr><th scope="row">Roles (criteria approved)</th><td><%= t.roles %> (<%= t.roles_approved %>)</td></tr>
+        <tr><th scope="row">Resumes added</th><td><%= t.candidates %></td></tr>
+        <tr><th scope="row">Resumes analysed</th><td><%= t.analysed %></td></tr>
+        <tr><th scope="row">Resumes with a decision</th><td><%= t.decided %></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="scr-panel">
+    <h3>How often recruiters correct the AI</h3>
+    <p class="scr-muted scr-small">A finding counts as corrected when the recruiter set a different status from the AI's. A low rate is only meaningful once a good share of findings have been reviewed.</p>
+    <table class="scr-table">
+      <tbody>
+        <tr><th scope="row">Findings produced</th><td><%= f.findings %></td></tr>
+        <tr><th scope="row">Reviewed by a recruiter</th><td><%= f.reviewed %> (<%= pct(f.reviewed, f.findings) %> of findings)</td></tr>
+        <tr><th scope="row">Confirmed as the AI said</th><td><%= f.confirmed %></td></tr>
+        <tr><th scope="row">Changed by the recruiter</th><td><%= f.overridden %></td></tr>
+        <tr><th scope="row">Correction rate (changed &divide; reviewed)</th><td><strong><%= m.correctionRate === null ? 'Not enough reviews yet' : m.correctionRate + '%' %></strong></td></tr>
+        <tr><th scope="row">Claims downgraded for lacking a verified quote</th><td><%= f.downgraded %> (<%= pct(f.downgraded, f.findings) %>)</td></tr>
+      </tbody>
+    </table>
+
+    <h4 class="scr-small" style="margin-top:16px;">What the recruiter changed it to</h4>
+    <p class="scr-muted scr-small">Rows are the AI's finding; columns are the status the recruiter set. The diagonal is agreement.</p>
+    <div style="overflow-x:auto;">
+    <table class="scr-table">
+      <thead><tr><th scope="col">AI said</th><% recKeys.forEach(function (k) { %><th scope="col"><%= label(k) %></th><% }); %></tr></thead>
+      <tbody>
+        <% statusKeys.forEach(function (a) { %>
+          <tr><th scope="row"><%= label(a) %></th><% recKeys.forEach(function (r) { %><td><%= cell(a, r) %></td><% }); %></tr>
+        <% }); %>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="scr-panel">
+    <h3>Time to a decision</h3>
+    <% if (m.timeToDecision.decided === 0) { %>
+      <p class="scr-muted">No decisions recorded yet.</p>
+    <% } else { %>
+      <p>Median <strong><%= m.timeToDecision.medianMinutes %> minutes</strong> from adding a resume to setting a decision, across <%= m.timeToDecision.decided %> resumes.</p>
+      <p class="scr-muted scr-small">This is elapsed clock time, so it includes breaks and overnight gaps. It is not active working time and not a measure of time saved. To measure time saved, compare against how long the same recruiter takes without the tool.</p>
+    <% } %>
+  </div>
+
+  <div class="scr-panel">
+    <h3>Decisions</h3>
+    <% if (!m.decisions.length) { %><p class="scr-muted">No decisions recorded yet.</p><% } else { %>
+    <table class="scr-table"><tbody>
+      <% Object.keys(DECISIONS).forEach(function (k) { const x = m.decisions.find(function (e) { return e.decision === k; }); %>
+        <tr><th scope="row"><%= DECISIONS[k] %></th><td><%= x ? x.n : 0 %></td></tr>
+      <% }); %>
+    </tbody></table>
+    <% } %>
+  </div>
+
+  <div class="scr-panel">
+    <h3>Verification questions</h3>
+    <table class="scr-table"><tbody>
+      <tr><th scope="row">AI drafts waiting</th><td><%= qn('ai', 'draft') %></td></tr>
+      <tr><th scope="row">AI questions approved</th><td><%= qn('ai', 'approved') %></td></tr>
+      <tr><th scope="row">AI questions dismissed</th><td><%= qn('ai', 'dismissed') %></td></tr>
+      <tr><th scope="row">Questions written by recruiters</th><td><%= qn('recruiter', 'approved') %></td></tr>
+      <tr><th scope="row">Question edits made</th><td><%= m.questionsEdited %></td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="scr-panel">
+    <h3>AI usage, last 30 days</h3>
+    <% if (!m.aiRuns.length) { %><p class="scr-muted">No AI runs yet.</p><% } else { %>
+    <table class="scr-table">
+      <thead><tr><th scope="col">Step</th><th scope="col">Runs</th><th scope="col">Succeeded</th><th scope="col">Input tokens</th><th scope="col">Output tokens</th></tr></thead>
+      <tbody><% m.aiRuns.forEach(function (r) { %><tr><th scope="row"><%= r.kind %></th><td><%= r.total %></td><td><%= r.ok %></td><td><%= r.input_tokens %></td><td><%= r.output_tokens %></td></tr><% }); %></tbody>
+    </table>
+    <% } %>
+  </div>
+
+  <div class="scr-panel">
+    <h3>Per role (latest 50)</h3>
+    <% if (!m.perRole.length) { %><p class="scr-muted">No roles yet.</p><% } else { %>
+    <div style="overflow-x:auto;">
+    <table class="scr-table">
+      <thead><tr><th scope="col">Role ID</th><th scope="col">Recruiter ID</th><th scope="col">Resumes</th><th scope="col">Decided</th><th scope="col">Findings reviewed</th><th scope="col">Changed</th><th scope="col">Correction rate</th></tr></thead>
+      <tbody><% m.perRole.forEach(function (r) { %>
+        <tr><td><%= r.role_id %></td><td><%= r.owner_id %></td><td><%= r.candidates %></td><td><%= r.decided %></td><td><%= r.reviewed %></td><td><%= r.overridden %></td><td><%= pct(r.overridden, r.reviewed) %></td></tr>
+      <% }); %></tbody>
+    </table>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include('partials/workspace-shell-bottom') %>

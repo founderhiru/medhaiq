@@ -1362,6 +1362,7 @@ async function runMigrations() {
 
     // Screening & Assessment Copilot (additive-only; own file so this array stays untouched).
     migrations.push(require('./screening-migration'));
+    migrations.push(require('./screening-audit-migration'));
 
     for (const m of migrations) {
       if (done.has(m.name)) {

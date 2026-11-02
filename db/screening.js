@@ -26,6 +26,43 @@ async function tx(fn) {
   }
 }
 
+// ── Decision history (append-only, best effort) ────────────────────────────
+// Logging must never break the action it describes, so failures are swallowed
+// and reported to the server log only. `detail` carries codes, never content.
+async function logJobEvent(ownerId, jobId, kind, detail) {
+  try {
+    await pool.query(
+      `INSERT INTO screening_events (owner_id, job_id, kind, detail)
+       SELECT $1, id, $3, $4::jsonb FROM screening_jobs WHERE id = $2 AND owner_id = $1`,
+      [ownerId, jobId, kind, JSON.stringify(detail || {})]
+    );
+  } catch (err) { console.error('[screening] event log failed:', err.code || err.message); }
+}
+
+async function logCandidateEvent(ownerId, candidateId, criterionId, kind, detail) {
+  try {
+    await pool.query(
+      `INSERT INTO screening_events (owner_id, job_id, candidate_id, criterion_id, kind, detail)
+       SELECT $1, job_id, id, $3, $4, $5::jsonb FROM screening_candidates WHERE id = $2 AND owner_id = $1`,
+      [ownerId, candidateId, criterionId || null, kind, JSON.stringify(detail || {})]
+    );
+  } catch (err) { console.error('[screening] event log failed:', err.code || err.message); }
+}
+
+async function listEvents(ownerId, candidateId, limit) {
+  const r = await pool.query(
+    `SELECT e.id, e.kind, e.detail, e.created_at, e.criterion_id, c.position AS criterion_position
+       FROM screening_events e
+       JOIN screening_candidates k ON k.id = e.candidate_id
+       LEFT JOIN screening_criteria c ON c.id = e.criterion_id
+      WHERE e.candidate_id = $1 AND k.owner_id = $2
+      ORDER BY e.id ASC
+      LIMIT $3`,
+    [candidateId, ownerId, Math.min(Number(limit) || 300, 500)]
+  );
+  return r.rows;
+}
+
 // ── Access (founder-granted allowlist) ─────────────────────────────────────
 async function getAccess(userId) {
   if (!userId) return null;
@@ -245,6 +282,9 @@ async function approveCriteria(ownerId, jobId, hash) {
       [jobId, hash, bump ? 1 : 0]
     );
     return r.rows[0];
+  }).then(async (row) => {
+    if (row) await logJobEvent(ownerId, jobId, 'criteria_approved', { version: row.criteria_version });
+    return row;
   });
 }
 
@@ -254,7 +294,7 @@ async function reopenCriteria(ownerId, jobId) {
       WHERE id = $1 AND owner_id = $2 AND criteria_state = 'approved' RETURNING *`,
     [jobId, ownerId]
   );
-  if (r.rows[0]) return r.rows[0];
+  if (r.rows[0]) { await logJobEvent(ownerId, jobId, 'criteria_reopened', {}); return r.rows[0]; }
   return getJob(ownerId, jobId);
 }
 
@@ -283,6 +323,9 @@ async function createCandidate(ownerId, jobId, d) {
         JSON.stringify(d.redactionSummary || {}), JSON.stringify(d.injectionFlags || [])]
     );
     return { duplicate: false, candidate: r.rows[0] };
+  }).then(async (out) => {
+    if (out && !out.duplicate) await logCandidateEvent(ownerId, out.candidate.id, null, 'candidate_added', { source: out.candidate.source_type });
+    return out;
   });
 }
 
@@ -324,6 +367,7 @@ async function setDecision(ownerId, candidateId, decision, note) {
       WHERE id = $1 AND owner_id = $2 RETURNING *`,
     [candidateId, ownerId, decision, note || null]
   );
+  if (r.rows[0]) await logCandidateEvent(ownerId, candidateId, null, decision ? 'decision_set' : 'decision_cleared', { decision: decision || null, has_note: !!note });
   return r.rows[0] || null;
 }
 
@@ -366,6 +410,9 @@ async function replaceEvidence(ownerId, candidateId, rows, meta) {
     }
     await c.query('UPDATE screening_candidates SET analyzed_at = NOW(), updated_at = NOW() WHERE id = $1', [candidateId]);
     return true;
+  }).then(async (ok) => {
+    if (ok) await logCandidateEvent(ownerId, candidateId, null, 'analysis_run', { criteria_version: meta.criteriaVersion, criteria: rows.length });
+    return ok;
   });
 }
 
@@ -380,7 +427,13 @@ async function reviewEvidence(ownerId, candidateId, criterionId, { status, note 
       RETURNING e.*`,
     [candidateId, criterionId, ownerId, status, note || null]
   );
-  return r.rows[0] || null;
+  const row = r.rows[0] || null;
+  if (row) {
+    await logCandidateEvent(ownerId, candidateId, criterionId,
+      row.recruiter_status === row.ai_status ? 'finding_confirmed' : 'finding_overridden',
+      { ai_status: row.ai_status, recruiter_status: row.recruiter_status, has_note: !!note });
+  }
+  return row;
 }
 
 async function clearReview(ownerId, candidateId, criterionId) {
@@ -392,6 +445,7 @@ async function clearReview(ownerId, candidateId, criterionId) {
       RETURNING e.*`,
     [candidateId, criterionId, ownerId]
   );
+  if (r.rows[0]) await logCandidateEvent(ownerId, candidateId, criterionId, 'review_cleared', { ai_status: r.rows[0].ai_status });
   return r.rows[0] || null;
 }
 
@@ -442,10 +496,18 @@ async function addQuestion(ownerId, candidateId, criterionId, text) {
      RETURNING *`,
     [candidateId, ownerId, criterionId, text]
   );
+  if (r.rows[0]) await logCandidateEvent(ownerId, candidateId, criterionId, 'question_added', { origin: 'recruiter' });
   return r.rows[0] || null;
 }
 
 async function updateQuestion(ownerId, candidateId, questionId, { text, state }) {
+  let before = null;
+  try {
+    const b = await pool.query(
+      `SELECT q.text, q.state FROM screening_questions q JOIN screening_candidates k ON k.id = q.candidate_id
+        WHERE q.id = $1 AND q.candidate_id = $2 AND k.owner_id = $3`, [questionId, candidateId, ownerId]);
+    before = b.rows[0] || null;
+  } catch (_) { /* history only */ }
   const r = await pool.query(
     `UPDATE screening_questions q
         SET text = COALESCE($4, q.text), state = COALESCE($5, q.state), updated_at = NOW()
@@ -454,7 +516,15 @@ async function updateQuestion(ownerId, candidateId, questionId, { text, state })
       RETURNING q.*`,
     [questionId, candidateId, ownerId, text ?? null, state ?? null]
   );
-  return r.rows[0] || null;
+  const row = r.rows[0] || null;
+  if (row && before) {
+    const edited = before.text !== row.text;
+    const stateChanged = before.state !== row.state;
+    if (edited || stateChanged) {
+      await logCandidateEvent(ownerId, candidateId, row.criterion_id, 'question_updated', { state: row.state, edited, state_changed: stateChanged });
+    }
+  }
+  return row;
 }
 
 async function deleteQuestion(ownerId, candidateId, questionId) {
@@ -487,6 +557,62 @@ async function countAiRunsToday(ownerId) {
   return r.rows[0].n;
 }
 
+
+// ── Founder metrics (aggregate, no candidate content) ──────────────────────
+// Everything here is counts and durations derived from existing tables. It is
+// meant to answer one question during pilots: how often do recruiters have to
+// correct the AI, and how long does a screening take.
+async function getMetrics() {
+  const q = (sql, params) => pool.query(sql, params || []).then((r) => r.rows);
+  const [totals] = await q(`
+    SELECT
+      (SELECT COUNT(DISTINCT owner_id) FROM screening_jobs)::int AS recruiters,
+      (SELECT COUNT(*) FROM screening_jobs)::int AS roles,
+      (SELECT COUNT(*) FROM screening_jobs WHERE criteria_state = 'approved')::int AS roles_approved,
+      (SELECT COUNT(*) FROM screening_candidates)::int AS candidates,
+      (SELECT COUNT(*) FROM screening_candidates WHERE analyzed_at IS NOT NULL)::int AS analysed,
+      (SELECT COUNT(*) FROM screening_candidates WHERE decision IS NOT NULL)::int AS decided`);
+  const [f] = await q(`
+    SELECT COUNT(*)::int AS findings,
+           COUNT(*) FILTER (WHERE downgrade_reason IS NOT NULL)::int AS downgraded,
+           COUNT(*) FILTER (WHERE reviewed_at IS NOT NULL)::int AS reviewed,
+           COUNT(*) FILTER (WHERE reviewed_at IS NOT NULL AND recruiter_status = ai_status)::int AS confirmed,
+           COUNT(*) FILTER (WHERE reviewed_at IS NOT NULL AND recruiter_status <> ai_status)::int AS overridden
+      FROM screening_evidence`);
+  const byAi = await q(`SELECT ai_status, COUNT(*)::int AS n FROM screening_evidence GROUP BY ai_status`);
+  const matrix = await q(`
+    SELECT ai_status, recruiter_status, COUNT(*)::int AS n FROM screening_evidence
+     WHERE reviewed_at IS NOT NULL GROUP BY ai_status, recruiter_status`);
+  const decisions = await q(`SELECT decision, COUNT(*)::int AS n FROM screening_candidates WHERE decision IS NOT NULL GROUP BY decision`);
+  const [t] = await q(`
+    SELECT COUNT(*)::int AS n,
+           ROUND((PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY EXTRACT(EPOCH FROM (decided_at - created_at)) / 60))::numeric, 1) AS median_minutes
+      FROM screening_candidates WHERE decided_at IS NOT NULL`);
+  const questions = await q(`SELECT origin, state, COUNT(*)::int AS n FROM screening_questions GROUP BY origin, state`);
+  const [edits] = await q(`SELECT COUNT(*) FILTER (WHERE (detail->>'edited')::boolean)::int AS edited FROM screening_events WHERE kind = 'question_updated'`);
+  const runs = await q(`
+    SELECT kind, COUNT(*)::int AS total, COUNT(*) FILTER (WHERE ok)::int AS ok,
+           COALESCE(SUM(input_tokens),0)::int AS input_tokens, COALESCE(SUM(output_tokens),0)::int AS output_tokens
+      FROM screening_ai_runs WHERE created_at > NOW() - INTERVAL '30 days' GROUP BY kind ORDER BY kind`);
+  const perRole = await q(`
+    SELECT j.id AS role_id, j.owner_id,
+           COUNT(DISTINCT k.id)::int AS candidates,
+           COUNT(DISTINCT k.id) FILTER (WHERE k.decision IS NOT NULL)::int AS decided,
+           COUNT(e.id) FILTER (WHERE e.reviewed_at IS NOT NULL)::int AS reviewed,
+           COUNT(e.id) FILTER (WHERE e.reviewed_at IS NOT NULL AND e.recruiter_status <> e.ai_status)::int AS overridden
+      FROM screening_jobs j
+      LEFT JOIN screening_candidates k ON k.job_id = j.id
+      LEFT JOIN screening_evidence e ON e.candidate_id = k.id
+     GROUP BY j.id ORDER BY j.id DESC LIMIT 50`);
+  return {
+    totals, findings: f,
+    correctionRate: f.reviewed > 0 ? Math.round((f.overridden / f.reviewed) * 1000) / 10 : null,
+    byAiStatus: byAi, overrideMatrix: matrix, decisions,
+    timeToDecision: { decided: t.n, medianMinutes: t.median_minutes === null ? null : Number(t.median_minutes) },
+    questions, questionsEdited: edits.edited, aiRuns: runs, perRole,
+  };
+}
+
 module.exports = {
   candidateCode,
   getAccess, hasActiveAccess, canUseScreening, grantAccess, revokeAccess, listAccess,
@@ -496,4 +622,5 @@ module.exports = {
   listEvidence, countReviewedEvidence, replaceEvidence, reviewEvidence, clearReview, listJobEvidence,
   listQuestions, replaceAiQuestions, addQuestion, updateQuestion, deleteQuestion,
   recordAiRun, countAiRunsToday,
+  listEvents, getMetrics,
 };

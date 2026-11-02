@@ -253,6 +253,13 @@ router.get('/candidates/:candidateId', h(async (req, res) => {
   send(res, { ...rest, job: vm.serializeJob(job) });
 }));
 
+router.get('/candidates/:candidateId/history', h(async (req, res) => {
+  const cid = id(req.params.candidateId);
+  const cand = await screeningDb.getCandidate(req.screeningOwnerId, cid);
+  if (!cand) throw notFound('Candidate');
+  send(res, { history: await vm.buildHistory(req.screeningOwnerId, cid) });
+}));
+
 router.patch('/candidates/:candidateId', h(async (req, res) => {
   const label = str(req.body && req.body.label, L.LABEL_MAX, { field: 'label' }) || null;
   const row = await screeningDb.updateCandidateLabel(req.screeningOwnerId, id(req.params.candidateId), label);

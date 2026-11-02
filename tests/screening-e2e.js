@@ -580,6 +580,65 @@ async function waitUp() {
       assert.strictEqual((await GET(alice, '/api/screening/does-not-exist')).status, 404);
     });
 
+    group('Review history + pilot metrics');
+    await t('history lists what was run and what the recruiter did, in order, in plain language', async () => {
+      const r = await GET(alice, `/api/screening/candidates/${cands.strong.id}/history`);
+      assert.strictEqual(r.status, 200);
+      const kinds = r.json.history.map((h) => h.kind);
+      for (const k of ['candidate_added', 'analysis_run', 'finding_confirmed', 'finding_overridden', 'decision_set']) assert(kinds.includes(k), 'missing ' + k + ': ' + kinds.join());
+      const ids = r.json.history.map((h) => h.id);
+      assert.deepStrictEqual(ids, [...ids].sort((x, y) => x - y), 'history out of order');
+      const ov = r.json.history.find((h) => h.kind === 'finding_overridden');
+      assert(/changed the finding from .+ \(AI\) to .+ \(you\)/.test(ov.text), ov.text);
+      assert(r.json.history.every((h) => h.text && h.at));
+    });
+    await t('history holds codes only: no notes, quotes, resume text or personal data', async () => {
+      const r = await GET(alice, `/api/screening/candidates/${cands.strong.id}/history`);
+      const blob = JSON.stringify(r.json) + JSON.stringify((await db.query('SELECT detail FROM screening_events WHERE candidate_id=$1', [cands.strong.id])).rows);
+      assert(!/Spark|Kafka|Checked, agree|Role changed|because|priya|nair|98765|<script>/i.test(blob), 'content leaked into history');
+    });
+    await t('history is private to the owner and needs sign-in', async () => {
+      assert.strictEqual((await GET(null, `/api/screening/candidates/${cands.strong.id}/history`)).status, 401);
+      assert.strictEqual((await GET(bob, `/api/screening/candidates/${cands.strong.id}/history`)).status, 404);
+      assert.strictEqual((await GET(alice, '/api/screening/candidates/99999999/history')).status, 404);
+    });
+    await t('a failure to write history never blocks the recruiter\'s action', async () => {
+      await db.query('ALTER TABLE screening_events RENAME TO screening_events_off');
+      try {
+        const r = await PUT(alice, `/api/screening/candidates/${cands.strong.id}/decision`, { decision: 'hold' });
+        assert.strictEqual(r.status, 200); assert.strictEqual(r.json.candidate.decision, 'hold');
+      } finally {
+        await db.query('ALTER TABLE screening_events_off RENAME TO screening_events');
+      }
+      await PUT(alice, `/api/screening/candidates/${cands.strong.id}/decision`, { decision: 'shortlist', note: 'Strong Spark story; verify Kafka.' });
+    });
+    await t('printable report includes the review history without resume text', async () => {
+      const r = await GET(alice, `/screening/candidates/${cands.strong.id}/report`);
+      assert(/Review history/.test(r.text) && /you confirmed the AI finding|you changed the finding/.test(r.text));
+      assert(/contains no resume text/.test(r.text));
+    });
+    await t('pilot metrics: founder only, and the correction rate matches the database', async () => {
+      assert.strictEqual((await GET(null, '/api/founder/screening/metrics')).status, 401);
+      assert.strictEqual((await GET(alice, '/api/founder/screening/metrics')).status, 403);
+      const r = await GET(founder, '/api/founder/screening/metrics');
+      assert.strictEqual(r.status, 200);
+      const m = r.json.metrics;
+      const db1 = (await db.query(`SELECT COUNT(*) FILTER (WHERE reviewed_at IS NOT NULL)::int rev, COUNT(*) FILTER (WHERE reviewed_at IS NOT NULL AND recruiter_status <> ai_status)::int ov FROM screening_evidence`)).rows[0];
+      assert.strictEqual(m.findings.reviewed, db1.rev); assert.strictEqual(m.findings.overridden, db1.ov);
+      assert.strictEqual(m.correctionRate, db1.rev ? Math.round((db1.ov / db1.rev) * 1000) / 10 : null);
+      assert(m.findings.reviewed >= m.findings.confirmed + m.findings.overridden);
+      assert(m.totals.candidates >= m.totals.analysed && m.totals.analysed >= 0);
+      assert(m.perRole.every((p) => Object.keys(p).sort().join() === 'candidates,decided,overridden,owner_id,reviewed,role_id'), 'per-role rows must be counts only');
+    });
+    await t('metrics page: founder only, counts only, no role titles or resume text', async () => {
+      assert.strictEqual((await GET(null, '/screening/metrics')).status, 302);
+      assert.strictEqual((await GET(alice, '/screening/metrics')).status, 404);
+      const r = await GET(founder, '/screening/metrics');
+      assert.strictEqual(r.status, 200);
+      assert(/Pilot metrics/.test(r.text) && /Correction rate/.test(r.text) && /not a measure of time saved/.test(r.text));
+      assert(!/Spark|Kafka|Backend Engineer|priya|nair/i.test(r.text), 'content leaked into metrics page');
+    });
+
     group('Rate limits');
     await t('upload limiter trips per account without affecting others', async () => {
       let tripped = false;
@@ -606,6 +665,7 @@ async function waitUp() {
       assert.strictEqual((await DEL(alice, `/api/screening/candidates/${cands.strong.id}`)).status, 200);
       assert.strictEqual(await cnt('screening_evidence', 'candidate_id', cands.strong.id), 0);
       assert.strictEqual(await cnt('screening_questions', 'candidate_id', cands.strong.id), 0);
+      assert.strictEqual(await cnt('screening_events', 'candidate_id', cands.strong.id), 0);
       assert.strictEqual((await GET(alice, `/api/screening/candidates/${cands.strong.id}`)).status, 404);
       assert.strictEqual((await DEL(alice, `/api/screening/jobs/${job.id}`)).status, 200);
       assert.strictEqual(await cnt('screening_criteria', 'job_id', job.id), 0);

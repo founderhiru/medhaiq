@@ -202,6 +202,12 @@ const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'scr-ui-'));
       await page.click('#scr-cand-decision button:has-text("Hold")');
       await page.waitForSelector('#scr-cand-decision button[aria-pressed="true"]:has-text("Hold")');
     });
+    await t('review history appears on the candidate page, in plain language, and updates after a decision', async () => {
+      await page.waitForSelector('#scr-cand-history .scr-history li:has-text("You set the decision to Hold")', { timeout: 15000 });
+      const text = await page.locator('#scr-cand-history').innerText();
+      assert(/Review history/.test(text) && /confirmed the AI finding|changed the finding|AI analysis run/.test(text), text);
+      assert(!/Kafka/.test(text), 'a recruiter note leaked into history');
+    });
     await t('re-run asks before discarding my reviews', async () => {
       let asked = '';
       page.removeAllListeners('dialog');

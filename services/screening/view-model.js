@@ -97,6 +97,36 @@ async function buildCandidateModel(ownerId, candidateId) {
   };
 }
 
+// Plain-language history for one candidate. Built from the codes stored in
+// screening_events, so it never contains resume text, quotes or notes.
+function describeEvent(ev) {
+  const d = ev.detail || {};
+  const crit = ev.criterion_position ? `Criterion ${ev.criterion_position}` : 'A criterion';
+  const st = (k) => cfg.EVIDENCE_STATUSES[k] || k;
+  switch (ev.kind) {
+    case 'candidate_added': return 'Resume added to the role.';
+    case 'analysis_run': return `AI analysis run against ${d.criteria || 0} criteria (criteria version ${d.criteria_version}).`;
+    case 'finding_confirmed': return `${crit}: you confirmed the AI finding (${st(d.ai_status)}).`;
+    case 'finding_overridden': return `${crit}: you changed the finding from ${st(d.ai_status)} (AI) to ${st(d.recruiter_status)} (you).`;
+    case 'review_cleared': return `${crit}: you cleared your review, so the AI finding (${st(d.ai_status)}) applies again.`;
+    case 'question_added': return `${crit}: you added a verification question.`;
+    case 'question_updated': {
+      const parts = [];
+      if (d.edited) parts.push('edited');
+      if (d.state_changed) parts.push(d.state === 'approved' ? 'approved' : d.state === 'dismissed' ? 'dismissed' : 'moved back to draft');
+      return `${crit}: verification question ${parts.join(' and ') || 'updated'}.`;
+    }
+    case 'decision_set': return `You set the decision to ${cfg.DECISIONS[d.decision] || d.decision}${d.has_note ? ' (with a note)' : ''}.`;
+    case 'decision_cleared': return 'You cleared the decision.';
+    default: return 'Activity recorded.';
+  }
+}
+
+async function buildHistory(ownerId, candidateId) {
+  const events = await screeningDb.listEvents(ownerId, candidateId, 300);
+  return events.map((ev) => ({ id: Number(ev.id), at: ev.created_at, kind: ev.kind, text: describeEvent(ev) }));
+}
+
 const GROUPS = Object.freeze([
   { key: 'missing_or_unclear', title: 'Missing or unclear evidence' },
   { key: 'partial', title: 'Partial evidence' },
@@ -139,4 +169,4 @@ async function buildInbox(ownerId, jobId) {
   return { job: serializeJob(job), groups, total: candidates.length };
 }
 
-module.exports = { serializeJob, serializeCriterion, serializeCandidateRow, buildCandidateModel, buildInbox, GROUPS };
+module.exports = { describeEvent, buildHistory, serializeJob, serializeCriterion, serializeCandidateRow, buildCandidateModel, buildInbox, GROUPS };

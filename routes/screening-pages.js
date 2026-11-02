@@ -6,6 +6,7 @@ const { requireScreeningPage } = require('../middleware/screening-guards');
 const screeningDb = require('../db/screening');
 const vm = require('../services/screening/view-model');
 const cfg = require('../config/screening');
+const { isFounder } = require('../db/founder-access');
 
 router.use(requireScreeningPage);
 
@@ -20,6 +21,15 @@ const missing = (req, res) => res.status(404).render('screening-missing', shell(
 
 router.get('/', (req, res) => {
   res.render('screening-home', shell(req, { pageTitle: 'Screening — MedhaIQ' }));
+});
+
+// Founder-only pilot metrics. Aggregate counts only; no candidate or role content.
+router.get('/metrics', async (req, res, next) => {
+  try {
+    if (!(await isFounder(req.user.id))) return missing(req, res);
+    const metrics = await screeningDb.getMetrics();
+    res.render('screening-metrics', shell(req, { pageTitle: 'Screening metrics — MedhaIQ', m: metrics, STATUSES: cfg.EVIDENCE_STATUSES, DECISIONS: cfg.DECISIONS }));
+  } catch (e) { next(e); }
 });
 
 router.get('/jobs/:jobId', async (req, res, next) => {
@@ -45,8 +55,9 @@ router.get('/candidates/:candidateId/report', async (req, res, next) => {
     const cid = idOrNull(req.params.candidateId);
     const model = cid && await vm.buildCandidateModel(req.screeningOwnerId, cid);
     if (!model) return missing(req, res);
+    const history = await vm.buildHistory(req.screeningOwnerId, cid);
     res.render('screening-report', {
-      model, DECISIONS: cfg.DECISIONS, generatedAt: new Date(), shellUser: req.user,
+      model, history, DECISIONS: cfg.DECISIONS, generatedAt: new Date(), shellUser: req.user,
     });
   } catch (e) { next(e); }
 });

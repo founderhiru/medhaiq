@@ -12,6 +12,11 @@ router.get('/access', async (_req, res) => {
   catch (e) { console.error('[screening-admin]', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
 });
 
+router.get('/metrics', async (_req, res) => {
+  try { res.json({ metrics: await screeningDb.getMetrics() }); }
+  catch (e) { console.error('[screening-admin]', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+});
+
 router.post('/access', async (req, res) => {
   try {
     const email = String((req.body && req.body.email) || '').trim().toLowerCase();

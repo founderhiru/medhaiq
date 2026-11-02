@@ -91,6 +91,16 @@
     <p>No decision recorded yet.</p>
   <% } %>
 
+  <h2>Review history</h2>
+  <% if (history && history.length) { %>
+    <p class="src">A record of what was run and what the recruiter did, in order. It contains no resume text.</p>
+    <ol>
+      <% history.forEach(function (h) { %><li><span class="src"><%= new Date(h.at).toISOString().replace('T', ' ').slice(0, 16) %> UTC</span> &mdash; <%= h.text %></li><% }); %>
+    </ol>
+  <% } else { %>
+    <p>No review activity recorded yet.</p>
+  <% } %>
+
   <div class="noprint"><button type="button" id="scr-print">Print / save as PDF</button> <a href="/screening/candidates/<%= model.candidate.id %>">Back to candidate</a></div>
 </div>
 <script>document.getElementById('scr-print').addEventListener('click', function () { window.print(); });</script>
