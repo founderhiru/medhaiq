@@ -21,6 +21,14 @@ function patchAndroid() {
   for (const p of perms) {
     if (!x.includes(p)) x = x.replace('</manifest>', `    ${p}\n</manifest>`);
   }
+  const filter = `            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="medhaiq" android:host="auth" />
+            </intent-filter>
+`;
+  if (!x.includes('android:scheme="medhaiq"')) x = x.replace('        </activity>', filter + '        </activity>');
   fs.writeFileSync(f, x);
   console.log('Android manifest patched');
 }
@@ -34,6 +42,7 @@ function patchIos() {
   add('NSMicrophoneUsageDescription', '<string>MedhaIQ uses your microphone so you can answer interview questions out loud.</string>');
   add('NSCameraUsageDescription', '<string>MedhaIQ uses your camera for the optional video presence check during interviews.</string>');
   add('ITSAppUsesNonExemptEncryption', '<false/>');
+  if (!x.includes('<string>medhaiq</string>')) add('CFBundleURLTypes', '<array><dict><key>CFBundleURLName</key><string>ai.medhaiq.app</string><key>CFBundleURLSchemes</key><array><string>medhaiq</string></array></dict></array>');
   const all = '<array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>';
   if (!x.includes('UISupportedInterfaceOrientations~ipad')) add('UISupportedInterfaceOrientations~ipad', all);
   fs.writeFileSync(f, x);

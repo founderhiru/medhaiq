@@ -6,13 +6,14 @@
   <meta name="theme-color" content="#0A0E1A">
   <title>MedhaIQ</title>
   <style>
+    @font-face{font-family:'Plus Jakarta Sans';font-weight:700;src:url(assets/pjs-700.woff2) format('woff2')}
     :root{--navy:#0A0E1A;--text-muted:#9DA8BA;--grad:linear-gradient(135deg,#3D8BFF 0%,#4F74FF 38%,#6D5CF5 72%,#8B5CF6 100%)}
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%;background:var(--navy);color:#fff;font-family:'Plus Jakarta Sans','Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
     .stage{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px;text-align:center;background:radial-gradient(60% 40% at 50% 38%,rgba(59,130,246,.16),transparent 70%)}
-    .logo{display:flex;align-items:center;gap:12px}
-    .logo img{width:72px;height:72px;object-fit:contain}
-    .wordmark{font-weight:700;font-size:38px;letter-spacing:-.04em}
+    .logo{display:inline-flex;align-items:center;gap:20px;line-height:1}
+    .logo img{height:54px;width:auto}
+    .wordmark{font-weight:700;font-size:41px;letter-spacing:-.04em;white-space:nowrap}
     .wordmark span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
     .tag{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
     .bar{width:120px;height:3px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
@@ -26,7 +27,7 @@
 </head>
 <body>
   <main class="stage" id="stage">
-    <div class="logo"><img src="assets/logo.png" alt="MedhaIQ"><div class="wordmark">Medha<span>IQ</span></div></div>
+    <div class="logo"><img src="assets/medhaiq-icon.png" alt="MedhaIQ"><div class="wordmark">Medha<span>IQ</span></div></div>
     <p class="tag">Practice. Polish. Place.</p>
     <div class="bar"><i></i></div>
     <p class="msg" id="msg">You're offline. MedhaIQ needs an internet connection for live interviews and reports.</p>
