@@ -1,5 +1,5 @@
 <!-- HOME SECTION — See it in action (home page only).
-     Job of this section: show the WHOLE interview engine in one watchable walkthrough: how an
+     Job of this section (it replaces the separate "The Experience" illustration): show the WHOLE interview engine in one watchable walkthrough: how an
      interview is set up, how the person is questioned, how every answer is scored, and what the
      report contains. The hero's "See the demo" link lands here (#demo).
      Left: the write-up. The four chapters double as the video's chapter buttons and light up in
@@ -12,12 +12,13 @@
   .mh-demo { position: relative; scroll-margin-top: 68px; padding: 88px 24px; color: #EAF0FF; overflow: hidden;
     background: radial-gradient(900px 520px at 80% 40%, rgba(47,107,255,.24), transparent 65%), radial-gradient(700px 420px at 8% 90%, rgba(139,92,246,.16), transparent 65%), linear-gradient(180deg, #070E24 0%, #0A1330 100%); }
   .mh-demo-wrap { max-width: 1280px; margin: 0 auto; }
-  .mh-demo-grid { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); grid-template-areas: "head media" "steps media" "cta media"; column-gap: 56px; align-content: center; align-items: start; }
-  .mh-demo-head { grid-area: head; }
-  .mh-demo-eyebrow { font: 700 12px ui-monospace, Menlo, monospace; letter-spacing: .12em; color: #7FB2FF; margin: 0 0 12px; }
-  .mh-demo-title { margin: 0 0 14px; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; font-weight: 800; font-size: clamp(30px, 3.5vw, 46px); line-height: 1.08; letter-spacing: -.03em; color: #fff; text-wrap: balance; }
-  .mh-demo-title span { display: inline-block; background: linear-gradient(90deg, #6FA3FF, #A98BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .mh-demo-lede { margin: 0 0 26px; font-size: 16.5px; line-height: 1.6; color: #B4C3E2; max-width: 520px; }
+  .mh-demo-grid { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); grid-template-areas: "steps media" "cta media"; column-gap: 56px; align-content: center; align-items: start; }
+  /* Heading system shared with the other home sections (eyebrow / h2 / sub): same family, weight, size, tracking, spacing. */
+  .mh-demo .mh-section-center { max-width: 760px; margin: 0 auto 52px; text-align: center; }
+  .mh-demo .mh-eyebrow { color: #7FB2FF; font-size: 12px; letter-spacing: .12em; }
+  section.mh-demo h2.mh-demo-title { margin: 0 0 14px; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: clamp(28px, 3.4vw, 40px); font-weight: 800; letter-spacing: -.025em; line-height: 1.12; color: #fff; text-wrap: balance; }
+  .mh-demo-title span { display: inline-block; line-height: inherit; background: linear-gradient(90deg, #6FA3FF, #A98BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .mh-demo .mh-section-sub { margin: 0; font-size: 16.5px; line-height: 1.55; color: #B4C3E2; }
   .mh-demo-steps { grid-area: steps; list-style: none; margin: 0 0 28px; padding: 0; display: grid; gap: 10px; max-width: 540px; }
   .mh-demo-step { position: relative; width: 100%; display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; text-align: left; font: inherit; color: inherit; cursor: pointer; border: 1px solid rgba(150,180,255,.16); border-radius: 14px; background: rgba(255,255,255,.03); overflow: hidden; transition: background .3s ease, border-color .3s ease, opacity .3s ease; }
   .mh-demo-step:hover { background: rgba(255,255,255,.06); border-color: rgba(150,180,255,.38); }
@@ -49,9 +50,9 @@
   .mh-demo-media .mh-scr-transcript li span { color: #7FB2FF; }
   @media (max-width: 960px) {
     .mh-demo { padding: 64px 16px; }
-    .mh-demo-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "media" "steps" "cta"; }
+    .mh-demo-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "media" "steps" "cta"; }
     .mh-demo-media { margin-bottom: 22px; }
-    .mh-demo-lede { margin-bottom: 22px; }
+    .mh-demo .mh-section-center { margin-bottom: 36px; }
     .mh-demo-steps { max-width: none; }
   }
   @media (max-width: 480px) { .mh-demo-t { display: none; } .mh-demo-step { padding: 12px 12px; gap: 12px; } }
@@ -60,17 +61,16 @@
 
 <section class="mh-demo" id="demo" aria-labelledby="mh-demo-title">
   <div class="mh-demo-wrap">
+    <div class="mh-section-center">
+      <div class="mh-eyebrow">THE EXPERIENCE</div>
+      <h2 class="mh-section-title mh-demo-title" id="mh-demo-title">A real interview experience, <span>not a static quiz.</span></h2>
+      <p class="mh-section-sub">Watch one sample interview from start to finish: setup, adaptive questions, live scoring and the final report. 90 seconds.</p>
+    </div>
     <div class="mh-demo-grid" id="mh-demo-grid">
-
-      <div class="mh-demo-head">
-        <p class="mh-demo-eyebrow">SEE IT IN ACTION &middot; 90 SECONDS</p>
-        <h2 class="mh-demo-title" id="mh-demo-title">From setup to report, <span>in one interview</span></h2>
-        <p class="mh-demo-lede">Watch a sample interview from start to finish: how it is set up, how you are questioned, how every answer is scored, and what the report tells you.</p>
-      </div>
 
       <ol class="mh-demo-steps" aria-label="Walkthrough chapters">
         <li><button type="button" class="mh-demo-step" data-t="5.2"><span class="mh-demo-no">01</span><span class="mh-demo-txt"><b>Configure</b><i>Pick the role, career stage and interviewer. Add a job description and your resume.</i></span><span class="mh-demo-t">0:05</span><span class="mh-demo-bar"></span></button></li>
-        <li><button type="button" class="mh-demo-step" data-t="25"><span class="mh-demo-no">02</span><span class="mh-demo-txt"><b>Interview</b><i>Answer out loud or in text. STAR is tracked live, and follow-ups probe the gaps.</i></span><span class="mh-demo-t">0:25</span><span class="mh-demo-bar"></span></button></li>
+        <li><button type="button" class="mh-demo-step" data-t="25"><span class="mh-demo-no">02</span><span class="mh-demo-txt"><b>Interview</b><i>It asks from your resume and the JD, listens as you answer, tracks STAR live, and probes any gap with a sharper follow-up.</i></span><span class="mh-demo-t">0:25</span><span class="mh-demo-bar"></span></button></li>
         <li><button type="button" class="mh-demo-step" data-t="55"><span class="mh-demo-no">03</span><span class="mh-demo-txt"><b>Score</b><i>Every answer feeds a running score across five vectors.</i></span><span class="mh-demo-t">0:55</span><span class="mh-demo-bar"></span></button></li>
         <li><button type="button" class="mh-demo-step" data-t="68"><span class="mh-demo-no">04</span><span class="mh-demo-txt"><b>Report</b><i>Scores by vector, STAR coverage, evidence from your answers, and a 30/60/90 day plan.</i></span><span class="mh-demo-t">1:08</span><span class="mh-demo-bar"></span></button></li>
       </ol>
