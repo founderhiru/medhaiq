@@ -21,21 +21,23 @@
   .mh-demo-title span { display: inline-block; line-height: inherit; background: linear-gradient(90deg, #6FA3FF, #A98BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .mh-demo .mh-section-sub { margin: 0; font-size: 16.5px; line-height: 1.55; color: #B4C3E2; }
   .mh-demo-steps { grid-area: steps; list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 560px; align-self: start; }
-  /* chapter card: dark glass at rest, light highlighter card while its part of the video plays */
-  .mh-demo-card { position: relative; border: 1px solid rgba(150,180,255,.16); border-radius: 14px; background: rgba(255,255,255,.03); overflow: hidden; transition: background .35s ease, border-color .35s ease, box-shadow .35s ease; }
+  /* chapter card: light frosted glass at rest (never dark on dark), solid light card while its part of the video plays */
+  .mh-demo-card { position: relative; border: 1px solid rgba(255,255,255,.34); border-radius: 14px; background: linear-gradient(135deg, color-mix(in srgb, var(--hl) 34%, rgba(255,255,255,.04)), color-mix(in srgb, var(--hl) 14%, rgba(255,255,255,.04))); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); overflow: hidden; transition: background .35s ease, border-color .35s ease, box-shadow .35s ease, transform .35s ease; }
+  .mh-demo-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--ac); z-index: 1; }
   .mh-demo-card.c1 { --hl: #DBEAFE; --ac: #60A5FA; } .mh-demo-card.c2 { --hl: #E4DCFD; --ac: #A78BFA; } .mh-demo-card.c3 { --hl: #CFF5DC; --ac: #34D399; } .mh-demo-card.c4 { --hl: #FFE2C4; --ac: #FB923C; } .mh-demo-card.c5 { --hl: #FDEBB0; --ac: #FBBF24; }
   .mh-demo-step { position: relative; width: 100%; display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; text-align: left; font: inherit; color: inherit; cursor: pointer; border: 0; background: transparent; }
   .mh-demo-step:hover { background: rgba(255,255,255,.05); }
   .mh-demo-step:focus-visible { outline: 3px solid #9DB8FF; outline-offset: -3px; border-radius: 14px; }
-  .mh-demo-no { flex: none; width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font: 700 13px ui-monospace, Menlo, monospace; color: #7FB2FF; background: rgba(91,155,255,.12); border: 1px solid rgba(91,155,255,.35); transition: background .3s ease, color .3s ease; }
+  .mh-demo-no { flex: none; width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font: 800 13px ui-monospace, Menlo, monospace; color: #0B1020; background: var(--ac); border: 1px solid transparent; transition: background .3s ease, color .3s ease; }
   .mh-demo-txt { display: block; min-width: 0; padding-right: 40px; }
   .mh-demo-txt b { display: block; font-size: 16.5px; font-weight: 700; color: #fff; margin-bottom: 2px; transition: color .3s ease; }
-  .mh-demo-txt i { display: block; font-style: normal; font-size: 14px; line-height: 1.5; color: #B4C3E2; transition: color .3s ease; }
-  .mh-demo-t { position: absolute; right: 14px; top: 14px; font: 600 11.5px ui-monospace, Menlo, monospace; color: #7F8FB0; }
+  .mh-demo-txt i { display: block; font-style: normal; font-size: 14px; line-height: 1.5; color: #DCE6FA; transition: color .3s ease; }
+  .mh-demo-t { position: absolute; right: 14px; top: 14px; font: 600 11.5px ui-monospace, Menlo, monospace; color: #C3D0EA; }
   .mh-demo-bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: transparent; pointer-events: none; }
   .mh-demo-bar::after { content: ''; display: block; height: 100%; width: var(--p, 0%); background: var(--ac, #3D8BFF); }
   /* key points, revealed for the active chapter and highlighted in step with the narration */
-  .mh-demo-pts { list-style: none; margin: 0; padding: 0 16px 0 64px; max-height: 0; overflow: hidden; opacity: 0; transition: max-height .45s ease, opacity .3s ease, padding .3s ease; }
+  .mh-demo-pts { list-style: none; margin: 0 14px 0 64px; padding: 0 14px; max-height: 0; overflow: hidden; opacity: 0; border-radius: 12px; border: 1px solid transparent; background: color-mix(in srgb, var(--hl) 42%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: max-height .45s ease, opacity .3s ease, padding .3s ease, margin .3s ease; }
+  @keyframes mhPopUp { from { transform: translateY(14px) scale(.97); } to { transform: none; } }
   .mh-demo-pts li { position: relative; padding: 3px 0 3px 18px; font-size: 14px; line-height: 1.45; font-weight: 600; color: #8492AC; transition: color .3s ease; }
   .mh-demo-pts li::before { content: ''; position: absolute; left: 0; top: 10px; width: 8px; height: 8px; border-radius: 50%; background: #CBD5E1; transition: background .3s ease, transform .3s ease; }
   .mh-demo-pts li span { background: linear-gradient(var(--hl), var(--hl)) no-repeat 0 88% / 0% 62%; transition: background-size .6s ease; padding: 0 3px; margin: 0 -3px; border-radius: 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
@@ -45,9 +47,11 @@
   .mh-demo-card.is-on .mh-demo-step:hover { background: transparent; }
   .mh-demo-card.is-on .mh-demo-txt b { color: #0B1020; } .mh-demo-card.is-on .mh-demo-txt i { color: #4B5A78; } .mh-demo-card.is-on .mh-demo-t { color: #64748B; }
   .mh-demo-card.is-on .mh-demo-no { background: var(--ac); border-color: transparent; color: #0B1020; }
-  .mh-demo-card.is-on .mh-demo-pts { max-height: 240px; opacity: 1; padding-bottom: 14px; }
+  .mh-demo-card.is-on .mh-demo-pts { max-height: 240px; opacity: 1; padding: 8px 14px; margin-bottom: 14px; border-color: color-mix(in srgb, var(--ac) 40%, transparent); box-shadow: 0 10px 28px -14px color-mix(in srgb, var(--ac) 70%, transparent); animation: mhPopUp .5s cubic-bezier(.2,.9,.3,1.15); }
+  .mh-demo-pts li.is-now { animation: mhNow .45s ease; }
+  @keyframes mhNow { from { transform: translateX(-6px); opacity: .4; } to { transform: none; opacity: 1; } }
   .mh-demo-card.is-done .mh-demo-no { background: rgba(61,219,169,.16); border-color: rgba(61,219,169,.5); color: #3DDBA9; }
-  .mh-demo-grid.is-playing .mh-demo-card:not(.is-on) { opacity: .62; }
+  .mh-demo-grid.is-playing .mh-demo-card:not(.is-on) { opacity: .8; }
   .mh-demo-grid.is-playing .mh-demo-card:not(.is-on):hover { opacity: 1; }
   .mh-demo-media { grid-area: media; min-width: 0; align-self: start; }
   .mh-demo-media .mh-scr-pwrap { border-color: rgba(150,180,255,.3); box-shadow: 0 40px 90px -26px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.04); border-radius: 18px; }
@@ -64,8 +68,13 @@
     .mh-demo .mh-section-center { margin-bottom: 36px; }
     .mh-demo-steps { max-width: none; }
   }
-  @media (max-width: 960px) { .mh-demo-card:not(.is-on) .mh-demo-txt i { display: none; } .mh-demo-pts { padding-left: 64px; } }
-  @media (max-width: 480px) { .mh-demo-t { display: none; } .mh-demo-txt { padding-right: 0; } .mh-demo-step { padding: 12px 12px; gap: 12px; } .mh-demo-pts { padding-left: 12px; padding-right: 12px; } }
+  @media (max-width: 960px) { .mh-demo-card:not(.is-on) .mh-demo-txt i { display: none; } }
+  @media (max-width: 480px) { .mh-demo-t { display: none; } .mh-demo-txt { padding-right: 0; } .mh-demo-step { padding: 12px 12px; gap: 12px; } .mh-demo-pts { margin-left: 12px; margin-right: 12px; } }
+  /* play button: icon only, centred near the bottom of the picture (ID selector beats the shared pill rules) */
+  #mh-demo-bigplay { left: 50%; right: auto; top: auto; bottom: 10%; translate: -50% 0; width: 68px; height: 68px; padding: 0; border-radius: 50%; justify-content: center; box-shadow: 0 10px 30px rgba(37,99,235,.45), 0 0 0 6px rgba(255,255,255,.55); }
+  #mh-demo-bigplay span { display: none; }
+  #mh-demo-bigplay svg { width: 30px; height: 30px; margin-left: 3px; }
+  .mh-scr-player[data-state="ended"] #mh-demo-bigplay { display: none; }
   /* clickable end-of-video call to action, placed exactly over the button drawn into the last frame */
   .mh-demo-endcta { position: absolute; left: 50%; top: 69.2%; width: 31%; height: 9.4%; translate: -50% 0; border-radius: 14px; display: none; z-index: 4; text-decoration: none; outline-offset: 4px; }
   .mh-demo-endcta:hover { box-shadow: 0 0 0 3px rgba(255,255,255,.7), 0 0 34px 6px rgba(99,102,241,.45); }
@@ -82,7 +91,7 @@
     <div class="mh-section-center">
       <div class="mh-eyebrow">THE EXPERIENCE</div>
       <h2 class="mh-section-title mh-demo-title" id="mh-demo-title">A real interview experience, <span>not a static quiz.</span></h2>
-      <p class="mh-section-sub">Watch one sample interview from start to finish: setup, adaptive questions, live scoring, the report and your progress over time. Under 90 seconds.</p>
+      <p class="mh-section-sub">Watch how MedhaIQ builds interview readiness, from setup to a scored report, in about 90 seconds.</p>
     </div>
     <div class="mh-demo-grid" id="mh-demo-grid">
 
@@ -103,7 +112,7 @@
               Your browser cannot play this video. The transcript below describes it.
             </video>
             <button type="button" class="mh-scr-bigplay" id="mh-demo-bigplay" aria-label="Play the interview walkthrough">
-              <svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><path d="M17 11v26l22-13z" fill="currentColor"/></svg><span>Play walkthrough</span>
+              <svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><path d="M17 11v26l22-13z" fill="currentColor"/></svg>
             </button>
             <a class="mh-demo-endcta" href="/login" aria-label="Try MedhaIQ now"></a>
           </div>
