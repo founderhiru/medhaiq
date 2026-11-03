@@ -1,48 +1,55 @@
-<!-- HOME SECTION — See it in action (home page only).
-     Job of this section (it replaces the separate "The Experience" illustration): show the WHOLE interview engine in one watchable walkthrough: how an
-     interview is set up, how the person is questioned, how every answer is scored, and what the
-     report contains. The hero's "See the demo" link lands here (#demo).
-     Left: the write-up. The four chapters double as the video's chapter buttons and light up in
-     step with playback. Right: the video player.
-     The video is a recorded walkthrough of the real setup, interview and report screens using
-     fictional sample data. No autoplay, and no sound until the visitor presses play.
+<!-- HOME SECTION — The Experience (home page only).
+     Job of this section: DEMONSTRATE the whole interview engine in one watchable walkthrough: how an
+     interview is set up, how the person is questioned, how every answer is scored, what the report
+     contains and how progress is tracked. The hero's "See Demo" button lands here (#demo).
+     Left: five chapters. They double as the video's chapter buttons. The active chapter turns into a
+     light card in its own highlighter colour, and its key points are highlighted in step with the
+     narration. Right: the video player (captions, transcript, clickable end-of-video "Try MedhaIQ now").
+     The video is a recorded walkthrough of the real home, setup, interview, report and workspace screens
+     with fictional sample data and AI-generated narration. No autoplay, and no sound until play.
      Player controls reuse the .mh-scr-* player rules in home-motion.css (no new CSS file).
-     Assets: /assets/interview-demo/interview-walkthrough.mp4 and interview-walkthrough-poster.jpg -->
+     Assets: /assets/interview-demo/interview-walkthrough.mp4, -poster.jpg and .vtt (captions). -->
 <style>
   .mh-demo { position: relative; scroll-margin-top: 68px; padding: 88px 24px; color: #EAF0FF; overflow: hidden;
     background: radial-gradient(900px 520px at 80% 40%, rgba(47,107,255,.24), transparent 65%), radial-gradient(700px 420px at 8% 90%, rgba(139,92,246,.16), transparent 65%), linear-gradient(180deg, #070E24 0%, #0A1330 100%); }
   .mh-demo-wrap { max-width: 1280px; margin: 0 auto; }
-  .mh-demo-grid { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); grid-template-areas: "steps media" "cta media"; column-gap: 56px; align-content: center; align-items: start; }
+  .mh-demo-grid { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); grid-template-areas: "steps media"; column-gap: 56px; align-content: center; align-items: start; }
   /* Heading system shared with the other home sections (eyebrow / h2 / sub): same family, weight, size, tracking, spacing. */
   .mh-demo .mh-section-center { max-width: 760px; margin: 0 auto 52px; text-align: center; }
   .mh-demo .mh-eyebrow { color: #7FB2FF; font-size: 12px; letter-spacing: .12em; }
   section.mh-demo h2.mh-demo-title { margin: 0 0 14px; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: clamp(28px, 3.4vw, 40px); font-weight: 800; letter-spacing: -.025em; line-height: 1.12; color: #fff; text-wrap: balance; }
   .mh-demo-title span { display: inline-block; line-height: inherit; background: linear-gradient(90deg, #6FA3FF, #A98BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .mh-demo .mh-section-sub { margin: 0; font-size: 16.5px; line-height: 1.55; color: #B4C3E2; }
-  .mh-demo-steps { grid-area: steps; list-style: none; margin: 0 0 28px; padding: 0; display: grid; gap: 10px; max-width: 540px; }
-  .mh-demo-step { position: relative; width: 100%; display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; text-align: left; font: inherit; color: inherit; cursor: pointer; border: 1px solid rgba(150,180,255,.16); border-radius: 14px; background: rgba(255,255,255,.03); overflow: hidden; transition: background .3s ease, border-color .3s ease, opacity .3s ease; }
-  .mh-demo-step:hover { background: rgba(255,255,255,.06); border-color: rgba(150,180,255,.38); }
-  .mh-demo-step:focus-visible { outline: 3px solid #9DB8FF; outline-offset: 2px; }
+  .mh-demo-steps { grid-area: steps; list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 560px; align-self: start; }
+  /* chapter card: dark glass at rest, light highlighter card while its part of the video plays */
+  .mh-demo-card { position: relative; border: 1px solid rgba(150,180,255,.16); border-radius: 14px; background: rgba(255,255,255,.03); overflow: hidden; transition: background .35s ease, border-color .35s ease, box-shadow .35s ease; }
+  .mh-demo-card.c1 { --hl: #DBEAFE; --ac: #60A5FA; } .mh-demo-card.c2 { --hl: #E4DCFD; --ac: #A78BFA; } .mh-demo-card.c3 { --hl: #CFF5DC; --ac: #34D399; } .mh-demo-card.c4 { --hl: #FFE2C4; --ac: #FB923C; } .mh-demo-card.c5 { --hl: #FDEBB0; --ac: #FBBF24; }
+  .mh-demo-step { position: relative; width: 100%; display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; text-align: left; font: inherit; color: inherit; cursor: pointer; border: 0; background: transparent; }
+  .mh-demo-step:hover { background: rgba(255,255,255,.05); }
+  .mh-demo-step:focus-visible { outline: 3px solid #9DB8FF; outline-offset: -3px; border-radius: 14px; }
   .mh-demo-no { flex: none; width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font: 700 13px ui-monospace, Menlo, monospace; color: #7FB2FF; background: rgba(91,155,255,.12); border: 1px solid rgba(91,155,255,.35); transition: background .3s ease, color .3s ease; }
-  .mh-demo-txt { display: block; min-width: 0; }
-  .mh-demo-txt b { display: block; font-size: 16.5px; font-weight: 700; color: #fff; margin-bottom: 2px; }
-  .mh-demo-txt i { display: block; font-style: normal; font-size: 14px; line-height: 1.5; color: #B4C3E2; }
+  .mh-demo-txt { display: block; min-width: 0; padding-right: 40px; }
+  .mh-demo-txt b { display: block; font-size: 16.5px; font-weight: 700; color: #fff; margin-bottom: 2px; transition: color .3s ease; }
+  .mh-demo-txt i { display: block; font-style: normal; font-size: 14px; line-height: 1.5; color: #B4C3E2; transition: color .3s ease; }
   .mh-demo-t { position: absolute; right: 14px; top: 14px; font: 600 11.5px ui-monospace, Menlo, monospace; color: #7F8FB0; }
-  .mh-demo-bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: transparent; }
-  .mh-demo-bar::after { content: ''; display: block; height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, #3D8BFF, #8B5CF6); }
-  .mh-demo-step.is-on { background: rgba(47,107,255,.16); border-color: rgba(111,163,255,.7); }
-  .mh-demo-step.is-on .mh-demo-no { background: linear-gradient(135deg, #3D8BFF, #8B5CF6); border-color: transparent; color: #fff; }
-  .mh-demo-step.is-done .mh-demo-no { background: rgba(61,219,169,.16); border-color: rgba(61,219,169,.5); color: #3DDBA9; }
-  .mh-demo-grid.is-playing .mh-demo-step:not(.is-on) { opacity: .6; }
-  .mh-demo-grid.is-playing .mh-demo-step:not(.is-on):hover { opacity: 1; }
-  .mh-demo-cta { grid-area: cta; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
-  .mh-demo-btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; background: linear-gradient(135deg, #2F6BFF 0%, #1D4ED8 100%); color: #fff; font-weight: 600; font-size: 14.5px; border-radius: 12px; text-decoration: none; box-shadow: 0 8px 30px rgba(47,107,255,.45); transition: transform .25s ease, box-shadow .25s ease; }
-  .mh-demo-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(47,107,255,.6); }
-  .mh-demo-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
-  .mh-demo-link { color: #9DB8FF; font-weight: 600; font-size: 14.5px; text-decoration: none; border-bottom: 1px solid rgba(157,184,255,.4); padding-bottom: 1px; }
-  .mh-demo-link:hover { color: #fff; border-color: #fff; }
-  .mh-demo-link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
-  .mh-demo-media { grid-area: media; min-width: 0; align-self: center; }
+  .mh-demo-bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: transparent; pointer-events: none; }
+  .mh-demo-bar::after { content: ''; display: block; height: 100%; width: var(--p, 0%); background: var(--ac, #3D8BFF); }
+  /* key points, revealed for the active chapter and highlighted in step with the narration */
+  .mh-demo-pts { list-style: none; margin: 0; padding: 0 16px 0 64px; max-height: 0; overflow: hidden; opacity: 0; transition: max-height .45s ease, opacity .3s ease, padding .3s ease; }
+  .mh-demo-pts li { position: relative; padding: 3px 0 3px 18px; font-size: 14px; line-height: 1.45; font-weight: 600; color: #8492AC; transition: color .3s ease; }
+  .mh-demo-pts li::before { content: ''; position: absolute; left: 0; top: 10px; width: 8px; height: 8px; border-radius: 50%; background: #CBD5E1; transition: background .3s ease, transform .3s ease; }
+  .mh-demo-pts li span { background: linear-gradient(var(--hl), var(--hl)) no-repeat 0 88% / 0% 62%; transition: background-size .6s ease; padding: 0 3px; margin: 0 -3px; border-radius: 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .mh-demo-pts li.is-hit { color: #0B1020; } .mh-demo-pts li.is-hit span { background-size: 100% 62%; } .mh-demo-pts li.is-hit::before { background: var(--ac); }
+  .mh-demo-pts li.is-now { font-weight: 800; } .mh-demo-pts li.is-now::before { transform: scale(1.35); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ac) 28%, transparent); }
+  .mh-demo-card.is-on { background: #FBF9F4; border-color: var(--ac); box-shadow: 0 16px 44px -12px rgba(2,6,23,.55), 0 0 0 3px color-mix(in srgb, var(--ac) 30%, transparent); }
+  .mh-demo-card.is-on .mh-demo-step:hover { background: transparent; }
+  .mh-demo-card.is-on .mh-demo-txt b { color: #0B1020; } .mh-demo-card.is-on .mh-demo-txt i { color: #4B5A78; } .mh-demo-card.is-on .mh-demo-t { color: #64748B; }
+  .mh-demo-card.is-on .mh-demo-no { background: var(--ac); border-color: transparent; color: #0B1020; }
+  .mh-demo-card.is-on .mh-demo-pts { max-height: 240px; opacity: 1; padding-bottom: 14px; }
+  .mh-demo-card.is-done .mh-demo-no { background: rgba(61,219,169,.16); border-color: rgba(61,219,169,.5); color: #3DDBA9; }
+  .mh-demo-grid.is-playing .mh-demo-card:not(.is-on) { opacity: .62; }
+  .mh-demo-grid.is-playing .mh-demo-card:not(.is-on):hover { opacity: 1; }
+  .mh-demo-media { grid-area: media; min-width: 0; align-self: start; }
   .mh-demo-media .mh-scr-pwrap { border-color: rgba(150,180,255,.3); box-shadow: 0 40px 90px -26px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.04); border-radius: 18px; }
   .mh-demo-note { margin: 12px 2px 0; font-size: 13px; line-height: 1.55; color: #93A3C4; }
   .mh-demo-note strong { color: #C7D4F0; font-weight: 600; }
@@ -52,13 +59,22 @@
   .mh-demo-media .mh-scr-transcript li span { color: #7FB2FF; }
   @media (max-width: 960px) {
     .mh-demo { padding: 64px 16px; }
-    .mh-demo-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "media" "steps" "cta"; }
+    .mh-demo-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "media" "steps"; }
     .mh-demo-media { margin-bottom: 22px; }
     .mh-demo .mh-section-center { margin-bottom: 36px; }
     .mh-demo-steps { max-width: none; }
   }
-  @media (max-width: 480px) { .mh-demo-t { display: none; } .mh-demo-step { padding: 12px 12px; gap: 12px; } }
-  @media (prefers-reduced-motion: reduce) { .mh-demo-step, .mh-demo-no, .mh-demo-btn { transition: none; } }
+  @media (max-width: 960px) { .mh-demo-card:not(.is-on) .mh-demo-txt i { display: none; } .mh-demo-pts { padding-left: 64px; } }
+  @media (max-width: 480px) { .mh-demo-t { display: none; } .mh-demo-txt { padding-right: 0; } .mh-demo-step { padding: 12px 12px; gap: 12px; } .mh-demo-pts { padding-left: 12px; padding-right: 12px; } }
+  /* clickable end-of-video call to action, placed exactly over the button drawn into the last frame */
+  .mh-demo-endcta { position: absolute; left: 50%; top: 69.2%; width: 31%; height: 9.4%; translate: -50% 0; border-radius: 14px; display: none; z-index: 4; text-decoration: none; outline-offset: 4px; }
+  .mh-demo-endcta:hover { box-shadow: 0 0 0 3px rgba(255,255,255,.7), 0 0 34px 6px rgba(99,102,241,.45); }
+  .mh-demo-endcta:focus-visible { outline: 3px solid #1D4ED8; }
+  .mh-scr-player[data-state="ended"] .mh-demo-endcta { display: block; }
+  .mh-demo-cc[aria-pressed="true"] { color: #2563EB; }
+  #mh-demo-vid::cue { font: 600 15px Inter, system-ui, sans-serif; color: #fff; background: rgba(8,12,28,.82); }
+  @media (max-width: 420px) { .mh-scr-pwrap .mh-scr-ctrl { gap: 2px; padding: 6px 6px; } .mh-scr-pwrap .mh-scr-vol { display: none; } .mh-scr-pwrap .mh-scr-time { font-size: 12px; white-space: nowrap; } .mh-scr-pwrap .mh-scr-seek { min-width: 0; } }
+  @media (prefers-reduced-motion: reduce) { .mh-demo-card, .mh-demo-step, .mh-demo-no, .mh-demo-pts, .mh-demo-pts li, .mh-demo-pts li span, .mh-demo-pts li::before { transition: none; } }
 </style>
 
 <section class="mh-demo" id="demo" aria-labelledby="mh-demo-title">
@@ -71,39 +87,39 @@
     <div class="mh-demo-grid" id="mh-demo-grid">
 
       <ol class="mh-demo-steps" aria-label="Walkthrough chapters">
-        <li><button type="button" class="mh-demo-step" data-t="0"><span class="mh-demo-no">01</span><span class="mh-demo-txt"><b>Configure</b><i>Open the home page, then set the role, career stage, interviewer, resume and job description.</i></span><span class="mh-demo-t">0:00</span><span class="mh-demo-bar"></span></button></li>
-        <li><button type="button" class="mh-demo-step" data-t="17.8"><span class="mh-demo-no">02</span><span class="mh-demo-txt"><b>Interview</b><i>The interviewer asks. Your words appear as you speak, and a missing result gets a sharper follow-up.</i></span><span class="mh-demo-t">0:18</span><span class="mh-demo-bar"></span></button></li>
-        <li><button type="button" class="mh-demo-step" data-t="32.8"><span class="mh-demo-no">03</span><span class="mh-demo-txt"><b>Score</b><i>Five vectors per answer, with STAR checked in every answer.</i></span><span class="mh-demo-t">0:33</span><span class="mh-demo-bar"></span></button></li>
-        <li><button type="button" class="mh-demo-step" data-t="47.8"><span class="mh-demo-no">04</span><span class="mh-demo-txt"><b>Report</b><i>Executive summary, strengths, development priorities, evidence and a 30/60/90 day plan.</i></span><span class="mh-demo-t">0:48</span><span class="mh-demo-bar"></span></button></li>
-        <li><button type="button" class="mh-demo-step" data-t="62.8"><span class="mh-demo-no">05</span><span class="mh-demo-txt"><b>Progress</b><i>Every session is saved. Compare sessions and watch your readiness move over time.</i></span><span class="mh-demo-t">1:03</span><span class="mh-demo-bar"></span></button></li>
+        <li class="mh-demo-card c1"><button type="button" class="mh-demo-step" data-t="0"><span class="mh-demo-no">01</span><span class="mh-demo-txt"><b>Configure</b><i>Open the home page, then set up the role, career stage, resume and job description.</i></span><span class="mh-demo-t">0:00</span></button><ul class="mh-demo-pts" aria-hidden="true"><li data-t="0.9"><span>Open the home page, then sign in</span></li><li data-t="11.0"><span>Choose the role and career stage</span></li><li data-t="13.9"><span>Add your resume</span></li><li data-t="15.3"><span>Add the job description</span></li><li data-t="16.7"><span>The interview is built from them</span></li></ul><span class="mh-demo-bar"></span></li>
+        <li class="mh-demo-card c2"><button type="button" class="mh-demo-step" data-t="19.4"><span class="mh-demo-no">02</span><span class="mh-demo-txt"><b>Interview</b><i>The interviewer asks. Your words appear as you speak, and a missing result gets a sharper follow-up.</i></span><span class="mh-demo-t">0:19</span></button><ul class="mh-demo-pts" aria-hidden="true"><li data-t="19.9"><span>The interviewer asks a question</span></li><li data-t="21.9"><span>You answer, and your words appear as you speak</span></li><li data-t="26.4"><span>It spots what is missing</span></li><li data-t="29.2"><span>A sharper follow-up on the gap</span></li><li data-t="33.5"><span>Each answer gets its own score</span></li></ul><span class="mh-demo-bar"></span></li>
+        <li class="mh-demo-card c3"><button type="button" class="mh-demo-step" data-t="36.4"><span class="mh-demo-no">03</span><span class="mh-demo-txt"><b>Score</b><i>Five vectors per answer, with STAR checked in every answer.</i></span><span class="mh-demo-t">0:36</span></button><ul class="mh-demo-pts" aria-hidden="true"><li data-t="36.9"><span>Five vectors, weighted</span></li><li data-t="40.2"><span>Structure, domain, strategy, communication, leadership</span></li><li data-t="47.6"><span>STAR checked in every answer</span></li></ul><span class="mh-demo-bar"></span></li>
+        <li class="mh-demo-card c4"><button type="button" class="mh-demo-step" data-t="52.9"><span class="mh-demo-no">04</span><span class="mh-demo-txt"><b>Report</b><i>Executive summary, strengths, development priorities, evidence and a 30/60/90 day plan.</i></span><span class="mh-demo-t">0:53</span></button><ul class="mh-demo-pts" aria-hidden="true"><li data-t="53.4"><span>Executive summary</span></li><li data-t="57.1"><span>Your strongest signal</span></li><li data-t="59.2"><span>Your development focus</span></li><li data-t="61.2"><span>Evidence from your answers</span></li><li data-t="63.5"><span>A 30, 60 and 90 day plan</span></li><li data-t="67.1"><span>Download it as a PDF</span></li></ul><span class="mh-demo-bar"></span></li>
+        <li class="mh-demo-card c5"><button type="button" class="mh-demo-step" data-t="69.6"><span class="mh-demo-no">05</span><span class="mh-demo-txt"><b>Progress</b><i>Every session is saved. Compare sessions and watch your readiness move over time.</i></span><span class="mh-demo-t">1:10</span></button><ul class="mh-demo-pts" aria-hidden="true"><li data-t="70.0"><span>Every session is saved</span></li><li data-t="72.4"><span>Compare sessions</span></li><li data-t="74.3"><span>Readiness over time</span></li></ul><span class="mh-demo-bar"></span></li>
       </ol>
-
-      <div class="mh-demo-cta">
-        <a href="/login" class="mh-demo-btn">Start Free Trial <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-        <a href="/sample-report" class="mh-demo-link">Or read the full sample report</a>
-      </div>
 
       <div class="mh-demo-media">
         <div class="mh-scr-pwrap" id="mh-demo-pwrap">
           <div class="mh-scr-player" id="mh-demo-player" data-state="idle" tabindex="0" aria-label="Interview walkthrough video player. Space plays or pauses, M mutes, F toggles full screen.">
             <video id="mh-demo-vid" preload="none" playsinline poster="/assets/interview-demo/interview-walkthrough-poster.jpg" aria-describedby="mh-demo-note">
               <source src="/assets/interview-demo/interview-walkthrough.mp4" type="video/mp4">
+              <track id="mh-demo-track" kind="captions" src="/assets/interview-demo/interview-walkthrough.vtt" srclang="en" label="English">
               Your browser cannot play this video. The transcript below describes it.
             </video>
             <button type="button" class="mh-scr-bigplay" id="mh-demo-bigplay" aria-label="Play the interview walkthrough">
               <svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><path d="M17 11v26l22-13z" fill="currentColor"/></svg><span>Play walkthrough</span>
             </button>
+            <a class="mh-demo-endcta" href="/login" aria-label="Try MedhaIQ now"></a>
           </div>
           <div class="mh-scr-ctrl" role="group" aria-label="Video controls">
             <button type="button" class="mh-scr-cb" id="mh-demo-pp" aria-label="Play">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path class="mh-scr-ico-play" d="M8 5v14l11-7z" fill="currentColor"/><path class="mh-scr-ico-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>
             </button>
-            <span class="mh-scr-time" id="mh-demo-time">0:00 / 1:24</span>
+            <span class="mh-scr-time" id="mh-demo-time">0:00 / 1:30</span>
             <input type="range" class="mh-scr-seek" id="mh-demo-seek" min="0" max="1000" value="0" step="1" aria-label="Seek video">
             <button type="button" class="mh-scr-cb" id="mh-demo-mute" aria-label="Mute" aria-pressed="false">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path class="mh-scr-ico-wave" d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="mh-scr-ico-x" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
             </button>
             <input type="range" class="mh-scr-vol" id="mh-demo-vol" min="0" max="100" value="80" step="5" aria-label="Volume">
+            <button type="button" class="mh-scr-cb mh-demo-cc" id="mh-demo-cc" aria-label="Captions off" aria-pressed="false">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10.2 10.2a2.2 2.2 0 100 3.6M16.2 10.2a2.2 2.2 0 100 3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
             <button type="button" class="mh-scr-cb" id="mh-demo-fs" aria-label="Full screen">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
@@ -113,13 +129,13 @@
         <details class="mh-scr-transcript">
           <summary>Read the transcript</summary>
           <ol>
-            <li><span>0:01</span> Interview preparation shouldn't begin two weeks before the interview. From the home page, start the free trial.</li>
-            <li><span>0:10</span> Choose the role and your career stage. Add your resume and the job description. The interview is built from them.</li>
-            <li><span>0:18</span> The interviewer asks. You answer out loud, and your words appear as you speak. When an answer has no result, it asks a sharper follow-up.</li>
-            <li><span>0:33</span> Each answer is scored on five vectors: structure, domain, strategy, communication, and leadership. Situation, task, action, and result are checked in every answer.</li>
-            <li><span>0:48</span> The report opens with an executive interpretation. Your strongest signal. Your development focus. Evidence from your own answers, and a thirty, sixty, ninety day plan. Download it as a PDF.</li>
-            <li><span>1:03</span> Every session is saved. Compare sessions, and see how your scores move over time.</li>
-            <li><span>1:15</span> Practice. Polish. Place. Start Free Trial.</li>
+            <li><span>0:01</span> Interview preparation shouldn't begin two weeks before the interview.</li>
+            <li><span>0:11</span> Choose the role and your career stage. Add your resume and the job description. The interview is built from them.</li>
+            <li><span>0:20</span> The interviewer asks. You answer out loud, and your words appear as you speak. When an answer has no result, it asks a sharper follow-up.</li>
+            <li><span>0:37</span> Each answer is scored on five vectors: structure, domain, strategy, communication, and leadership. Situation, task, action, and result are checked in every answer.</li>
+            <li><span>0:53</span> The report opens with an executive interpretation. Your strongest signal. Your development focus. Evidence from your own answers, and a thirty, sixty, ninety day plan. Download it as a PDF.</li>
+            <li><span>1:10</span> Every session is saved. Compare sessions, and see how your scores move over time.</li>
+            <li><span>1:21</span> Practice. Polish. Place.</li>
           </ol>
         </details>
       </div>
@@ -139,10 +155,13 @@
   var seek = document.getElementById('mh-demo-seek'), vol = document.getElementById('mh-demo-vol');
   var mute = document.getElementById('mh-demo-mute'), fs = document.getElementById('mh-demo-fs'), tm = document.getElementById('mh-demo-time');
   var steps = [].slice.call(document.querySelectorAll('.mh-demo-step'));
-  var END = [].concat(steps.map(function (b) { return +b.getAttribute('data-t'); }));
+  var cards = steps.map(function (b) { return b.parentNode; });
+  var END = steps.map(function (b) { return +b.getAttribute('data-t'); });
+  var PTS = cards.map(function (c) { return [].slice.call(c.querySelectorAll('.mh-demo-pts li')); });
+  var cc = document.getElementById('mh-demo-cc'), track = document.getElementById('mh-demo-track');
   v.volume = 0.8;
   function fmt(x) { x = Math.max(0, Math.floor(x || 0)); return Math.floor(x / 60) + ':' + ('0' + (x % 60)).slice(-2); }
-  function dur() { return isFinite(v.duration) && v.duration > 0 ? v.duration : 84; }
+  function dur() { return isFinite(v.duration) && v.duration > 0 ? v.duration : 90; }
   function state(st) { box.setAttribute('data-state', st); wrap.setAttribute('data-state', st); if (grid) grid.classList.toggle('is-playing', st === 'playing' || st === 'paused'); }
   function toggle() {
     if (v.paused || v.ended) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () { state('error'); }); }
@@ -151,16 +170,25 @@
   function syncPP() { var playing = !v.paused && !v.ended; pp.setAttribute('aria-label', playing ? 'Pause' : (v.ended ? 'Replay' : 'Play')); }
   function syncMute() { var m = v.muted || v.volume === 0; mute.setAttribute('aria-pressed', m ? 'true' : 'false'); mute.setAttribute('aria-label', m ? 'Unmute' : 'Mute'); box.classList.toggle('is-muted', m); wrap.classList.toggle('is-muted', m); }
   function syncSteps() {
-    var t = v.currentTime, d = dur(), cur = -1;
-    steps.forEach(function (b, i) { if (t >= END[i] - 0.05) cur = i; });
+    var t = v.currentTime, d = dur(), cur = -1, wrapUp = 80;
+    END.forEach(function (x, i) { if (t >= x - 0.05) cur = i; });
     steps.forEach(function (b, i) {
-      var start = END[i], stop = i + 1 < END.length ? END[i + 1] : Math.min(d, 73.8);
-      var on = i === cur && t > 0 && !v.ended;
-      b.classList.toggle('is-on', on);
-      b.classList.toggle('is-done', t > 0 && (i < cur || (i === cur && v.ended)) );
+      var c = cards[i], start = END[i], stop = i + 1 < END.length ? END[i + 1] : Math.min(d, wrapUp);
+      var on = i === cur && t > 0 && !v.ended && !(i === END.length - 1 && t >= wrapUp);
+      var done = t > 0 && (i < cur || (i === cur && (v.ended || t >= stop)));
+      c.classList.toggle('is-on', on);
+      c.classList.toggle('is-done', done && !on);
       if (on) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+      b.setAttribute('aria-expanded', on ? 'true' : 'false');
       var p = i < cur ? 100 : (i === cur ? Math.max(0, Math.min(100, (t - start) / (stop - start) * 100)) : 0);
-      b.style.setProperty('--p', p + '%');
+      c.style.setProperty('--p', (done ? 100 : p) + '%');
+      /* key points: highlighted once their narration has started, the latest one is "now" */
+      var last = -1;
+      PTS[i].forEach(function (li, k) { if (t > 0 && t >= +li.getAttribute('data-t') - 0.05 && (i <= cur)) last = k; });
+      PTS[i].forEach(function (li, k) {
+        li.classList.toggle('is-hit', k <= last && t > 0);
+        li.classList.toggle('is-now', on && k === last && !v.paused);
+      });
     });
   }
   function tick() { var d = dur(); seek.value = Math.round((v.currentTime / d) * 1000); seek.style.setProperty('--p', (v.currentTime / d * 100) + '%'); tm.textContent = fmt(v.currentTime) + ' / ' + fmt(d); syncSteps(); }
@@ -177,6 +205,15 @@
   seek.addEventListener('input', function () { v.currentTime = (seek.value / 1000) * dur(); tick(); });
   vol.addEventListener('input', function () { v.volume = vol.value / 100; v.muted = v.volume === 0; syncMute(); });
   mute.addEventListener('click', function () { v.muted = !v.muted; if (!v.muted && v.volume === 0) { v.volume = 0.5; vol.value = 50; } syncMute(); });
+  function setCC(on) {
+    cc.setAttribute('aria-pressed', on ? 'true' : 'false'); cc.setAttribute('aria-label', on ? 'Captions on' : 'Captions off');
+    try { var tt = v.textTracks && v.textTracks[0]; if (tt) tt.mode = on ? 'showing' : 'hidden'; } catch (e) {}
+    try { localStorage.setItem('mh-demo-cc', on ? '1' : '0'); } catch (e) {}
+  }
+  var ccOn = false; try { ccOn = localStorage.getItem('mh-demo-cc') === '1'; } catch (e) {}
+  v.addEventListener('loadedmetadata', function () { setCC(ccOn); });
+  setCC(ccOn);
+  cc.addEventListener('click', function () { setCC(cc.getAttribute('aria-pressed') !== 'true'); });
   fs.addEventListener('click', function () {
     var d = document;
     if (d.fullscreenElement || d.webkitFullscreenElement) { (d.exitFullscreen || d.webkitExitFullscreen).call(d); }
@@ -186,9 +223,10 @@
   });
   wrap.addEventListener('keydown', function (e) {
     var t = e.target && e.target.tagName;
-    if (t === 'INPUT' || t === 'BUTTON') { if (e.key !== 'm' && e.key !== 'f') return; }
+    if (t === 'INPUT' || t === 'BUTTON') { if (e.key !== 'm' && e.key !== 'f' && e.key !== 'c') return; }
     if (e.key === ' ' || e.key === 'k') { e.preventDefault(); toggle(); }
     else if (e.key === 'm') { mute.click(); }
+    else if (e.key === 'c') { cc.click(); }
     else if (e.key === 'f') { fs.click(); }
   });
   steps.forEach(function (b) {
