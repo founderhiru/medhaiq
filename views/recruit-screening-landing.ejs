@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Screening &amp; Assessment Copilot | MedhaIQ</title>
-  <meta name="description" content="MedhaIQ Screening & Assessment Copilot shows the evidence behind every screening decision: criteria you approve, exact resume excerpts, what is still unclear, and a targeted question for each gap. The decision stays with the recruiter.">
+  <meta name="description" content="MedhaIQ Screening & Assessment Copilot helps recruiters shortlist faster and explain every decision: criteria you approve, exact resume excerpts, and a question for every gap. No scores. The recruiter decides.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0A0F1E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,16 +19,37 @@
 <body class="mh-scr-page">
   <%- include('partials/header') %>
 
-  <%- include('partials/page-hero', {
-    eyebrow: 'SCREENING & ASSESSMENT COPILOT',
-    title: 'Screen with evidence, not scores.',
-    sub: 'From hundreds of resumes to a shortlist you can explain. You make the decision.'
-  }) %>
+  <section class="mh-why-hero mh-scr-hero">
+    <div class="mh-why-hero-inner mh-section-center">
+      <div class="mh-eyebrow">SCREENING &amp; ASSESSMENT COPILOT</div>
+      <h1 class="mh-section-title">Shortlist faster.<br>Explain every decision.</h1>
+      <p class="mh-section-sub">An AI assistant for recruiters. It reads each resume against the criteria you approve, shows the exact words behind every finding, and leaves the decision to you.</p>
+      <div class="mh-scr-hero-cta">
+        <button type="button" class="mh-btn-primary" data-pilot>Request a pilot</button>
+        <a class="mh-scr-hero-link" href="#mh-scr-watch">&#9654;&nbsp; Watch the 75-second walkthrough</a>
+      </div>
+      <p class="mh-scr-hero-note">No overall score &middot; No AI hire or reject &middot; Not an ATS</p>
+    </div>
+  </section>
 
   <main>
 
+    <!-- ── What it does for you ─────────────────────────────────────── -->
+    <section class="mh-scr-value" aria-labelledby="mh-scr-value-title">
+      <div class="mh-scr-value-inner mh-section-center">
+        <div class="mh-eyebrow">WHAT YOU GET</div>
+        <h2 class="mh-section-title" id="mh-scr-value-title">Stop reading every resume cold</h2>
+        <p class="mh-section-sub">Built for in-house recruiters, talent acquisition teams and recruitment firms who screen high volumes of applications.</p>
+        <div class="mh-scr-benefit-grid mh-scr-value-grid">
+          <div><span class="mh-scr-vicon" aria-hidden="true">&#128269;</span><h3>Know where to focus</h3><p>See which resumes show evidence for your criteria and which need a closer look, instead of reading all of them first.</p></div>
+          <div><span class="mh-scr-vicon" aria-hidden="true">&#128221;</span><h3>Explain every decision</h3><p>Each finding points to the exact resume words behind it, and every review step is recorded.</p></div>
+          <div><span class="mh-scr-vicon" aria-hidden="true">&#10067;</span><h3>Turn gaps into questions</h3><p>Anything the resume does not show becomes a specific question to ask, never a reason to reject.</p></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ── Showcase: closer look (left) + walkthrough video (right) ─────────── -->
-    <section class="mh-scr-show reveal" aria-label="See Screening in action">
+    <section class="mh-scr-show reveal" id="mh-scr-watch" aria-label="See Screening in action">
       <div class="mh-scr-show-grid">
 
         <div class="mh-scr-col mh-scr-col-look">
@@ -93,24 +114,25 @@
 
         <div class="mh-scr-col mh-scr-col-video">
           <div class="mh-scr-col-head">
-            <div class="mh-eyebrow">WATCH &middot; 73 SECONDS</div>
+            <div class="mh-eyebrow">WATCH &middot; 75 SECONDS</div>
             <h2 class="mh-scr-col-title" id="mh-scr-video-title">The full walkthrough</h2>
-            <p class="mh-scr-col-sub">From job description to decision, with sample data.</p>
+            <p class="mh-scr-col-sub">The whole flow, from job description to decision.</p>
           </div>
+          <div class="mh-scr-pwrap" id="mh-scr-pwrap">
           <div class="mh-scr-player" id="mh-scr-player" data-state="idle" tabindex="0" aria-label="Product walkthrough video player. Space plays or pauses, M mutes, F toggles full screen.">
           <video id="mh-scr-vid" preload="none" playsinline poster="/assets/screening/walkthrough-poster.jpg" aria-describedby="mh-scr-vnote">
             <source src="/assets/screening/walkthrough.mp4" type="video/mp4">
             Your browser cannot play this video. The transcript below describes it.
           </video>
-          <button type="button" class="mh-scr-bigplay" id="mh-scr-bigplay" aria-label="Play the 73-second product walkthrough">
-            <svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><path d="M17 11v26l22-13z" fill="currentColor"/></svg>
+          <button type="button" class="mh-scr-bigplay" id="mh-scr-bigplay" aria-label="Play the 75-second product walkthrough">
+            <svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><path d="M17 11v26l22-13z" fill="currentColor"/></svg><span>Play walkthrough</span>
           </button>
-          <div class="mh-scr-badge" aria-hidden="true">Product walkthrough &middot; sample data</div>
+                  </div>
           <div class="mh-scr-ctrl" role="group" aria-label="Video controls">
             <button type="button" class="mh-scr-cb" id="mh-scr-pp" aria-label="Play">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path class="mh-scr-ico-play" d="M8 5v14l11-7z" fill="currentColor"/><path class="mh-scr-ico-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>
             </button>
-            <span class="mh-scr-time" id="mh-scr-time">0:00 / 1:13</span>
+            <span class="mh-scr-time" id="mh-scr-time">0:00 / 1:15</span>
             <input type="range" class="mh-scr-seek" id="mh-scr-seek" min="0" max="1000" value="0" step="1" aria-label="Seek video">
             <button type="button" class="mh-scr-cb" id="mh-scr-mute" aria-label="Mute" aria-pressed="false">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path class="mh-scr-ico-wave" d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="mh-scr-ico-x" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -120,21 +142,31 @@
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
           </div>
-        </div>
+          </div>
+          <ol class="mh-scr-chapters" aria-label="Video chapters">
+            <li><button type="button" data-t="0"><span>0:00</span>The problem</button></li>
+            <li><button type="button" data-t="12"><span>0:12</span>Approve the criteria</button></li>
+            <li><button type="button" data-t="22"><span>0:22</span>Add resumes</button></li>
+            <li><button type="button" data-t="30"><span>0:30</span>Review the evidence</button></li>
+            <li><button type="button" data-t="45"><span>0:45</span>Turn gaps into questions</button></li>
+            <li><button type="button" data-t="52"><span>0:52</span>AI interview <em>coming soon</em></button></li>
+            <li><button type="button" data-t="62"><span>1:02</span>You decide</button></li>
+            <li><button type="button" data-t="70"><span>1:10</span>Request a pilot</button></li>
+          </ol>
           <p class="mh-scr-vnote" id="mh-scr-vnote">A product walkthrough using fictional sample data and stylised screens. The optional AI interview step shown is <strong>coming soon</strong> and is not available in the live product. Nothing plays, and there is no sound, until you press play.</p>
         <details class="mh-scr-transcript">
           <summary>Read the transcript</summary>
           <ol>
-            <li><span>0:00</span> 200 resumes. One role. Hours of reading. And most AI screening hands you a score you can&rsquo;t explain.</li>
-            <li><span>0:07</span> MedhaIQ Screening &amp; Assessment Copilot: see the evidence behind every screening decision.</li>
-            <li><span>0:13</span> Step 1. Start with the yardstick: you review and approve the criteria. (A job description goes in, criteria are proposed, and the recruiter approves them.)</li>
-            <li><span>0:21</span> Step 2. Drop in resumes. Contact details are removed before AI reads them.</li>
-            <li><span>0:29</span> Step 3. See who needs attention. Nothing is scored or ranked.</li>
-            <li><span>0:37</span> Step 4. Every finding points to the exact words in the resume. Where nothing is found, it says so without claiming the candidate lacks the skill.</li>
-            <li><span>0:44</span> Gaps become questions to ask, never reasons to reject. The recruiter approves a suggested question.</li>
-            <li><span>0:50</span> Optional next step, coming soon: the Interview Engine asks only what is still open, then brings the answer back into the same evidence for the recruiter to confirm.</li>
-            <li><span>1:01</span> Step 6. You decide. Every step is recorded.</li>
-            <li><span>1:07</span> Better screening isn&rsquo;t a score. It&rsquo;s evidence you can explain. No overall score. No AI hire or reject. You make the decision.</li>
+            <li><span>0:00</span> 200 resumes. One role. Hours of reading. And AI that hands you a score you can&rsquo;t explain.</li>
+            <li><span>0:06</span> MedhaIQ Screening &amp; Assessment Copilot. Shortlist faster. Explain every decision. An AI assistant for recruiters: it reads the resumes, shows the evidence, and you decide.</li>
+            <li><span>0:12</span> Step 1. You approve the criteria. The assistant proposes criteria from the job description and the recruiter approves them.</li>
+            <li><span>0:22</span> Step 2. Drop in resumes. Contact details are removed before AI reads them.</li>
+            <li><span>0:30</span> Step 3. See who needs attention. Nothing is scored or ranked.</li>
+            <li><span>0:37</span> Every finding points to the exact words in the resume. Where nothing is found, it says so without claiming the candidate lacks the skill.</li>
+            <li><span>0:45</span> Gaps become questions to ask, never reasons to reject. The recruiter approves a suggested question.</li>
+            <li><span>0:52</span> Step 4, coming soon and optional: the AI interview asks only what is still open, and the answer comes back into the same evidence for the recruiter to confirm.</li>
+            <li><span>1:02</span> Step 5. You decide. Every step is recorded.</li>
+            <li><span>1:10</span> Better screening isn&rsquo;t a score. It&rsquo;s evidence you can explain. No overall score. No AI hire or reject. You decide. Request a pilot.</li>
           </ol>
         </details>
         </div>
@@ -157,37 +189,6 @@
       </div>
     </section>
 
-    <!-- ── Benefits ─────────────────────────────────────────────────── -->
-    <section class="mh-scr-benefits" aria-labelledby="mh-scr-benefits-title">
-      <div class="mh-scr-benefits-inner mh-section-center">
-        <div class="mh-eyebrow">FOR RECRUITMENT TEAMS</div>
-        <h2 class="mh-section-title" id="mh-scr-benefits-title">What your team gets</h2>
-        <div class="mh-scr-benefit-grid">
-          <div><h3>Focus where it matters</h3><p>Resumes are grouped by what the evidence shows, so you know which ones need your attention first.</p></div>
-          <div><h3>Explain every decision</h3><p>Each finding points to the exact resume words behind it, and the review steps are recorded.</p></div>
-          <div><h3>Ask sharper questions</h3><p>Every gap becomes a specific, editable question, not a reason to reject.</p></div>
-          <div><h3>Stay in control</h3><p>No overall score and no AI hire or reject. The recruiter makes every decision.</p></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── The evidence chain ───────────────────────────────────────── -->
-    <section class="mh-scr-chain" aria-labelledby="mh-scr-chain-title">
-      <div class="mh-scr-chain-inner mh-section-center">
-        <div class="mh-eyebrow">THE EVIDENCE CHAIN</div>
-        <h2 class="mh-section-title" id="mh-scr-chain-title">A traceable chain, not a score</h2>
-        <p class="mh-section-sub">Each criterion carries the same six links, so you can explain a decision to a hiring manager or a candidate.</p>
-        <ol class="mh-scr-steps">
-          <li><span class="mh-scr-step-num">1</span><h3>Requirement</h3><p>A criterion from the job description that you reviewed and approved.</p></li>
-          <li><span class="mh-scr-step-num">2</span><h3>Source excerpt</h3><p>The exact resume text behind it, checked against the resume itself.</p></li>
-          <li><span class="mh-scr-step-num">3</span><h3>Evidence reading</h3><p>Found, partial, not found or needs verification. Always in words, never a number.</p></li>
-          <li><span class="mh-scr-step-num">4</span><h3>What is missing</h3><p>When nothing is found, it says so plainly, without treating silence as a lack of skill.</p></li>
-          <li><span class="mh-scr-step-num">5</span><h3>Verification question</h3><p>A specific question for each gap, ready to edit before you use it.</p></li>
-          <li><span class="mh-scr-step-num">6</span><h3>Your decision</h3><p>Shortlist, hold, needs verification or not moving forward. Yours, not the AI's.</p></li>
-        </ol>
-      </div>
-    </section>
-
     <!-- ── Principles ──────────────────────────────────────────────── -->
     <section class="mh-scr-principles" aria-labelledby="mh-scr-principles-title">
       <div class="mh-scr-principles-inner mh-section-center">
@@ -204,11 +205,12 @@
 
   </main>
 
-  <section class="mh-scr-cta reveal">
+  <section class="mh-scr-cta reveal" aria-labelledby="mh-scr-cta-title">
     <div class="mh-scr-cta-inner">
-      <h2 class="mh-scr-cta-title">Try it on your own screening workflow</h2>
-      <p class="mh-scr-cta-sub">Screening &amp; Assessment Copilot is in early access with a small number of recruiting teams. Tell us about your hiring volume and we will set up a pilot.</p>
-      <button type="button" id="mh-scr-request-pilot" class="mh-btn-primary">Request a pilot</button>
+      <div class="mh-scr-cta-eyebrow">EARLY ACCESS</div>
+      <h2 class="mh-scr-cta-title" id="mh-scr-cta-title">Bring us your next hiring round.</h2>
+      <p class="mh-scr-cta-sub">We are onboarding a small number of recruiting teams for pilots. Tell us your hiring volume and we will set it up with you.</p>
+      <button type="button" class="mh-scr-cta-btn" data-pilot>Request a pilot</button>
     </div>
   </section>
 
@@ -217,9 +219,10 @@
 
   <script>
   (function () {
-    var btn = document.getElementById('mh-scr-request-pilot');
     var modal = document.getElementById('mh-contact-modal');
-    if (btn && modal) btn.addEventListener('click', function () { modal.style.display = 'flex'; });
+    document.querySelectorAll('[data-pilot]').forEach(function (b) {
+      b.addEventListener('click', function () { if (modal) modal.style.display = 'flex'; });
+    });
 
     // ── Walkthrough video player (no autoplay; sound only after the visitor presses play) ──
     (function () {
@@ -231,14 +234,14 @@
       var mute = document.getElementById('mh-scr-mute'), fs = document.getElementById('mh-scr-fs'), tm = document.getElementById('mh-scr-time');
       v.volume = 0.8;
       function fmt(x) { x = Math.max(0, Math.floor(x || 0)); return Math.floor(x / 60) + ':' + ('0' + (x % 60)).slice(-2); }
-      function dur() { return isFinite(v.duration) && v.duration > 0 ? v.duration : 73; }
-      function state(st) { box.setAttribute('data-state', st); }
+      function dur() { return isFinite(v.duration) && v.duration > 0 ? v.duration : 75; }
+      function state(st) { box.setAttribute('data-state', st); var w = document.getElementById('mh-scr-pwrap'); if (w) w.setAttribute('data-state', st); }
       function toggle() {
         if (v.paused || v.ended) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () { state('error'); }); }
         else v.pause();
       }
       function syncPP() { var playing = !v.paused && !v.ended; pp.setAttribute('aria-label', playing ? 'Pause' : (v.ended ? 'Replay' : 'Play')); }
-      function syncMute() { var m = v.muted || v.volume === 0; mute.setAttribute('aria-pressed', m ? 'true' : 'false'); mute.setAttribute('aria-label', m ? 'Unmute' : 'Mute'); box.classList.toggle('is-muted', m); }
+      function syncMute() { var m = v.muted || v.volume === 0; mute.setAttribute('aria-pressed', m ? 'true' : 'false'); mute.setAttribute('aria-label', m ? 'Unmute' : 'Mute'); box.classList.toggle('is-muted', m); var w = document.getElementById('mh-scr-pwrap'); if (w) w.classList.toggle('is-muted', m); }
       function tick() { var d = dur(); seek.value = Math.round((v.currentTime / d) * 1000); seek.style.setProperty('--p', (v.currentTime / d * 100) + '%'); tm.textContent = fmt(v.currentTime) + ' / ' + fmt(d); }
       big.addEventListener('click', toggle);
       pp.addEventListener('click', toggle);
@@ -253,18 +256,31 @@
       vol.addEventListener('input', function () { v.volume = vol.value / 100; v.muted = v.volume === 0; syncMute(); });
       mute.addEventListener('click', function () { v.muted = !v.muted; if (!v.muted && v.volume === 0) { v.volume = 0.5; vol.value = 50; } syncMute(); });
       fs.addEventListener('click', function () {
-        var d = document, el = box;
+        var d = document, el = document.getElementById('mh-scr-pwrap') || box;
         if (d.fullscreenElement || d.webkitFullscreenElement) { (d.exitFullscreen || d.webkitExitFullscreen).call(d); }
         else if (el.requestFullscreen) el.requestFullscreen();
         else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
         else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
       });
-      box.addEventListener('keydown', function (e) {
+      (document.getElementById('mh-scr-pwrap') || box).addEventListener('keydown', function (e) {
         var t = e.target && e.target.tagName;
         if (t === 'INPUT' || t === 'BUTTON') { if (e.key !== 'm' && e.key !== 'f') return; }
         if (e.key === ' ' || e.key === 'k') { e.preventDefault(); toggle(); }
         else if (e.key === 'm') { mute.click(); }
         else if (e.key === 'f') { fs.click(); }
+      });
+      var chaps = [].slice.call(document.querySelectorAll('.mh-scr-chapters button'));
+      function syncChap() {
+        var cur = -1;
+        chaps.forEach(function (b, i) { if (v.currentTime >= +b.getAttribute('data-t') - 0.05) cur = i; });
+        chaps.forEach(function (b, i) { b.classList.toggle('is-on', i === cur && v.currentTime > 0); });
+      }
+      v.addEventListener('timeupdate', syncChap); v.addEventListener('seeked', syncChap);
+      chaps.forEach(function (b) {
+        b.addEventListener('click', function () {
+          var go = function () { v.currentTime = +b.getAttribute('data-t'); var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); };
+          if (v.readyState >= 1) go(); else { v.addEventListener('loadedmetadata', go, { once: true }); v.load(); }
+        });
       });
       syncPP(); syncMute(); tick();
     })();
