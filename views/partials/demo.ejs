@@ -36,7 +36,9 @@
   .mh-demo-grid.is-playing .mh-demo-step:not(.is-on) { opacity: .6; }
   .mh-demo-grid.is-playing .mh-demo-step:not(.is-on):hover { opacity: 1; }
   .mh-demo-cta { grid-area: cta; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
-  .mh-demo-cta .mh-xp-cta { text-decoration: none; }
+  .mh-demo-btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; background: linear-gradient(135deg, #2F6BFF 0%, #1D4ED8 100%); color: #fff; font-weight: 600; font-size: 14.5px; border-radius: 12px; text-decoration: none; box-shadow: 0 8px 30px rgba(47,107,255,.45); transition: transform .25s ease, box-shadow .25s ease; }
+  .mh-demo-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(47,107,255,.6); }
+  .mh-demo-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
   .mh-demo-link { color: #9DB8FF; font-weight: 600; font-size: 14.5px; text-decoration: none; border-bottom: 1px solid rgba(157,184,255,.4); padding-bottom: 1px; }
   .mh-demo-link:hover { color: #fff; border-color: #fff; }
   .mh-demo-link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
@@ -56,7 +58,7 @@
     .mh-demo-steps { max-width: none; }
   }
   @media (max-width: 480px) { .mh-demo-t { display: none; } .mh-demo-step { padding: 12px 12px; gap: 12px; } }
-  @media (prefers-reduced-motion: reduce) { .mh-demo-step, .mh-demo-no { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .mh-demo-step, .mh-demo-no, .mh-demo-btn { transition: none; } }
 </style>
 
 <section class="mh-demo" id="demo" aria-labelledby="mh-demo-title">
@@ -64,19 +66,20 @@
     <div class="mh-section-center">
       <div class="mh-eyebrow">THE EXPERIENCE</div>
       <h2 class="mh-section-title mh-demo-title" id="mh-demo-title">A real interview experience, <span>not a static quiz.</span></h2>
-      <p class="mh-section-sub">Watch one sample interview from start to finish: setup, adaptive questions, live scoring and the final report. 90 seconds.</p>
+      <p class="mh-section-sub">Watch one sample interview from start to finish: setup, adaptive questions, live scoring, the report and your progress over time. Under 90 seconds.</p>
     </div>
     <div class="mh-demo-grid" id="mh-demo-grid">
 
       <ol class="mh-demo-steps" aria-label="Walkthrough chapters">
-        <li><button type="button" class="mh-demo-step" data-t="5.2"><span class="mh-demo-no">01</span><span class="mh-demo-txt"><b>Configure</b><i>Pick the role, career stage and interviewer. Add a job description and your resume.</i></span><span class="mh-demo-t">0:05</span><span class="mh-demo-bar"></span></button></li>
-        <li><button type="button" class="mh-demo-step" data-t="25"><span class="mh-demo-no">02</span><span class="mh-demo-txt"><b>Interview</b><i>It asks from your resume and the JD, listens as you answer, tracks STAR live, and probes any gap with a sharper follow-up.</i></span><span class="mh-demo-t">0:25</span><span class="mh-demo-bar"></span></button></li>
-        <li><button type="button" class="mh-demo-step" data-t="55"><span class="mh-demo-no">03</span><span class="mh-demo-txt"><b>Score</b><i>Every answer feeds a running score across five vectors.</i></span><span class="mh-demo-t">0:55</span><span class="mh-demo-bar"></span></button></li>
-        <li><button type="button" class="mh-demo-step" data-t="68"><span class="mh-demo-no">04</span><span class="mh-demo-txt"><b>Report</b><i>Scores by vector, STAR coverage, evidence from your answers, and a 30/60/90 day plan.</i></span><span class="mh-demo-t">1:08</span><span class="mh-demo-bar"></span></button></li>
+        <li><button type="button" class="mh-demo-step" data-t="0"><span class="mh-demo-no">01</span><span class="mh-demo-txt"><b>Configure</b><i>Open the home page, then set the role, career stage, interviewer, resume and job description.</i></span><span class="mh-demo-t">0:00</span><span class="mh-demo-bar"></span></button></li>
+        <li><button type="button" class="mh-demo-step" data-t="17.8"><span class="mh-demo-no">02</span><span class="mh-demo-txt"><b>Interview</b><i>The interviewer asks. Your words appear as you speak, and a missing result gets a sharper follow-up.</i></span><span class="mh-demo-t">0:18</span><span class="mh-demo-bar"></span></button></li>
+        <li><button type="button" class="mh-demo-step" data-t="32.8"><span class="mh-demo-no">03</span><span class="mh-demo-txt"><b>Score</b><i>Five vectors per answer, with STAR checked in every answer.</i></span><span class="mh-demo-t">0:33</span><span class="mh-demo-bar"></span></button></li>
+        <li><button type="button" class="mh-demo-step" data-t="47.8"><span class="mh-demo-no">04</span><span class="mh-demo-txt"><b>Report</b><i>Executive summary, strengths, development priorities, evidence and a 30/60/90 day plan.</i></span><span class="mh-demo-t">0:48</span><span class="mh-demo-bar"></span></button></li>
+        <li><button type="button" class="mh-demo-step" data-t="62.8"><span class="mh-demo-no">05</span><span class="mh-demo-txt"><b>Progress</b><i>Every session is saved. Compare sessions and watch your readiness move over time.</i></span><span class="mh-demo-t">1:03</span><span class="mh-demo-bar"></span></button></li>
       </ol>
 
       <div class="mh-demo-cta">
-        <a href="/login" class="mh-xp-cta">Start Free Trial</a>
+        <a href="/login" class="mh-demo-btn">Start Free Trial <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
         <a href="/sample-report" class="mh-demo-link">Or read the full sample report</a>
       </div>
 
@@ -87,7 +90,7 @@
               <source src="/assets/interview-demo/interview-walkthrough.mp4" type="video/mp4">
               Your browser cannot play this video. The transcript below describes it.
             </video>
-            <button type="button" class="mh-scr-bigplay" id="mh-demo-bigplay" aria-label="Play the 90-second interview walkthrough">
+            <button type="button" class="mh-scr-bigplay" id="mh-demo-bigplay" aria-label="Play the interview walkthrough">
               <svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><path d="M17 11v26l22-13z" fill="currentColor"/></svg><span>Play walkthrough</span>
             </button>
           </div>
@@ -95,7 +98,7 @@
             <button type="button" class="mh-scr-cb" id="mh-demo-pp" aria-label="Play">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path class="mh-scr-ico-play" d="M8 5v14l11-7z" fill="currentColor"/><path class="mh-scr-ico-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>
             </button>
-            <span class="mh-scr-time" id="mh-demo-time">0:00 / 1:30</span>
+            <span class="mh-scr-time" id="mh-demo-time">0:00 / 1:24</span>
             <input type="range" class="mh-scr-seek" id="mh-demo-seek" min="0" max="1000" value="0" step="1" aria-label="Seek video">
             <button type="button" class="mh-scr-cb" id="mh-demo-mute" aria-label="Mute" aria-pressed="false">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path class="mh-scr-ico-wave" d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="mh-scr-ico-x" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -106,17 +109,17 @@
             </button>
           </div>
         </div>
-        <p class="mh-demo-note" id="mh-demo-note">A recorded walkthrough of the real setup, interview and report screens, using fictional sample data. Nothing plays, and there is no sound, until you press play.</p>
+        <p class="mh-demo-note" id="mh-demo-note">A recorded walkthrough of the real home, setup, interview, report and workspace screens, using fictional sample data. The narration is AI-generated. Nothing plays, and there is no sound, until you press play.</p>
         <details class="mh-scr-transcript">
           <summary>Read the transcript</summary>
           <ol>
-            <li><span>0:00</span> MedhaIQ. Walk through an adaptive AI interview, from setup to report. Scored on five vectors: Structure, Domain Expertise, Strategic Thinking, Communication, and Leadership and Execution.</li>
-            <li><span>0:05</span> Step 1, configure. Choose from ten target roles, set your career stage from campus to executive, and pick the interviewer, with their style and difficulty. Your session context updates live. Add the job description and focus areas are detected.</li>
-            <li><span>0:25</span> Step 2, interview. The interviewer opens with a behavioural question. You answer out loud or in text. STAR (Situation, Task, Action, Result) is detected live as you answer.</li>
-            <li><span>0:40</span> The AI reads the whole answer and checks what is missing. In this sample the answer gives no result, so it asks a follow-up. Each answer gets its own score.</li>
-            <li><span>0:55</span> Step 3, score. Five vectors update after every answer, weighted 35, 25, 20, 10 and 10 per cent. You end the session when you are ready, and the report is built.</li>
-            <li><span>1:08</span> Step 4, report. The overall score and five-vector profile, STAR coverage across every answer, evidence quoted from your own answers, and a 30, 60 and 90 day roadmap.</li>
-            <li><span>1:24</span> Practice. Polish. Place. Adaptive AI interviews, scored on five vectors. Start free trial.</li>
+            <li><span>0:01</span> Interview preparation shouldn't begin two weeks before the interview. From the home page, start the free trial.</li>
+            <li><span>0:10</span> Choose the role and your career stage. Add your resume and the job description. The interview is built from them.</li>
+            <li><span>0:18</span> The interviewer asks. You answer out loud, and your words appear as you speak. When an answer has no result, it asks a sharper follow-up.</li>
+            <li><span>0:33</span> Each answer is scored on five vectors: structure, domain, strategy, communication, and leadership. Situation, task, action, and result are checked in every answer.</li>
+            <li><span>0:48</span> The report opens with an executive interpretation. Your strongest signal. Your development focus. Evidence from your own answers, and a thirty, sixty, ninety day plan. Download it as a PDF.</li>
+            <li><span>1:03</span> Every session is saved. Compare sessions, and see how your scores move over time.</li>
+            <li><span>1:15</span> Practice. Polish. Place. Start Free Trial.</li>
           </ol>
         </details>
       </div>
@@ -139,7 +142,7 @@
   var END = [].concat(steps.map(function (b) { return +b.getAttribute('data-t'); }));
   v.volume = 0.8;
   function fmt(x) { x = Math.max(0, Math.floor(x || 0)); return Math.floor(x / 60) + ':' + ('0' + (x % 60)).slice(-2); }
-  function dur() { return isFinite(v.duration) && v.duration > 0 ? v.duration : 90; }
+  function dur() { return isFinite(v.duration) && v.duration > 0 ? v.duration : 84; }
   function state(st) { box.setAttribute('data-state', st); wrap.setAttribute('data-state', st); if (grid) grid.classList.toggle('is-playing', st === 'playing' || st === 'paused'); }
   function toggle() {
     if (v.paused || v.ended) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () { state('error'); }); }
@@ -151,7 +154,7 @@
     var t = v.currentTime, d = dur(), cur = -1;
     steps.forEach(function (b, i) { if (t >= END[i] - 0.05) cur = i; });
     steps.forEach(function (b, i) {
-      var start = END[i], stop = i + 1 < END.length ? END[i + 1] : Math.min(d, 84.5);
+      var start = END[i], stop = i + 1 < END.length ? END[i + 1] : Math.min(d, 73.8);
       var on = i === cur && t > 0 && !v.ended;
       b.classList.toggle('is-on', on);
       b.classList.toggle('is-done', t > 0 && (i < cur || (i === cur && v.ended)) );
