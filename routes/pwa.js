@@ -139,23 +139,24 @@ f.addEventListener('submit',function(e){e.preventDefault();m.textContent='';appr
 }
 
 function installPage() {
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0A0F1E"><title>MedhaIQ | Use it on any device</title>
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0A0F1E"><title>MedhaIQ | Access MedhaIQ on Any Device</title>
 <link rel="manifest" href="/manifest.json"><link rel="apple-touch-icon" sizes="180x180" href="/assets/pwa/apple-touch-icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="MedhaIQ">
-<style>${BASE_CSS}main{max-width:980px;margin:0 auto;padding:28px 22px 60px}h1{font:800 clamp(30px,5vw,46px)/1.1 'Plus Jakarta Sans',system-ui;letter-spacing:-.03em;margin:34px 0 12px}h1 span{background:linear-gradient(135deg,#3D8BFF,#8B5CF6);-webkit-background-clip:text;background-clip:text;color:transparent}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:30px}h2{font:700 19px 'Plus Jakarta Sans',system-ui;margin-bottom:10px}ol{padding-left:20px;color:#cbd5e1;line-height:1.8}.tag{display:inline-block;font-size:12px;letter-spacing:.08em;color:#7aa2ff;margin-bottom:8px}
-.me{outline:1px solid #4F74FF}.qr{background:#fff;border-radius:14px;padding:12px;width:176px;height:176px}.qr svg{width:100%;height:100%;display:block}.row{display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-top:28px}</style></head>
-<body><main>${LOGO}<h1>Use MedhaIQ on <span>any device</span></h1>
-<p class="mu" style="font-size:18px;max-width:640px">The same MedhaIQ on your phone, iPad and laptop. Nothing to download from a store. Add it to your home screen and it opens like an app, full screen.</p>
-<div class="row"><div class="qr" id="qr" aria-label="QR code for medhaiq.ai/install"></div><div><p class="mu" style="margin-bottom:14px">Scan with your phone or iPad camera to open this page there.</p><button class="btn" id="inst" type="button" style="display:none">Install MedhaIQ</button><a class="btn" id="open" href="/">Open MedhaIQ</a></div></div>
+<style>${BASE_CSS}main{max-width:980px;margin:0 auto;padding:28px 22px 60px}h1{font:800 clamp(30px,5vw,46px)/1.1 'Plus Jakarta Sans',system-ui;letter-spacing:-.03em;margin:30px 0 12px}h1 span{background:linear-gradient(135deg,#3D8BFF,#8B5CF6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:30px}h2{font:700 19px 'Plus Jakarta Sans',system-ui;margin-bottom:10px}h3{font:600 14px Inter,system-ui;color:#fff;margin:12px 0 2px}ol{padding-left:20px;color:#cbd5e1;line-height:1.8}.tag{display:inline-block;font-size:12px;letter-spacing:.1em;color:#7aa2ff;margin-bottom:8px}
+.me,.card:target{outline:1px solid #4F74FF}.card{scroll-margin-top:24px}.qr{background:#fff;border-radius:14px;padding:12px;width:176px;height:176px}.qr svg{width:100%;height:100%;display:block}.row{display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-top:28px}</style></head>
+<body><main>${LOGO}<div class="tag" style="display:block;margin-top:34px">MEDHAIQ &middot; ACCESS ANYWHERE</div><h1>Your career intelligence. <span>Wherever you go.</span></h1>
+<p class="mu" style="font-size:18px;max-width:640px">Experience MedhaIQ across desktop, mobile and tablet, with one account and the same reports on every device.</p>
+<div class="row"><div class="qr" id="qr" aria-label="QR code for this page"></div><div><p class="mu" style="margin-bottom:14px">Scan with your phone or tablet camera to open this page there.</p><button class="btn" id="inst" type="button" style="display:none">Install MedhaIQ</button><a class="btn" id="open" href="/">Open MedhaIQ</a></div></div>
 <div class="grid">
-<section class="card" data-p="ios"><div class="tag">IPHONE AND IPAD</div><h2>Add to Home Screen</h2><ol><li>Open this page in <b>Safari</b></li><li>Tap the Share button</li><li>Choose <b>Add to Home Screen</b></li><li>Tap <b>Add</b></li></ol></section>
-<section class="card" data-p="android"><div class="tag">ANDROID</div><h2>Install the app</h2><ol><li>Open this page in <b>Chrome</b></li><li>Tap <b>Install MedhaIQ</b> above, or the menu (three dots)</li><li>Choose <b>Install app</b></li></ol></section>
-<section class="card" data-p="desktop"><div class="tag">LAPTOP AND COMPUTER</div><h2>Install or just use the site</h2><ol><li>In <b>Chrome or Edge</b>, click the install icon in the address bar</li><li>Or simply keep using <b>medhaiq.ai</b> in any browser</li></ol></section></div>
-<p class="mu" style="margin-top:28px">Same account, same reports and same interviews on every device. Sign in with Google or your email link.</p></main>
+<section class="card" id="desktop" data-p="desktop"><div class="tag">DESKTOP</div><h2>Use it in your browser</h2><p class="mu">Open medhaiq.ai in any modern browser and sign in.</p><h3>Want its own window?</h3><ol><li>In <b>Chrome or Edge</b>, click the install icon in the address bar</li></ol></section>
+<section class="card" id="mobile" data-p="mobile"><div class="tag">MOBILE</div><h2>Add it to your phone</h2><h3>iPhone</h3><ol><li>Open this page in <b>Safari</b></li><li>Tap Share, then <b>Add to Home Screen</b></li></ol><h3>Android</h3><ol><li>Open this page in <b>Chrome</b></li><li>Tap <b>Install MedhaIQ</b> above, or menu &rarr; <b>Install app</b></li></ol></section>
+<section class="card" id="tablet" data-p="tablet"><div class="tag">IPAD &amp; TABLETS</div><h2>Add it to your tablet</h2><h3>iPad</h3><ol><li>Open this page in <b>Safari</b></li><li>Tap Share, then <b>Add to Home Screen</b></li></ol><h3>Android tablet</h3><ol><li>Open this page in <b>Chrome</b></li><li>Menu &rarr; <b>Install app</b></li></ol></section></div>
+<p style="margin-top:30px;font:600 17px 'Plus Jakarta Sans',system-ui">One platform. Every device.</p>
+<p class="mu" style="margin-top:6px;font-size:14px">MedhaIQ installs straight from your browser as a web app. There is no App Store or Google Play download.</p></main>
 <script src="/pwa/qrcode.js"></script><script src="/js/pwa.js" defer></script>
 <script>(function(){try{var q=qrcode(0,'M');q.addData(location.origin+'/install');q.make();document.getElementById('qr').innerHTML=q.createSvgTag({cellSize:4,margin:0,scalable:true})}catch(e){document.getElementById('qr').style.display='none'}
-var ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),and=/Android/.test(ua),p=ios?'ios':and?'android':'desktop';
-document.querySelectorAll('[data-p]').forEach(function(e){if(e.dataset.p===p)e.classList.add('me')});
+var ua=navigator.userAgent,ipad=/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),iph=/iPhone|iPod/.test(ua),and=/Android/.test(ua),p=ipad?'tablet':iph?'mobile':and?(/Mobile/.test(ua)?'mobile':'tablet'):'desktop';
+if(!location.hash)document.querySelectorAll('[data-p]').forEach(function(e){if(e.dataset.p===p)e.classList.add('me')});
 var b=document.getElementById('inst');function sync(){if(window.MedhaIQPWA&&window.MedhaIQPWA.canInstall())b.style.display='inline-block'}
 b.addEventListener('click',function(){window.MedhaIQPWA.install()});addEventListener('mh-installable',sync);setTimeout(sync,1200)})();</script></body></html>`;
 }

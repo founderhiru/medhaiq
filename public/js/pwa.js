@@ -19,7 +19,7 @@
   }
 
   /* ---- install API (used by the /install page and the banner) ---- */
-  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; window.dispatchEvent(new Event('mh-installable')); maybeBanner(); });
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; window.dispatchEvent(new Event('mh-installable')); });
   window.addEventListener('appinstalled', function () { deferred = null; removeBanner(); });
   window.MedhaIQPWA = {
     canInstall: function () { return !!deferred; },
@@ -37,16 +37,19 @@
     var iosHint = ios && safari && !deferred;
     if (!deferred && !iosHint) return;
     banner = document.createElement('div');
-    banner.id = 'mh-install'; banner.setAttribute('role', 'region'); banner.setAttribute('aria-label', 'Install MedhaIQ');
-    banner.innerHTML = '<img src="/assets/pwa/icon-192.png" alt="" width="40" height="40"><div class="t"><b>Install MedhaIQ</b><span>' +
-      (iosHint ? 'Tap Share, then Add to Home Screen' : 'Open it like an app, full screen') + '</span></div>' +
+    banner.id = 'mh-install'; banner.setAttribute('role', 'region'); banner.setAttribute('aria-label', 'Get MedhaIQ on your device');
+    banner.innerHTML = '<img src="/assets/pwa/icon-192.png" alt="" width="40" height="40"><div class="t"><b>Get MedhaIQ on your device</b><span>' +
+      (iosHint ? 'Tap Share, then Add to Home Screen' : 'Install for a convenient app-like experience.') + '</span></div>' +
       (iosHint ? '' : '<button type="button" class="go">Install</button>') + '<button type="button" class="x" aria-label="Dismiss">&times;</button>';
     document.body.appendChild(banner);
     var go = banner.querySelector('.go'); if (go) go.addEventListener('click', function () { window.MedhaIQPWA.install(); });
-    banner.querySelector('.x').addEventListener('click', function () { store('mh_install_dismissed', String(Date.now() + 14 * 864e5)); removeBanner(); });
+    banner.querySelector('.x').addEventListener('click', function () { store('mh_install_dismissed', String(Date.now() + 30 * 864e5)); removeBanner(); });
   }
   function ready(fn) { if (document.body) fn(); else document.addEventListener('DOMContentLoaded', fn); }
-  ready(function () { setTimeout(maybeBanner, 4000); });
+  // Discreet: not on the first glance. Show after a second page view in this visit, or ~25 s of reading; once per visit.
+  var views = 1; try { views = Number(sessionStorage.getItem('mh_views') || 0) + 1; sessionStorage.setItem('mh_views', String(views)); } catch (e) {}
+  function offer() { try { if (sessionStorage.getItem('mh_offered')) return; } catch (e) {} maybeBanner(); if (banner) { try { sessionStorage.setItem('mh_offered', '1'); } catch (e) {} } }
+  ready(function () { setTimeout(offer, views >= 2 ? 3000 : 25000); });
 
   /* ---- bottom navigation: installed app on a touch device ---- */
   var HIDE = [/^\/auth\//, /^\/interview\/session\//, /^\/login/, /^\/pwa\//, /^\/install/];
@@ -82,23 +85,18 @@
     }, { passive: true });
   }
 
-  /* ---- "Get the MedhaIQ App" entry points: site footer + home hero (hidden once installed) ---- */
+  /* ---- footer "Access Anywhere" group (hidden once installed). No hero card: the homepage sells the platform first. ---- */
   function addEntryPoints() {
-    if (standalone) return;
-    var faq = document.querySelector('.mh-footer-link[href="/faq"]');
-    if (faq && !document.getElementById('mh-app-link-footer')) {
-      var f = document.createElement('a');
-      f.id = 'mh-app-link-footer'; f.href = '/install'; f.className = 'mh-footer-link'; f.textContent = 'Get the MedhaIQ App';
-      faq.parentNode.insertBefore(f, faq.nextSibling);
-    }
-    var act = document.querySelector('.mh-hero-actions');
-    if (act && !document.getElementById('mh-app-link-hero')) {
-      var h = document.createElement('a');
-      h.id = 'mh-app-link-hero'; h.href = '/install'; h.className = 'mh-app-cta';
-      h.innerHTML = '<span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></span>' +
-        '<span class="tx"><b>Get the MedhaIQ App</b><span>Take your career intelligence with you.</span></span><span class="ar" aria-hidden="true">&rarr;</span>';
-      act.parentNode.insertBefore(h, act.nextSibling);
-    }
+    if (standalone || document.getElementById('mh-access-anywhere')) return;
+    var col = document.querySelector('.mh-footer-links-col');
+    if (!col) return;
+    var g = document.createElement('div');
+    g.className = 'mh-footer-link-group'; g.id = 'mh-access-anywhere';
+    g.innerHTML = '<div class="mh-footer-link-heading">Access Anywhere</div>' +
+      '<a href="/install#desktop" class="mh-footer-link">Desktop</a>' +
+      '<a href="/install#mobile" class="mh-footer-link">Mobile</a>' +
+      '<a href="/install#tablet" class="mh-footer-link">iPad &amp; Tablets</a>';
+    col.appendChild(g);
   }
   ready(addEntryPoints);
 

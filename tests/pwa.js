@@ -15,8 +15,10 @@ assert.ok(mf.icons.some(i => i.sizes === '192x192') && mf.icons.some(i => i.size
 for (const f of ['public/js/pwa.js', 'public/css/pwa.css', 'public/pwa/offline.html', 'public/pwa/qrcode.js', 'lib/pwa-sw.js']) assert.ok(fs.existsSync(path.join(ROOT, f)), f);
 assert.ok(!/document\.cookie/.test(fs.readFileSync(path.join(ROOT, 'public/js/pwa.js'), 'utf8'))); ok('client script never touches document.cookie');
 const pj = fs.readFileSync(path.join(ROOT, 'public/js/pwa.js'), 'utf8');
-assert.ok(pj.includes("'Get the MedhaIQ App'") && pj.includes("Take your career intelligence with you.") && (pj.match(/href = '\/install'/g) || []).length === 2); ok('footer + hero entry points both link to /install with the approved wording');
-assert.ok(!/App Store|Google Play/.test(pj)); ok('wording never claims an App Store or Google Play app');
+assert.ok(pj.includes('Access Anywhere') && pj.includes('/install#desktop') && pj.includes('/install#mobile') && pj.includes('/install#tablet')); ok('footer Access Anywhere group links to /install (desktop, mobile, tablet)');
+assert.ok(!pj.includes('mh-app-cta') && !pj.includes('mh-hero-actions')); ok('no homepage hero card: hero is untouched');
+assert.ok(pj.includes('Get MedhaIQ on your device') && pj.includes('app-like experience') && pj.includes('mh_offered')); ok('mobile prompt: approved copy, shown once per visit');
+assert.ok(!/App Store|Google Play/.test(pj)); ok('script never claims an App Store or Google Play app');
 
 // B. injection
 const HTML = '<html><head><title>x</title></head><body>hi</body></html>';
@@ -51,7 +53,7 @@ const srv = app.listen(0, async () => {
     r = await req(port, 'GET', '/interview/session/1', { headers: { 'user-agent': IOS } }); assert.ok(!r.b.includes('pwa.js')); ok('live interview page untouched');
     r = await req(port, 'GET', '/cb', { headers: { 'user-agent': IOS } }); assert.strictEqual(r.b, 'CB' + HTML); ok('render with callback untouched');
     r = await req(port, 'GET', '/sw.js'); assert.ok(r.b.includes("const VERSION") && r.h['service-worker-allowed'] === '/' && /no-cache/.test(r.h['cache-control'])); ok('ON: /sw.js serves the real worker');
-    r = await req(port, 'GET', '/install'); assert.strictEqual(r.s, 200); assert.ok(r.b.includes('Add to Home Screen') && r.b.includes('qrcode')); ok('ON: /install page served');
+    r = await req(port, 'GET', '/install'); assert.strictEqual(r.s, 200); assert.ok(r.b.includes('Add to Home Screen') && r.b.includes('qrcode') && r.b.includes('Wherever you go.') && r.b.includes('id="tablet"') && !/optimi[sz]ed/i.test(r.b)); ok('ON: /install page served (Access Anywhere wording, no optimisation claims)');
 
     // pairing flow
     const cookie = 'user_id=' + authCookie.sign(42, { secret: SECRET });
