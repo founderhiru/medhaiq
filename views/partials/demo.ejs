@@ -71,7 +71,8 @@
   @media (max-width: 960px) { .mh-demo-card:not(.is-on) .mh-demo-txt i { display: none; } }
   @media (max-width: 480px) { .mh-demo-t { display: none; } .mh-demo-txt { padding-right: 0; } .mh-demo-step { padding: 12px 12px; gap: 12px; } .mh-demo-pts { margin-left: 12px; margin-right: 12px; } }
   /* play button: icon only, centred near the bottom of the picture (ID selector beats the shared pill rules) */
-  #mh-demo-bigplay { left: 50%; right: auto; top: auto; bottom: 10%; translate: -50% 0; width: 68px; height: 68px; padding: 0; border-radius: 50%; justify-content: center; box-shadow: 0 10px 30px rgba(37,99,235,.45), 0 0 0 6px rgba(255,255,255,.55); }
+  #mh-demo-bigplay { left: 50%; right: auto; top: 50%; bottom: auto; translate: -50% -50%; width: 68px; height: 68px; padding: 0; border-radius: 50%; justify-content: center; box-shadow: 0 12px 34px rgba(37,99,235,.5), 0 0 0 7px rgba(255,255,255,.6); transition: transform .2s ease, box-shadow .2s ease; }
+  #mh-demo-bigplay:hover { transform: scale(1.07); }
   #mh-demo-bigplay span { display: none; }
   #mh-demo-bigplay svg { width: 30px; height: 30px; margin-left: 3px; }
   .mh-scr-player[data-state="ended"] #mh-demo-bigplay { display: none; }
