@@ -12,15 +12,15 @@
 <style>
   .mh-demo { position: relative; scroll-margin-top: 68px; padding: 88px 24px; color: #EAF0FF; overflow: hidden;
     background: radial-gradient(900px 520px at 80% 40%, rgba(47,107,255,.24), transparent 65%), radial-gradient(700px 420px at 8% 90%, rgba(139,92,246,.16), transparent 65%), linear-gradient(180deg, #070E24 0%, #0A1330 100%); }
-  .mh-demo-wrap { max-width: 1280px; margin: 0 auto; }
-  .mh-demo-grid { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); grid-template-areas: "steps media"; column-gap: 56px; align-content: center; align-items: start; }
+  .mh-demo-wrap { max-width: 1400px; margin: 0 auto; }
+  .mh-demo-grid { display: grid; grid-template-columns: minmax(0, 1.62fr) minmax(0, .78fr); grid-template-areas: "media steps"; column-gap: 40px; align-content: center; align-items: start; }
   /* Heading system shared with the other home sections (eyebrow / h2 / sub): same family, weight, size, tracking, spacing. */
   .mh-demo .mh-section-center { max-width: 760px; margin: 0 auto 52px; text-align: center; }
   .mh-demo .mh-eyebrow { color: #7FB2FF; font-size: 12px; letter-spacing: .12em; }
   section.mh-demo h2.mh-demo-title { margin: 0 0 14px; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: clamp(28px, 3.4vw, 40px); font-weight: 800; letter-spacing: -.025em; line-height: 1.12; color: #fff; text-wrap: balance; }
   .mh-demo-title span { display: inline-block; line-height: inherit; background: linear-gradient(90deg, #6FA3FF, #A98BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .mh-demo .mh-section-sub { margin: 0; font-size: 16.5px; line-height: 1.55; color: #B4C3E2; }
-  .mh-demo-steps { grid-area: steps; list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 560px; align-self: start; }
+  .mh-demo-steps { grid-area: steps; list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 460px; align-self: start; }
   /* chapter card: light frosted glass at rest (never dark on dark), solid light card while its part of the video plays */
   .mh-demo-card { position: relative; border: 1px solid rgba(255,255,255,.34); border-radius: 14px; background: linear-gradient(135deg, color-mix(in srgb, var(--hl) 34%, rgba(255,255,255,.04)), color-mix(in srgb, var(--hl) 14%, rgba(255,255,255,.04))); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); overflow: hidden; transition: background .35s ease, border-color .35s ease, box-shadow .35s ease, transform .35s ease; }
   .mh-demo-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--ac); z-index: 1; }
@@ -61,14 +61,14 @@
   .mh-demo-media .mh-scr-transcript summary { color: #EAF0FF; }
   .mh-demo-media .mh-scr-transcript li { color: #B4C3E2; border-top-color: rgba(150,180,255,.16); }
   .mh-demo-media .mh-scr-transcript li span { color: #7FB2FF; }
-  @media (max-width: 960px) {
+  @media (max-width: 1080px) {
     .mh-demo { padding: 64px 16px; }
     .mh-demo-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "media" "steps"; }
     .mh-demo-media { margin-bottom: 22px; }
     .mh-demo .mh-section-center { margin-bottom: 36px; }
     .mh-demo-steps { max-width: none; }
   }
-  @media (max-width: 960px) { .mh-demo-card:not(.is-on) .mh-demo-txt i { display: none; } }
+  @media (max-width: 1080px) { .mh-demo-card:not(.is-on) .mh-demo-txt i { display: none; } }
   @media (max-width: 480px) { .mh-demo-t { display: none; } .mh-demo-txt { padding-right: 0; } .mh-demo-step { padding: 12px 12px; gap: 12px; } .mh-demo-pts { margin-left: 12px; margin-right: 12px; } }
   /* play button: icon only, centred near the bottom of the picture (ID selector beats the shared pill rules) */
   #mh-demo-bigplay { left: 50%; right: auto; top: 50%; bottom: auto; translate: -50% -50%; width: 68px; height: 68px; padding: 0; border-radius: 50%; justify-content: center; box-shadow: 0 12px 34px rgba(37,99,235,.5), 0 0 0 7px rgba(255,255,255,.6); transition: transform .2s ease, box-shadow .2s ease; }
@@ -110,7 +110,7 @@
             <video id="mh-demo-vid" preload="none" playsinline poster="/assets/interview-demo/interview-walkthrough-poster.jpg" aria-describedby="mh-demo-note">
               <source src="/assets/interview-demo/interview-walkthrough.mp4" type="video/mp4">
               <track id="mh-demo-track" kind="captions" src="/assets/interview-demo/interview-walkthrough.vtt" srclang="en" label="English">
-              Your browser cannot play this video. The transcript below describes it.
+              Your browser cannot play this video. Please try another browser to watch it.
             </video>
             <button type="button" class="mh-scr-bigplay" id="mh-demo-bigplay" aria-label="Play the interview walkthrough">
               <svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><path d="M17 11v26l22-13z" fill="currentColor"/></svg>
@@ -135,8 +135,8 @@
             </button>
           </div>
         </div>
-        <p class="mh-demo-note" id="mh-demo-note">A recorded walkthrough of the real home, setup, interview, report and workspace screens, using fictional sample data. The narration is AI-generated. Nothing plays, and there is no sound, until you press play.</p>
-        <details class="mh-scr-transcript">
+        <p class="mh-demo-note" id="mh-demo-note">A recorded walkthrough of the real home, setup, interview, report and workspace screens, using fictional sample data. The narration is AI-generated. Nothing plays until you press See Demo or play.</p>
+        <details class="mh-scr-transcript" hidden>
           <summary>Read the transcript</summary>
           <ol>
             <li><span>0:01</span> Most people start preparing two weeks out. That is too late. MedhaIQ builds readiness from your very first session.</li>
@@ -245,6 +245,20 @@
     b.addEventListener('click', function () {
       var go = function () { v.currentTime = +b.getAttribute('data-t'); var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); };
       if (v.readyState >= 1) go(); else { v.addEventListener('loadedmetadata', go, { once: true }); v.load(); }
+    });
+  });
+  /* See Demo: bring the player into view and start it straight away (the click is the user gesture, so sound is allowed) */
+  [].slice.call(document.querySelectorAll('a[href="#demo"]')).forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var media = document.querySelector('.mh-demo-media');
+      if (!media) return;
+      e.preventDefault();
+      try { history.replaceState(null, '', '#demo'); } catch (x) {}
+      var r = media.getBoundingClientRect(), y = window.pageYOffset + r.top - Math.max(16, (window.innerHeight - r.height) / 2);
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: Math.max(0, y), behavior: reduce ? 'auto' : 'smooth' });
+      if (v.paused || v.ended) { if (v.ended || v.currentTime > 0.5) v.currentTime = 0; toggle(); }
+      try { box.focus({ preventScroll: true }); } catch (x2) {}
     });
   });
   syncPP(); syncMute(); tick();

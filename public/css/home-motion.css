@@ -121,7 +121,7 @@ section.mh-xp h2 span, section.mh-sc h2 span { line-height: inherit; }
 .mh-scr-vol { flex: none; width: 64px; accent-color: #6E94FF; cursor: pointer; }
 .mh-scr-player[data-state="playing"] .mh-scr-bigplay, .mh-scr-player[data-state="error"] .mh-scr-bigplay { display: none; }
 .mh-scr-player[data-state="paused"] .mh-scr-bigplay, .mh-scr-player[data-state="ended"] .mh-scr-bigplay { width: 60px; height: 60px; opacity: .94; }
-.mh-scr-player[data-state="error"]::after { content: 'This video could not be loaded. The transcript below describes it.'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; background: rgba(10,15,30,.94); color: #E2E8F5; font-size: 15px; }
+.mh-scr-player[data-state="error"]::after { content: 'This video could not be loaded. Please try again in a moment.'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; background: rgba(10,15,30,.94); color: #E2E8F5; font-size: 15px; }
 .mh-scr-ico-pause, .mh-scr-ico-x { display: none; }
 .mh-scr-player[data-state="playing"] .mh-scr-ico-play { display: none; }
 .mh-scr-player[data-state="playing"] .mh-scr-ico-pause { display: inline; }
