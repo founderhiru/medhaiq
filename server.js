@@ -137,7 +137,11 @@ app.get('/architecture', (_req, res) => res.render('architecture'));
 app.get('/about',        (_req, res) => res.render('about'));
 app.get('/why',     (_req, res) => res.render('why'));
 app.get('/experience', (_req, res) => res.render('experience'));
-app.get('/recruit/screening', (_req, res) => res.render('recruit-screening-landing'));
+// Screening Copilot is hidden everywhere unless SHOW_SCREENING_COPILOT=true is set in the environment
+// (set it on staging only). When off, the menu and footer links are not rendered and this page 404s.
+const SHOW_SCREENING_COPILOT = process.env.SHOW_SCREENING_COPILOT === 'true';
+app.locals.showScreeningCopilot = SHOW_SCREENING_COPILOT;
+app.get('/recruit/screening', (_req, res, next) => (SHOW_SCREENING_COPILOT ? res.render('recruit-screening-landing') : next()));
 app.get('/resume-intelligence-preview', (_req, res) => res.render('resume-intelligence-preview')); // moved from the home page; uses the existing /api/public-preview
 app.get('/sample-report', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'sample-report', 'index.html'));

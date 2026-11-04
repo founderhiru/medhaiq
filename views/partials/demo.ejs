@@ -77,11 +77,15 @@
   #mh-demo-bigplay svg { width: 30px; height: 30px; margin-left: 3px; }
   .mh-scr-player[data-state="ended"] #mh-demo-bigplay { display: none; }
   /* clickable end-of-video call to action, placed exactly over the button drawn into the last frame */
-  .mh-demo-endcta { position: absolute; left: 50%; top: 69.2%; width: 31%; height: 9.4%; translate: -50% 0; border-radius: 14px; display: none; z-index: 4; text-decoration: none; outline-offset: 4px; }
-  .mh-demo-endcta:hover { box-shadow: 0 0 0 3px rgba(255,255,255,.7), 0 0 34px 6px rgba(99,102,241,.45); }
-  .mh-demo-endcta:focus-visible { outline: 3px solid #1D4ED8; }
-  .mh-scr-player[data-state="ended"] .mh-demo-endcta { display: block; }
   .mh-demo-cc[aria-pressed="true"] { color: #2563EB; }
+  .mh-demo-speed { position: relative; flex: none; }
+  .mh-demo-speed-btn { width: auto; min-width: 42px; padding: 0 8px; font: 700 13px Inter, system-ui, sans-serif; letter-spacing: .01em; }
+  .mh-demo-speed-menu { position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 6; margin: 0; padding: 6px; list-style: none; min-width: 96px; background: rgba(11,16,32,.94); border: 1px solid rgba(150,180,255,.28); border-radius: 12px; box-shadow: 0 18px 40px -12px rgba(0,0,0,.6); }
+  .mh-demo-speed-menu[hidden] { display: none; }
+  .mh-demo-speed-menu button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: #E6EDFF; font: 600 13.5px Inter, system-ui, sans-serif; cursor: pointer; }
+  .mh-demo-speed-menu button:hover, .mh-demo-speed-menu button:focus-visible { background: rgba(255,255,255,.12); outline: none; }
+  .mh-demo-speed-menu button[aria-checked="true"] { background: rgba(99,140,255,.28); color: #fff; }
+  .mh-demo-speed-menu button[aria-checked="true"]::after { content: '\2713'; font-size: 12px; }
   #mh-demo-vid::cue { font: 600 15px Inter, system-ui, sans-serif; color: #fff; background: rgba(8,12,28,.82); }
   @media (max-width: 420px) { .mh-scr-pwrap .mh-scr-ctrl { gap: 2px; padding: 6px 6px; } .mh-scr-pwrap .mh-scr-vol { display: none; } .mh-scr-pwrap .mh-scr-time { font-size: 12px; white-space: nowrap; } .mh-scr-pwrap .mh-scr-seek { min-width: 0; } }
   @media (prefers-reduced-motion: reduce) { .mh-demo-card, .mh-demo-step, .mh-demo-no, .mh-demo-pts, .mh-demo-pts li, .mh-demo-pts li span, .mh-demo-pts li::before { transition: none; } }
@@ -115,13 +119,13 @@
             <button type="button" class="mh-scr-bigplay" id="mh-demo-bigplay" aria-label="Play the interview walkthrough">
               <svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><path d="M17 11v26l22-13z" fill="currentColor"/></svg>
             </button>
-            <a class="mh-demo-endcta" href="/login" aria-label="Try MedhaIQ now"></a>
+            <%# End-of-video "Try MedhaIQ now" overlay removed: the video now closes on the logo only. %>
           </div>
           <div class="mh-scr-ctrl" role="group" aria-label="Video controls">
             <button type="button" class="mh-scr-cb" id="mh-demo-pp" aria-label="Play">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path class="mh-scr-ico-play" d="M8 5v14l11-7z" fill="currentColor"/><path class="mh-scr-ico-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>
             </button>
-            <span class="mh-scr-time" id="mh-demo-time">0:00 / 1:38</span>
+            <span class="mh-scr-time" id="mh-demo-time">0:00 / 1:33</span>
             <input type="range" class="mh-scr-seek" id="mh-demo-seek" min="0" max="1000" value="0" step="1" aria-label="Seek video">
             <button type="button" class="mh-scr-cb" id="mh-demo-mute" aria-label="Mute" aria-pressed="false">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path class="mh-scr-ico-wave" d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="mh-scr-ico-x" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -130,6 +134,17 @@
             <button type="button" class="mh-scr-cb mh-demo-cc" id="mh-demo-cc" aria-label="Captions off" aria-pressed="false">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10.2 10.2a2.2 2.2 0 100 3.6M16.2 10.2a2.2 2.2 0 100 3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             </button>
+            <div class="mh-demo-speed" id="mh-demo-speed">
+              <button type="button" class="mh-scr-cb mh-demo-speed-btn" id="mh-demo-speed-btn" aria-label="Playback speed 1x" aria-haspopup="true" aria-expanded="false">1x</button>
+              <ul class="mh-demo-speed-menu" id="mh-demo-speed-menu" role="menu" aria-label="Playback speed" hidden>
+                <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-r="0.5">0.5x</button></li>
+                <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-r="0.75">0.75x</button></li>
+                <li role="none"><button type="button" role="menuitemradio" aria-checked="true" data-r="1">Normal</button></li>
+                <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-r="1.25">1.25x</button></li>
+                <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-r="1.5">1.5x</button></li>
+                <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-r="2">2x</button></li>
+              </ul>
+            </div>
             <button type="button" class="mh-scr-cb" id="mh-demo-fs" aria-label="Full screen">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
@@ -146,8 +161,6 @@
             <li><span>0:43</span> Each answer is scored on five vectors: structure, domain, strategy, communication, and leadership. Situation, task, action, and result are checked in every answer.</li>
             <li><span>1:00</span> The report opens with an executive interpretation. Your strongest signal. Your development focus. Evidence from your own answers, and a thirty, sixty, ninety day plan. Download it as a PDF.</li>
             <li><span>1:17</span> Every session is saved. Compare sessions, and see how your scores move over time.</li>
-            <li><span>1:29</span> Practice. Polish. Place.</li>
-            <li><span>1:33</span> Try MedhaIQ now.</li>
           </ol>
         </details>
       </div>
@@ -173,7 +186,7 @@
   var cc = document.getElementById('mh-demo-cc'), track = document.getElementById('mh-demo-track');
   v.volume = 0.8;
   function fmt(x) { x = Math.max(0, Math.floor(x || 0)); return Math.floor(x / 60) + ':' + ('0' + (x % 60)).slice(-2); }
-  function dur() { return isFinite(v.duration) && v.duration > 0 ? v.duration : 98; }
+  function dur() { return isFinite(v.duration) && v.duration > 0 ? v.duration : 93; }
   function state(st) { box.setAttribute('data-state', st); wrap.setAttribute('data-state', st); if (grid) grid.classList.toggle('is-playing', st === 'playing' || st === 'paused'); }
   function toggle() {
     if (v.paused || v.ended) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () { state('error'); }); }
@@ -226,6 +239,25 @@
   v.addEventListener('loadedmetadata', function () { setCC(ccOn); });
   setCC(ccOn);
   cc.addEventListener('click', function () { setCC(cc.getAttribute('aria-pressed') !== 'true'); });
+  var spBtn = document.getElementById('mh-demo-speed-btn'), spMenu = document.getElementById('mh-demo-speed-menu');
+  var spItems = [].slice.call(spMenu.querySelectorAll('button'));
+  try { v.preservesPitch = true; v.webkitPreservesPitch = true; } catch (e) {}
+  function setRate(r) {
+    v.playbackRate = r;
+    var label = r === 1 ? '1x' : r + 'x';
+    spBtn.textContent = label; spBtn.setAttribute('aria-label', 'Playback speed ' + label);
+    spItems.forEach(function (b) { b.setAttribute('aria-checked', +b.getAttribute('data-r') === r ? 'true' : 'false'); });
+  }
+  function spOpen(on) { spMenu.hidden = !on; spBtn.setAttribute('aria-expanded', on ? 'true' : 'false'); if (on) { var cur = spItems.filter(function (b) { return b.getAttribute('aria-checked') === 'true'; })[0]; (cur || spItems[0]).focus(); } }
+  spBtn.addEventListener('click', function (e) { e.stopPropagation(); spOpen(spMenu.hidden); });
+  spItems.forEach(function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); setRate(+b.getAttribute('data-r')); spOpen(false); spBtn.focus(); }); });
+  spMenu.addEventListener('keydown', function (e) {
+    var i = spItems.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); spItems[(i + 1) % spItems.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); spItems[(i + spItems.length - 1) % spItems.length].focus(); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); spOpen(false); spBtn.focus(); }
+  });
+  document.addEventListener('click', function (e) { if (!spMenu.hidden && !document.getElementById('mh-demo-speed').contains(e.target)) spOpen(false); });
   fs.addEventListener('click', function () {
     var d = document;
     if (d.fullscreenElement || d.webkitFullscreenElement) { (d.exitFullscreen || d.webkitExitFullscreen).call(d); }
