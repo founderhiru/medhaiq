@@ -57,6 +57,11 @@ const { createSession: createRedactionSession, isEnabled: isRedactionEnabled } =
 // { names: [...], detectHeaderName: true } to add known names; options.redact
 // === false opts a single call out. Mapping stays in memory for the duration
 // of one call; only per-type COUNTS are logged, never values.
+// One-line boot status so the flag is verifiable from the logs without
+// uploading anything. JSON.stringify exposes stray spaces/newlines in the
+// value (the flag only turns on for the exact string 'on'). Never logs PII.
+console.log(`[redactor] boot status=${isRedactionEnabled() ? 'ON' : 'OFF'} AI_REDACTION=${JSON.stringify(process.env.AI_REDACTION === undefined ? null : process.env.AI_REDACTION)}`);
+
 function beginRedaction(options, capability) {
   try {
     if (!isRedactionEnabled() || options.redact === false) return null;
@@ -194,8 +199,10 @@ async function chat(message, options = {}) {
   }
 
   const redaction = beginRedaction(options, capability);
-  const sendSystem = redaction ? redaction.session.redactSystem(system) : system;
+  // Message first: a name found at the top of the user content (e.g. a resume)
+  // is then also removed from the system prompt.
   const sendMessage = redaction ? redaction.session.redact(message) : message;
+  const sendSystem = redaction ? redaction.session.redactSystem(system) : system;
   logRedaction(redaction);
 
   const hasSystem = sendSystem && (typeof sendSystem === 'string' ? true : (sendSystem.static || sendSystem.dynamic));
@@ -237,8 +244,10 @@ async function chatJSON(message, options = {}) {
   const JSON_INSTRUCTION = '\n\nYou must respond with valid JSON only. No markdown, no prose.';
 
   const redaction = beginRedaction(options, capability);
-  const sendSystem = redaction ? redaction.session.redactSystem(system) : system;
+  // Message first: a name found at the top of the user content (e.g. a resume)
+  // is then also removed from the system prompt.
   const sendMessage = redaction ? redaction.session.redact(message) : message;
+  const sendSystem = redaction ? redaction.session.redactSystem(system) : system;
   logRedaction(redaction);
 
   // Object form: { static, dynamic } — the JSON instruction is per-turn
