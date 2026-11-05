@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Questions and Answers by Role and Company | MedhaIQ</title>
+  <meta name="description" content="Practice interview questions for Amazon, product manager, solutions architect and engineering manager roles, plus behavioral questions, with tips on how to answer.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0A0F1E">
+  <link rel="canonical" href="https://www.medhaiq.ai/interview-questions">
+  <meta property="og:title" content="Interview Questions and Answers by Role and Company | MedhaIQ">
+  <meta property="og:description" content="Practice interview questions with guidance on what interviewers test and how to answer each one.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.medhaiq.ai/interview-questions">
+  <meta property="og:site_name" content="MedhaIQ">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/medhaiq.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/hero-v2.css">
+  <link rel="stylesheet" href="/css/value-footer.css">
+  <link rel="stylesheet" href="/css/explore.css">
+  <link rel="stylesheet" href="/css/company-library.css">
+  <link rel="stylesheet" href="/css/role-library.css">
+  <link rel="stylesheet" href="/css/interview-frameworks.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="mh-why-hero mh-explore-hero-compact reveal">
+    <div class="mh-why-hero-inner mh-section-center">
+      <div class="mh-eyebrow">Interview question library</div>
+      <h1 class="mh-section-title mh-explore-guide-hero-h1">Interview Questions and How to Answer Them</h1>
+    </div>
+  </section>
+
+  <div class="mh-editorial-surface">
+    <div class="mh-editorial-inner">
+
+      <nav class="mh-colib-breadcrumb-row" aria-label="Breadcrumb" style="padding: 0 0 32px;">
+        <div>
+          <a href="/explore" style="color: var(--ed-muted);">Explore MedhaIQ</a>
+          <span aria-hidden="true" style="color: var(--ed-faint);">/</span>
+          <span style="color: var(--ed-text); font-weight: 600;">Interview Questions</span>
+        </div>
+      </nav>
+
+      <div class="mh-editorial-card">
+        <div class="mh-section-center" style="margin-bottom: 8px;">
+          <div class="mh-eyebrow" style="justify-content:center; display:flex;">Choose a guide</div>
+          <h2 class="mh-editorial-card-title">Practice questions with answer guidance</h2>
+        </div>
+        <p style="margin-top: 16px; font-size: 15px; line-height: 1.65; color: var(--ed-text, #1A1F2B); text-align: center; max-width: 720px; margin-left: auto; margin-right: auto;">Each guide lists practice questions, what the interviewer is really testing, and how to structure your answer. Read a guide, then practise it out loud with a live AI interviewer.</p>
+        <ul class="mh-role-resource-list" style="margin-top: 24px;">
+          <% guides.forEach(function(g) { %>
+            <li class="mh-role-resource-item">
+              <a href="/interview-questions/<%= g.slug %>" class="mh-role-resource-link"><%= g.title %> (<%= g.count %> questions)</a>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <section class="mh-colib-dark-cta reveal">
+    <div class="mh-explore-cta-inner">
+      <h2 class="mh-section-title">Ready to practice?</h2>
+      <p class="mh-explore-cta-sub">Run a live AI mock interview built from your resume, target role and job description, with a scored report and a 30/60/90-day plan.</p>
+      <div class="mh-explore-cta-actions">
+        <a href="/login" class="mh-btn-primary">Start Practice Interview</a>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+  <%- include('partials/contact-modal') %>
+
+  <script>
+  (function() {
+    var reveals = document.querySelectorAll('.reveal');
+    if (reveals.length) {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+      reveals.forEach(function(el) { observer.observe(el); });
+    }
+  })();
+  </script>
+</body>
+</html>
