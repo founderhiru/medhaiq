@@ -12,15 +12,15 @@
 <style>
   .mh-demo { position: relative; scroll-margin-top: 68px; padding: 88px 24px; color: #EAF0FF; overflow: hidden;
     background: radial-gradient(900px 520px at 80% 40%, rgba(47,107,255,.24), transparent 65%), radial-gradient(700px 420px at 8% 90%, rgba(139,92,246,.16), transparent 65%), linear-gradient(180deg, #070E24 0%, #0A1330 100%); }
-  .mh-demo-wrap { max-width: 1400px; margin: 0 auto; }
-  .mh-demo-grid { display: grid; grid-template-columns: minmax(0, 1.62fr) minmax(0, .78fr); grid-template-areas: "media steps"; column-gap: 40px; align-content: center; align-items: start; }
+  .mh-demo-wrap { max-width: 1520px; margin: 0 auto; }
+  .mh-demo-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; grid-template-areas: "media steps"; column-gap: 32px; align-content: center; align-items: start; }
   /* Heading system shared with the other home sections (eyebrow / h2 / sub): same family, weight, size, tracking, spacing. */
   .mh-demo .mh-section-center { max-width: 760px; margin: 0 auto 52px; text-align: center; }
   .mh-demo .mh-eyebrow { color: #7FB2FF; font-size: 12px; letter-spacing: .12em; }
   section.mh-demo h2.mh-demo-title { margin: 0 0 14px; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: clamp(28px, 3.4vw, 40px); font-weight: 800; letter-spacing: -.025em; line-height: 1.12; color: #fff; text-wrap: balance; }
   .mh-demo-title span { display: inline-block; line-height: inherit; background: linear-gradient(90deg, #6FA3FF, #A98BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .mh-demo .mh-section-sub { margin: 0; font-size: 16.5px; line-height: 1.55; color: #B4C3E2; }
-  .mh-demo-steps { grid-area: steps; list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 460px; align-self: start; }
+  .mh-demo-steps { grid-area: steps; list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-width: 300px; align-self: start; }
   /* chapter card: light frosted glass at rest (never dark on dark), solid light card while its part of the video plays */
   .mh-demo-card { position: relative; transform: translateZ(0); backface-visibility: hidden; border: 1px solid rgba(255,255,255,.34); border-radius: 14px; background: linear-gradient(135deg, color-mix(in srgb, var(--hl) 34%, rgba(255,255,255,.04)), color-mix(in srgb, var(--hl) 14%, rgba(255,255,255,.04))); overflow: hidden; transition: background .35s ease, border-color .35s ease, box-shadow .35s ease, transform .35s ease; }
   .mh-demo-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--ac); z-index: 1; }
@@ -61,6 +61,18 @@
   .mh-demo-media .mh-scr-transcript summary { color: #EAF0FF; }
   .mh-demo-media .mh-scr-transcript li { color: #B4C3E2; border-top-color: rgba(150,180,255,.16); }
   .mh-demo-media .mh-scr-transcript li span { color: #7FB2FF; }
+  /* compact guide: the chapter pills in the video already name each step, so the side list stays short */
+  .mh-demo-pts, .mh-demo-card.is-on .mh-demo-pts { display: none; }
+  .mh-demo-card:not(.is-on) .mh-demo-txt i { display: none; }
+  .mh-demo-step { padding: 12px 14px; gap: 12px; align-items: center; }
+  .mh-demo-card.is-on .mh-demo-step { align-items: flex-start; }
+  .mh-demo-no { width: 28px; height: 28px; font-size: 11.5px; }
+  .mh-demo-txt { padding-right: 34px; }
+  .mh-demo-txt b { font-size: 15px; margin-bottom: 0; }
+  .mh-demo-card.is-on .mh-demo-txt b { margin-bottom: 3px; }
+  .mh-demo-txt i { font-size: 13px; line-height: 1.45; }
+  .mh-demo-t { top: 14px; font-size: 11px; }
+  .mh-demo-card.is-on .mh-demo-step { padding-bottom: 16px; }
   @media (max-width: 1080px) {
     .mh-demo { padding: 64px 16px; }
     .mh-demo-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "media" "steps"; }
