@@ -83,6 +83,10 @@ app.get('/health', (_req, res) => res.json({ status: 'healthy' }));
 app.get('/admin/founder-dashboard.html', requireFounderPage, (req, res) => {
   res.sendFile(path.join(__dirname, 'public/admin/founder-dashboard.html'));
 });
+
+
+// Dynamic sitemap - must stay ABOVE express.static
+app.use(require('./routes/seo'));
 // Static files
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
