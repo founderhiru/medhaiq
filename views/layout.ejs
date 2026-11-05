@@ -3,8 +3,10 @@
 <head><meta name="google-site-verification" content="891zCX6HOhXmVEqnjJKxkg5uP6W46PVuWtuOpNPl9a8" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Mock Interview Practice &amp; Career Readiness | MedhaIQ</title>
- <meta name="description" content="Practice live, adaptive AI mock interviews built from your resume, target role and job description. Get scored on 5 skills plus a 30/60/90-day plan. Start free.">
+  <title>AI Mock Interview Practice & Feedback | MedhaIQ</title>
+ <meta
+  name="description"
+  content="Practice realistic AI mock interviews tailored to your resume, role, and job description. Get instant interview feedback, STAR guidance, and a personalized improvement plan.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://www.medhaiq.ai/">
  <!-- Favicon — sourced from the same brand-mark asset used by the live
@@ -14,16 +16,10 @@
   <link rel="apple-touch-icon" href="/assets/branding/favicon.png">
   <meta name="theme-color" content="#0A0F1E">
   <!-- OG / Social -->
-  <meta property="og:title" content="AI Mock Interview Practice &amp; Career Readiness | MedhaIQ">
-  <meta property="og:url" content="https://www.medhaiq.ai/">
-  <meta property="og:site_name" content="MedhaIQ">
-  <meta property="og:description" content="Practice live, adaptive AI mock interviews built from your resume, target role and job description. Get scored on 5 skills plus a 30/60/90-day plan. Start free.">
+  <meta property="og:title" content="AI Mock Interview Practice & Feedback | MedhaIQ">
+  <meta property="og:description" content="Practice realistic AI mock interviews and get personalized feedback for your next interview.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://pub-629428d185ca4960a0a73c850d32294b.r2.dev/generated-images/company_214395/og-medhaiq.jpg">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="AI Mock Interview Practice &amp; Career Readiness | MedhaIQ">
-  <meta name="twitter:description" content="Live, adaptive AI mock interviews built from your resume, role and job description. Scored on 5 skills, with a 30/60/90-day plan.">
-  <meta name="twitter:image" content="https://pub-629428d185ca4960a0a73c850d32294b.r2.dev/generated-images/company_214395/og-medhaiq.jpg">
   <!-- Web Manifest — static file so its icon path resolves relative to
        whichever domain serves it (staging or production). -->
   <link rel="manifest" href="/manifest.json">
@@ -36,7 +32,6 @@
   <link rel="stylesheet" href="/css/value-footer.css">
   <link rel="stylesheet" href="/css/career-preview.css">
   <link rel="stylesheet" href="/css/homepage.css">
-  <link rel="stylesheet" href="/css/home-motion.css">
   <!-- Structured data — Organization + WebSite. Facts limited to what's
        already published elsewhere on the site (name, canonical URL,
        brand logo asset): no invented founder/address/social/schema. -->
@@ -52,25 +47,25 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebSite",
+    "@type": "SoftwareApplication",
     "name": "MedhaIQ",
-    "url": "https://www.medhaiq.ai/"
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "url": "https://www.medhaiq.ai/",
+    "description": "An AI mock interview practice platform that creates adaptive interviews from a candidate's resume, target role, and job description, then provides personalized feedback.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
   }
   </script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
+    "@type": "WebSite",
     "name": "MedhaIQ",
-    "url": "https://www.medhaiq.ai/",
-    "applicationCategory": "BusinessApplication",
-    "operatingSystem": "Web",
-    "description": "AI mock interview platform that builds live, adaptive interviews from a candidate's resume, target role and job description, scores five skill vectors and produces a 30/60/90-day plan.",
-    "offers": [
-      { "@type": "Offer", "name": "Explorer", "price": "0", "priceCurrency": "USD" },
-      { "@type": "Offer", "name": "Growth", "price": "19", "priceCurrency": "USD" },
-      { "@type": "Offer", "name": "Leadership", "price": "49", "priceCurrency": "USD" }
-    ]
+    "url": "https://www.medhaiq.ai/"
   }
   </script>
 </head>
@@ -80,9 +75,7 @@
   <%- include('partials/value-footer') %>
   <%- include('partials/trust-bar') %>
   <%- include('partials/features') %>
-  <%- include('partials/demo') %>
-  <%- include('partials/home-screens') %>
-  <%- include('partials/audience') %>
+  <%- include('partials/score-demo') %>
   <%- include('partials/recruiter') %>
   <%# Certifications and Research sections hidden from the home page
       (2026-07-25, explicit request) - NOT deleted. Partial files at
@@ -93,6 +86,7 @@
       right where this comment is. %>
   <%- include('partials/pricing-section') %>
   <%- include('partials/professional-perspectives') %>
+  <%- include('partials/cta-banner') %>
   <%- include('partials/footer') %>
 
   <!-- Fix: on a fresh page load with a URL hash (e.g. /#professional-horizons),
