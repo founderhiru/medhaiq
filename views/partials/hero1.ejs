@@ -54,13 +54,19 @@
 
   /* Compact Editorial Typography */
   .mh-hero-h1 {
-    font-size: 53px;
-    line-height: 1.08;
+    /* Scales with the viewport so "interview count." always stays on one line
+       inside the left column; tops out at 62px on wide screens. */
+    font-size: clamp(36px, calc((50vw - 74px) / 8.9), 62px);
+    line-height: 1.05;
     font-weight: 800;
     letter-spacing: -0.025em;
     margin: 0 0 18px 0;
     color: #0F172A;
   }
+
+  /* Keep the accent word on the headline's own line height (a global span rule
+     was inflating it and opening a gap between the headline lines). */
+  .mh-hero-h1 .mh-hero-h1-accent { line-height: inherit; }
 
   .mh-hero-h1-accent {
     background: linear-gradient(135deg, #2563EB 0%, #4F46E5 50%, #7C3AED 100%);
@@ -392,12 +398,12 @@
   @media (prefers-reduced-motion: reduce) { .mh-ii *, .mh-ii-card { animation: none !important; transition: none !important; } }
   @media (max-width: 1024px) {
     .mh-hero-inner { grid-template-columns: minmax(0, 1fr) !important; gap: 44px; }
-    .mh-hero-h1 { font-size: 42px; }
+    .mh-hero-h1 { font-size: 50px; }
     .mh-ii { margin: 0 auto; max-width: 620px; }
   }
   @media (max-width: 640px) {
     .mh-hero { padding: 40px 16px 64px; }
-    .mh-hero-h1 { font-size: 33px; }
+    .mh-hero-h1 { font-size: 36px; }
     .mh-hero-signature { font-size: 18px; }
     .mh-hero-actions { flex-direction: column; align-items: stretch; }
     .mh-btn-primary, .mh-btn-outline { justify-content: center; }
