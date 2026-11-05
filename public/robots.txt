@@ -1,7 +1,9 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
-Disallow: /debug/
 Disallow: /api/
+Disallow: /debug/
+Disallow: /app/
+Disallow: /mobile/
 
 Sitemap: https://www.medhaiq.ai/sitemap.xml
