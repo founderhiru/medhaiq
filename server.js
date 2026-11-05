@@ -87,6 +87,7 @@ app.get('/admin/founder-dashboard.html', requireFounderPage, (req, res) => {
 
 // Dynamic sitemap - must stay ABOVE express.static
 app.use(require('./routes/seo'));
+app.use(require('./routes/guides')); // /interview-questions pages (data/question-guides-data.js)
 // Static files
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 

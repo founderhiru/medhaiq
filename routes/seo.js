@@ -20,6 +20,7 @@ const STATIC_PAGES = [
   { path: '/explore/company-library',       changefreq: 'weekly',  priority: '0.8' },
   { path: '/explore/role-library',          changefreq: 'weekly',  priority: '0.8' },
   { path: '/explore/interview-frameworks',  changefreq: 'weekly',  priority: '0.8' },
+  { path: '/interview-questions',           changefreq: 'weekly',  priority: '0.8' },
   { path: '/why',                           changefreq: 'monthly', priority: '0.7' },
   { path: '/faq',                           changefreq: 'monthly', priority: '0.7' },
   { path: '/about',                         changefreq: 'monthly', priority: '0.6' },
@@ -54,6 +55,7 @@ function buildEntries() {
   add(() => require('../data/company-library-data'),     '/explore/company-library',     'companyLibrary', '0.7');
   add(() => require('../data/role-library-data'),        '/explore/role-library',        'roleLibrary',    '0.7');
   add(() => require('../data/interview-frameworks-data'), '/explore/interview-frameworks', 'frameworks',    '0.7');
+  add(() => require('../data/question-guides-data'),     '/interview-questions',         'guides',         '0.8');
 
   return entries;
 }
