@@ -370,6 +370,71 @@
     @media (max-width: 480px) {
       .authv2-card { padding: 32px 24px; }
     }
+
+    /* ── Light theme (matches the home page: soft blue, lavender and peach) ──
+       Overrides only; the dark rules above are kept so this can be reverted
+       by deleting this block. */
+    body { background: #F4F2FB; }
+    .authv2-page {
+      background: linear-gradient(135deg, #E3EEFF 0%, #EEE9FC 48%, #FFEFE2 100%);
+    }
+    .authv2-left {
+      background:
+        radial-gradient(60% 50% at 8% 0%, rgba(147,197,253,0.55) 0%, rgba(147,197,253,0) 70%),
+        radial-gradient(55% 45% at 100% 100%, rgba(253,186,140,0.40) 0%, rgba(253,186,140,0) 70%),
+        linear-gradient(160deg, #E6F0FF 0%, #EFEAFD 55%, #FFF1E6 100%);
+      border-right: 1px solid rgba(15,23,42,0.06);
+    }
+    .authv2-left::before { display: none; }
+    .authv2-page .brand-logo__text { color: #0F172A; }
+    .authv2-eyebrow { background: rgba(255,255,255,0.7); border-color: rgba(37,99,235,0.25); color: #1D4ED8; }
+    .authv2-left h1 { color: #0F172A; }
+    .authv2-left .authv2-sub { color: #475569; }
+    .authv2-left .authv2-sub strong { color: #0F172A; }
+    .authv2-feature-icon,
+    .authv2-feature-icon.tone-emerald,
+    .authv2-feature-icon.tone-royal { background: rgba(255,255,255,0.75); border-color: rgba(15,23,42,0.07); box-shadow: 0 4px 14px -6px rgba(30,64,175,0.18); }
+    .authv2-feature-icon.tone-royal svg { stroke: #2563EB; }
+    .authv2-feature-title { color: #0F172A; }
+    .authv2-feature-desc { color: #64748B; }
+    .authv2-testimonial { background: rgba(255,255,255,0.72); border-color: rgba(15,23,42,0.07); box-shadow: 0 10px 30px -18px rgba(30,64,175,0.25); }
+    .authv2-testimonial p { color: #1E293B; }
+    .authv2-testimonial .who { color: #64748B; }
+
+    .authv2-right { background: linear-gradient(160deg, #F8FAFF 0%, #F3EFFC 60%, #FFF4EA 100%); }
+    .authv2-card {
+      background: #FFFFFF;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: 1px solid rgba(15,23,42,0.07);
+      box-shadow: 0 24px 60px -28px rgba(30,64,175,0.35), 0 2px 6px rgba(15,23,42,0.04);
+    }
+    .authv2-card h2 { color: #0F172A; }
+    .authv2-card .authv2-card-sub { color: #64748B; }
+    .authv2-google-btn { background: #FFFFFF; color: #1F2937; border: 1px solid #E2E8F0; box-shadow: 0 1px 2px rgba(15,23,42,0.05); }
+    .authv2-google-btn:hover { box-shadow: 0 6px 18px -8px rgba(30,64,175,0.35); }
+    .authv2-divider { color: #94A3B8; }
+    .authv2-divider::before, .authv2-divider::after { background: rgba(15,23,42,0.10); }
+    .authv2-field label { color: #475569; }
+    .authv2-input-wrap svg { color: #94A3B8; }
+    .authv2-input-wrap input { background: #F8FAFC; border-color: #E2E8F0; color: #0F172A; }
+    .authv2-input-wrap input::placeholder { color: #94A3B8; }
+    .authv2-input-wrap input:focus { background: #FFFFFF; border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59,130,246,0.16); }
+    .authv2-cta { background: linear-gradient(135deg, #1E40AF 0%, #3B5BDB 100%); }
+    .authv2-cta:hover { background: linear-gradient(135deg, #1D4ED8 0%, #4F6EF0 100%); }
+    .authv2-check-back { color: #64748B; }
+    .authv2-check-back:hover { color: #0F172A; background: rgba(15,23,42,0.05); }
+    .authv2-check-email .authv2-check-email-hint { color: #64748B; }
+    .authv2-resend-btn { border-color: #CBD5E1; color: #475569; }
+    .authv2-trust { border-top-color: rgba(15,23,42,0.08); }
+    .authv2-trust-text .title { color: #0F172A; }
+    .authv2-trust-text .sub { color: #64748B; }
+    .auth-msg { color: #64748B; }
+    .auth-msg.success { color: #059669; }
+    .authv2-footer { background: #FFF4EA; }
+    .authv2-footer-links a { color: #64748B; }
+    .authv2-footer-links a:hover { color: #0F172A; }
+    .authv2-footer .copyright { color: #94A3B8; }
   </style>
 </head>
 <body>
