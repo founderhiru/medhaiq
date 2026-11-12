@@ -320,7 +320,7 @@
   .mh-ii-orb { position: absolute; border-radius: 50%; filter: blur(46px); pointer-events: none; z-index: 0; animation: mh-ii-drift 14s ease-in-out infinite alternate; }
   .mh-ii-orb.o1 { width: 300px; height: 300px; right: -60px; top: -10px; background: radial-gradient(circle, rgba(91,155,255,.55), transparent 70%); }
   .mh-ii-orb.o2 { width: 260px; height: 260px; left: -40px; bottom: 10px; background: radial-gradient(circle, rgba(139,92,246,.38), transparent 70%); animation-delay: -6s; }
-  .mh-ii-card { position: relative; z-index: 1; border-radius: 22px; padding: 1px; background: linear-gradient(160deg, rgba(111,166,255,.9), rgba(139,92,246,.35) 45%, rgba(150,180,255,.14)); box-shadow: 0 40px 90px -26px rgba(8,15,40,.65); animation: mh-ii-in .7s ease-out both; }
+  .mh-ii-card { position: relative; z-index: 1; border-radius: 22px; padding: 1px; background: linear-gradient(160deg, rgba(111,166,255,.9), rgba(139,92,246,.35) 45%, rgba(150,180,255,.14)); box-shadow: 0 40px 90px -26px rgba(8,15,40,.65); }
   .mh-ii-win { border-radius: 21px; background: linear-gradient(180deg, #0E1A3C 0%, #0A1330 100%); color: #EAF0FF; padding: 14px 16px 12px; }
   .mh-ii-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid rgba(150,180,255,.12); font: 600 10.5px ui-monospace, Menlo, Consolas, monospace; letter-spacing: .08em; color: #93A3C4; }
   .mh-ii-top b { color: #EAF0FF; font-weight: 700; }
@@ -429,7 +429,7 @@
 
       <p class="mh-hero-signature">Practice. Polish. <span class="mh-hero-h1-accent">Place.</span></p>
 
-      <p class="mh-hero-h2">MedhaIQ (also written Medha IQ) is an AI mock interview platform that creates live, adaptive interviews around your resume, target role, and job description — helping you understand your performance, improve where it matters, and build lasting interview readiness.</p>
+      <p class="mh-hero-h2">MedhaIQ is an AI mock interview platform that creates live, adaptive interviews around your resume, target role, and job description — helping you understand your performance, improve where it matters, and build lasting interview readiness.</p>
 
       <div class="mh-hero-actions">
         <a href="/login" class="mh-btn-primary">
@@ -471,11 +471,11 @@
         <div class="mh-ii-body" aria-hidden="true">
           <div class="mh-ii-col">
             <div>
-              <div class="mh-ii-h"><span>AI INTERVIEWER</span><em><span class="mh-ii-wave a" id="mh-ii-wa"></span><span id="mh-ii-stat">READY</span></em></div>
+              <div class="mh-ii-h"><span>AI INTERVIEWER</span><em><span class="mh-ii-wave a" id="mh-ii-wa"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span id="mh-ii-stat">READY</span></em></div>
               <div class="mh-ii-q" id="mh-ii-q"></div>
             </div>
             <div>
-              <div class="mh-ii-h"><span>YOUR ANSWER (SAMPLE)</span><em class="you"><span class="mh-ii-wave y" id="mh-ii-wy"></span></em></div>
+              <div class="mh-ii-h"><span>YOUR ANSWER (SAMPLE)</span><em class="you"><span class="mh-ii-wave y" id="mh-ii-wy"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></em></div>
               <div class="mh-ii-a"><span id="mh-ii-at"></span><span class="mh-ii-caret" id="mh-ii-caret" style="display:none"></span></div>
             </div>
             <div class="mh-ii-ins"><b>&#9728;</b><p id="mh-ii-ins"><small>AI INSIGHT</small><span id="mh-ii-it">&nbsp;</span></p></div>
@@ -498,7 +498,7 @@
               </div>
               <div class="mh-ii-snote" id="mh-ii-snote"></div>
             </div>
-            <div class="mh-ii-box"><div class="mh-ii-h"><span>5-VECTOR INTELLIGENCE</span></div><div id="mh-ii-vecs"></div></div>
+            <div class="mh-ii-box"><div class="mh-ii-h"><span>5-VECTOR INTELLIGENCE</span></div><div id="mh-ii-vecs"><div class="mh-ii-vec" style="--c:#3B82F6"><i></i><span>Structure</span><em>--</em><div class="mh-ii-bar"><i></i></div></div><div class="mh-ii-vec" style="--c:#A78BFA"><i></i><span>Domain Expertise</span><em>--</em><div class="mh-ii-bar"><i></i></div></div><div class="mh-ii-vec" style="--c:#22C55E"><i></i><span>Strategic Thinking</span><em>--</em><div class="mh-ii-bar"><i></i></div></div><div class="mh-ii-vec" style="--c:#FB923C"><i></i><span>Communication</span><em>--</em><div class="mh-ii-bar"><i></i></div></div><div class="mh-ii-vec" style="--c:#F59E0B"><i></i><span>Leadership &amp; Execution</span><em>--</em><div class="mh-ii-bar"><i></i></div></div></div></div>
           </div>
         </div>
         <div class="mh-ii-foot" aria-hidden="true">Sample session &middot; illustrative content, not a real assessment</div>
@@ -527,9 +527,7 @@
   var V1 = [74, 72, 70, 62, 76], V2 = [85, 80, 78, 66, 82];
   var LOOP = 21000, t = 0, paused = false, visible = true, reduced = false, C = 220, lastKey = '';
   try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
-  ['mh-ii-wa', 'mh-ii-wy'].forEach(function (id) { var w = $(id); for (var i = 0; i < 7; i++) w.appendChild(document.createElement('i')); });
   var vecs = $('mh-ii-vecs');
-  NAMES.forEach(function (n, i) { var r = document.createElement('div'); r.className = 'mh-ii-vec'; r.style.setProperty('--c', COL[i]); r.innerHTML = '<i></i><span>' + n.replace('&', '&amp;') + '</span><em>--</em><div class="mh-ii-bar"><i></i></div>'; vecs.appendChild(r); });
   var bars = vecs.querySelectorAll('.mh-ii-bar i'), nums = vecs.querySelectorAll('em');
   var nodes = $('mh-ii-rail').querySelectorAll('.mh-ii-node'), conns = $('mh-ii-rail').querySelectorAll('.mh-ii-conn');
   var at = $('mh-ii-at'), bEl = $('mh-ii-b');
@@ -557,7 +555,7 @@
     root.setAttribute('data-spk', spk); setText($('mh-ii-stat'), stat); setText($('mh-ii-q'), q);
     var live = (t >= 3200 && t < 9600) || (t >= 13200 && t < 14800);
     $('mh-ii-caret').style.display = live ? 'inline-block' : 'none';
-    if (t < 3200) at.innerHTML = ''; else at.innerHTML = answerHTML();
+    var ah = t < 3200 ? '' : answerHTML(); if (ah !== lastKey) { at.innerHTML = ah; lastKey = ah; }
     var det = [t >= 5000, t >= 6600, t >= 8800, t >= 14800], fin1 = t >= 9600, fin2 = t >= 15600, k;
     for (k = 0; k < 4; k++) nodes[k].className = 'mh-ii-node' + (det[k] ? ((k < 3 ? fin1 : fin2) ? ' done' : ' active') : (fin1 && k === 3 ? ' missed' : ''));
     for (k = 0; k < 3; k++) conns[k].className = 'mh-ii-conn' + (det[k] && det[k + 1] && (k < 2 ? fin1 : fin2) ? ' done' : '');
@@ -578,8 +576,12 @@
   pb.addEventListener('click', function () { paused = !paused; pb.setAttribute('aria-pressed', paused ? 'true' : 'false'); pb.textContent = paused ? 'PLAY' : 'PAUSE'; });
   try { new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0.15 }).observe(root); } catch (e) {}
   render();
-  var last = Date.now();
+  var last = Date.now(), go = false;
+  var start = function () { if (!go) { go = true; t = 0; last = Date.now(); } };
+  try { document.fonts.ready.then(start); } catch (e) { start(); }
+  setTimeout(start, 1500);
   setInterval(function () {
+    if (!go) return;
     var now = Date.now(), dt = now - last; last = now;
     if (paused || !visible || document.hidden) return;
     t += Math.min(dt, 250); if (t >= LOOP) t = 0;
