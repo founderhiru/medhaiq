@@ -371,70 +371,68 @@
       .authv2-card { padding: 32px 24px; }
     }
 
-    /* ── Light theme (matches the home page: soft blue, lavender and peach) ──
-       Overrides only; the dark rules above are kept so this can be reverted
-       by deleting this block. */
-    body { background: #E4DCF7; }
+    /* ── Hero-matched theme ──
+       Same principles as the home page hero: cream canvas fading through pale
+       blue into deep navy, a dark glass card with a blue edge glow, the
+       blue-to-violet accent on the key phrase, and the same pill badge and
+       blue call-to-action. Overrides only; delete this block to revert to the
+       original dark page. */
+    body { background: #3D5A8A; }
     .authv2-page {
-      background: linear-gradient(135deg, #B9D3FF 0%, #D5C8F8 50%, #FFD2B3 100%);
-    }
-    .authv2-left {
       background:
-        radial-gradient(60% 50% at 6% 0%, rgba(96,165,250,0.55) 0%, rgba(96,165,250,0) 70%),
-        radial-gradient(55% 45% at 100% 100%, rgba(251,146,100,0.38) 0%, rgba(251,146,100,0) 70%),
-        linear-gradient(160deg, #B4D0FF 0%, #CFC3F7 52%, #FFCDAA 100%);
-      border-right: 1px solid rgba(15,23,42,0.08);
+        radial-gradient(45% 40% at 0% 100%, rgba(255,224,190,0.55) 0%, rgba(255,224,190,0) 70%),
+        linear-gradient(105deg, #FBF7EE 0%, #F8F2E6 48%, #EAEEF4 55%, #CFE0F4 62%, #8FAAD2 76%, #4A679A 100%);
     }
+    .authv2-left { background: transparent; border-right: none; }
     .authv2-left::before { display: none; }
     .authv2-page .brand-logo__text { color: #0F172A; }
-    .authv2-eyebrow { background: rgba(255,255,255,0.7); border-color: rgba(37,99,235,0.25); color: #1D4ED8; }
-    .authv2-left h1 { color: #0F172A; }
-    .authv2-left .authv2-sub { color: #334155; }
+    .authv2-eyebrow {
+      background: #F4EEE2; border: 1px solid #E8DFCC; color: #0F172A;
+      font-weight: 600; letter-spacing: 1.2px; font-size: 11.5px; text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+    }
+    .authv2-eyebrow::before {
+      content: ""; width: 7px; height: 7px; border-radius: 50%; background: #2563EB;
+      box-shadow: 0 0 6px rgba(37,99,235,0.5); margin-right: 9px;
+    }
+    .authv2-left h1 { color: #0F172A; font-size: clamp(34px, 4vw, 50px); line-height: 1.04; letter-spacing: -1.6px; font-weight: 800; }
+    .authv2-left h1 .authv2-accent {
+      background: linear-gradient(135deg, #2563EB 0%, #4F46E5 50%, #7C3AED 100%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+    }
+    .authv2-left .authv2-sub { color: #475569; font-size: 15.5px; }
     .authv2-left .authv2-sub strong { color: #0F172A; }
     .authv2-feature-icon,
     .authv2-feature-icon.tone-emerald,
-    .authv2-feature-icon.tone-royal { background: rgba(255,255,255,0.75); border-color: rgba(15,23,42,0.07); box-shadow: 0 4px 14px -6px rgba(30,64,175,0.18); }
+    .authv2-feature-icon.tone-royal {
+      background: rgba(255,255,255,0.85); border: 1px solid #E8DFCC;
+      box-shadow: 0 2px 8px rgba(15,23,42,0.05);
+    }
     .authv2-feature-icon.tone-royal svg { stroke: #2563EB; }
     .authv2-feature-title { color: #0F172A; }
-    .authv2-feature-desc { color: #475569; }
-    .authv2-testimonial { background: rgba(255,255,255,0.55); border-color: rgba(15,23,42,0.07); box-shadow: 0 10px 30px -18px rgba(30,64,175,0.25); }
+    .authv2-feature-desc { color: #64748B; }
+    .authv2-testimonial {
+      background: rgba(255,253,248,0.8); border: 1px solid #E8DFCC;
+      box-shadow: 0 10px 30px -14px rgba(15,23,42,0.14);
+    }
     .authv2-testimonial p { color: #1E293B; }
     .authv2-testimonial .who { color: #64748B; }
 
-    .authv2-right { background: linear-gradient(160deg, #BFD4FA 0%, #D3C7F6 55%, #FFD3B5 100%); }
     .authv2-card {
-      background: #FFFCF6;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      border: 1px solid rgba(255,255,255,0.8);
-      box-shadow: 0 30px 70px -26px rgba(30,41,120,0.50), 0 2px 8px rgba(15,23,42,0.06);
+      background: linear-gradient(160deg, #11213F 0%, #0B1428 100%);
+      backdrop-filter: none; -webkit-backdrop-filter: none;
+      border: 1px solid rgba(96,165,250,0.38);
+      box-shadow: 0 0 0 1px rgba(37,99,235,0.12), 0 34px 80px -24px rgba(15,25,60,0.55), 0 0 70px -14px rgba(59,130,246,0.45);
     }
-    .authv2-card h2 { color: #0F172A; }
-    .authv2-card .authv2-card-sub { color: #64748B; }
-    .authv2-google-btn { background: #FFFFFF; color: #1F2937; border: 1px solid #E5DFD0; box-shadow: 0 1px 2px rgba(15,23,42,0.05); }
-    .authv2-google-btn:hover { box-shadow: 0 6px 18px -8px rgba(30,64,175,0.35); }
-    .authv2-divider { color: #94A3B8; }
-    .authv2-divider::before, .authv2-divider::after { background: rgba(15,23,42,0.10); }
-    .authv2-field label { color: #475569; }
-    .authv2-input-wrap svg { color: #94A3B8; }
-    .authv2-input-wrap input { background: #F7F3EA; border-color: #E3DCCB; color: #0F172A; }
-    .authv2-input-wrap input::placeholder { color: #94A3B8; }
-    .authv2-input-wrap input:focus { background: #FFFFFF; border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59,130,246,0.16); }
-    .authv2-cta { background: linear-gradient(135deg, #1E40AF 0%, #3B5BDB 100%); }
-    .authv2-cta:hover { background: linear-gradient(135deg, #1D4ED8 0%, #4F6EF0 100%); }
-    .authv2-check-back { color: #64748B; }
-    .authv2-check-back:hover { color: #0F172A; background: rgba(15,23,42,0.05); }
-    .authv2-check-email .authv2-check-email-hint { color: #64748B; }
-    .authv2-resend-btn { border-color: #CBD5E1; color: #475569; }
-    .authv2-trust { border-top-color: rgba(15,23,42,0.08); }
-    .authv2-trust-text .title { color: #0F172A; }
-    .authv2-trust-text .sub { color: #64748B; }
-    .auth-msg { color: #64748B; }
-    .auth-msg.success { color: #059669; }
-    .authv2-footer { background: #FFD3B5; }
-    .authv2-footer-links a { color: #64748B; }
-    .authv2-footer-links a:hover { color: #0F172A; }
-    .authv2-footer .copyright { color: #94A3B8; }
+    .authv2-cta { background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%); box-shadow: 0 4px 20px rgba(29,78,216,0.35); }
+    .authv2-cta:hover { box-shadow: 0 6px 25px rgba(29,78,216,0.5); }
+    .authv2-footer { background: #4A679A; }
+    .authv2-footer-links a { color: #DCE6F5; }
+    .authv2-footer .copyright { color: #B9C9E4; }
+
+    @media (max-width: 980px) {
+      .authv2-page { background: linear-gradient(165deg, #FBF7EE 0%, #D5E3F6 28%, #8FAAD2 62%, #4A679A 100%); }
+    }
   </style>
 </head>
 <body>
@@ -450,7 +448,7 @@
 
       <div class="authv2-eyebrow">Continuous Career Intelligence</div>
 
-      <h1>Continue Your Career Journey</h1>
+      <h1>Continue your<br><span class="authv2-accent">career journey.</span></h1>
       <p class="authv2-sub">Continue developing your career with AI-powered interviews, personalized insights, and continuous career intelligence.</p>
 
       <div class="authv2-features">
