@@ -449,6 +449,125 @@
       .authv2-nav-inner { padding: 0 24px; }
       .authv2-left { padding: 32px 24px 0; }
     }
+
+    /* Typography parity with homepage */
+    html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    .authv2-page { text-rendering: auto; }
+    .authv2-nav .brand-logo__text { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; letter-spacing: -0.04em; }
+    .authv2-nav-back { font-family: 'Inter', sans-serif; line-height: normal; }
+    .authv2-left h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;
+      font-size: clamp(36px, calc((50vw - 74px) / 8.9), 62px);
+      line-height: 1.05; letter-spacing: -0.025em; margin: 0 0 18px;
+    }
+    .authv2-tagline {
+      font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 700;
+      letter-spacing: -0.01em; line-height: 1.65; color: #334155; margin: 0 0 18px;
+    }
+    .authv2-left .authv2-sub {
+      font-family: 'Inter', sans-serif; font-size: 15.5px; font-weight: 400;
+      line-height: 1.6; color: #475569; max-width: 530px; margin: 0 0 26px;
+    }
+    .authv2-footer-links a, .authv2-footer-links button.authv2-contact-link {
+      font-family: 'Inter', sans-serif; font-size: 13px; color: #64748B; text-decoration: none;
+      background: none; border: 0; padding: 0; margin: 0; cursor: pointer; opacity: 1;
+    }
+    .authv2-footer-links a:hover, .authv2-footer-links button.authv2-contact-link:hover { color: #0F172A; }
+    .mh-contact-modal-overlay {
+      --blue-bright:#3B82F6; --font-body:'Inter',sans-serif; --font-display:'Plus Jakarta Sans',sans-serif;
+      --navy-border:#1E293B; --navy-card:#111827; --navy-deep:#0A0E1A; --navy-rich:#0D1220;
+      --radius-xl:24px; --royal-blue:#1E40AF; --text-faint:#9AA6B8; --text-muted:#9DA8BA;
+      --white:#FFFFFF; --white-border:rgba(255,255,255,0.08);
+    }
+.mh-contact-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.mh-contact-modal {
+  background: var(--navy-card);
+  border: 1px solid var(--white-border);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  max-width: 480px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+.mh-contact-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.15s ease;
+}
+.mh-contact-modal-close:hover { color: var(--white); }
+.mh-contact-modal-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
+}
+.mh-contact-modal-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+.mh-contact-form { display: flex; flex-direction: column; gap: 16px; }
+.mh-contact-field { display: flex; flex-direction: column; gap: 6px; text-align: left; }
+.mh-contact-field label { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; }
+.mh-contact-field label span { color: var(--text-faint); }
+.mh-contact-field input,
+.mh-contact-field textarea {
+  background: var(--navy-deep);
+  border: 1px solid var(--navy-border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 14px;
+  resize: none;
+  transition: border-color 0.2s ease;
+}
+.mh-contact-field input:focus,
+.mh-contact-field textarea:focus { outline: none; border-color: var(--blue-bright); }
+.mh-contact-submit {
+  background: var(--royal-blue);
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 13px 24px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+  margin-top: 8px;
+}
+.mh-contact-submit:hover { background: #2563eb; transform: translateY(-1px); }
+.mh-contact-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.mh-contact-success {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #10b981;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 20px 0;
+}    @media (max-width: 1024px) { .authv2-left h1 { font-size: 50px; } }
+
+    @media (max-width: 980px) {
+      .authv2-left h1 { font-size: 36px; margin-bottom: 12px; }
+      .authv2-tagline { font-size: 18px; line-height: 1.4; margin-bottom: 0; }
+    }
   </style>
 </head>
 <body>
@@ -574,10 +693,12 @@
   <div class="authv2-footer-links">
     <a href="/privacy">Privacy Policy</a>
     <a href="/terms">Terms of Service</a>
-    <a href="mailto:support@medhaiq.ai">Contact Us</a>
+    <button type="button" id="mh-contact-btn" class="authv2-contact-link">Contact Us</button>
   </div>
   <div class="copyright">&copy; 2026 MedhaIQ. All rights reserved.</div>
 </div>
+
+<%- include('partials/contact-modal') %>
 
 <script>
 (function() {
