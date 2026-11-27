@@ -209,4 +209,150 @@ router.get('/compare/audio', requireFounder, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Google TTS usage + cost monitor (2026-11-27). PERMANENT, read-only.
+//
+// GET /debug/voice/usage  (founder-only, same requireFounder gate as above)
+// Reads ONLY tts_usage_log (migration 037) -- never writes, never calls
+// Google, never touches interview/session/scoring tables. Safe to open
+// anytime; it cannot spend quota. Auto-refreshes every 60s.
+//
+// What it shows:
+//   * Month-to-date characters per voice tier vs the monthly free allowance
+//   * List-price cost (no free tier) and EXPECTED billed cost (after free tier)
+//   * Live interviews vs founder test clicks (debug-compare), so tests are visible
+//   * Per-persona voice breakdown, 6-month history, and the last 15 calls
+//
+// Honesty note shown on the page: these are OUR tracked numbers. Google Cloud
+// Billing is the only true actual, and Gemini audition usage is not tracked.
+// Month boundary is UTC, matching lib/tts-usage-recorder.js.
+// ═══════════════════════════════════════════════════════════════════════════
+const { RATES_PER_CHAR_USD, FREE_ALLOWANCE_CHARS } = require('../lib/tts-usage-recorder');
+
+const MONTH_START_SQL = `date_trunc('month', NOW() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
+const TIER_LABEL = { chirp3hd: 'Chirp 3 HD', wavenet: 'WaveNet' };
+
+function fmtInt(n) { return Number(n || 0).toLocaleString('en-US'); }
+function fmtUsd(n) {
+  const v = Number(n || 0);
+  return '$' + (Math.abs(v) < 1 ? v.toFixed(4) : v.toFixed(2));
+}
+function fmtInr(usd, rate) {
+  const v = Number(usd || 0) * rate;
+  return '₹' + (Math.abs(v) < 100 ? v.toFixed(2) : Math.round(v).toLocaleString('en-IN'));
+}
+
+async function loadUsage() {
+  const { pool } = require('../db/index'); // lazy, same as the recorder
+  const run = (sql) => pool.query(sql).then((r) => r.rows);
+  const [tiers, bySource, byVoice, history, recent] = await Promise.all([
+    run(`SELECT voice_tier,
+                COUNT(*)::int AS calls,
+                COALESCE(SUM(characters),0)::bigint AS chars,
+                COALESCE(SUM(estimated_list_cost_usd),0)::numeric AS list_usd,
+                COALESCE(SUM(expected_billed_cost_usd),0)::numeric AS billed_usd,
+                COALESCE(ROUND(AVG(latency_ms)),0)::int AS avg_ms
+         FROM tts_usage_log
+         WHERE provider = 'google' AND created_at >= ${MONTH_START_SQL}
+         GROUP BY voice_tier`),
+    run(`SELECT voice_tier, COALESCE(source,'interview') AS source,
+                COUNT(*)::int AS calls, COALESCE(SUM(characters),0)::bigint AS chars
+         FROM tts_usage_log
+         WHERE provider = 'google' AND created_at >= ${MONTH_START_SQL}
+         GROUP BY 1,2 ORDER BY 1,2`),
+    run(`SELECT voice_tier, COALESCE(voice_name,'(unknown)') AS voice_name,
+                COUNT(*)::int AS calls, COALESCE(SUM(characters),0)::bigint AS chars
+         FROM tts_usage_log
+         WHERE provider = 'google' AND created_at >= ${MONTH_START_SQL}
+         GROUP BY 1,2 ORDER BY chars DESC LIMIT 20`),
+    run(`SELECT to_char(date_trunc('month', created_at AT TIME ZONE 'UTC'),'YYYY-MM') AS month,
+                voice_tier, COUNT(*)::int AS calls,
+                COALESCE(SUM(characters),0)::bigint AS chars,
+                COALESCE(SUM(estimated_list_cost_usd),0)::numeric AS list_usd,
+                COALESCE(SUM(expected_billed_cost_usd),0)::numeric AS billed_usd
+         FROM tts_usage_log
+         WHERE provider = 'google'
+           AND created_at >= (${MONTH_START_SQL}) - INTERVAL '5 months'
+         GROUP BY 1,2 ORDER BY 1 DESC, 2`),
+    run(`SELECT created_at, voice_tier, voice_name, COALESCE(source,'interview') AS source,
+                characters, latency_ms
+         FROM tts_usage_log WHERE provider = 'google'
+         ORDER BY id DESC LIMIT 15`),
+  ]);
+  return { tiers, bySource, byVoice, history, recent };
+}
+
+router.get('/usage', requireFounder, async (req, res) => {
+  const inrParam = parseFloat(req.query.inr);
+  const inr = Number.isFinite(inrParam) && inrParam > 0 && inrParam < 1000 ? inrParam : 90;
+  const head = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="refresh" content="60"><title>Google TTS usage</title>
+<style>body{font:15px system-ui,sans-serif;max-width:980px;margin:24px auto;padding:0 16px;color:#111}
+table{border-collapse:collapse;width:100%;margin:6px 0 18px}td,th{border:1px solid #ddd;padding:6px 8px;text-align:left}
+th{background:#f5f5f5}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.card{border:1px solid #ddd;border-radius:8px;padding:14px;margin-bottom:16px}
+.bar{height:14px;background:#eee;border-radius:7px;overflow:hidden;margin:6px 0}
+.bar>i{display:block;height:100%;background:#2e7d32}.bar.warn>i{background:#ef6c00}.bar.over>i{background:#c62828}
+.note{background:#fff8e1;border:1px solid #f0d27a;padding:10px;border-radius:6px;font-size:13px}
+.m{color:#555;font-size:13px}h3{margin:20px 0 4px}</style></head><body>`;
+  let data;
+  try {
+    data = await loadUsage();
+  } catch (err) {
+    const missing = err && err.code === '42P01';
+    console.error('[debug-voice/usage] load failed:', err && err.message);
+    return res.status(missing ? 200 : 500).type('html').send(head + '<h2>Google TTS usage</h2><p class="note">' +
+      (missing ? 'The usage table (tts_usage_log) does not exist yet. It is created by migration 037 on the next deploy.'
+               : 'Could not load usage right now. Check the server logs for [debug-voice/usage].') + '</p></body></html>');
+  }
+
+  const byTier = {};
+  data.tiers.forEach((t) => { byTier[t.voice_tier] = t; });
+  const monthLabel = new Date().toISOString().slice(0, 7);
+  const cards = Object.keys(RATES_PER_CHAR_USD).map((tier) => {
+    const t = byTier[tier] || { calls: 0, chars: 0, list_usd: 0, billed_usd: 0, avg_ms: 0 };
+    const allowance = FREE_ALLOWANCE_CHARS[tier];
+    const chars = Number(t.chars);
+    const pct = Math.min(100, (chars / allowance) * 100);
+    const cls = chars >= allowance ? 'over' : pct >= 80 ? 'warn' : '';
+    const left = Math.max(0, allowance - chars);
+    return `<div class="card"><b>${escHtml(TIER_LABEL[tier])}</b>
+      <span class="m"> — $${(RATES_PER_CHAR_USD[tier] * 1e6).toFixed(0)} per 1M chars after ${fmtInt(allowance)} free/month</span>
+      <div class="bar ${cls}"><i style="width:${pct.toFixed(2)}%"></i></div>
+      <div><b>${fmtInt(chars)}</b> of ${fmtInt(allowance)} free characters used (${pct.toFixed(2)}%) &middot; ${fmtInt(left)} left this month</div>
+      <table><tr><th class="n">Calls</th><th class="n">Avg time (ms)</th><th class="n">List cost (no free tier)</th><th class="n">Expected billed</th></tr>
+      <tr><td class="n">${fmtInt(t.calls)}</td><td class="n">${fmtInt(t.avg_ms)}</td>
+      <td class="n">${fmtUsd(t.list_usd)} (${fmtInr(t.list_usd, inr)})</td>
+      <td class="n"><b>${fmtUsd(t.billed_usd)} (${fmtInr(t.billed_usd, inr)})</b></td></tr></table></div>`;
+  }).join('');
+
+  const srcRows = data.bySource.length ? data.bySource.map((r) =>
+    `<tr><td>${escHtml(TIER_LABEL[r.voice_tier] || r.voice_tier)}</td><td>${r.source === 'debug-compare' ? 'Founder test clicks' : escHtml(r.source === 'interview' ? 'Live interviews' : r.source)}</td><td class="n">${fmtInt(r.calls)}</td><td class="n">${fmtInt(r.chars)}</td></tr>`).join('')
+    : '<tr><td colspan="4" class="m">No usage recorded this month yet.</td></tr>';
+  const voiceRows = data.byVoice.length ? data.byVoice.map((r) =>
+    `<tr><td>${escHtml(r.voice_name)}</td><td>${escHtml(TIER_LABEL[r.voice_tier] || r.voice_tier)}</td><td class="n">${fmtInt(r.calls)}</td><td class="n">${fmtInt(r.chars)}</td></tr>`).join('')
+    : '<tr><td colspan="4" class="m">No usage recorded this month yet.</td></tr>';
+  const histRows = data.history.length ? data.history.map((r) =>
+    `<tr><td>${escHtml(r.month)}</td><td>${escHtml(TIER_LABEL[r.voice_tier] || r.voice_tier)}</td><td class="n">${fmtInt(r.calls)}</td><td class="n">${fmtInt(r.chars)}</td><td class="n">${fmtUsd(r.list_usd)}</td><td class="n">${fmtUsd(r.billed_usd)}</td></tr>`).join('')
+    : '<tr><td colspan="6" class="m">No history yet.</td></tr>';
+  const recentRows = data.recent.length ? data.recent.map((r) =>
+    `<tr><td>${escHtml(new Date(r.created_at).toISOString().replace('T', ' ').slice(0, 19))} UTC</td><td>${escHtml(r.voice_name || '')}</td><td>${r.source === 'debug-compare' ? 'test' : escHtml(r.source)}</td><td class="n">${fmtInt(r.characters)}</td><td class="n">${r.latency_ms == null ? '—' : fmtInt(r.latency_ms)}</td></tr>`).join('')
+    : '<tr><td colspan="5" class="m">No calls recorded yet.</td></tr>';
+
+  res.set('Cache-Control', 'no-store');
+  res.type('html').send(head + `<h2>Google TTS usage &amp; cost — ${escHtml(monthLabel)}</h2>
+<p class="note">Founder-only, read-only; refreshes every 60 seconds. These are <b>our tracked numbers</b> (month starts at 00:00 UTC). "Expected billed" applies Google's free monthly allowance to our own running total. It cannot see other projects on the same billing account, and Gemini audition clicks are not tracked. <b>Google Cloud Billing is the only true bill</b> (it can lag up to a day). &#8377; shown at ${escHtml(inr)} per US$ — add <code>?inr=88</code> to the address to change it.</p>
+${cards}
+<h3>Live interviews vs founder test clicks (this month)</h3>
+<table><tr><th>Tier</th><th>Source</th><th class="n">Calls</th><th class="n">Characters</th></tr>${srcRows}</table>
+<h3>By voice (this month)</h3>
+<table><tr><th>Voice</th><th>Tier</th><th class="n">Calls</th><th class="n">Characters</th></tr>${voiceRows}</table>
+<h3>Monthly history (last 6 months)</h3>
+<table><tr><th>Month</th><th>Tier</th><th class="n">Calls</th><th class="n">Characters</th><th class="n">List cost</th><th class="n">Expected billed</th></tr>${histRows}</table>
+<h3>Last 15 calls</h3>
+<table><tr><th>When</th><th>Voice</th><th>Source</th><th class="n">Characters</th><th class="n">Time (ms)</th></tr>${recentRows}</table>
+</body></html>`);
+});
+
+
 module.exports = router;
