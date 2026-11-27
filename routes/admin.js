@@ -6,6 +6,7 @@ const { getFounderDashboardStats } = require('../db/cost-analytics');
 const { createInvitation } = require('../db/invitations');
 const { getCacheEfficiencyStats, getSessionCacheMetrics } = require('../db/prompt-cache-metrics');
 const { getProviderStatus } = require('../lib/provider-status');
+const { getGoogleTtsMonthSummary } = require('../lib/google-tts-finance');
 const { reconcilePendingRevenue } = require('../lib/stripe-revenue-reconciliation');
 function requireAdmin(req, res, next) {
   if (process.env.ADMIN_SECRET && req.headers['x-admin-secret'] !== process.env.ADMIN_SECRET) {
@@ -82,6 +83,14 @@ router.get('/provider-status', requireAdmin, async (_req, res) => {
     console.error('[admin] provider-status error:', err);
     return res.status(500).json({ error: 'Failed to load provider status' });
   }
+});
+// GET /api/admin/google-tts-usage?month=YYYY-MM — Google TTS characters and
+// cost for the Finance Dashboard. Read-only, from tts_usage_log only; kept
+// separate from the cost_analytics ledger so existing AI cost / true profit
+// figures are unchanged. getGoogleTtsMonthSummary() never throws.
+router.get('/google-tts-usage', requireAdmin, async (req, res) => {
+  const monthParam = typeof req.query.month === 'string' && /^\d{4}-\d{2}$/.test(req.query.month) ? req.query.month : undefined;
+  return res.json(await getGoogleTtsMonthSummary(monthParam));
 });
 // POST /api/admin/reconcile-revenue — retries fetching the Stripe Balance
 // Transaction for any purchase whose amount_usd is still NULL (the

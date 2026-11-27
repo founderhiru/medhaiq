@@ -129,6 +129,7 @@
           <div class="card rounded-xl px-4 py-3">
             <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Provider spend — <span id="providerMonthLabel"></span></h2>
             <div id="providerTable"></div>
+            <div id="googleSpendBlock" class="hidden"></div>
           </div>
           <div class="card rounded-xl px-4 py-3">
             <h2 class="text-xs font-semibold uppercase tracking-[0.04em] text-label mb-2">Fixed infrastructure — <span id="fixedMonthLabel"></span></h2>
@@ -166,6 +167,7 @@
           </button>
         </div>
         <div id="providerStatusTable"></div>
+        <div id="googleStatusBlock" class="hidden border-t border-hairline pt-3 mt-3"></div>
         <p class="text-[10px] text-inkFaint mt-3 leading-snug">Balances shown when available from provider APIs. Usage is from your cost ledger.</p>
       </div>
 
@@ -177,6 +179,7 @@
 (function () {
   const ENDPOINT = '/api/admin/founder-dashboard';
   const PROVIDER_STATUS_ENDPOINT = '/api/admin/provider-status';
+  const GOOGLE_TTS_ENDPOINT = '/api/admin/google-tts-usage';
   const RECONCILE_ENDPOINT = '/api/admin/reconcile-revenue';
   const SECRET_KEY = 'medhaiq_admin_secret';
 
@@ -188,6 +191,8 @@
   const trendTable = document.getElementById('trendTable');
   const todayStrip = document.getElementById('todayStrip');
   const providerStatusTable = document.getElementById('providerStatusTable');
+  const googleSpendBlock = document.getElementById('googleSpendBlock');
+  const googleStatusBlock = document.getElementById('googleStatusBlock');
   const providerRefreshBtn = document.getElementById('providerRefreshBtn');
   const providerLastUpdated = document.getElementById('providerLastUpdated');
   const reconcileBtn = document.getElementById('reconcileBtn');
@@ -598,6 +603,79 @@
     providerLastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   }
 
+  // ── Google TTS — deliberately independent of renderStats/load(). Read-only
+  // from tts_usage_log via /api/admin/google-tts-usage. Shown SEPARATELY from
+  // the AI cost / true profit totals above (those are unchanged); a failure
+  // or a missing table just hides these two blocks, never the dashboard.
+  const GOOGLE_LOGO = `
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#4285F4">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="9" width="3" height="6" rx="1.5" fill="white"/><rect x="8.5" y="5" width="3" height="14" rx="1.5" fill="white"/>
+          <rect x="14" y="8" width="3" height="8" rx="1.5" fill="white"/><rect x="19.5" y="10.5" width="2" height="3" rx="1" fill="white"/>
+        </svg>
+      </div>`;
+  const int = (v) => Math.round(Number(v) || 0).toLocaleString('en-US');
+  const usd4 = (v) => { const n = Number(v) || 0; return '$' + (Math.abs(n) < 1 ? n.toFixed(4) : n.toFixed(2)); };
+
+  function renderGoogleTts(g) {
+    if (!g || !g.available) {
+      googleSpendBlock.classList.add('hidden');
+      googleStatusBlock.classList.add('hidden');
+      return;
+    }
+    const over = g.totalExpectedBilledUsd > 0;
+    // Provider Spend row (separate table so the existing rows, which reconcile
+    // exactly with AI cost, stay untouched).
+    googleSpendBlock.innerHTML = `
+      <table class="w-full text-sm">
+        <tbody>
+          <tr class="border-t border-hairline">
+            <td class="py-1.5 text-ink">Google TTS</td>
+            <td class="py-1.5 text-right num ${g.totalChars > 0 ? 'text-ink' : 'text-inkFaint'}">${g.totalChars > 0 ? usd4(g.totalExpectedBilledUsd) : '\u2014'}</td>
+            <td class="py-1.5 text-right text-[11px] ${g.totalChars > 0 ? 'text-good' : 'text-inkFaint'}">${g.totalChars > 0 ? 'Tracked' : 'No usage'}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text-[10px] text-inkFaint leading-snug">Google TTS shows expected billed cost (after the free monthly allowance) and is tracked separately \u2014 <b>not included</b> in the AI cost or true profit above. ${int(g.totalChars)} characters this month, list price ${usd4(g.totalListCostUsd)}.${over ? ' <span class="text-warn">Over the free allowance \u2014 expected billed cost is not yet in true profit.</span>' : ''}</p>`;
+    googleSpendBlock.classList.remove('hidden');
+
+    // AI Provider Status card
+    const tierRows = g.tiers.map((t) => {
+      const cls = t.chars >= t.allowanceChars ? 'text-bad' : (t.pctOfAllowance >= 80 ? 'text-warn' : 'text-good');
+      return `<div class="flex items-center justify-between text-[11px] text-inkFaint mb-1">
+          <span>${t.label} free allowance</span>
+          <span class="num font-medium ${cls}">${int(t.chars)} / ${int(t.allowanceChars)} (${t.pctOfAllowance.toFixed(2)}%)</span>
+        </div>`;
+    }).join('');
+    googleStatusBlock.innerHTML = `
+      <div class="flex items-start justify-between mb-2">
+        <div class="flex items-center gap-2.5">${GOOGLE_LOGO}<span class="text-sm font-medium text-ink">Google TTS</span></div>
+        <span class="text-[11px] text-inkSoft flex items-center gap-1.5 mt-1.5">
+          <span class="inline-block w-1.5 h-1.5 rounded-full ${g.totalChars > 0 ? 'bg-good' : 'bg-inkFaint'}"></span>${g.totalChars > 0 ? 'Used this month' : 'No usage this month'}
+        </span>
+      </div>
+      ${tierRows}
+      <div class="flex items-center justify-between text-[11px] text-inkFaint">
+        <span>Expected billed</span><span class="num font-medium text-ink">${usd4(g.totalExpectedBilledUsd)}</span>
+      </div>
+      <div class="flex items-center justify-between text-[11px] text-inkFaint mt-1">
+        <span>Interviews / test clicks</span><span class="num font-medium text-ink">${int(g.interviewChars)} / ${int(g.testChars)} chars</span>
+      </div>
+      <p class="text-[10px] text-inkFaint mt-1.5 leading-snug">Our tracked usage; Google Cloud Billing is the true bill. <a href="/debug/voice/usage" target="_blank" rel="noopener" class="underline">Open full voice usage \u2192</a></p>`;
+    googleStatusBlock.classList.remove('hidden');
+  }
+
+  async function loadGoogleTts(monthValue) {
+    const secret = sessionStorage.getItem(SECRET_KEY) || '';
+    const url = monthValue ? `${GOOGLE_TTS_ENDPOINT}?month=${encodeURIComponent(monthValue)}` : GOOGLE_TTS_ENDPOINT;
+    try {
+      const res = await fetch(url, { headers: secret ? { 'x-admin-secret': secret } : {} });
+      renderGoogleTts(res.ok ? await res.json() : null);
+    } catch (err) {
+      renderGoogleTts(null);
+    }
+  }
+
   function showError(msg) {
     errorBanner.textContent = msg;
     errorBanner.classList.remove('hidden');
@@ -614,6 +692,8 @@
     todayStrip.innerHTML = '';
     maxCostNote.classList.add('hidden');
     revenueNote.classList.add('hidden');
+    googleSpendBlock.classList.add('hidden');
+    googleStatusBlock.classList.add('hidden');
   }
 
   async function load(monthValue) {
@@ -643,6 +723,7 @@
 
       const data = await res.json();
       renderStats(data || {});
+      loadGoogleTts(data && data.selected_month ? data.selected_month.value : undefined);
     } catch (err) {
       showError('Network error loading dashboard. Check your connection and try again.');
       clearAll();
