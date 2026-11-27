@@ -137,7 +137,7 @@ function resolveVoiceProfile(voiceProfileName) {
 // ═══════════════════════════════════════════════════════════════════════════
 const GOOGLE_VOICES = {
   alex: {      // analytical, male, US
-    chirp3hd: { languageCode: 'en-US', name: 'en-US-Chirp3-HD-Charon', gender: 'MALE' },
+    chirp3hd: { languageCode: 'en-US', name: 'en-US-Chirp3-HD-Puck', gender: 'MALE' },
     wavenet:  { languageCode: 'en-US', name: 'en-US-Wavenet-D', gender: 'MALE' },
   },
   priya: {     // structured executive, female, India
@@ -157,7 +157,7 @@ const GOOGLE_VOICES = {
     wavenet:  { languageCode: 'en-US', name: 'en-US-Wavenet-F', gender: 'FEMALE' },
   },
   raj: {       // polished executive, male, India
-    chirp3hd: { languageCode: 'en-IN', name: 'en-IN-Chirp3-HD-Sadaltager', gender: 'MALE' },
+    chirp3hd: { languageCode: 'en-IN', name: 'en-IN-Chirp3-HD-Schedar', gender: 'MALE' },
     wavenet:  { languageCode: 'en-IN', name: 'en-IN-Wavenet-B', gender: 'MALE' },
   },
   // Same fail-open principle as defaultProfile above.
