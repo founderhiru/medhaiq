@@ -37,6 +37,24 @@ const VOICE_SERVER_CONFIG = {
   // approaching the quality degradation ElevenLabs' own docs warn about
   // near the extremes of the range.
   ttsSpeed: process.env.ELEVENLABS_TTS_SPEED ? parseFloat(process.env.ELEVENLABS_TTS_SPEED) : 0.90,
+
+  // ── Google Cloud TTS (staging migration, 2026-11-27) -- ALL additive ──────
+  // TTS_PROVIDER is the reversible feature flag. Anything other than the
+  // exact value 'google' (unset, typo, 'elevenlabs') keeps ElevenLabs, so a
+  // misconfiguration can never silently switch providers. Read at call time
+  // by services/voice-tts-proxy.js.
+  ttsProvider: (process.env.TTS_PROVIDER || 'elevenlabs').trim().toLowerCase(),
+  // Service-account JSON (raw JSON or base64 of it). Server-side ONLY, same
+  // discipline as elevenLabsApiKey: never bridged into a view/response.
+  googleTtsServiceAccountJson: process.env.GOOGLE_TTS_SERVICE_ACCOUNT_JSON || null,
+  // Overridable only so tests can point at a local mock server.
+  googleTtsApiBaseUrl: process.env.GOOGLE_TTS_API_BASE_URL || 'https://texttospeech.googleapis.com',
+  googleOauthTokenUrl: process.env.GOOGLE_OAUTH_TOKEN_URL || 'https://oauth2.googleapis.com/token',
+  // 'chirp3hd' (default, premium) or 'wavenet' (cheaper). Per-persona voice
+  // names for each tier live in config/voice-profiles.js. Pacing is NOT
+  // duplicated here: Google's speakingRate is fed from ttsSpeed above, so
+  // the single 0.90 pacing setting governs both providers.
+  googleTtsVoiceTier: (process.env.GOOGLE_TTS_VOICE_TIER || 'chirp3hd').trim().toLowerCase(),
 };
 
 module.exports = { VOICE_SERVER_CONFIG };

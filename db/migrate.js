@@ -1338,6 +1338,9 @@ async function runMigrations() {
       },
     ];
 
+    // Google TTS character/cost ledger (additive-only; own file).
+    migrations.push(require('./tts-usage-migration'));
+
     for (const m of migrations) {
       if (done.has(m.name)) {
         console.log(`[migrate] already applied: ${m.name}`);

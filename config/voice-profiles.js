@@ -116,4 +116,90 @@ function resolveVoiceProfile(voiceProfileName) {
   return VOICE_PROFILES[voiceProfileName] || VOICE_PROFILES.defaultProfile;
 }
 
-module.exports = { VOICE_PROFILES, resolveVoiceProfile, CURRENT_DEFAULT_VOICE_ID };
+// ═══════════════════════════════════════════════════════════════════════════
+// Google Cloud TTS voices (staging migration, 2026-11-27)
+//
+// A PARALLEL map, deliberately NOT merged into VOICE_PROFILES above, so the
+// ElevenLabs entries stay byte-identical (instant, lossless rollback) and
+// only services/voice-tts-proxy.js's Google branch ever reads this.
+//
+// Every voice name below was checked against Google's published en-IN /
+// en-US voice list (2026-11-27). Genders are Google's own SSML genders.
+// Persona gender is inferred from the persona's first name -- the Interview
+// Engine defines no gender field. Locale follows the persona's identity:
+// Indian-named personas (priya, sanjeev, raj) -> en-IN; the others -> en-US.
+// The specific Chirp 3 HD voice picked within each gender is a FIRST GUESS,
+// to be confirmed by ear on the founder-only compare page
+// (/debug/voice/compare) -- changing any of them is a one-line edit here.
+//
+//   chirp3hd -> $30 / 1M chars, first 1M chars/month free   (premium)
+//   wavenet  -> $4  / 1M chars, first 4M chars/month free   (cheaper)
+// ═══════════════════════════════════════════════════════════════════════════
+const GOOGLE_VOICES = {
+  alex: {      // analytical, male, US
+    chirp3hd: { languageCode: 'en-US', name: 'en-US-Chirp3-HD-Charon', gender: 'MALE' },
+    wavenet:  { languageCode: 'en-US', name: 'en-US-Wavenet-D', gender: 'MALE' },
+  },
+  priya: {     // structured executive, female, India
+    chirp3hd: { languageCode: 'en-IN', name: 'en-IN-Chirp3-HD-Erinome', gender: 'FEMALE' },
+    wavenet:  { languageCode: 'en-IN', name: 'en-IN-Wavenet-D', gender: 'FEMALE' },
+  },
+  marcus: {    // conversational product leader, male, US
+    chirp3hd: { languageCode: 'en-US', name: 'en-US-Chirp3-HD-Achird', gender: 'MALE' },
+    wavenet:  { languageCode: 'en-US', name: 'en-US-Wavenet-I', gender: 'MALE' },
+  },
+  sanjeev: {   // engineering leadership, male, India
+    chirp3hd: { languageCode: 'en-IN', name: 'en-IN-Chirp3-HD-Iapetus', gender: 'MALE' },
+    wavenet:  { languageCode: 'en-IN', name: 'en-IN-Wavenet-C', gender: 'MALE' },
+  },
+  sarah: {     // energetic founder, female, US
+    chirp3hd: { languageCode: 'en-US', name: 'en-US-Chirp3-HD-Zephyr', gender: 'FEMALE' },
+    wavenet:  { languageCode: 'en-US', name: 'en-US-Wavenet-F', gender: 'FEMALE' },
+  },
+  raj: {       // polished executive, male, India
+    chirp3hd: { languageCode: 'en-IN', name: 'en-IN-Chirp3-HD-Sadaltager', gender: 'MALE' },
+    wavenet:  { languageCode: 'en-IN', name: 'en-IN-Wavenet-B', gender: 'MALE' },
+  },
+  // Same fail-open principle as defaultProfile above.
+  defaultProfile: {
+    chirp3hd: { languageCode: 'en-US', name: 'en-US-Chirp3-HD-Kore', gender: 'FEMALE' },
+    wavenet:  { languageCode: 'en-US', name: 'en-US-Wavenet-H', gender: 'FEMALE' },
+  },
+};
+
+// Extra candidates offered ONLY on the founder compare page, so voices can be
+// auditioned across personas before one is locked in. Never used in a live
+// interview unless copied into GOOGLE_VOICES above.
+const GOOGLE_COMPARE_EXTRAS = [
+  { tier: 'chirp3hd', languageCode: 'en-US', name: 'en-US-Chirp3-HD-Puck', gender: 'MALE' },
+  { tier: 'chirp3hd', languageCode: 'en-US', name: 'en-US-Chirp3-HD-Orus', gender: 'MALE' },
+  { tier: 'chirp3hd', languageCode: 'en-US', name: 'en-US-Chirp3-HD-Aoede', gender: 'FEMALE' },
+  { tier: 'chirp3hd', languageCode: 'en-US', name: 'en-US-Chirp3-HD-Leda', gender: 'FEMALE' },
+  { tier: 'chirp3hd', languageCode: 'en-IN', name: 'en-IN-Chirp3-HD-Charon', gender: 'MALE' },
+  { tier: 'chirp3hd', languageCode: 'en-IN', name: 'en-IN-Chirp3-HD-Orus', gender: 'MALE' },
+  { tier: 'chirp3hd', languageCode: 'en-IN', name: 'en-IN-Chirp3-HD-Kore', gender: 'FEMALE' },
+  { tier: 'chirp3hd', languageCode: 'en-IN', name: 'en-IN-Chirp3-HD-Sulafat', gender: 'FEMALE' },
+  { tier: 'wavenet', languageCode: 'en-US', name: 'en-US-Wavenet-A', gender: 'MALE' },
+  { tier: 'wavenet', languageCode: 'en-US', name: 'en-US-Wavenet-J', gender: 'MALE' },
+  { tier: 'wavenet', languageCode: 'en-US', name: 'en-US-Wavenet-C', gender: 'FEMALE' },
+  { tier: 'wavenet', languageCode: 'en-IN', name: 'en-IN-Wavenet-A', gender: 'FEMALE' },
+  { tier: 'wavenet', languageCode: 'en-IN', name: 'en-IN-Wavenet-F', gender: 'MALE' },
+];
+
+const GOOGLE_VOICE_TIERS = ['chirp3hd', 'wavenet'];
+
+/**
+ * @param {string} [voiceProfileName] - same persona NAME resolveVoiceProfile takes.
+ * @param {string} [tier] - 'chirp3hd' | 'wavenet'; anything else -> 'chirp3hd'.
+ * @returns {{languageCode:string, name:string, gender:string}} always usable, never throws.
+ */
+function resolveGoogleVoice(voiceProfileName, tier) {
+  const entry = GOOGLE_VOICES[voiceProfileName] || GOOGLE_VOICES.defaultProfile;
+  const t = GOOGLE_VOICE_TIERS.includes(tier) ? tier : 'chirp3hd';
+  return entry[t];
+}
+
+module.exports = {
+  VOICE_PROFILES, resolveVoiceProfile, CURRENT_DEFAULT_VOICE_ID,
+  GOOGLE_VOICES, GOOGLE_COMPARE_EXTRAS, GOOGLE_VOICE_TIERS, resolveGoogleVoice,
+};

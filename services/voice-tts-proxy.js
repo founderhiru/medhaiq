@@ -27,7 +27,11 @@ const { VOICE_SERVER_CONFIG } = require('../config/voice-server-config');
 // (routes/voice-tts.js, and every browser file) only ever knows a
 // voiceProfile NAME -- see config/voice-profiles.js's own header for the
 // full rationale and the 3-step rollout.
-const { resolveVoiceProfile } = require('../config/voice-profiles');
+const { resolveVoiceProfile, resolveGoogleVoice } = require('../config/voice-profiles');
+// Google TTS (staging migration, 2026-11-27) -- reachable ONLY when the
+// TTS_PROVIDER=google feature flag is set. See getTtsProvider() below.
+const googleTts = require('./google-tts-provider');
+const { recordTtsUsage } = require('../lib/tts-usage-recorder');
 // Cost recording — the only cost_analytics touchpoint in this file goes
 // through this decoupled service, never db/cost-analytics.js directly.
 // Fire-and-forget: never awaited in a way that could delay the TTS
@@ -37,6 +41,57 @@ const { recordElevenLabsUsage } = require('../lib/cost-recorder');
 function logTTS(event, detail) {
   // eslint-disable-next-line no-console
   console.log('[TTS][server] ' + event + (detail ? ' ' + JSON.stringify(detail) : ''));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TTS provider feature flag (staging migration, 2026-11-27)
+//
+// TTS_PROVIDER=google routes synthesis to Google Cloud TTS. ANY other value
+// (unset, 'elevenlabs', a typo) keeps ElevenLabs -- the default -- so a bad
+// env var can never silently change the provider. Read at call time so the
+// flag is the single switch; flipping it back restores ElevenLabs exactly,
+// because the ElevenLabs code below is untouched.
+// ═══════════════════════════════════════════════════════════════════════════
+function getTtsProvider() {
+  return VOICE_SERVER_CONFIG.ttsProvider === 'google' ? 'google' : 'elevenlabs';
+}
+
+/**
+ * Google branch shared by the full-audio and streaming paths. Receives the
+ * ALREADY currency-normalized spoken text (normalization stays in one place,
+ * shared by both providers) and the provider-agnostic voiceProfile NAME.
+ * Pacing comes from the same VOICE_SERVER_CONFIG.ttsSpeed (0.90) the
+ * ElevenLabs path uses -- Google's name for it is speakingRate.
+ * Throws the same .code vocabulary the ElevenLabs path throws.
+ * @returns {Promise<{ buffer: Buffer, contentType: string }>}
+ */
+async function synthesizeViaGoogle({ spokenText, voiceProfile, userId, logPrefix }) {
+  const startedAt = Date.now();
+  const tier = GOOGLE_TIER_OR_DEFAULT(VOICE_SERVER_CONFIG.googleTtsVoiceTier);
+  const voice = resolveGoogleVoice(voiceProfile, tier);
+  logTTS(logPrefix + ':google', { voice: voice.name, tier, languageCode: voice.languageCode, speakingRate: VOICE_SERVER_CONFIG.ttsSpeed });
+  const result = await googleTts.synthesize({
+    text: spokenText,
+    languageCode: voice.languageCode,
+    voiceName: voice.name,
+    speakingRate: VOICE_SERVER_CONFIG.ttsSpeed,
+  });
+  // Character + cost ledger: fire-and-forget, never awaited, never throws
+  // (see lib/tts-usage-recorder.js). Tracked even inside the free allowance.
+  recordTtsUsage({
+    voiceTier: tier,
+    voiceName: voice.name,
+    languageCode: voice.languageCode,
+    source: 'interview',
+    userId,
+    characters: result.characters,
+    latencyMs: Date.now() - startedAt,
+  });
+  return { buffer: result.buffer, contentType: result.contentType };
+}
+
+function GOOGLE_TIER_OR_DEFAULT(t) {
+  return t === 'wavenet' ? 'wavenet' : 'chirp3hd';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -124,6 +179,12 @@ async function synthesizeViaElevenLabs(params) {
   }
   const resolvedVoice = resolveVoiceProfile(params.voiceProfile);
   logTTS('synthesize:start', { textLength: (params.text || '').length, voiceProfile: params.voiceProfile, language: params.language });
+
+  // TTS_PROVIDER=google: full-audio path. Same return shape ({buffer,
+  // contentType}) and error codes as below, so routes/voice-tts.js is unchanged.
+  if (getTtsProvider() === 'google') {
+    return synthesizeViaGoogle({ spokenText, voiceProfile: params.voiceProfile, userId: params.userId, logPrefix: 'synthesize' });
+  }
 
   if (!VOICE_SERVER_CONFIG.elevenLabsApiKey) {
     const err = new Error('VOICE_SERVER_CONFIG.elevenLabsApiKey is not set');
@@ -326,6 +387,22 @@ async function streamViaElevenLabsToken(params) {
   const resolvedVoice = resolveVoiceProfile(entry.voiceProfile);
   logTTS('stream:start', { textLength: (entry.text || '').length, voiceProfile: entry.voiceProfile, language: entry.language });
 
+  // TTS_PROVIDER=google: streaming-token path. Google's MP3 output is not
+  // available over its streaming API (MP3 is batch-only), so the complete
+  // MP3 is synthesized here and handed back wrapped in a standard Response.
+  // routes/voice-tts.js does Readable.fromWeb(upstreamResponse.body) on it
+  // exactly as it does for ElevenLabs -- route and browser are unchanged,
+  // and questions are short (~150 chars), so this is a single fast request.
+  if (getTtsProvider() === 'google') {
+    const { buffer, contentType } = await synthesizeViaGoogle({
+      spokenText, voiceProfile: entry.voiceProfile, userId: params.userId, logPrefix: 'stream',
+    });
+    return {
+      upstreamResponse: new Response(buffer, { status: 200, headers: { 'content-type': contentType } }),
+      contentType,
+    };
+  }
+
   if (!VOICE_SERVER_CONFIG.elevenLabsApiKey) {
     const err = new Error('VOICE_SERVER_CONFIG.elevenLabsApiKey is not set');
     err.code = 'CONFIG_MISSING';
@@ -398,4 +475,4 @@ async function streamViaElevenLabsToken(params) {
   };
 }
 
-module.exports = { synthesizeViaElevenLabs, prepareStream, streamViaElevenLabsToken };
+module.exports = { synthesizeViaElevenLabs, prepareStream, streamViaElevenLabsToken, getTtsProvider, normalizeSpokenCurrency };
